@@ -69,16 +69,22 @@ object CodegenHelper {
                     else -> WordUtils.wrap(it, 120)
                 }
             }
+            .trim()
     }
 
     fun createFile(packageName: String, topLevelClass: String, outputDir: File, content: String, rootPackage: String) {
-        val packageDir = File(outputDir, packageName.replace(".", "/"))
-        packageDir.mkdirs()
-        FileWriter(File(packageDir, "${topLevelClass}.java")).use { writer ->
+        FileWriter(createFile(packageName, topLevelClass, outputDir, rootPackage)).use { writer ->
             writer.write("package $packageName;\n\n")
             writer.write("import ${rootPackage}.common.*;\n")
             writer.write(content)
         }
+    }
+
+    fun createFile(packageName: String, topLevelClass: String, outputDir: File, rootPackage: String): File {
+        val packageDir = File(outputDir, packageName.replace(".", "/"))
+        packageDir.mkdirs()
+        val file = File(packageDir, "${topLevelClass}.java")
+        return file
     }
 
 }

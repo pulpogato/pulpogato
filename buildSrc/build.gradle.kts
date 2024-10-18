@@ -17,6 +17,8 @@ dependencies {
     implementation(libs.swaggerParser)
     implementation(libs.bundles.commonmark)
     implementation(libs.commonsText)
+    implementation(libs.javapoet)
+
 }
 
 java {
