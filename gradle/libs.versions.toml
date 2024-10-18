@@ -12,7 +12,7 @@ kotlin = "2.0.21"
 lombok = "1.18.34"
 retrofit = "2.11.0"
 slf4j = "2.0.16"
-springWeb = "6.1.13"
+springWeb = "6.1.14"
 swaggerParser = "2.1.22"
 waena = "0.7.2"
 
