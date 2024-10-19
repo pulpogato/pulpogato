@@ -1,63 +1,62 @@
 package codegen
 
-import codegen.CodegenHelper.generated
 import codegen.ext.camelCase
 import codegen.ext.className
 import codegen.ext.pascalCase
 import com.palantir.javapoet.*
 import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
 import java.io.File
-import java.lang.reflect.Type
 import javax.lang.model.element.Modifier
 
 object WebhooksBuilder {
-    fun buildWebhooks(openAPI: OpenAPI, mainDir: File, rootPackage: String, restPackage: String, packageName: String, testDir: File) {
-        val webhooksDir = File(mainDir, packageName.replace(".", "/"))
-        webhooksDir.mkdirs()
-        openAPI.webhooks.forEach { (name, webhook) ->
-            val interfaceName = name.pascalCase() + "Webhook"
-            val content = createWebhookInterface(name, interfaceName, webhook, openAPI, restPackage, packageName, testDir)
-            val file = JavaFile.builder(packageName, content)
-                .build()
+    fun buildWebhooks(openAPI: OpenAPI, mainDir: File, restPackage: String, webhooksPackage: String, testDir: File) {
+        openAPI.webhooks
+            .map { (name, webhook) -> createWebhookInterface(name, webhook, openAPI, restPackage) }
+            .groupBy { it.first }
+            .forEach { k, v ->
+                val interfaceBuilder = TypeSpec.interfaceBuilder(k.pascalCase() + "Webhooks")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addTypeVariable(TypeVariableName.get("T"))
+                    .addMethods(v.map { it.second })
+                JavaFile.builder(webhooksPackage, interfaceBuilder.build()).build().writeTo(mainDir)
 
-            file.writeTo(mainDir)
-        }
+                val testBuilder = TypeSpec.classBuilder(k.pascalCase() + "WebhooksTest")
+                    .addTypes(v.map { it.third })
+                JavaFile.builder(webhooksPackage, testBuilder.build())
+                    .addStaticImport(ClassName.get("org.assertj.core.api", "Assertions"), "*")
+                    .build()
+                    .writeTo(testDir)
+            }
     }
 
-    private fun createWebhookInterface(
-        name: String,
-        interfaceName: String,
-        webhook: PathItem,
-        openAPI: OpenAPI,
-        restPackage: String,
-        packageName: String,
-        testDir: File
-    ): TypeSpec {
+    private fun createWebhookInterface(name: String, webhook: PathItem, openAPI: OpenAPI, restPackage: String): Triple<String, MethodSpec?, TypeSpec?> {
         if (webhook.readOperationsMap().size != 1) {
             throw RuntimeException("Webhook $name has more than one operation")
         }
-        val interfaceTypeBuilder = TypeSpec.interfaceBuilder(interfaceName)
-            .addModifiers(Modifier.PUBLIC)
-            .addTypeVariable(TypeVariableName.get("T"))
+
+        val testBuilder = TestBuilder()
+        val tests = mutableListOf<MethodSpec>()
+        val (_, operation) = webhook.readOperationsMap().entries.first()
+
+        val javadoc = mutableListOf(
+            CodegenHelper.mdToHtml(operation.summary) +
+                    if (operation.description != null) "\n<br/>" + CodegenHelper.mdToHtml(operation.description) else "",
+            "\n"
+        )
+        val subcategory = getSubcategory(operation)
+        if (subcategory == null) {
+            throw RuntimeException("Missing subcategory for $name")
+        }
+        val methodName = "process" + operation.operationId.split('/').last().pascalCase()
+        val methodSpecBuilder = MethodSpec.methodBuilder(methodName)
             .addAnnotation(
                 AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "GHGenerated"))
                     .addMember("from", "\$S", "#/webhooks/$name")
                     .addMember("by", "\$S", CodegenHelper.codeRef())
                     .build()
             )
-        val testBuilder = TestBuilder()
-        val (method, operation) = webhook.readOperationsMap().entries.first()
-
-        val javadoc = mutableListOf(
-            CodegenHelper.mdToHtml(operation.summary),
-            if (operation.description != null) "\n" + CodegenHelper.mdToHtml(operation.description) else null,
-            "\n"
-        )
-        val xGitHub = operation.extensions.get("x-github") as? Map<String, *> ?: throw RuntimeException("Missing x-github extension")
-        val subcategory = xGitHub.get("subcategory") as String
-        val methodName = "process" + operation.operationId.split('/').last().pascalCase()
-        val methodSpecBuilder = MethodSpec.methodBuilder(methodName)
             .addAnnotation(
                 AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
                     .addMember("headers", "\$S", "X-Github-Event=${name}")
@@ -110,17 +109,13 @@ object WebhooksBuilder {
                     .build()
             )
 
-            interfaceTypeBuilder.addMethod(
-                methodSpecBuilder
-                    .addJavadoc(javadoc.filterNotNull().joinToString("\n"))
-                    .build()
-            )
+            methodSpecBuilder.addJavadoc(javadoc.filterNotNull().joinToString("\n"))
 
             examples?.forEach { (key, value) ->
                 val ref = value.`$ref`
                 val example = openAPI.components.examples.entries.firstOrNull { it.key == ref.replace("#/components/examples/", "") }
                 if (example != null) {
-                    testBuilder.addTest(key, example.value.value.toString(), type)
+                    tests.add(testBuilder.buildTest(key, example.value.value.toString(), type))
                 }
             }
 
@@ -128,7 +123,19 @@ object WebhooksBuilder {
             throw RuntimeException("Unknown type for ${requestBody.content.firstEntry().value.schema}")
         }
 
-        testBuilder.buildTestClass(testDir, packageName, interfaceName, null)
-        return interfaceTypeBuilder.build()
+        val testClass = TypeSpec.classBuilder(name.pascalCase())
+            .addMethods(tests)
+            .addAnnotation(
+                AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build()
+            )
+            .build()
+
+        return Triple(subcategory, methodSpecBuilder.build(), testClass)
+    }
+
+    private fun getSubcategory(operation: Operation): String? {
+        val xGitHub = operation.extensions.get("x-github") ?: throw RuntimeException("Missing x-github extension")
+        val subcategory = (xGitHub as Map<*, *>).get("subcategory") as String?
+        return subcategory
     }
 }
