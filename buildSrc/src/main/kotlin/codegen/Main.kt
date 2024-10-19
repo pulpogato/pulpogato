@@ -12,7 +12,7 @@ class Main {
         val openAPI = result.openAPI
         Holder.instance.get().openAPI = openAPI
         PathsBuilder.buildApis(openAPI, mainDir, packageName, "${packageName}.rest", "${packageName}.rest.api", testDir)
-        WebhooksBuilder.buildWebhooks(openAPI, mainDir, packageName, "${packageName}.rest", "${packageName}.rest.webhooks", testDir)
+        WebhooksBuilder.buildWebhooks(openAPI, mainDir, "${packageName}.rest", "${packageName}.rest.webhooks", testDir)
 
         Holder.instance.get().withSchemaStack("#", "components", "schemas") {
             SchemasBuilder.buildSchemas(openAPI, mainDir, packageName, "${packageName}.rest", "${packageName}.rest.schemas")

@@ -1,9 +1,10 @@
 package codegen
 
 import codegen.CodegenHelper.codeRef
-import codegen.ext.camelCase
 import codegen.ext.pascalCase
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.MethodSpec
 import java.io.File
 import java.util.TreeMap
 
@@ -74,9 +75,9 @@ class TestBuilder {
         sb.append(formatted.prependIndent("            ").replace("\\", "\\\\"))
         sb.append("\n")
         val type1 = when {
-          type.matches("^Map<.+>$".toRegex()) ->  "Map"
-          type.matches("^List<.+>$".toRegex()) ->  "List"
-          else -> type
+            type.matches("^Map<.+>$".toRegex()) -> "Map"
+            type.matches("^List<.+>$".toRegex()) -> "List"
+            else -> type
         }
         sb.append(
             """
@@ -90,4 +91,38 @@ class TestBuilder {
 
         tests.add(sb.toString().prependIndent("    "))
     }
+
+    fun buildTest(key: String, example: String, type: String): MethodSpec {
+        val om = ObjectMapper()
+
+        val formatted = try {
+            val parsed = om.readValue(example, TreeMap::class.java)
+            om.writerWithDefaultPrettyPrinter().writeValueAsString(parsed)
+        } catch (e: Exception) {
+            example
+        }
+
+        val sb = StringBuilder()
+
+        val type1 = when {
+            type.matches("^Map<.+>$".toRegex()) -> "Map"
+            type.matches("^List<.+>$".toRegex()) -> "List"
+            else -> type
+        }
+
+        val methodSpec = MethodSpec.methodBuilder("test${key.pascalCase()}")
+            .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
+            .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
+            .addStatement("\$T input = /* language=JSON */ ${formatted.blockQuote()}", String::class.java)
+            .addStatement(
+                "var processed = \$T.parseAndCompare(\$T.class, input)",
+                ClassName.get("io.github.pulpogato.test", "TestUtils"), ClassName.get("io.github.pulpogato.rest.schemas", type1)
+            )
+            .addStatement("\$T.assertThat(processed).isNotNull()", ClassName.get("org.assertj.core.api", "Assertions"))
+            .build()
+        return methodSpec
+    }
+
+    fun String.quote() = "\"$this\""
+    fun String.blockQuote() = "\n${this.replace("\\", "\\\\")}\n".quote().quote().quote()
 }
