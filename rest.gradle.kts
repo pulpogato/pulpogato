@@ -32,7 +32,7 @@ val downloadSchema = tasks.register<Download>("downloadSchema") {
     dest(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
     onlyIfModified(true)
     tempAndMove(true)
-    useETag(true)
+    useETag("all")
 
     inputs.property("url", getUrl(projectVariant))
     outputs.file(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
