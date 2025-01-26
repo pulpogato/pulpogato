@@ -16,7 +16,7 @@ plugins {
 }
 
 allprojects {
-    group = "com.github.rahulsom"
+    group = "io.github.pulpogato"
 
     extensions.findByType<ContactsExtension>()?.apply {
         addPerson("rahulsom@noreply.github.com", delegateClosureOf<Contact> {
@@ -31,4 +31,8 @@ subprojects {
     repositories {
         mavenCentral()
     }
+}
+
+waena {
+    useCentralPortal.set(true)
 }
