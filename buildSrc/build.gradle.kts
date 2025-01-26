@@ -7,6 +7,7 @@ buildscript {
 
 plugins {
     alias(libs.plugins.kotlin)
+    id("org.jlleitschuh.gradle.ktlint").version("12.1.2")
 }
 
 repositories {
@@ -18,7 +19,6 @@ dependencies {
     implementation(libs.bundles.commonmark)
     implementation(libs.commonsText)
     implementation(libs.javapoet)
-
 }
 
 java {

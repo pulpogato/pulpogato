@@ -3,6 +3,7 @@ package io.github.pulpogato.common;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -19,6 +20,12 @@ import java.util.List;
 public class StringOrInteger {
     private String stringValue;
     private Long integerValue;
+
+    /**
+     * Creates an instance that can be a String, or an Integer.
+     */
+    public StringOrInteger() {
+    }
 
     static class CustomDeserializer extends FancyDeserializer<StringOrInteger> {
         public CustomDeserializer() {

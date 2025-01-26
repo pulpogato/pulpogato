@@ -1,7 +1,9 @@
 package io.github.pulpogato.rest.schemas;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.pulpogato.test.TestUtils;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -163,9 +165,12 @@ class WebhookPingTest {
 
     @Test
     void shouldParse() throws JsonProcessingException {
-        WebhookPing webhookPing = TestUtils.parseAndCompare(WebhookPing.class, input);
+        var softly = new SoftAssertions();
+        var webhookPing = TestUtils.parseAndCompare(new TypeReference<WebhookPing>() {}, input, softly);
 
-        assertThat(webhookPing.getHook().getConfig().getInsecureSsl().getWebhookConfigInsecureSsl0()).isEqualTo("0");
+        softly.assertThat(webhookPing.getHook().getConfig().getInsecureSsl().getWebhookConfigInsecureSsl0())
+                .isEqualTo("0");
+        softly.assertAll();
     }
 
 }

@@ -22,6 +22,12 @@ public class StringObjectOrInteger {
     private Long integerValue;
     private Map<String, Object> objectValue;
 
+    /**
+     * Creates an instance that can be a String, an Object, or an Integer.
+     */
+    public StringObjectOrInteger() {
+    }
+
     static class CustomDeserializer extends FancyDeserializer<StringObjectOrInteger> {
         public CustomDeserializer() {
             super(StringObjectOrInteger.class, StringObjectOrInteger::new, Mode.oneOf, List.of(

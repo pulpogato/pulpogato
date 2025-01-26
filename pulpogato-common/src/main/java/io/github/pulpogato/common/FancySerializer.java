@@ -11,7 +11,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -64,7 +67,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
                 .toList();
 
         if (mode == Mode.oneOf) {
-            Object o = serialized.getFirst();
+            Object o = serialized.isEmpty() ? null : serialized.getFirst();
             switch (o) {
                 case Integer i -> gen.writeNumber(i);
                 case Long l -> gen.writeNumber(l);

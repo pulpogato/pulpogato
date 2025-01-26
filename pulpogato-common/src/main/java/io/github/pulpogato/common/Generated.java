@@ -8,15 +8,15 @@ import java.lang.annotation.RetentionPolicy;
  */
 @SuppressWarnings("unused")
 @Retention(RetentionPolicy.CLASS)
-public @interface GHGenerated {
+public @interface Generated {
     /**
      * The location of the type in the schema
      * @return The location as a json reference
      */
-    String from();
+    String schemaRef();
     /**
      * The generator of the class
      * @return The file and line that generated the type
      */
-    String by();
+    String codeRef();
 }
