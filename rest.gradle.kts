@@ -76,6 +76,9 @@ sourceSets {
         java.srcDir("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen")
         resources.srcDir("${project.layout.buildDirectory.get()}/generated/resources/main")
     }
+    named("test") {
+        java.srcDir("${project.layout.buildDirectory.get()}/generated/sources/test")
+    }
 }
 
 tasks.withType<Javadoc>().configureEach {

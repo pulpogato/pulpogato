@@ -24,17 +24,39 @@ val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")
 
 val downloadSchema = tasks.register<Download>("downloadSchema") {
     src(getUrl(projectVariant))
-    dest(file("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls"))
+    dest(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
     onlyIfModified(true)
     tempAndMove(true)
     useETag("all")
+    quiet(true)
 
     inputs.property("url", getUrl(projectVariant))
+    outputs.file(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
+}
+
+val transformSchema = tasks.register<Copy>("transformSchema") {
+    dependsOn(downloadSchema)
+    inputs.file(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
     outputs.file(file("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls"))
+
+    from(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
+    into(file("${project.layout.buildDirectory.get()}/resources/main"))
+    rename("schema.original.graphqls", "schema.graphqls")
+
+    filter { currentLine ->
+        currentLine
+            .replace(Regex("<(https?:.+?)>")) {
+                "<a href=\"${it.groupValues[1]}\">${it.groupValues[1]}</a>"
+            }
+            .replace("< ", "&lt; ")
+            .replace("> ", "&gt; ")
+            .replace("<= ", "&lt;= ")
+            .replace(">= ", "&gt;= ")
+    }
 }
 
 tasks.named<GenerateJavaTask>("generateJava") {
-    dependsOn(downloadSchema)
+    dependsOn(transformSchema)
 
     schemaPaths = mutableListOf("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls")
     packageName = "io.github.pulpogato.graphql"

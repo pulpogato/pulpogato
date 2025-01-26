@@ -1,22 +1,35 @@
 package codegen
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import java.io.File
 
 class Main {
-    fun process(schema: File, mainDir: File, packageName: String, testDir: File) {
+    fun process(
+        schema: File,
+        mainDir: File,
+        packageName: String,
+        testDir: File,
+    ) {
         val parseOptions = ParseOptions()
 
-        val result = OpenAPIParser().readContents(schema.readText(), listOf(), parseOptions)
+        val swaggerSpec = schema.readText()
+
+        val result = OpenAPIParser().readContents(swaggerSpec, listOf(), parseOptions)
         val openAPI = result.openAPI
-        Holder.instance.get().openAPI = openAPI
-        PathsBuilder.buildApis(openAPI, mainDir, packageName, "${packageName}.rest", "${packageName}.rest.api", testDir)
-        WebhooksBuilder.buildWebhooks(openAPI, mainDir, "${packageName}.rest", "${packageName}.rest.webhooks", testDir)
+        Context.instance.get().openAPI = openAPI
+        PathsBuilder.buildApis(openAPI, mainDir, "$packageName.rest.api", testDir)
+        WebhooksBuilder.buildWebhooks(openAPI, mainDir, "$packageName.rest", "$packageName.rest.webhooks", testDir)
+        SchemasBuilder.buildSchemas(openAPI, mainDir, "$packageName.rest.schemas")
 
-        Holder.instance.get().withSchemaStack("#", "components", "schemas") {
-            SchemasBuilder.buildSchemas(openAPI, mainDir, packageName, "${packageName}.rest", "${packageName}.rest.schemas")
-        }
+        val json = ObjectMapper().readTree(swaggerSpec)
+        JsonRefValidator.validate(
+            json,
+            listOf(
+                mainDir,
+                testDir,
+            ),
+        )
     }
-
 }

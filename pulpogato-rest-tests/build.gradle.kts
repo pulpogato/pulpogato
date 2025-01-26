@@ -8,6 +8,7 @@ dependencies {
 
     implementation("javax.json:javax.json-api:1.1.4")
     implementation("org.glassfish:javax.json:1.1.4")
+    implementation(project(":${rootProject.name}-common"))
 
     implementation(libs.bundles.jackson)
 }
