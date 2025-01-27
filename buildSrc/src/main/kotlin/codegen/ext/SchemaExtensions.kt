@@ -1,11 +1,13 @@
 package codegen.ext
 
+import codegen.Annotations.allArgsConstructor
 import codegen.Annotations.deserializerAnnotation
 import codegen.Annotations.generated
 import codegen.Annotations.getter
 import codegen.Annotations.jsonProperty
 import codegen.Annotations.jsonValue
-import codegen.Annotations.lombokAccessors
+import codegen.Annotations.lombokBuilder
+import codegen.Annotations.noArgsConstructor
 import codegen.Annotations.requiredArgsConstructor
 import codegen.Annotations.serializerAnnotation
 import codegen.Annotations.setter
@@ -313,7 +315,9 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
             .addType(serializer)
             .addAnnotation(deserializerAnnotation(className, deserializer))
             .addAnnotation(serializerAnnotation(className, serializer))
-            .addAnnotation(lombokAccessors())
+            .addAnnotation(lombokBuilder())
+            .addAnnotation(noArgsConstructor())
+            .addAnnotation(allArgsConstructor())
 
         theType.build()
     }
@@ -331,36 +335,23 @@ private fun Map.Entry<String, Schema<*>>.buildSimpleObject(
             .addAnnotation(getter())
             .addAnnotation(setter())
             .addAnnotation(generated(0))
-            .addAnnotation(lombokAccessors())
+            .addAnnotation(lombokBuilder())
+            .addAnnotation(noArgsConstructor())
+            .addAnnotation(allArgsConstructor())
 
     value.properties?.forEach { p ->
-        if (isArray) {
-            Context.withSchemaStack("properties") {
-                p.referenceAndDefinition("", nameRef)?.let { (d, s) ->
-                    s?.let {
-                        builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
-                    }
-                    builder.addField(
-                        FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
-                            .addAnnotation(jsonProperty(p.key))
-                            .addAnnotation(generated(0))
-                            .build(),
-                    )
+        val extraStack = if (isArray) arrayOf("properties") else arrayOf("properties", p.key)
+        Context.withSchemaStack(*extraStack) {
+            p.referenceAndDefinition("", nameRef)?.let { (d, s) ->
+                s?.let {
+                    builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
                 }
-            }
-        } else {
-            Context.withSchemaStack("properties", p.key) {
-                p.referenceAndDefinition("", nameRef)?.let { (d, s) ->
-                    s?.let {
-                        builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
-                    }
-                    builder.addField(
-                        FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
-                            .addAnnotation(jsonProperty(p.key))
-                            .addAnnotation(generated(0))
-                            .build(),
-                    )
-                }
+                builder.addField(
+                    FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
+                        .addAnnotation(jsonProperty(p.key))
+                        .addAnnotation(generated(0))
+                        .build(),
+                )
             }
         }
     }

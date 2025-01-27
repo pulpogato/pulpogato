@@ -29,13 +29,13 @@ object WebhooksBuilder {
         openAPI.webhooks
             .entries
             .groupBy { getSubcategory(it.value.readOperationsMap().values.first())!! }
-            .forEach { k, v ->
+            .forEach { (k, v) ->
                 val interfaceBuilder =
                     TypeSpec.interfaceBuilder(k.pascalCase() + "Webhooks")
                         .addModifiers(Modifier.PUBLIC)
                         .addTypeVariable(TypeVariableName.get("T"))
                 val typeName = ClassName.get(webhooksPackage, k.pascalCase() + "Webhooks")
-                val triples = v.map { (name, webhook) -> createWebhookInterface(name, webhook, openAPI, restPackage, typeName) }
+                val triples = v.map { (name, webhook) -> createWebhookInterface(name, webhook, openAPI, restPackage) }
                 interfaceBuilder
                     .addMethods(triples.map { it.second })
                 JavaFile.builder(webhooksPackage, interfaceBuilder.build())
@@ -59,7 +59,6 @@ object WebhooksBuilder {
         webhook: PathItem,
         openAPI: OpenAPI,
         restPackage: String,
-        typeName: ClassName,
     ): Triple<String, MethodSpec?, TypeSpec?> {
         if (webhook.readOperationsMap().size != 1) {
             throw RuntimeException("Webhook $name has more than one operation")
@@ -74,16 +73,13 @@ object WebhooksBuilder {
                     if (operation.description != null) "\n<br/>" + MarkdownHelper.mdToHtml(operation.description) else "",
                 "\n",
             )
-        val subcategory = getSubcategory(operation)
-        if (subcategory == null) {
-            throw RuntimeException("Missing subcategory for $name")
-        }
+        val subcategory = getSubcategory(operation) ?: throw RuntimeException("Missing subcategory for $name")
         val methodName = "process" + operation.operationId.split('/').last().pascalCase()
         val methodSpecBuilder =
             Context.withSchemaStack("#", "webhooks", name, "post") {
                 val methodSpecBuilder =
                     MethodSpec.methodBuilder(methodName)
-                        .addAnnotation(Annotations.generated(0))
+                        .addAnnotation(generated(0))
                         .addAnnotation(
                             AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
                                 .addMember("headers", "\$S", "X-Github-Event=$name")
@@ -137,7 +133,7 @@ object WebhooksBuilder {
                                         )
                                 }
                             }
-                            val className = ClassName.get(restPackage + ".schemas", type)
+                            val className = ClassName.get("${restPackage}.schemas", type)
                             Context.withSchemaStack("requestBody") {
                                 methodSpecBuilder.addParameter(
                                     ParameterSpec.builder(className, "requestBody")
@@ -147,7 +143,7 @@ object WebhooksBuilder {
                                 )
                             }
 
-                            methodSpecBuilder.addJavadoc(javadoc.filterNotNull().joinToString("\n"))
+                            methodSpecBuilder.addJavadoc(javadoc.joinToString("\n"))
 
                             val examples = firstEntry.value.examples
                             if (firstEntry.key.contains("json")) {
@@ -183,8 +179,8 @@ object WebhooksBuilder {
     }
 
     private fun getSubcategory(operation: Operation): String? {
-        val xGitHub = operation.extensions.get("x-github") ?: throw RuntimeException("Missing x-github extension")
-        val subcategory = (xGitHub as Map<*, *>).get("subcategory") as String?
+        val xGitHub = operation.extensions["x-github"] ?: throw RuntimeException("Missing x-github extension")
+        val subcategory = (xGitHub as Map<*, *>)["subcategory"] as String?
         return subcategory
     }
 }

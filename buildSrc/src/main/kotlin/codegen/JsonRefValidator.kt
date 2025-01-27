@@ -21,9 +21,9 @@ object JsonRefValidator {
                     .flatMap {
                         it.readLines().mapIndexed { lineNumber, line -> Triple(it, lineNumber, line) }
                             .filter { l -> l.third.matches(Regex(" +from = \".+\",")) }
-                            .map { Triple(it.first, it.second, it.third.replace(Regex(" +from = \"(.+)\","), "$1")) }
+                            .map { x -> Triple(x.first, x.second, x.third.replace(Regex(" +from = \"(.+)\","), "$1")) }
                     }
-                    .toSortedSet(Comparator { o1, o2 -> o1.toString().compareTo(o2.toString()) })
+                    .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }
                     .count { hasError(json, it) }
             }
         if (count > 0) {

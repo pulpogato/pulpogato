@@ -61,7 +61,7 @@ object TestBuilder {
         return methodSpec
     }
 
-    fun String.quote() = "\"$this\""
+    private fun String.quote() = "\"$this\""
 
-    fun String.blockQuote() = "\n${this.replace("\\", "\\\\")}\n".quote().quote().quote()
+    private fun String.blockQuote() = "\n${this.replace("\\", "\\\\")}\n".quote().quote().quote()
 }
