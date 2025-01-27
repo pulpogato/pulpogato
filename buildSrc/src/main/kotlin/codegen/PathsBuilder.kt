@@ -47,6 +47,7 @@ object PathsBuilder {
                 val pathInterface =
                     Context.withSchemaStack("#", "tags", tagIndex) {
                         TypeSpec.interfaceBuilder(interfaceName)
+                            .addModifiers(Modifier.PUBLIC)
                             .addAnnotation(generated(0))
                             .addJavadoc(apiDescription ?: "")
                     }
