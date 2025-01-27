@@ -15,11 +15,11 @@ object Annotations {
 
     fun setter(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "Setter")).build()
 
-    fun lombokAccessors(): AnnotationSpec =
-        AnnotationSpec.builder(ClassName.get("lombok.experimental", "Accessors"))
-            .addMember("chain", "true")
-            .addMember("fluent", "false")
-            .build()
+    fun lombokBuilder(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "Builder")).build()
+
+    fun noArgsConstructor(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "NoArgsConstructor")).build()
+
+    fun allArgsConstructor(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "AllArgsConstructor")).build()
 
     /*
      Jackson Annotations
