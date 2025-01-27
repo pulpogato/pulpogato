@@ -5,6 +5,7 @@ import codegen.ext.camelCase
 import codegen.ext.pascalCase
 import codegen.ext.referenceAndDefinition
 import codegen.ext.unkeywordize
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.JavaFile
@@ -123,7 +124,13 @@ object PathsBuilder {
                     r.second?.let {
                         typeDef.addType(it.toBuilder().addModifiers(Modifier.STATIC, Modifier.PUBLIC).build())
                     }
-                    val respRef = r.first
+                    var respRef = r.first
+                    if (respRef is ParameterizedTypeName && respRef.rawType().simpleName().equals("List")) {
+                        val listType = respRef.typeArguments()[0]
+                        if (listType is ClassName) {
+                            respRef = ParameterizedTypeName.get(ClassName.get("java.util", "List"), listType.withoutAnnotations())
+                        }
+                    }
                     val methodName =
                         when (successResponse.value.content.size) {
                             1 -> atomicMethod.operationId.split('/')[1].camelCase()
@@ -140,7 +147,14 @@ object PathsBuilder {
                                 .filter { (_, v) -> v.value != null }
                                 .map { (k, v) ->
                                     Context.withSchemaStack(k, "value") {
-                                        TestBuilder.buildTest("${successResponse.key}$k", v.value.toString(), respRef)
+                                        val example = v.value
+                                        if (example is ObjectNode && example.has("\$ref")) {
+                                            val ref = example.get("\$ref").asText().replace("#/components/examples/", "")
+                                            val exampleSchema = openAPI.components.examples[ref]
+                                            TestBuilder.buildTest("${successResponse.key}$k", exampleSchema!!.value, respRef)
+                                        } else {
+                                            TestBuilder.buildTest("${successResponse.key}$k", example, respRef)
+                                        }
                                     }
                                 }
                         }
@@ -277,7 +291,7 @@ object PathsBuilder {
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
                 .map { (k, v) ->
                     Context.withSchemaStack("requestBody", "content", "application/json", "examples", k, "value") {
-                        TestBuilder.buildTest("${paramName}_$k", v.value.toString(), ref)
+                        TestBuilder.buildTest("${paramName}_$k", v.value, ref)
                     }
                 }
         if (testMethods.isNotEmpty()) {

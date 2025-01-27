@@ -11,21 +11,21 @@ import java.util.TreeMap
 object TestBuilder {
     fun buildTest(
         key: String,
-        example: String,
+        example: Any,
         className: TypeName,
     ): MethodSpec {
         val om = ObjectMapper()
 
-        val formatted =
+        val formatted: String =
             try {
-                val parsed = om.readValue(example, TreeMap::class.java)
+                val parsed = om.readValue(example.toString(), TreeMap::class.java)
                 om.writerWithDefaultPrettyPrinter().writeValueAsString(parsed)
             } catch (_: Exception) {
                 try {
-                    val parsed = om.readValue(example, List::class.java)
+                    val parsed = om.readValue(example.toString(), List::class.java)
                     om.writerWithDefaultPrettyPrinter().writeValueAsString(parsed)
                 } catch (_: Exception) {
-                    example
+                    example.toString()
                 }
             }
 
@@ -41,13 +41,13 @@ object TestBuilder {
                 null
             }
 
-        val methodSpec =
-            MethodSpec.methodBuilder("test${key.pascalCase()}")
+        try {
+            val methodSpec = MethodSpec.methodBuilder("test${key.pascalCase()}")
                 .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                 .addAnnotation(Annotations.generated(1))
                 .addAnnotations(listOfNotNull(ignoreAnnotation))
                 .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
-                .addStatement("\$T input = /* language=JSON */ ${formatted.blockQuote()}", String::class.java)
+                .addStatement("\$T input = /* language=JSON */ \$L", String::class.java, formatted.blockQuote())
                 .addStatement("var softly = new \$T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                 .addStatement(
                     "var processed = \$T.parseAndCompare(new \$T<\$T>() {}, input, softly)",
@@ -58,7 +58,15 @@ object TestBuilder {
                 .addStatement("softly.assertThat(processed).isNotNull()")
                 .addStatement("softly.assertAll()")
                 .build()
-        return methodSpec
+            return methodSpec
+        } catch (e: Exception) {
+            throw RuntimeException("""
+                Failed to build test for ${Context.getSchemaStackRef()}.
+                ValueType: ${example.javaClass}
+                Formatted: ${formatted}
+                Value: ${example}                
+                """.trimIndent(), e)
+        }
     }
 
     fun String.quote() = "\"$this\""

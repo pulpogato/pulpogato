@@ -183,6 +183,7 @@ private fun buildType(
             else ->
                 when {
                     parentClass.simpleName() == "Commit" && className == "Commit" -> parentClass.nestedClass("CommitInner")
+                    parentClass.simpleName() == "MarketplacePurchase" && className == "MarketplacePurchase" -> parentClass.nestedClass("MarketplacePurchaseInner")
                     parentClass.simpleName() == "Updated" && className == "Changes" -> parentClass.nestedClass("UpdatedChanges")
                     else -> parentClass.nestedClass(className)
                 }
