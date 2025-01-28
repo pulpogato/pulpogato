@@ -34,7 +34,6 @@ object WebhooksBuilder {
                     TypeSpec.interfaceBuilder(k.pascalCase() + "Webhooks")
                         .addModifiers(Modifier.PUBLIC)
                         .addTypeVariable(TypeVariableName.get("T"))
-                val typeName = ClassName.get(webhooksPackage, k.pascalCase() + "Webhooks")
                 val triples = v.map { (name, webhook) -> createWebhookInterface(name, webhook, openAPI, restPackage) }
                 interfaceBuilder
                     .addMethods(triples.map { it.second })
