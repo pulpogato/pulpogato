@@ -1,3 +1,4 @@
+import com.github.rahulsom.waena.WaenaExtension
 import nebula.plugin.contacts.Contact
 import nebula.plugin.contacts.ContactsExtension
 
@@ -34,5 +35,5 @@ subprojects {
 }
 
 waena {
-    useCentralPortal.set(true)
+    publishMode.set(WaenaExtension.PublishMode.Central)
 }
