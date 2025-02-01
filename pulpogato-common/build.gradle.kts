@@ -26,6 +26,8 @@ java {
     }
 }
 
+description = "Common utilities for Pulpogato REST types"
+
 val generateCode by tasks.registering {
     group = "codegen"
     description = "Generate code from schema"

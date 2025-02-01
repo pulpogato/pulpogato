@@ -22,6 +22,8 @@ fun getUrl(projectVariant: String): String {
 
 val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")
 
+description = "GraphQL types for $projectVariant"
+
 val downloadSchema = tasks.register<Download>("downloadSchema") {
     src(getUrl(projectVariant))
     dest(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))

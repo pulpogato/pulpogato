@@ -27,6 +27,8 @@ fun getUrl(projectVariant: String): String {
 
 val projectVariant = project.name.replace("${rootProject.name}-rest-", "")
 
+description = "REST types for $projectVariant"
+
 val downloadSchema = tasks.register<Download>("downloadSchema") {
     src(getUrl(projectVariant))
     dest(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
