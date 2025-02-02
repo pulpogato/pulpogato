@@ -31,7 +31,8 @@ object TestBuilder {
 
         val testUtilsClass = ClassName.get("io.github.pulpogato.test", "TestUtils")
 
-        val ignoreCause = IgnoredTests.causes[Context.getSchemaStackRef()]
+        val ignoredTestsForVersion = IgnoredTests.causes[Context.instance.get().version] ?: mapOf()
+        val ignoreCause = ignoredTestsForVersion[Context.getSchemaStackRef()]
         val ignoreAnnotation =
             if (ignoreCause != null) {
                 AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Disabled"))

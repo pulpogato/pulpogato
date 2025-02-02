@@ -5,6 +5,8 @@ import io.swagger.v3.oas.models.OpenAPI
 class Context {
     lateinit var openAPI: OpenAPI
 
+    lateinit var version: String
+
     private val schemaStack = mutableListOf<String>()
 
     private fun getSchemaStackRef() = schemaStack.joinToString("/") { it.replace("/", "~1") }

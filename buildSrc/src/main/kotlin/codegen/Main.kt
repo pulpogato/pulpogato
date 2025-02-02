@@ -19,6 +19,7 @@ class Main {
         val result = OpenAPIParser().readContents(swaggerSpec, listOf(), parseOptions)
         val openAPI = result.openAPI
         Context.instance.get().openAPI = openAPI
+        Context.instance.get().version = schema.parentFile.parentFile.parentFile.parentFile.parentFile.name.replace("pulpogato-rest-", "")
         PathsBuilder.buildApis(openAPI, mainDir, "$packageName.rest.api", testDir)
         WebhooksBuilder.buildWebhooks(openAPI, mainDir, "$packageName.rest", "$packageName.rest.webhooks", testDir)
         SchemasBuilder.buildSchemas(openAPI, mainDir, "$packageName.rest.schemas")
