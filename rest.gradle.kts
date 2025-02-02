@@ -14,7 +14,6 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    api(libs.retrofit)
     api(project(":${rootProject.name}-common"))
 
     testImplementation(project(":${rootProject.name}-rest-tests"))

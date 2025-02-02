@@ -104,13 +104,13 @@ object PathsBuilder {
                     .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                     .addJavadoc(javadoc)
                     .addAnnotation(
-                        AnnotationSpec.builder(ClassName.get("retrofit2.http", atomicMethod.method.name))
+                        AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
                             .addMember("value", "\$S", atomicMethod.path)
                             .build(),
                     )
                     .addAnnotation(generated(0))
                     .addParameters(parameters.map { buildParameter(it, atomicMethod, typeDef, typeRef, testClass) })
-                    .returns(ParameterizedTypeName.get(ClassName.get("retrofit2", "Call"), ClassName.get("java.lang", "Void")))
+                    .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
                     .build(),
             )
         } else {
@@ -162,18 +162,14 @@ object PathsBuilder {
                             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                             .addJavadoc(javadoc)
                             .addAnnotation(
-                                AnnotationSpec.builder(ClassName.get("retrofit2.http", "Headers"))
-                                    .addMember("value", "\$S", "Accept: $contentType")
-                                    .build(),
-                            )
-                            .addAnnotation(
-                                AnnotationSpec.builder(ClassName.get("retrofit2.http", atomicMethod.method.name))
+                                AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
                                     .addMember("value", "\$S", atomicMethod.path)
+                                    .addMember("accept", "\$S", contentType)
                                     .build(),
                             )
                             .addAnnotation(generated(0))
                             .addParameters(parameterSpecs)
-                            .returns(ParameterizedTypeName.get(ClassName.get("retrofit2", "Call"), respRef))
+                            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), respRef))
                             .build(),
                     )
                 }
@@ -247,16 +243,16 @@ object PathsBuilder {
             .addAnnotation(
                 when (theParameter.`in`) {
                     "query" ->
-                        AnnotationSpec.builder(ClassName.get("retrofit2.http", "Query"))
+                        AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestParam"))
                             .addMember("value", "\$S", theParameter.name)
                             .build()
                     "body" -> buildBodyAnnotation(theParameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
                     "path" ->
-                        AnnotationSpec.builder(ClassName.get("retrofit2.http", "Path"))
+                        AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PathVariable"))
                             .addMember("value", "\$S", theParameter.name)
                             .build()
                     "header" ->
-                        AnnotationSpec.builder(ClassName.get("retrofit2.http", "Header"))
+                        AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
                             .build()
                     else -> throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
                 },
@@ -291,7 +287,7 @@ object PathsBuilder {
                     .build(),
             )
         }
-        return AnnotationSpec.builder(ClassName.get("retrofit2.http", "Body"))
+        return AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody"))
             .build()
     }
 
