@@ -1,0 +1,74 @@
+= Pulpogato
+:snapshot-prefix: image:https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2F
+:snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=Snapshot&color=green[alt=Maven Snapshot,height=20,link="https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/io/github/pulpogato/
+:snapshot-suffix: /"]
+:central-prefix: image:https://img.shields.io/maven-central/v/io.github.pulpogato/
+:central-middle: ?style=for-the-badge&label=Release&color=green[alt=Maven Central Version,height=20,link="https://central.sonatype.com/artifact/io.github.pulpogato/
+:central-suffix: /overview"]
+
+
+Pulpogato is a java client for GitHub.
+
+== Usage
+
+For releases, use mavenCentral.
+
+[source]
+----
+https://repo.maven.apache.org/maven2/
+----
+
+For snapshots, use this url.
+
+[source]
+----
+https://central.sonatype.com/repository/maven-snapshots/
+----
+
+The maven group id is `io.github.pulpogato`.
+
+The maven artifact id is `pulpogato-<api-type>-<gh-version>`.
+
+The `api-type` is one of `graphql` or `rest`.
+
+The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
+
+== Available versions
+
+|===
+|GitHub Version |GraphQL |REST
+
+|FPT
+|{central-prefix}pulpogato-graphql-fpt{central-middle}pulpogato-graphql-fpt{central-suffix} {snapshot-prefix}pulpogato-graphql-fpt{snapshot-middle}pulpogato-graphql-fpt{snapshot-suffix}
+|{central-prefix}pulpogato-rest-fpt{central-middle}pulpogato-rest-fpt{central-suffix} {snapshot-prefix}pulpogato-rest-fpt{snapshot-middle}pulpogato-rest-fpt{snapshot-suffix}
+
+|GHEC
+|{central-prefix}pulpogato-graphql-ghec{central-middle}pulpogato-graphql-ghec{central-suffix} {snapshot-prefix}pulpogato-graphql-ghec{snapshot-middle}pulpogato-graphql-ghec{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghec{central-middle}pulpogato-rest-ghec{central-suffix} {snapshot-prefix}pulpogato-rest-ghec{snapshot-middle}pulpogato-rest-ghec{snapshot-suffix}
+
+|3.15
+|{central-prefix}pulpogato-graphql-ghes-3.15{central-middle}pulpogato-graphql-ghes-3.15{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.15{snapshot-middle}pulpogato-graphql-ghes-3.15{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.15{central-middle}pulpogato-rest-ghes-3.15{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.15{snapshot-middle}pulpogato-rest-ghes-3.15{snapshot-suffix}
+
+|3.14
+|{central-prefix}pulpogato-graphql-ghes-3.14{central-middle}pulpogato-graphql-ghes-3.14{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.14{snapshot-middle}pulpogato-graphql-ghes-3.14{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.14{central-middle}pulpogato-rest-ghes-3.14{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.14{snapshot-middle}pulpogato-rest-ghes-3.14{snapshot-suffix}
+
+|3.13
+|{central-prefix}pulpogato-graphql-ghes-3.13{central-middle}pulpogato-graphql-ghes-3.13{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.13{snapshot-middle}pulpogato-graphql-ghes-3.13{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.13{central-middle}pulpogato-rest-ghes-3.13{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.13{snapshot-middle}pulpogato-rest-ghes-3.13{snapshot-suffix}
+
+|3.12
+|{central-prefix}pulpogato-graphql-ghes-3.12{central-middle}pulpogato-graphql-ghes-3.12{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.12{snapshot-middle}pulpogato-graphql-ghes-3.12{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.12{central-middle}pulpogato-rest-ghes-3.12{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.12{snapshot-middle}pulpogato-rest-ghes-3.12{snapshot-suffix}
+
+|3.11
+|{central-prefix}pulpogato-graphql-ghes-3.11{central-middle}pulpogato-graphql-ghes-3.11{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.11{snapshot-middle}pulpogato-graphql-ghes-3.11{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.11{central-middle}pulpogato-rest-ghes-3.11{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.11{snapshot-middle}pulpogato-rest-ghes-3.11{snapshot-suffix}
+
+|3.10
+|{central-prefix}pulpogato-graphql-ghes-3.10{central-middle}pulpogato-graphql-ghes-3.10{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.10{snapshot-middle}pulpogato-graphql-ghes-3.10{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.10{central-middle}pulpogato-rest-ghes-3.10{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.10{snapshot-middle}pulpogato-rest-ghes-3.10{snapshot-suffix}
+
+|===
+
