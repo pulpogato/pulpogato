@@ -1,9 +1,9 @@
 = Pulpogato
 :snapshot-prefix: image:https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2F
-:snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=Snapshot[alt=Maven Snapshot,height=20,link="https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/io/github/pulpogato/
+:snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=Snapshot[alt=Maven Snapshot,height=25,link="https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/io/github/pulpogato/
 :snapshot-suffix: /"]
 :central-prefix: image:https://img.shields.io/maven-central/v/io.github.pulpogato/
-:central-middle: ?style=for-the-badge&label=Release&color=green[alt=Maven Central Version,height=20,link="https://central.sonatype.com/artifact/io.github.pulpogato/
+:central-middle: ?style=for-the-badge&label=Release&color=green[alt=Maven Central Version,height=25,link="https://central.sonatype.com/artifact/io.github.pulpogato/
 :central-suffix: /overview"]
 
 
