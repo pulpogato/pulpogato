@@ -31,7 +31,7 @@ createProject("graphql", "ghes-3.10")
 
 //createProject("rest", "ghec")
 //createProject("rest", "fpt")
-//createProject("rest", "ghes-3.15")
+createProject("rest", "ghes-3.15")
 createProject("rest", "ghes-3.14")
 createProject("rest", "ghes-3.13")
 createProject("rest", "ghes-3.12")

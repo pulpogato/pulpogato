@@ -151,7 +151,7 @@ object WebhooksBuilder {
                                         val ref = value.`$ref`
                                         val example = openAPI.components.examples.entries.firstOrNull { it.key == ref.replace("#/components/examples/", "") }
                                         if (example != null) {
-                                            tests.add(TestBuilder.buildTest(key, example.value.value.toString(), className))
+                                            tests.add(TestBuilder.buildTest(key, example.value.value, className))
                                         }
                                     }
                                 }
