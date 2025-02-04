@@ -141,7 +141,7 @@ object PathsBuilder {
                                 .filter { (_, v) -> v.value != null }
                                 .map { (k, v) ->
                                     Context.withSchemaStack(k, "value") {
-                                        TestBuilder.buildTest("${successResponse.key}$k", v.value.toString(), respRef)
+                                        TestBuilder.buildTest("${successResponse.key}$k", v.value, respRef)
                                     }
                                 }
                         }
@@ -274,7 +274,7 @@ object PathsBuilder {
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
                 .map { (k, v) ->
                     Context.withSchemaStack("requestBody", "content", "application/json", "examples", k, "value") {
-                        TestBuilder.buildTest("${paramName}_$k", v.value.toString(), ref)
+                        TestBuilder.buildTest("${paramName}_$k", v.value, ref)
                     }
                 }
         if (testMethods.isNotEmpty()) {
