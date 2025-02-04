@@ -54,6 +54,7 @@ val transformSchema = tasks.register<Copy>("transformSchema") {
             .replace("> ", "&gt; ")
             .replace("<= ", "&lt;= ")
             .replace(">= ", "&gt;= ")
+            .replace("Query implements Node", "Query")
     }
 }
 
