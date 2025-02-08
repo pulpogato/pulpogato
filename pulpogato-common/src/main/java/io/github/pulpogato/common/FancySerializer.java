@@ -61,13 +61,13 @@ public class FancySerializer<T> extends StdSerializer<T> {
 
     @Override
     public void serialize(T value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        var serialized = fields.stream()
+        final var serialized = fields.stream()
                 .map(field -> field.getter().apply(value))
                 .filter(Objects::nonNull)
                 .toList();
 
         if (mode == Mode.oneOf) {
-            Object o = serialized.isEmpty() ? null : serialized.getFirst();
+            final Object o = serialized.isEmpty() ? null : serialized.getFirst();
             switch (o) {
                 case Integer i -> gen.writeNumber(i);
                 case Long l -> gen.writeNumber(l);
@@ -85,7 +85,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
         var superMap = serialized.stream()
                 .map(x -> {
                     try {
-                        String string = om.writeValueAsString(x);
+                        final String string = om.writeValueAsString(x);
                         return om.readValue(string, new TypeReference<Map<String, Object>>() {});
                     } catch (JsonProcessingException ignored) {
                         return null;

@@ -17,12 +17,12 @@ class UnrecognizedPropertyExceptionWrapper extends RuntimeException {
 
     @Override
     public String getMessage() {
-        int line = originalException.getLocation().getLineNr();
-        int column = originalException.getLocation().getColumnNr();
+        final int line = originalException.getLocation().getLineNr();
+        final int column = originalException.getLocation().getColumnNr();
 
-        String[] lines = input.split("\r?\n");
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
+        final String[] lines = input.split("\r?\n");
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
 
         pw.println(originalException.getMessage());
         pw.append("\n");

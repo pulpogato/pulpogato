@@ -27,7 +27,7 @@ public class PulpogatoModule extends SimpleModule {
     public void setupModule(SetupContext context) {
         super.setupModule(context);
 
-        var deserializer = new SimpleDeserializers();
+        final var deserializer = new SimpleDeserializers();
 
         deserializer.addDeserializer(OffsetDateTime.class, new OffsetDateTimeDeserializer());
 
