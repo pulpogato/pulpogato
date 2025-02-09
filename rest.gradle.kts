@@ -17,6 +17,7 @@ dependencies {
     api(project(":${rootProject.name}-common"))
 
     testImplementation(project(":${rootProject.name}-rest-tests"))
+    testImplementation(libs.bundles.springBoot)
 }
 
 fun getUrl(projectVariant: String): String {

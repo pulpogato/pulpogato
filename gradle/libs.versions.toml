@@ -10,9 +10,10 @@ javapoet = "0.6.0"
 junit = "5.11.4"
 kotlin = "2.1.10"
 lombok = "1.18.36"
-retrofit = "2.11.0"
+reflections = "0.9.11"
 slf4j = "2.0.16"
-springWeb = "6.2.2"
+spring = "6.2.2"
+springBoot = "3.3.2"
 swaggerParser = "2.1.25"
 waena = "0.10.1"
 
@@ -27,14 +28,17 @@ jacksonTime = { group = "com.fasterxml.jackson.datatype", name = "jackson-dataty
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+reflections = { group = "org.reflections", name = "reflections", version.ref = "reflections" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
-springWeb = { group = "org.springframework", name = "spring-web", version.ref = "springWeb" }
+springBootTest = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springBoot" }
+springBootWeb = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "springBoot" }
+springWeb = { group = "org.springframework", name = "spring-web", version.ref = "spring" }
 swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", version.ref = "swaggerParser" }
 
 [bundles]
 commonmark = [ "commonmark", "commonmarkTables" ]
 jackson = ["jacksonCore", "jacksonTime" ]
+springBoot = [ "springBootWeb", "springBootTest" ]
 
 [plugins]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
