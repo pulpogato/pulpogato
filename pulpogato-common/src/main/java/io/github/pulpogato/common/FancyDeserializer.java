@@ -67,21 +67,21 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        var returnValue = initializer.get();
+        final var returnValue = initializer.get();
 
         try {
-            var map = ctxt.readValue(p, Map.class);
-            var mapAsString = om.writeValueAsString(map);
+            final var map = ctxt.readValue(p, Map.class);
+            final var mapAsString = om.writeValueAsString(map);
             setAllFields(mapAsString, returnValue);
         } catch (JacksonException e) {
             try {
-                var map = ctxt.readValue(p, String.class);
-                var mapAsString = om.writeValueAsString(map);
+                final var map = ctxt.readValue(p, String.class);
+                final var mapAsString = om.writeValueAsString(map);
                 setAllFields(mapAsString, returnValue);
             } catch (JacksonException e1) {
                 try {
-                    var map = ctxt.readValue(p, Number.class);
-                    var mapAsString = om.writeValueAsString(map);
+                    final var map = ctxt.readValue(p, Number.class);
+                    final var mapAsString = om.writeValueAsString(map);
                     setAllFields(mapAsString, returnValue);
                 } catch (JacksonException e2) {
                     log.debug("Failed to parse", e2);
@@ -94,7 +94,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
 
     private void setAllFields(String mapAsString, T returnValue) {
         for (var pair : fields) {
-            boolean successful = setField(pair, mapAsString, returnValue);
+            final boolean successful = setField(pair, mapAsString, returnValue);
             if (mode == Mode.oneOf && successful) {
                 return;
             }
@@ -102,11 +102,11 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
     }
 
     private <X> boolean setField(SettableField<T, X> field, String string, T retval) {
-        var clazz = field.type();
-        var consumer = field.setter();
+        final var clazz = field.type();
+        final var consumer = field.setter();
 
         try {
-            X x = om.readValue(string, clazz);
+            final X x = om.readValue(string, clazz);
             consumer.accept(retval, x);
             return true;
         } catch (JacksonException e) {

@@ -38,7 +38,7 @@ public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
      */
     @Override
     public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        var text = jsonParser.getText();
+        final var text = jsonParser.getText();
         if (text == null) {
             return null;
         }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class WebhookPingTest {
-    String input =
+    final String input =
     // language=JSON
             """
             {
@@ -165,8 +165,8 @@ class WebhookPingTest {
 
     @Test
     void shouldParse() throws JsonProcessingException {
-        var softly = new SoftAssertions();
-        var webhookPing = TestUtils.parseAndCompare(new TypeReference<WebhookPing>() {}, input, softly);
+        final var softly = new SoftAssertions();
+        final var webhookPing = TestUtils.parseAndCompare(new TypeReference<WebhookPing>() {}, input, softly);
 
         softly.assertThat(webhookPing.getHook().getConfig().getInsecureSsl().getWebhookConfigInsecureSsl0())
                 .isEqualTo("0");
