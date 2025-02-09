@@ -1,0 +1,234 @@
+POST /webhooks HTTP/1.1
+accept: */*
+b3: 679c59cf0926827f15a6d244597af089-52e7a0e3e3d5f3cc-0
+connection: close
+content-type: application/json
+user-agent: GitHub-Hookshot/6c41911
+x-github-delivery: d1200692-df90-11ef-993e-7dbf99ff72c4
+x-github-enterprise-host: github.com
+x-github-enterprise-version: 3.13.7
+x-github-event: push
+x-github-hook-id: 2
+x-github-hook-installation-target-id: 17
+x-github-hook-installation-target-type: organization
+
+{
+    "ref": "refs/heads/master",
+    "before": "048acc634d8b3bde41a5362ca76ecb28beb06aaa",
+    "after": "33bbc031c2518d3010b20705d47af04b2fff055f",
+    "repository": {
+        "id": 52011,
+        "node_id": "MDEwOlJlcG9zaXRvcnk1MjAxMQ==",
+        "name": "reponame",
+        "full_name": "orgname/reponame",
+        "private": true,
+        "owner": {
+            "name": "orgname",
+            "email": null,
+            "login": "orgname",
+            "id": 17,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjE3",
+            "avatar_url": "https://github.com/avatars/u/17?",
+            "gravatar_id": "",
+            "url": "https://github.com/api/v3/users/orgname",
+            "html_url": "https://github.com/orgname",
+            "followers_url": "https://github.com/api/v3/users/orgname/followers",
+            "following_url": "https://github.com/api/v3/users/orgname/following{/other_user}",
+            "gists_url": "https://github.com/api/v3/users/orgname/gists{/gist_id}",
+            "starred_url": "https://github.com/api/v3/users/orgname/starred{/owner}{/repo}",
+            "subscriptions_url": "https://github.com/api/v3/users/orgname/subscriptions",
+            "organizations_url": "https://github.com/api/v3/users/orgname/orgs",
+            "repos_url": "https://github.com/api/v3/users/orgname/repos",
+            "events_url": "https://github.com/api/v3/users/orgname/events{/privacy}",
+            "received_events_url": "https://github.com/api/v3/users/orgname/received_events",
+            "type": "Organization",
+            "site_admin": false
+        },
+        "html_url": "https://github.com/orgname/reponame",
+        "description": null,
+        "fork": false,
+        "url": "https://github.com/orgname/reponame",
+        "forks_url": "https://github.com/api/v3/repos/orgname/reponame/forks",
+        "keys_url": "https://github.com/api/v3/repos/orgname/reponame/keys{/key_id}",
+        "collaborators_url": "https://github.com/api/v3/repos/orgname/reponame/collaborators{/collaborator}",
+        "teams_url": "https://github.com/api/v3/repos/orgname/reponame/teams",
+        "hooks_url": "https://github.com/api/v3/repos/orgname/reponame/hooks",
+        "issue_events_url": "https://github.com/api/v3/repos/orgname/reponame/issues/events{/number}",
+        "events_url": "https://github.com/api/v3/repos/orgname/reponame/events",
+        "assignees_url": "https://github.com/api/v3/repos/orgname/reponame/assignees{/user}",
+        "branches_url": "https://github.com/api/v3/repos/orgname/reponame/branches{/branch}",
+        "tags_url": "https://github.com/api/v3/repos/orgname/reponame/tags",
+        "blobs_url": "https://github.com/api/v3/repos/orgname/reponame/git/blobs{/sha}",
+        "git_tags_url": "https://github.com/api/v3/repos/orgname/reponame/git/tags{/sha}",
+        "git_refs_url": "https://github.com/api/v3/repos/orgname/reponame/git/refs{/sha}",
+        "trees_url": "https://github.com/api/v3/repos/orgname/reponame/git/trees{/sha}",
+        "statuses_url": "https://github.com/api/v3/repos/orgname/reponame/statuses/{sha}",
+        "languages_url": "https://github.com/api/v3/repos/orgname/reponame/languages",
+        "stargazers_url": "https://github.com/api/v3/repos/orgname/reponame/stargazers",
+        "contributors_url": "https://github.com/api/v3/repos/orgname/reponame/contributors",
+        "subscribers_url": "https://github.com/api/v3/repos/orgname/reponame/subscribers",
+        "subscription_url": "https://github.com/api/v3/repos/orgname/reponame/subscription",
+        "commits_url": "https://github.com/api/v3/repos/orgname/reponame/commits{/sha}",
+        "git_commits_url": "https://github.com/api/v3/repos/orgname/reponame/git/commits{/sha}",
+        "comments_url": "https://github.com/api/v3/repos/orgname/reponame/comments{/number}",
+        "issue_comment_url": "https://github.com/api/v3/repos/orgname/reponame/issues/comments{/number}",
+        "contents_url": "https://github.com/api/v3/repos/orgname/reponame/contents/{+path}",
+        "compare_url": "https://github.com/api/v3/repos/orgname/reponame/compare/{base}...{head}",
+        "merges_url": "https://github.com/api/v3/repos/orgname/reponame/merges",
+        "archive_url": "https://github.com/api/v3/repos/orgname/reponame/{archive_format}{/ref}",
+        "downloads_url": "https://github.com/api/v3/repos/orgname/reponame/downloads",
+        "issues_url": "https://github.com/api/v3/repos/orgname/reponame/issues{/number}",
+        "pulls_url": "https://github.com/api/v3/repos/orgname/reponame/pulls{/number}",
+        "milestones_url": "https://github.com/api/v3/repos/orgname/reponame/milestones{/number}",
+        "notifications_url": "https://github.com/api/v3/repos/orgname/reponame/notifications{?since,all,participating}",
+        "labels_url": "https://github.com/api/v3/repos/orgname/reponame/labels{/name}",
+        "releases_url": "https://github.com/api/v3/repos/orgname/reponame/releases{/id}",
+        "deployments_url": "https://github.com/api/v3/repos/orgname/reponame/deployments",
+        "created_at": 1737845261,
+        "updated_at": "2025-01-25T22:54:45Z",
+        "pushed_at": 1738299852,
+        "git_url": "git://github.com/orgname/reponame.git",
+        "ssh_url": "git@github.com:orgname/reponame.git",
+        "clone_url": "https://github.com/orgname/reponame.git",
+        "svn_url": "https://github.com/orgname/reponame",
+        "homepage": null,
+        "size": 55026,
+        "stargazers_count": 0,
+        "watchers_count": 0,
+        "language": null,
+        "has_issues": true,
+        "has_projects": true,
+        "has_downloads": false,
+        "has_wiki": false,
+        "has_pages": false,
+        "has_discussions": false,
+        "forks_count": 0,
+        "mirror_url": null,
+        "archived": false,
+        "disabled": false,
+        "open_issues_count": 1,
+        "license": null,
+        "allow_forking": true,
+        "is_template": false,
+        "web_commit_signoff_required": false,
+        "topics": [
+            "jencfgs"
+        ],
+        "visibility": "private",
+        "forks": 0,
+        "open_issues": 1,
+        "watchers": 0,
+        "default_branch": "master",
+        "stargazers": 0,
+        "master_branch": "master",
+        "organization": "orgname",
+        "custom_properties": {}
+    },
+    "pusher": {
+        "name": "jenkins[bot]",
+        "email": null
+    },
+    "organization": {
+        "login": "orgname",
+        "id": 17,
+        "node_id": "MDEyOk9yZ2FuaXphdGlvbjE3",
+        "url": "https://github.com/api/v3/orgs/orgname",
+        "repos_url": "https://github.com/api/v3/orgs/orgname/repos",
+        "events_url": "https://github.com/api/v3/orgs/orgname/events",
+        "hooks_url": "https://github.com/api/v3/orgs/orgname/hooks",
+        "issues_url": "https://github.com/api/v3/orgs/orgname/issues",
+        "members_url": "https://github.com/api/v3/orgs/orgname/members{/member}",
+        "public_members_url": "https://github.com/api/v3/orgs/orgname/public_members{/member}",
+        "avatar_url": "https://github.com/avatars/u/17?",
+        "description": ""
+    },
+    "enterprise": {
+        "id": 1,
+        "slug": "pulpogato",
+        "name": "pulpogato",
+        "node_id": "MDEwOkVudGVycHJpc2Ux",
+        "avatar_url": "https://github.com/avatars/b/1?",
+        "description": "",
+        "website_url": "",
+        "html_url": "https://github.com/enterprises/pulpogato",
+        "created_at": "2023-10-12T18:17:01Z",
+        "updated_at": "2024-12-11T16:47:46Z"
+    },
+    "sender": {
+        "login": "jenkins[bot]",
+        "id": 45,
+        "node_id": "MDM6Qm90NDU=",
+        "avatar_url": "https://github.com/avatars/in/7?",
+        "gravatar_id": "",
+        "url": "https://github.com/api/v3/users/jenkins%5Bbot%5D",
+        "html_url": "https://github.com/github-apps/jenkins",
+        "followers_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/followers",
+        "following_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/following{/other_user}",
+        "gists_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/gists{/gist_id}",
+        "starred_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/starred{/owner}{/repo}",
+        "subscriptions_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/subscriptions",
+        "organizations_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/orgs",
+        "repos_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/repos",
+        "events_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/events{/privacy}",
+        "received_events_url": "https://github.com/api/v3/users/jenkins%5Bbot%5D/received_events",
+        "type": "Bot",
+        "site_admin": false
+    },
+    "created": false,
+    "deleted": false,
+    "forced": false,
+    "base_ref": null,
+    "compare": "https://github.com/orgname/reponame/compare/048acc634d8b...33bbc031c251",
+    "commits": [
+        {
+            "id": "33bbc031c2518d3010b20705d47af04b2fff055f",
+            "tree_id": "6107295384682799653085e76afd5fb67e457b6b",
+            "distinct": true,
+            "message": "Latest Jenkins job configurations committed",
+            "timestamp": "2025-01-31T05:04:02+00:00",
+            "url": "https://github.com/orgname/reponame/commit/33bbc031c2518d3010b20705d47af04b2fff055f",
+            "author": {
+                "name": "Jenkins mimir builds user",
+                "email": "mimirbuilds@example.com"
+            },
+            "committer": {
+                "name": "Jenkins mimir builds user",
+                "email": "mimirbuilds@example.com"
+            },
+            "added": [],
+            "removed": [],
+            "modified": [
+                "CISYS-jenkins-housekeeping-agent-cleanup/nextBuildNumber",
+                "CISYS-jenkins-housekeeping-update-controller-config/nextBuildNumber",
+                "CISYS-jenkins-housekeeping-update-job-configs/nextBuildNumber",
+                "SPIN-TASKS-DOCKER-METATRON/nextBuildNumber",
+                "SPIN-TASKS-JAMMY-METATRON/nextBuildNumber"
+            ]
+        }
+    ],
+    "head_commit": {
+        "id": "33bbc031c2518d3010b20705d47af04b2fff055f",
+        "tree_id": "6107295384682799653085e76afd5fb67e457b6b",
+        "distinct": true,
+        "message": "Latest Jenkins job configurations committed",
+        "timestamp": "2025-01-31T05:04:02+00:00",
+        "url": "https://github.com/orgname/reponame/commit/33bbc031c2518d3010b20705d47af04b2fff055f",
+        "author": {
+            "name": "Jenkins mimir builds user",
+            "email": "mimirbuilds@example.com"
+        },
+        "committer": {
+            "name": "Jenkins mimir builds user",
+            "email": "mimirbuilds@example.com"
+        },
+        "added": [],
+        "removed": [],
+        "modified": [
+            "CISYS-jenkins-housekeeping-agent-cleanup/nextBuildNumber",
+            "CISYS-jenkins-housekeeping-update-controller-config/nextBuildNumber",
+            "CISYS-jenkins-housekeeping-update-job-configs/nextBuildNumber",
+            "SPIN-TASKS-DOCKER-METATRON/nextBuildNumber",
+            "SPIN-TASKS-JAMMY-METATRON/nextBuildNumber"
+        ]
+    }
+}
