@@ -96,8 +96,15 @@ public class WebhookHelper {
             final String[] split = line.split(":", 2);
             requestBuilder.header(split[0], split[1].trim());
         }
-        final String line = reader.readLine();
-        requestBuilder.content(line);
+        final var body = new StringBuilder();
+        while(true) {
+            final String line = reader.readLine();
+            if (line == null) {
+                break;
+            }
+            body.append(line).append("\n");
+        }
+        requestBuilder.content(body.toString());
         reader.close();
 
         return requestBuilder;
