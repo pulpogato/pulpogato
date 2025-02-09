@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.params.provider.Arguments;
 import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.Scanners;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class WebhookHelper {
     private static Set<String> getWebhookNames() {
-        return new Reflections("webhooks", new ResourcesScanner()).getResources(Pattern.compile(".+\\.http"));
+        return new Reflections("webhooks", Scanners.Resources).getResources(Pattern.compile(".+\\.http"));
     }
 
     public static Stream<Arguments> getArguments(String version) {
