@@ -34,7 +34,7 @@ jobs:
 
     - name: Build
       if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-      run: ./gradlew build
+      run: ./gradlew build --max-workers=3
 
     - name: Build Snapshot
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
@@ -43,7 +43,7 @@ jobs:
         ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
-      run: ./gradlew build snapshot
+      run: ./gradlew build snapshot --max-workers=3
 
     - name: Build Candidate
       if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-rc')
@@ -52,7 +52,7 @@ jobs:
         ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
-      run: ./gradlew -Prelease.useLastTag=true build candidate
+      run: ./gradlew -Prelease.useLastTag=true build candidate --max-workers=3
 
     - name: Build Final
       if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-rc')
@@ -61,4 +61,4 @@ jobs:
         ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
-      run: ./gradlew -Prelease.useLastTag=true build final
+      run: ./gradlew -Prelease.useLastTag=true build final --max-workers=3
