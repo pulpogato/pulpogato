@@ -100,6 +100,14 @@ public class TestUtils {
                         if (newValue.getValueType() == JsonValue.ValueType.STRING && oldValue.getValueType() == JsonValue.ValueType.NUMBER) {
                             oldValue = Json.createValue(oldValue.toString());
                         }
+                        if (oldValue.getValueType() == JsonValue.ValueType.STRING && newValue.getValueType() == JsonValue.ValueType.STRING) {
+                            if (oldValue.toString().equals(newValue.toString().replace("Z", "+00:00"))) {
+                                return;
+                            }
+                            if (newValue.toString().equals(oldValue.toString().replace("Z", "+00:00"))) {
+                                return;
+                            }
+                        }
 
                         if (!oldValue.toString().equals(newValue.toString())) {
                             softly.fail("Changes found: " + op + " " + path + " " + newValue + "(" + newValue.getValueType() + ")" + " " + oldValue + "(" + oldValue.getValueType() + ")");
