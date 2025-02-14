@@ -46,7 +46,15 @@ public class WebhookHelper {
 
                     return testVersion(version, include, exclude);
                 })
-                .map(it -> Arguments.arguments(it.split("/")[1], it));
+                .map(it -> Arguments.arguments(
+                        it.replace("/", "-")
+                                .replaceAll("^webhooks-", "")
+                                .replaceAll("\\.http$", "")
+                                .replaceAll("-default$", "")
+                                .replace("_", "-")
+                        ,
+                        it
+                ));
     }
 
     private static boolean testVersion(String version, String include, String exclude) {
