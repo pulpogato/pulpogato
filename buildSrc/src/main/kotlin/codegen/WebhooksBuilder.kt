@@ -17,6 +17,8 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import javax.lang.model.element.Modifier
 
 object WebhooksBuilder {
@@ -34,13 +36,85 @@ object WebhooksBuilder {
             .groupBy { getSubcategory(it.value.readOperationsMap().values.first())!! }
             .forEach { (k, v) ->
                 val interfaceBuilder = TypeSpec.interfaceBuilder("${k.pascalCase()}Webhooks")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addTypeVariable(TypeVariableName.get("T"))
+                    .addModifiers(Modifier.PUBLIC)
+                    .addTypeVariable(TypeVariableName.get("T"))
 
                 val unitTestBuilder = TypeSpec.classBuilder("${k.pascalCase()}WebhooksTest")
 
+                val requestBodyTypes = mutableMapOf<String, ClassName>()
+                v.forEach { (name, webhook) ->
+                    val requestBody = createWebhookInterface(name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testController)
+                    // println("k=$k, name=$name")
+                    requestBodyTypes[name] = requestBody
+                }
 
-                v.forEach { (name, webhook) -> createWebhookInterface(name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testController) }
+                if (v.size > 1) {
+                    val methodBuilder = MethodSpec.methodBuilder("process${k.pascalCase()}")
+                        .addAnnotation(generated(0))
+                        .addAnnotation(
+                            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
+                                .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
+                                .build(),
+                        )
+                        .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
+                        .addException(ClassName.get("java.lang", "Exception"))
+                        .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
+                    val headers = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
+                    headers
+                        .forEach {
+                            val required =
+                                when {
+                                    it.startsWith("X-Hub-Signature") -> false
+                                    it.startsWith("X-GitHub-Enterprise") -> false
+                                    else -> true
+                                }
+                            val parameterAnnotation =
+                                AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
+                                    .addMember("value", "\$S", it)
+                            if (!required) {
+                                parameterAnnotation.addMember("required", "\$L", false)
+                            }
+                            methodBuilder
+                                .addParameter(
+                                    ParameterSpec.builder(ClassName.get("java.lang", "String"), it.camelCase())
+                                        .addAnnotation(parameterAnnotation.build())
+                                        .addAnnotation(generated(0))
+                                        .build(),
+                                )
+                        }
+
+                    val routerBuilder = StringWriter()
+                    val printWriter = PrintWriter(routerBuilder)
+                    printWriter.println("final var action = (requestBody.isObject() && requestBody.has(\"action\")) ? requestBody.get(\"action\").asText() : null;")
+                    printWriter.println("return switch (action) {")
+                    requestBodyTypes.forEach { (name, type) ->
+                        printWriter.print("    case \"${name.replace("-", "_").replace(k, "").replace(Regex("^_"), "")}\" -> process${name.pascalCase()}(${headers.joinToString(", ") { it.camelCase() }},")
+                        printWriter.println(" getObjectMapper().treeToValue(requestBody, ${type.simpleName()}.class));")
+                    }
+                    printWriter.println("    default -> ${"$"}T.badRequest().build();")
+                    printWriter.println("};")
+
+                    interfaceBuilder
+                        .addMethod(
+                            methodBuilder
+                                .addParameter(
+                                    ParameterSpec.builder(
+                                        ClassName.get("com.fasterxml.jackson.databind", "JsonNode"), "requestBody"
+                                    )
+                                        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
+                                        .addAnnotation(generated(0))
+                                        .build()
+                                )
+                                .addCode(routerBuilder.toString(), ClassName.get("org.springframework.http", "ResponseEntity"))
+                                .build()
+                        )
+                        .addMethod(
+                            MethodSpec.methodBuilder("getObjectMapper")
+                                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                                .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                                .build()
+                        )
+                }
 
                 val interfaceSpec = interfaceBuilder.build()
                 if (interfaceSpec.methodSpecs().isNotEmpty()) {
@@ -48,7 +122,12 @@ object WebhooksBuilder {
                         .build()
                         .writeTo(mainDir)
 
-                    testController.addSuperinterface(ParameterizedTypeName.get(ClassName.get(webhooksPackage, "${k.pascalCase()}Webhooks"), ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")))
+                    testController.addSuperinterface(
+                        ParameterizedTypeName.get(
+                            ClassName.get(webhooksPackage, "${k.pascalCase()}Webhooks"),
+                            ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+                        )
+                    )
                 }
 
                 val testClassSpec = unitTestBuilder.build()
@@ -83,10 +162,11 @@ object WebhooksBuilder {
                         ClassName.get("org.junit.jupiter.params.provider", "Arguments")
                     )
                 )
-                .addStatement("return \$T.getArguments(\"\$L\")",
+                .addStatement(
+                    "return \$T.getArguments(\"\$L\")",
                     ClassName.get("io.github.pulpogato.test", "WebhookHelper"),
-                            Context.instance.get().version
-                    )
+                    Context.instance.get().version
+                )
                 .build()
         )
         .addMethod(
@@ -138,12 +218,20 @@ object WebhooksBuilder {
                 .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
                 .build()
         )
+        .addMethod(
+            MethodSpec.methodBuilder("getObjectMapper")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                .addStatement("return objectMapper")
+                .build()
+        )
         .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RestController")).build())
         .addAnnotation(
             AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestMapping"))
                 .addMember("value", "\$S", "/webhooks")
                 .build()
         )
+        .addModifiers(Modifier.STATIC)
 
     private fun createWebhookInterface(
         name: String,
@@ -153,7 +241,8 @@ object WebhooksBuilder {
         interfaceBuilder: TypeSpec.Builder,
         unitTestBuilder: TypeSpec.Builder,
         testController: TypeSpec.Builder,
-    ) {
+    ): ClassName {
+        var bodyType: ClassName? = null
         if (webhook.readOperationsMap().size != 1) {
             throw RuntimeException("Webhook $name has more than one operation")
         }
@@ -168,7 +257,8 @@ object WebhooksBuilder {
                 "\n",
             )
 
-        val methodName = "process" + operation.operationId.split('/').last().pascalCase()
+        val methodName = ("process" + operation.operationId.replace("/", "-").pascalCase())
+            .replace("processExemptionRequestSecretScanning", "processBypassRequestSecretScanning")
         val methodSpecBuilder =
             Context.withSchemaStack("#", "webhooks", name, "post") {
                 val methodSpecBuilder =
@@ -227,10 +317,10 @@ object WebhooksBuilder {
                                         )
                                 }
                             }
-                            val className = ClassName.get("${restPackage}.schemas", type)
+                            bodyType = ClassName.get("${restPackage}.schemas", type)
                             Context.withSchemaStack("requestBody") {
                                 methodSpecBuilder.addParameter(
-                                    ParameterSpec.builder(className, "requestBody")
+                                    ParameterSpec.builder(bodyType, "requestBody")
                                         .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
                                         .addAnnotation(generated(0))
                                         .build(),
@@ -243,10 +333,10 @@ object WebhooksBuilder {
                             if (firstEntry.key.contains("json")) {
                                 Context.withSchemaStack("requestBody", "content", firstEntry.key, "examples") {
                                     examples?.forEach { (key, value) ->
-                                        val ref = value.`$ref`
-                                        val example = openAPI.components.examples.entries.firstOrNull { it.key == ref.replace("#/components/examples/", "") }
+                                        val ref1 = value.`$ref`
+                                        val example = openAPI.components.examples.entries.firstOrNull { it.key == ref1.replace("#/components/examples/", "") }
                                         if (example != null) {
-                                            tests.add(TestBuilder.buildTest(key, example.value.value, className))
+                                            tests.add(TestBuilder.buildTest(key, example.value.value, bodyType!!))
                                         }
                                     }
                                 }
@@ -276,8 +366,12 @@ object WebhooksBuilder {
         val testControllerMethod = MethodSpec.methodBuilder(methodName)
             .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
             .addException(ClassName.get("java.lang", "Exception"))
-            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"),
-                ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")))
+            .returns(
+                ParameterizedTypeName.get(
+                    ClassName.get("org.springframework.http", "ResponseEntity"),
+                    ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+                )
+            )
             .addModifiers(Modifier.PUBLIC)
             .addStatement(
                 """
@@ -298,6 +392,8 @@ object WebhooksBuilder {
         }
 
         testController.addMethod(testControllerMethod.build())
+
+        return bodyType!!
     }
 
     private fun getSubcategory(operation: Operation): String? {
