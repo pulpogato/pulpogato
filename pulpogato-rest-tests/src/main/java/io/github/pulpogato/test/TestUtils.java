@@ -107,6 +107,12 @@ public class TestUtils {
                             if (newValue.toString().equals(oldValue.toString().replace("Z", "+00:00"))) {
                                 return;
                             }
+                            if (newValue.toString().equals(oldValue.toString().replace("Z", ".000Z"))) {
+                                return;
+                            }
+                            if (oldValue.toString().equals(newValue.toString().replace("Z", ".000Z"))) {
+                                return;
+                            }
                         }
 
                         if (!oldValue.toString().equals(newValue.toString())) {
