@@ -233,5 +233,49 @@ object IgnoredTests {
                 "#/paths/~1repos~1{owner}~1{repo}~1security-advisories~1{ghsa_id}/patch/requestBody/content/application~1json/examples/update_vvrs/value"
                         to "TODO: Diagnose this",
             ),
+            "fpt" to mapOf(
+                "#/paths/~1markdown~1raw/post/requestBody/content/application~1json/examples/default/value"
+                        to "TODO: Something to do with MIME types",
+                "#/paths/~1zen/get/responses/200/content/application~1json/examples/default/value"
+                        to "https://github.com/github/rest-api-description/issues/4427",
+                "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
+                        to "https://github.com/github/rest-api-description/issues/4472",
+                "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
+                        to "TODO: Diagnose this",
+                "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
+                        to "TODO: Diagnose this",
+                "#/webhooks/check-run-requested-action/post/requestBody/content/application~1json/examples"
+                        to "TODO: Diagnose this",
+                "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples"
+                        to "TODO: Diagnose this",
+                "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repositories_parameter/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repository_owners/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repository_lists/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1enterprises~1{enterprise}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1user~1codespaces~1{codespace_name}~1publish/post/requestBody/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1user~1codespaces~1secrets~1{secret_name}~1repositories/put/requestBody/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1user~1codespaces~1secrets~1{secret_name}/put/requestBody/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1pulls~1{pull_number}~1codespaces/post/requestBody/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1versions/get/responses/200/content/application~1json/examples/default/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1import/patch/requestBody/content/application~1json/examples/example-2/value"
+                        to "TODO: Diagnose this",
+                "#/paths/~1repos~1{owner}~1{repo}~1security-advisories~1{ghsa_id}/patch/requestBody/content/application~1json/examples/update_vvrs/value"
+                        to "TODO: Diagnose this",
+            ),
         )
 }

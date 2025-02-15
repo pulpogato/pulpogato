@@ -20,8 +20,8 @@ private fun createProject(variant: String,  ghesVersion:String) {
     project(":${projectName}").buildFileName = "../${variant}.gradle.kts"
 }
 
-createProject("graphql", "ghec")
 createProject("graphql", "fpt")
+createProject("graphql", "ghec")
 createProject("graphql", "ghes-3.15")
 createProject("graphql", "ghes-3.14")
 createProject("graphql", "ghes-3.13")
@@ -29,8 +29,8 @@ createProject("graphql", "ghes-3.12")
 createProject("graphql", "ghes-3.11")
 createProject("graphql", "ghes-3.10")
 
+createProject("rest", "fpt")
 createProject("rest", "ghec")
-//createProject("rest", "fpt")
 createProject("rest", "ghes-3.15")
 createProject("rest", "ghes-3.14")
 createProject("rest", "ghes-3.13")
