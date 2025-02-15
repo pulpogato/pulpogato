@@ -157,6 +157,9 @@ object PathsBuilder {
                                 .build(),
                         )
                     }
+                    val suitableAnotations = respRef.annotations().filter {
+                        (it.type() as ClassName).simpleName() != "JsonFormat"
+                    }
                     typeDef.addMethod(
                         MethodSpec.methodBuilder(methodName)
                             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
@@ -169,7 +172,9 @@ object PathsBuilder {
                             )
                             .addAnnotation(generated(0))
                             .addParameters(parameterSpecs)
-                            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), respRef))
+                            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"),
+                                respRef.withoutAnnotations().annotated(suitableAnotations)
+                            ))
                             .build(),
                     )
                 }

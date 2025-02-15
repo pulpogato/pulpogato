@@ -139,7 +139,21 @@ fun Map.Entry<String, Schema<*>>.referenceAndDefinition(
                 "array" ->
                     Context.withSchemaStack("items") { mapOf(key to value.items).entries.first().referenceAndDefinition("", parentClass, isArray = true) }
                         ?.let {
-                            Pair(ParameterizedTypeName.get(Types.LIST, it.first).annotated(typeGenerated()), it.second)
+                            val oldTypeGenerated = it.first.annotations()
+                                .filter { spec -> (spec.type() as ClassName).simpleName() == "TypeGenerated" }
+                            val otherAnnotations = it.first.annotations()
+                                .filter { spec -> (spec.type() as ClassName).simpleName() != "TypeGenerated" }
+
+                            if (otherAnnotations.isNotEmpty()) {
+                                println(otherAnnotations)
+                            }
+                            Pair(
+                                ParameterizedTypeName.get(Types.LIST,
+                                    it.first.withoutAnnotations()
+                                        .annotated(oldTypeGenerated))
+                                    .annotated(otherAnnotations.distinct()).annotated(typeGenerated()),
+                                it.second
+                            )
                         }
 
                 "object" ->
@@ -180,14 +194,11 @@ private fun buildType(
     typeSpecProvider: (refName: ClassName) -> TypeSpec,
 ): Pair<ClassName, TypeSpec> {
     val refName =
-        when (parentClass) {
-            null -> ClassName.get("io.github.pulpogato.rest.schemas", className)
-            else ->
-                when {
-                    parentClass.simpleName() == "Commit" && className == "Commit" -> parentClass.nestedClass("CommitInner")
-                    parentClass.simpleName() == "Updated" && className == "Changes" -> parentClass.nestedClass("UpdatedChanges")
-                    else -> parentClass.nestedClass(className)
-                }
+        when {
+          parentClass == null -> ClassName.get("io.github.pulpogato.rest.schemas", className)
+          parentClass.simpleName() == className -> parentClass.nestedClass("${className}Inner")
+          parentClass.simpleName() == "Updated" && className == "Changes" -> parentClass.nestedClass("Changes2")
+          else -> parentClass.nestedClass(className)
         }
 
     val definition = typeSpecProvider(refName)

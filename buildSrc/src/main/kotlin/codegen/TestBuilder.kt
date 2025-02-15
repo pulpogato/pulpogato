@@ -55,7 +55,7 @@ object TestBuilder {
                         "var processed = \$T.parseAndCompare(new \$T<\$T>() {}, input, softly)",
                         testUtilsClass,
                         ClassName.get("com.fasterxml.jackson.core.type", "TypeReference"),
-                        className,
+                        className.withoutAnnotations(),
                     )
                     .addStatement("softly.assertThat(processed).isNotNull()")
                     .addStatement("softly.assertAll()")
