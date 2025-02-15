@@ -33,6 +33,30 @@ The `api-type` is one of `graphql` or `rest`.
 
 The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
 
+.Example in a gradle kotlin build script
+[%collapsible]
+====
+[source,kotlin]
+----
+ext {
+    set("netflixDgsVersion", "9.1.2")
+    set("ghesVersion", "fpt")
+    set("pulpogatoVersion", "0.2.0")
+}
+
+dependencies {
+    implementation("io.github.pulpogato:pulpogato-rest-${property("ghesVersion")}:${property("pulpogatoVersion")}")
+    implementation("io.github.pulpogato:pulpogato-graphql-${property("ghesVersion")}:${property("pulpogatoVersion")}")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${property("netflixDgsVersion")}")
+    }
+}
+----
+====
+
 == Available versions
 
 |===
