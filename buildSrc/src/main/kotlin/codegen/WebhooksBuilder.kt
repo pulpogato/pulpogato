@@ -259,8 +259,10 @@ object WebhooksBuilder {
                 "\n",
             )
 
-        val methodName = ("process" + operation.operationId.replace("/", "-").pascalCase())
-            .replace("processExemptionRequestSecretScanning", "processBypassRequestSecretScanning")
+        val methodName =
+        ("process" + operation.operationId.replace("/", "-").pascalCase())
+//            .replace("processExemptionRequestSecretScanning", "processBypassRequestSecretScanning")
+            .replace("processExemptionRequest", "processBypassRequest")
         val methodSpecBuilder =
             Context.withSchemaStack("#", "webhooks", name, "post") {
                 val methodSpecBuilder =
