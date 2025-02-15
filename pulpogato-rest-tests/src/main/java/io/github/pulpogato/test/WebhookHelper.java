@@ -77,11 +77,7 @@ public class WebhookHelper {
                 mvcResult.getResponse().getContentAsString(), TestWebhookResponse.class);
 
         final var softly = new SoftAssertions();
-        TestUtils.diffJson(
-                mvcResult.getRequest().getContentAsString(),
-                response.getBody(),
-                softly
-        );
+        TestUtils.diffJson(mvcResult.getRequest().getContentAsString(), response.getBody(), softly);
         softly.assertAll();
     }
 
