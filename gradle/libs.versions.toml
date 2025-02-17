@@ -15,7 +15,7 @@ slf4j = "2.0.16"
 spring = "6.2.3"
 springBoot = "3.4.2"
 swaggerParser = "2.1.25"
-waena = "0.10.2"
+waena = "0.10.3"
 
 [libraries]
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
