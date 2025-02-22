@@ -144,9 +144,6 @@ fun Map.Entry<String, Schema<*>>.referenceAndDefinition(
                             val otherAnnotations = it.first.annotations()
                                 .filter { spec -> (spec.type() as ClassName).simpleName() != "TypeGenerated" }
 
-                            if (otherAnnotations.isNotEmpty()) {
-                                println(otherAnnotations)
-                            }
                             Pair(
                                 ParameterizedTypeName.get(Types.LIST,
                                     it.first.withoutAnnotations()
