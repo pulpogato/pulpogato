@@ -15,6 +15,7 @@ dependencies {
 
     implementation(libs.reflections)
     implementation(libs.bundles.springBoot)
+    implementation(libs.jacksonYaml)
 
     implementation(libs.bundles.jackson)
 }

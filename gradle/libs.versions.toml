@@ -25,6 +25,7 @@ commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables
 commonsText = { group = "org.apache.commons", name = "commons-text", version.ref = "commons-text" }
 jacksonCore = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jacksonTime = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
+jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
@@ -32,13 +33,14 @@ reflections = { group = "org.reflections", name = "reflections", version.ref = "
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 springBootTest = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springBoot" }
 springBootWeb = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "springBoot" }
+springBootWebflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "springBoot" }
 springWeb = { group = "org.springframework", name = "spring-web", version.ref = "spring" }
 swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", version.ref = "swaggerParser" }
 
 [bundles]
 commonmark = [ "commonmark", "commonmarkTables" ]
 jackson = ["jacksonCore", "jacksonTime" ]
-springBoot = [ "springBootWeb", "springBootTest" ]
+springBoot = [ "springBootTest", "springBootWeb", "springBootWebflux" ]
 
 [plugins]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
