@@ -103,7 +103,7 @@ tasks.withType<Test> {
 }
 
 testlogger {
-    theme = ThemeType.MOCHA
+    theme = if (System.getProperty("idea.active") == "true") ThemeType.PLAIN else ThemeType.MOCHA
     slowThreshold = 5000
 
     showPassed = false
