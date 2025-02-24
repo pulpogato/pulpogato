@@ -139,7 +139,9 @@ public class ProxyController {
         log.info("list: {}", list);
         list.removeLast();
         String dirName = String.join("/", list);
-        new File(dirName).mkdirs();
+        if (new File(dirName).mkdirs()) {
+            log.info("Directory created: {}", dirName);
+        }
     }
 
     private static String prettifyBody(String body) {
