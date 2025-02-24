@@ -45,11 +45,19 @@ class UsersApiIntegrationTest {
     }
 
     @Test
-    void test() {
+    void testGetAuthenticated() {
         UsersApi api = factory.createClient(UsersApi.class);
         ResponseEntity<UsersApi.GetAuthenticated200> authenticated = api.getAuthenticated();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
-        System.out.println(authenticated.getBody());
+        assertThat(authenticated.getBody())
+                .isNotNull()
+                .isInstanceOf(UsersApi.GetAuthenticated200.class);
+        var body = authenticated.getBody();
+        // TODO: This should be a PublicUser
+        assertThat(body.getPrivateUser()).isNotNull();
+        var privateUser = body.getPrivateUser();
+        assertThat(privateUser.getId()).isNotNull();
+        assertThat(privateUser.getLogin()).isNotNull();
     }
 
 }
