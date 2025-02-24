@@ -118,3 +118,14 @@ pitest {
     mutators.set(setOf("ALL"))
     outputFormats.set(setOf("XML", "HTML"))
 }
+
+val mockitoAgent = configurations.create("mockitoAgent")
+dependencies {
+    testImplementation(libs.mockito)
+    mockitoAgent(libs.mockito) { isTransitive = false }
+}
+tasks {
+    test {
+        jvmArgs("-javaagent:${mockitoAgent.asPath}")
+    }
+}

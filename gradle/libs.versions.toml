@@ -11,6 +11,7 @@ junit = "5.12.0"
 kotlin = "2.1.10"
 ktlint = "12.1.2"
 lombok = "1.18.36"
+mockito = "5.14.2"
 pitest = "1.15.0"
 reflections = "0.10.2"
 slf4j = "2.0.16"
@@ -32,6 +33,7 @@ jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-data
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 reflections = { group = "org.reflections", name = "reflections", version.ref = "reflections" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 springBootTest = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springBoot" }
