@@ -7,7 +7,7 @@ buildscript {
 
 plugins {
     alias(libs.plugins.kotlin)
-    id("org.jlleitschuh.gradle.ktlint").version("12.1.2")
+    alias(libs.plugins.ktlint)
 }
 
 repositories {

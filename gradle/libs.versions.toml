@@ -9,12 +9,14 @@ jackson = "2.18.2"
 javapoet = "0.6.0"
 junit = "5.11.4"
 kotlin = "2.1.10"
+ktlint = "12.1.2"
 lombok = "1.18.36"
 reflections = "0.10.2"
 slf4j = "2.0.16"
 spring = "6.2.3"
 springBoot = "3.4.3"
 swaggerParser = "2.1.25"
+testLogger = "4.0.0"
 waena = "0.10.3"
 
 [libraries]
@@ -38,14 +40,16 @@ springWeb = { group = "org.springframework", name = "spring-web", version.ref = 
 swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", version.ref = "swaggerParser" }
 
 [bundles]
-commonmark = [ "commonmark", "commonmarkTables" ]
-jackson = ["jacksonCore", "jacksonTime" ]
-springBoot = [ "springBootTest", "springBootWeb", "springBootWebflux" ]
+commonmark = ["commonmark", "commonmarkTables"]
+jackson = ["jacksonCore", "jacksonTime"]
+springBoot = ["springBootTest", "springBootWeb", "springBootWebflux"]
 
 [plugins]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
 download = { id = "de.undercouch.download", version.ref = "download" }
 javaLibrary = { id = "java-library" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }
 waenaPublished = { id = "com.github.rahulsom.waena.published", version.ref = "waena" }
 waenaRoot = { id = "com.github.rahulsom.waena.root", version.ref = "waena" }
