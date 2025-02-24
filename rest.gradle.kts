@@ -5,7 +5,7 @@ import de.undercouch.gradle.tasks.download.Download
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
-    id ("com.adarshr.test-logger") version "4.0.0"
+    alias(libs.plugins.testLogger)
 }
 
 dependencies {
