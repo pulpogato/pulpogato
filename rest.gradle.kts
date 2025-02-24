@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
+    alias(libs.plugins.pitest)
 }
 
 dependencies {
@@ -109,4 +110,11 @@ testlogger {
     showPassed = false
     showSkipped = true
     showFailed = true
+}
+
+pitest {
+    timestampedReports = false
+    junit5PluginVersion.set("1.2.1") // Look here for latest version - https://github.com/pitest/pitest-junit5-plugin/tags
+    mutators.set(setOf("ALL"))
+    outputFormats.set(setOf("XML", "HTML"))
 }
