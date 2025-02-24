@@ -115,6 +115,7 @@ testlogger {
 pitest {
     timestampedReports = false
     junit5PluginVersion.set("1.2.1") // Look here for latest version - https://github.com/pitest/pitest-junit5-plugin/tags
+    pitestVersion.set("1.18.2") // Look here for latest version - https://github.com/hcoles/pitest/releases
     mutators.set(setOf("ALL"))
     outputFormats.set(setOf("XML", "HTML"))
 }
