@@ -50,6 +50,24 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @Disabled("PATCH is currently broken")
+    void testUpdateAuthenticated() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var update = UsersApi.UpdateAuthenticatedRequestBody.builder()
+                .location("San Francisco Bay Area")
+                .build();
+        var authenticated = api.updateAuthenticated(update);
+        assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(authenticated.getBody())
+                .isNotNull()
+                .isInstanceOf(PrivateUser.class);
+        var body = authenticated.getBody();
+        assertThat(body.getId()).isNotNull();
+        assertThat(body.getLogin()).isNotNull();
+        assertThat(body.getBio()).isEqualTo("This is a test bio");
+    }
+
+    @Test
     void testListBlockedEmpty() {
         UsersApi api = factory.createClient(UsersApi.class);
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
