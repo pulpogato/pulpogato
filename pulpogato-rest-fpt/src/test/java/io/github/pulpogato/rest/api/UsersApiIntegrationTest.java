@@ -1,7 +1,9 @@
 package io.github.pulpogato.rest.api;
 
+import io.github.pulpogato.rest.schemas.PrivateUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.test.BaseIntegrationTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -97,6 +99,36 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().is4xxClientError()).isTrue();
         assertThat(exception.getResponseBodyAsString()).isNotNull();
+    }
+
+    @Test
+    void testBlockUserFailed() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        WebClientResponseException exception = catchThrowableOfType(WebClientResponseException.class, () -> api.block("some-blocked-user"));
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getStatusCode().is4xxClientError()).isTrue();
+        assertThat(exception.getResponseBodyAsString()).isNotNull();
+    }
+
+    @Test
+    void testBlockUserSuccess() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var blocked = api.block("gooduser");
+
+        assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(blocked.getBody())
+                .isNull();
+    }
+
+    @Test
+    void testUnblockUserSuccess() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var blocked = api.block("gooduser");
+
+        assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(blocked.getBody())
+                .isNull();
     }
 
 }
