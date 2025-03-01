@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
+@SuppressWarnings("unused")
 @RestController
 @Slf4j
 public class ProxyController {
@@ -33,10 +34,7 @@ public class ProxyController {
 
     @RequestMapping("/**")
     public ResponseEntity<String> mirrorRest(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request) throws URISyntaxException, IOException {
-        var pathName = request.getServletPath()
-                .replaceAll("^/", "")
-                .replaceAll("/$", "")
-                .replace("?", "_");
+        var pathName = request.getHeaders("TapeName").nextElement();
         var resourceName = "tapes/" + pathName + ".yml";
         var fileName = "src/test/resources/" + resourceName;
         createDirectory(fileName);
@@ -46,7 +44,7 @@ public class ProxyController {
         var requestHeadersMap = new HashMap<String, String>();
 
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            if (Set.of("user-agent", "host").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
+            if (Set.of("user-agent", "host", "TapeName").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
                 requestHeadersMap.put(headerName, request.getHeader(headerName));
             }
         });
