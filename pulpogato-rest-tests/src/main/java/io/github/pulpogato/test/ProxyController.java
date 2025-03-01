@@ -1,9 +1,6 @@
 package io.github.pulpogato.test;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -13,17 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,57 +32,40 @@ public class ProxyController {
     @RequestMapping("/**")
     @SuppressWarnings("unused")
     public ResponseEntity<String> mirrorRest(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request) throws URISyntaxException, IOException {
-        var pathName = request.getHeaders("TapeName").nextElement();
-        var resourceName = "tapes/" + pathName + ".yml";
-        var fileName = "src/test/resources/" + resourceName;
-        createDirectory(fileName);
+        try (Tape tape = Tape.getTape(request.getHeader("TapeName"))) {
+            Exchange.Request exchangeRequest = toExchangeRequest(body, request);
 
-        log.info("pathName: {}, resourceName: {}, fileName: {}", pathName, resourceName, fileName);
-
-        var requestHeadersMap = new HashMap<String, String>();
-
-        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            if (Set.of("user-agent", "host", "TapeName").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
-                requestHeadersMap.put(headerName, request.getHeader(headerName));
+            var matchingExchanges = tape.getExchanges().stream().filter(it -> it.getRequest().equals(exchangeRequest)).findFirst();
+            if (matchingExchanges.isPresent()) {
+                log.info("Found exchange in tape: {}", tape);
+                var exchange = matchingExchanges.get();
+                var headers = new HttpHeaders();
+                exchange.getResponse().getHeaders().forEach(headers::add);
+                return ResponseEntity
+                        .status(exchange.getResponse().getStatusCode())
+                        .headers(headers)
+                        .body(exchange.getResponse().getBody());
             }
-        });
 
-        var requestBuilder = Exchange.Request.builder()
-                .method(request.getMethod())
-                .uri(request.getRequestURI())
-                .protocol(request.getProtocol())
-                .headers(requestHeadersMap)
-                .body(prettifyBody(body));
+            log.info("Fetching live data from server: {}", request.getRequestURI());
 
-        Exchange.Request exchangeRequest = requestBuilder.build();
+            URI uri = new URI("https", null, server, port, request.getRequestURI(), request.getQueryString(), null);
 
-        var exchangeBuilder = Exchange.builder()
-                .request(exchangeRequest);
+            HttpEntity<String> entity = new HttpEntity<>(body, buildRequestHeaders(request));
 
+            ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
+            Map<String, String> singleValueMap = getInterestingResponseHeaders(exchange);
+            var response = Exchange.Response.builder()
+                    .statusCode(exchange.getStatusCode().value())
+                    .headers(singleValueMap)
+                    .body(prettifyBody(exchange.getBody()));
 
-        try (var stream = getClass().getResourceAsStream("/" + resourceName)) {
-            if (stream != null) {
-                log.info("Loading exchanges from tape: {}", resourceName);
-                var exchanges = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<List<Exchange>>() {
-                });
-                Optional<Exchange> first = exchanges.stream().filter(it -> it.getRequest().equals(exchangeRequest)).findFirst();
-                if (first.isPresent()) {
-                    log.info("Found exchange in tape: {}", resourceName);
-                    var exchange = first.get();
-                    var headers = new HttpHeaders();
-                    exchange.getResponse().getHeaders().forEach(headers::add);
-                    return ResponseEntity
-                            .status(exchange.getResponse().getStatusCode())
-                            .headers(headers)
-                            .body(exchange.getResponse().getBody());
-                }
-            }
+            tape.getExchanges().add(Exchange.builder().request(exchangeRequest).response(response.build()).build());
+            return exchange;
         }
+    }
 
-        log.info("Fetching live data from server: {}", resourceName);
-
-        URI uri = new URI("https", null, server, port, request.getRequestURI(), request.getQueryString(), null);
-
+    private static HttpHeaders buildRequestHeaders(HttpServletRequest request) {
         var headers = new HttpHeaders();
         request.getHeaderNames().asIterator()
                 .forEachRemaining(k -> {
@@ -100,53 +74,32 @@ public class ProxyController {
                         headers.add(k, v);
                     }
                 });
+
         /*
          * export GITHUB_TOKEN=$(gh auth token)
          */
         String githubToken = Optional.ofNullable(System.getenv("GITHUB_TOKEN"))
                 .orElseThrow(() -> new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found."));
         headers.put("Authorization", List.of("Bearer " + githubToken));
-
-        HttpEntity<String> entity = new HttpEntity<>(body, headers);
-
-        try (FileWriter fileWriter = new FileWriter(fileName)) {
-            ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
-
-            Map<String, String> singleValueMap = getInterestingHeaders(exchange);
-
-            var response2 = Exchange.Response.builder()
-                    .statusCode(exchange.getStatusCode().value())
-                    .headers(singleValueMap)
-                    .body(prettifyBody(exchange.getBody()));
-
-            var forList = exchangeBuilder
-                    .response(response2.build());
-
-            var toStore = List.of(forList.build());
-            YAMLFactory yamlFactory = new YAMLFactory()
-                    .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-                    .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
-            var sw = new StringWriter();
-            new ObjectMapper(yamlFactory).writeValue(sw, toStore);
-            fileWriter.write(sw.toString());
-
-            return exchange;
-        } catch (HttpClientErrorException ex) {
-            return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .headers(ex.getResponseHeaders())
-                    .body(ex.getResponseBodyAsString());
-        }
+        return headers;
     }
 
-    private static void createDirectory(String fileName) {
-        List<String> list = new ArrayList<>(Arrays.stream(fileName.split("/")).toList());
-        log.info("list: {}", list);
-        list.removeLast();
-        String dirName = String.join("/", list);
-        if (new File(dirName).mkdirs()) {
-            log.info("Directory created: {}", dirName);
-        }
+    private static Exchange.Request toExchangeRequest(String body, HttpServletRequest request) {
+        var requestHeadersMap = new HashMap<String, String>();
+
+        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
+            if (Set.of("user-agent", "host", "TapeName").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
+                requestHeadersMap.put(headerName, request.getHeader(headerName));
+            }
+        });
+
+        return Exchange.Request.builder()
+                .method(request.getMethod())
+                .uri(request.getRequestURI())
+                .protocol(request.getProtocol())
+                .headers(requestHeadersMap)
+                .body(prettifyBody(body))
+                .build();
     }
 
     private static String prettifyBody(String body) {
@@ -162,7 +115,7 @@ public class ProxyController {
         return null;
     }
 
-    private static Map<String, String> getInterestingHeaders(ResponseEntity<String> exchange) {
+    private static Map<String, String> getInterestingResponseHeaders(ResponseEntity<String> exchange) {
         Map<String, String> singleValueMap = new HashMap<>(exchange.getHeaders().toSingleValueMap());
         var removeHeaders = List.of(
                 "Access-Control-.+",
