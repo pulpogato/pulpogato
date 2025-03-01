@@ -17,7 +17,10 @@ import java.lang.reflect.Method;
         classes = {ProxyController.class},
         properties = {
                 "logging.level.org.springframework.web.client.RestTemplate=DEBUG",
+                "logging.level.org.springframework.boot.test.mock.web=WARN",
+                "logging.level.org.springframework.test.web.servlet=WARN",
                 "logging.level.org.apache.http.wire=DEBUG",
+                "logging.pattern.console=%d{HH:mm:ss.SSS} %-5level %-42logger{36} - %msg%n"
         }
 )
 public class BaseIntegrationTest {
