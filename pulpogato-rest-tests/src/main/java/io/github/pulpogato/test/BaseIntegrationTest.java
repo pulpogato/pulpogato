@@ -1,5 +1,6 @@
 package io.github.pulpogato.test;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.lang.reflect.Method;
                 "logging.pattern.console=%d{HH:mm:ss.SSS} %-5level %-42logger{36} - %msg%n"
         }
 )
+@Slf4j
 public class BaseIntegrationTest {
     @SuppressWarnings("unused")
     @Autowired
@@ -48,5 +50,7 @@ public class BaseIntegrationTest {
         factory = HttpServiceProxyFactory.builder()
                 .exchangeAdapter(WebClientAdapter.create(webClient))
                 .build();
+
+        log.info("");
     }
 }
