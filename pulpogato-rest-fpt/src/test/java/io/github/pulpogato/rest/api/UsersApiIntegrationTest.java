@@ -4,10 +4,12 @@ import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 class UsersApiIntegrationTest extends BaseIntegrationTest {
 
@@ -85,6 +87,16 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody())
                 .isNull();
+    }
+
+    @Test
+    void testCheckNotBlocked() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        WebClientResponseException exception = catchThrowableOfType(WebClientResponseException.class, () -> api.checkBlocked("gooduser"));
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getStatusCode().is4xxClientError()).isTrue();
+        assertThat(exception.getResponseBodyAsString()).isNotNull();
     }
 
 }

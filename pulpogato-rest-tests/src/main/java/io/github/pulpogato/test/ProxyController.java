@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class ProxyController {
 
             HttpEntity<String> entity = new HttpEntity<>(body, buildRequestHeaders(request));
 
-            ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
+            ResponseEntity<String> exchange = getLiveResponse(method, uri, entity);
             Map<String, String> singleValueMap = getInterestingResponseHeaders(exchange);
             var response = Exchange.Response.builder()
                     .statusCode(exchange.getStatusCode().value())
@@ -62,6 +63,17 @@ public class ProxyController {
 
             tape.getExchanges().add(Exchange.builder().request(exchangeRequest).response(response.build()).build());
             return exchange;
+        }
+    }
+
+    private static ResponseEntity<String> getLiveResponse(HttpMethod method, URI uri, HttpEntity<String> entity) {
+        try {
+            return restTemplate.exchange(uri, method, entity, String.class);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode())
+                    .headers(e.getResponseHeaders())
+                    .body(e.getResponseBodyAsString());
         }
     }
 

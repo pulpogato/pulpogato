@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.platform.commons.util.ToStringBuilder;
 
 import java.io.Closeable;
 import java.io.File;
@@ -30,29 +31,27 @@ public class Tape implements Closeable {
         var fileName = "src/test/resources/" + resourceName;
         createDirectory(fileName);
 
-        log.info("tapeName: {}, resourceName: {}, fileName: {}", tapeName, resourceName, fileName);
-
-        List<Exchange> exchanges1;
+        List<Exchange> exchanges;
 
         try (var stream = Tape.class.getResourceAsStream("/" + resourceName)) {
             if (stream != null) {
-                log.info("Loading exchanges from tape: {}", resourceName);
-                exchanges1 = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<>() {
+                exchanges = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<>() {
                 });
+                log.info("Loaded {} exchanges from tape: {}", exchanges.size(), resourceName);
             } else {
-                log.info("No exchanges found in tape: {}", resourceName);
-                exchanges1 = new ArrayList<>();
+                log.warn("No tape found: {}", resourceName);
+                exchanges = new ArrayList<>();
             }
         } catch (IOException e) {
+            log.error("Failed to load tape: {}", resourceName, e);
             throw new RuntimeException(e);
         }
 
-        return new Tape(fileName, new ArrayList<>(exchanges1));
+        return new Tape(fileName, new ArrayList<>(exchanges));
     }
 
     private static void createDirectory(String fileName) {
         List<String> list = new ArrayList<>(Arrays.stream(fileName.split("/")).toList());
-        log.info("list: {}", list);
         list.removeLast();
         String dirName = String.join("/", list);
         if (new File(dirName).mkdirs()) {
@@ -62,15 +61,26 @@ public class Tape implements Closeable {
 
     @Override
     public void close() throws IOException {
+        if (exchanges.isEmpty()) {
+            log.info("No exchanges to save: {}", fileName);
+            return;
+        }
+        log.info("Saving {} exchanges to tape: {}", exchanges.size(), fileName);
         YAMLFactory yamlFactory = new YAMLFactory()
                 .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
                 .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
         var sw = new StringWriter();
         new ObjectMapper(yamlFactory).writeValue(sw, exchanges);
-        if (!exchanges.isEmpty()) {
-            try (FileWriter writer = new FileWriter(fileName)) {
-                writer.write(sw.toString());
-            }
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(sw.toString());
         }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("fileName", fileName)
+                .append("exchanges", exchanges.size())
+                .toString();
     }
 }
