@@ -22,9 +22,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-@SuppressWarnings("unused")
 @RestController
 @Slf4j
 public class ProxyController {
@@ -33,6 +39,7 @@ public class ProxyController {
     private static final int port = 443;
 
     @RequestMapping("/**")
+    @SuppressWarnings("unused")
     public ResponseEntity<String> mirrorRest(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request) throws URISyntaxException, IOException {
         var pathName = request.getHeaders("TapeName").nextElement();
         var resourceName = "tapes/" + pathName + ".yml";

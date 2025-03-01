@@ -3,7 +3,7 @@
     uri: /user
     protocol: HTTP/1.1
     headers:
-      accept: application/json
+      Accept: application/json
     body: null
   response:
     statusCode: 200
