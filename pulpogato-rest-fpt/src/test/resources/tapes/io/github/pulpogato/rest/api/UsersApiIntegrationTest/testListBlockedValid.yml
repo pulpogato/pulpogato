@@ -1,0 +1,33 @@
+- request:
+    method: GET
+    uri: /user/blocks
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      [ {
+        "login" : "some_blocked_user",
+        "id" : 96304584,
+        "node_id" : "U_kgDOBb19yA",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/96304584?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/Jasonradford51",
+        "html_url" : "https://github.com/Jasonradford51",
+        "followers_url" : "https://api.github.com/users/Jasonradford51/followers",
+        "following_url" : "https://api.github.com/users/Jasonradford51/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/Jasonradford51/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/Jasonradford51/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/Jasonradford51/subscriptions",
+        "organizations_url" : "https://api.github.com/users/Jasonradford51/orgs",
+        "repos_url" : "https://api.github.com/users/Jasonradford51/repos",
+        "events_url" : "https://api.github.com/users/Jasonradford51/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/Jasonradford51/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      } ]
