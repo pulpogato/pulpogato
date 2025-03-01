@@ -78,4 +78,13 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(blockedUser.getId()).isEqualTo(96304584L);
     }
 
+    @Test
+    void testCheckBlocked() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var blocked = api.checkBlocked("some-blocked-user");
+        assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(blocked.getBody())
+                .isNull();
+    }
+
 }
