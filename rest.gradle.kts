@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 dependencies {
@@ -62,13 +63,13 @@ val generateJava = tasks.register("generateJava") {
 }
 
 tasks.compileJava {
-    dependsOn(generateJava)
+    dependsOn("spotlessApply")
 }
 tasks.named("sourcesJar") {
-    dependsOn(generateJava)
+    dependsOn("spotlessApply")
 }
 tasks.named("javadocJar") {
-    dependsOn(generateJava)
+    dependsOn("spotlessApply")
 }
 tasks.processResources {
     dependsOn(downloadSchema)
@@ -129,4 +130,15 @@ tasks {
     test {
         jvmArgs("-javaagent:${mockitoAgent.asPath}")
     }
+}
+
+spotless {
+    java {
+        target("build/generated/**/*.java")
+        palantirJavaFormat()
+    }
+}
+
+tasks.named("spotlessJava").configure {
+    dependsOn(generateJava)
 }
