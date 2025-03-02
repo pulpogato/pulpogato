@@ -1,0 +1,116 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/repositories/825463572/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39?page=2&per_page=1>;\
+        \ rel=\"next\", <https://api.github.com/repositories/825463572/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39?page=3&per_page=1>;\
+        \ rel=\"last\""
+    body: |-
+      {
+        "sha" : "2667e9ae0adcdbf378fe6273658b57f4e5d24a39",
+        "node_id" : "C_kwDOMTOTFNoAKDI2NjdlOWFlMGFkY2RiZjM3OGZlNjI3MzY1OGI1N2Y0ZTVkMjRhMzk",
+        "commit" : {
+          "author" : {
+            "name" : "Rahul Somasunderam",
+            "email" : "rahul.som@gmail.com",
+            "date" : "2025-03-02T05:58:22Z"
+          },
+          "committer" : {
+            "name" : "GitHub",
+            "email" : "noreply@github.com",
+            "date" : "2025-03-02T05:58:22Z"
+          },
+          "message" : "Merge pull request #206 from pulpogato/test-listOrgApps\n\ntest: Add test for listAppInstallations in an org",
+          "tree" : {
+            "sha" : "e703a09e0a4d98d120188e4568ea154f11f13c49",
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/git/trees/e703a09e0a4d98d120188e4568ea154f11f13c49"
+          },
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato/git/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39",
+          "comment_count" : 0,
+          "verification" : {
+            "verified" : true,
+            "reason" : "valid",
+            "signature" : "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJnw/N+CRC1aQ7uu5UhlAAAm/kQAKBuh1CZYN+d+Ldr27y7CdwP\nSonohcpF4o5jlS+2Tkg8QcnlzcctYxQn4w5/OXPsORiNDKCkLY0qwEi7DhvqkTz3\nkYkwBhX+c/C3JNbQATEhRc8Xd2aRRhYiolrZVxJUsomtmqVYjNnO1PXo9krJdguP\ng227rumLDpT5BWz5d5mpNtcayDXeE8ADI6VNewPAQG9Wn4r06snED2svEu+5uiOl\nTAAhkXpc0LQRtr/xJZUxlR+ko+dHmUWLcBTF8Yfa6yatGSDoA/nnT8YZT2VY/cSh\nrCb1lBnw3zsgobYCQbBx1UHqpY0/FE3epH1EOoSecG+VXCSSgWGGSN1vERsO2ZQw\nXRqHjCLA3NWaeubeZe0H7Rx2l2pSO3BIKvYwinhP3G0vMazIYKa/5MXpvYol899x\n+C+A6Hfjl7+j0NGdDTOBy38XmbUVu318EAOCcIRXaACTL/0bgkwAu2VppX8kqOAN\nXjBj4r9iF+pvtI4wGt8O4c5svHzIkTzcr1LzFIsEW3lzL6eowUVKwBO1qWmgWdxF\nM7hnQNJJxHkHkFCZwb3pRzeaN43v8tMtrrhBPXGY5Zma72eX0smcaVinQ7iIBcbx\nvuaLUngvO8NLpE4373hssbC3Qm6VqERLaqD0rfuYLqe9+sPrWXCcZeb9b9L2wPBC\nriv3OBYeAuccbGzTuLmL\n=27zI\n-----END PGP SIGNATURE-----\n",
+            "payload" : "tree e703a09e0a4d98d120188e4568ea154f11f13c49\nparent 67fb7bd13ce7094ec06532bdf774b75cfaeec8bc\nparent abf094aec2f80256fe3d009b4c6e4f18e8bc6b1e\nauthor Rahul Somasunderam <rahul.som@gmail.com> 1740895102 -0800\ncommitter GitHub <noreply@github.com> 1740895102 -0800\n\nMerge pull request #206 from pulpogato/test-listOrgApps\n\ntest: Add test for listAppInstallations in an org",
+            "verified_at" : "2025-03-02T06:03:25Z"
+          }
+        },
+        "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39",
+        "html_url" : "https://github.com/pulpogato/pulpogato/commit/2667e9ae0adcdbf378fe6273658b57f4e5d24a39",
+        "comments_url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39/comments",
+        "author" : {
+          "login" : "rahulsom",
+          "id" : 193047,
+          "node_id" : "MDQ6VXNlcjE5MzA0Nw==",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?v=4",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "html_url" : "https://github.com/rahulsom",
+          "followers_url" : "https://api.github.com/users/rahulsom/followers",
+          "following_url" : "https://api.github.com/users/rahulsom/following{/other_user}",
+          "gists_url" : "https://api.github.com/users/rahulsom/gists{/gist_id}",
+          "starred_url" : "https://api.github.com/users/rahulsom/starred{/owner}{/repo}",
+          "subscriptions_url" : "https://api.github.com/users/rahulsom/subscriptions",
+          "organizations_url" : "https://api.github.com/users/rahulsom/orgs",
+          "repos_url" : "https://api.github.com/users/rahulsom/repos",
+          "events_url" : "https://api.github.com/users/rahulsom/events{/privacy}",
+          "received_events_url" : "https://api.github.com/users/rahulsom/received_events",
+          "type" : "User",
+          "user_view_type" : "public",
+          "site_admin" : false
+        },
+        "committer" : {
+          "login" : "web-flow",
+          "id" : 19864447,
+          "node_id" : "MDQ6VXNlcjE5ODY0NDQ3",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/19864447?v=4",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/web-flow",
+          "html_url" : "https://github.com/web-flow",
+          "followers_url" : "https://api.github.com/users/web-flow/followers",
+          "following_url" : "https://api.github.com/users/web-flow/following{/other_user}",
+          "gists_url" : "https://api.github.com/users/web-flow/gists{/gist_id}",
+          "starred_url" : "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+          "subscriptions_url" : "https://api.github.com/users/web-flow/subscriptions",
+          "organizations_url" : "https://api.github.com/users/web-flow/orgs",
+          "repos_url" : "https://api.github.com/users/web-flow/repos",
+          "events_url" : "https://api.github.com/users/web-flow/events{/privacy}",
+          "received_events_url" : "https://api.github.com/users/web-flow/received_events",
+          "type" : "User",
+          "user_view_type" : "public",
+          "site_admin" : false
+        },
+        "parents" : [ {
+          "sha" : "67fb7bd13ce7094ec06532bdf774b75cfaeec8bc",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/67fb7bd13ce7094ec06532bdf774b75cfaeec8bc",
+          "html_url" : "https://github.com/pulpogato/pulpogato/commit/67fb7bd13ce7094ec06532bdf774b75cfaeec8bc"
+        }, {
+          "sha" : "abf094aec2f80256fe3d009b4c6e4f18e8bc6b1e",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/abf094aec2f80256fe3d009b4c6e4f18e8bc6b1e",
+          "html_url" : "https://github.com/pulpogato/pulpogato/commit/abf094aec2f80256fe3d009b4c6e4f18e8bc6b1e"
+        } ],
+        "stats" : {
+          "total" : 121,
+          "additions" : 114,
+          "deletions" : 7
+        },
+        "files" : [ {
+          "sha" : "33c679946dda76ad475b0dd05356538ee8820801",
+          "filename" : "pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/OrgsApiIntegrationTest.java",
+          "status" : "added",
+          "additions" : 25,
+          "deletions" : 0,
+          "changes" : 25,
+          "blob_url" : "https://github.com/pulpogato/pulpogato/blob/2667e9ae0adcdbf378fe6273658b57f4e5d24a39/pulpogato-rest-fpt%2Fsrc%2Ftest%2Fjava%2Fio%2Fgithub%2Fpulpogato%2Frest%2Fapi%2FOrgsApiIntegrationTest.java",
+          "raw_url" : "https://github.com/pulpogato/pulpogato/raw/2667e9ae0adcdbf378fe6273658b57f4e5d24a39/pulpogato-rest-fpt%2Fsrc%2Ftest%2Fjava%2Fio%2Fgithub%2Fpulpogato%2Frest%2Fapi%2FOrgsApiIntegrationTest.java",
+          "contents_url" : "https://api.github.com/repos/pulpogato/pulpogato/contents/pulpogato-rest-fpt%2Fsrc%2Ftest%2Fjava%2Fio%2Fgithub%2Fpulpogato%2Frest%2Fapi%2FOrgsApiIntegrationTest.java?ref=2667e9ae0adcdbf378fe6273658b57f4e5d24a39",
+          "patch" : "@@ -0,0 +1,25 @@\n+package io.github.pulpogato.rest.api;\n+\n+import io.github.pulpogato.test.BaseIntegrationTest;\n+import org.junit.jupiter.api.Test;\n+\n+import static org.assertj.core.api.Assertions.assertThat;\n+\n+class OrgsApiIntegrationTest extends BaseIntegrationTest {\n+    @Test\n+    void testListInstallations() {\n+        OrgsApi api = factory.createClient(OrgsApi.class);\n+        var response = api.listAppInstallations(\"corp\", 100L, 1L);\n+\n+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();\n+        assertThat(response.getBody())\n+                .isNotNull();\n+\n+        var installations = response.getBody();\n+        assertThat(installations.getInstallations()).hasSize(1);\n+        var installation = installations.getInstallations().getFirst();\n+        assertThat(installation.getAccount()).isNotNull();\n+        assertThat(installation.getAccount().getSimpleUser().getLogin()).isEqualTo(\"pulpogato\");\n+        assertThat(installation.getAppSlug()).isEqualTo(\"renovate\");\n+    }\n+}"
+        } ]
+      }

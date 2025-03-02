@@ -1,0 +1,113 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/branches/main
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "name" : "main",
+        "commit" : {
+          "sha" : "f920fd45e057dbac26d02d4312d6ee1bf23d37be",
+          "node_id" : "C_kwDOMTOTFNoAKGY5MjBmZDQ1ZTA1N2RiYWMyNmQwMmQ0MzEyZDZlZTFiZjIzZDM3YmU",
+          "commit" : {
+            "author" : {
+              "name" : "Rahul Somasunderam",
+              "email" : "rahul.som@gmail.com",
+              "date" : "2025-03-02T17:59:41Z"
+            },
+            "committer" : {
+              "name" : "GitHub",
+              "email" : "noreply@github.com",
+              "date" : "2025-03-02T17:59:41Z"
+            },
+            "message" : "Merge pull request #208 from pulpogato/indicate-3.10-and-3.11-are-deprecated\n\nchore: Indicate 3.10 and 3.11 are deprecated",
+            "tree" : {
+              "sha" : "c9260a9f7f659b2bd68e19f9c9a1a28ee921b252",
+              "url" : "https://api.github.com/repos/pulpogato/pulpogato/git/trees/c9260a9f7f659b2bd68e19f9c9a1a28ee921b252"
+            },
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/git/commits/f920fd45e057dbac26d02d4312d6ee1bf23d37be",
+            "comment_count" : 0,
+            "verification" : {
+              "verified" : true,
+              "reason" : "valid",
+              "signature" : "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJnxJyNCRC1aQ7uu5UhlAAAdnwQAHkHW50I+TRyaf0cMbe3GUfI\nuY+KFoNw0OmdxDOUbYe7av1tpNdlkhSoXkFCdWPiACqUNErqsOfJ5t4V3ptziakF\nZH3bTWDe9zTR10wkaDtYooqMZRAWtmoMFBrNH6mTpv9+04xlFHHaOzoqTdw7RRog\nmLg5gJmh6iIA7eQirtkUzdRQ43FJjzLyq9fgXcsWEc4uNSF3Oc03cx7ZH2PNdhAz\nyuMi0AJX1ElgfL/z+7R1kCAAdgJxnI295dtqWGPqKoROnCAyk2850oT5WUQ0Odti\nnunWu7E2WT5ojmzNg8ot2kR+DoqT6JgR9a4QXhaUxhEp9GFAvcofQoZK/1NuKHOT\nBq5gnT62rcZpKe8DzM8ZJV3LJKEvRIm/tnJwoYi0I+qEFD34WNi0b5ZJJgNV3mWi\n5GpbpuNFxMh4FTQsuuuH5wSbdNNYdouQcsXGhCa6T5SK5tR1s48XV7eTMEZFj9To\npYV81OU37k+0y3/moBx/HTBkCiOPWxmQLfspbVMNzrKEIQfI71R/CdT4xW/qOR1Y\nmK4H5ghkI0+EcsoIkmVSIvUYtNbhYQ6lY/tZwFFsBlAAsYYkwo4NXd0hiBSEhkyN\nht595IA83LhS5gAX7o3VLLp+LW1wGlaXeFPcyi0C66MxvuZiP/DNJCknIR6iWxIF\nobWJbKl7nVfPsgkUokFu\n=Afb2\n-----END PGP SIGNATURE-----\n",
+              "payload" : "tree c9260a9f7f659b2bd68e19f9c9a1a28ee921b252\nparent a9515c43e12fed00d2acde683b8aceb866ab4b30\nparent f1bae74b420c51cf5f6212ba514b36ecfb2eaa2c\nauthor Rahul Somasunderam <rahul.som@gmail.com> 1740938381 -0800\ncommitter GitHub <noreply@github.com> 1740938381 -0800\n\nMerge pull request #208 from pulpogato/indicate-3.10-and-3.11-are-deprecated\n\nchore: Indicate 3.10 and 3.11 are deprecated",
+              "verified_at" : "2025-03-02T18:04:44Z"
+            }
+          },
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/f920fd45e057dbac26d02d4312d6ee1bf23d37be",
+          "html_url" : "https://github.com/pulpogato/pulpogato/commit/f920fd45e057dbac26d02d4312d6ee1bf23d37be",
+          "comments_url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/f920fd45e057dbac26d02d4312d6ee1bf23d37be/comments",
+          "author" : {
+            "login" : "rahulsom",
+            "id" : 193047,
+            "node_id" : "MDQ6VXNlcjE5MzA0Nw==",
+            "avatar_url" : "https://avatars.githubusercontent.com/u/193047?v=4",
+            "gravatar_id" : "",
+            "url" : "https://api.github.com/users/rahulsom",
+            "html_url" : "https://github.com/rahulsom",
+            "followers_url" : "https://api.github.com/users/rahulsom/followers",
+            "following_url" : "https://api.github.com/users/rahulsom/following{/other_user}",
+            "gists_url" : "https://api.github.com/users/rahulsom/gists{/gist_id}",
+            "starred_url" : "https://api.github.com/users/rahulsom/starred{/owner}{/repo}",
+            "subscriptions_url" : "https://api.github.com/users/rahulsom/subscriptions",
+            "organizations_url" : "https://api.github.com/users/rahulsom/orgs",
+            "repos_url" : "https://api.github.com/users/rahulsom/repos",
+            "events_url" : "https://api.github.com/users/rahulsom/events{/privacy}",
+            "received_events_url" : "https://api.github.com/users/rahulsom/received_events",
+            "type" : "User",
+            "user_view_type" : "public",
+            "site_admin" : false
+          },
+          "committer" : {
+            "login" : "web-flow",
+            "id" : 19864447,
+            "node_id" : "MDQ6VXNlcjE5ODY0NDQ3",
+            "avatar_url" : "https://avatars.githubusercontent.com/u/19864447?v=4",
+            "gravatar_id" : "",
+            "url" : "https://api.github.com/users/web-flow",
+            "html_url" : "https://github.com/web-flow",
+            "followers_url" : "https://api.github.com/users/web-flow/followers",
+            "following_url" : "https://api.github.com/users/web-flow/following{/other_user}",
+            "gists_url" : "https://api.github.com/users/web-flow/gists{/gist_id}",
+            "starred_url" : "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+            "subscriptions_url" : "https://api.github.com/users/web-flow/subscriptions",
+            "organizations_url" : "https://api.github.com/users/web-flow/orgs",
+            "repos_url" : "https://api.github.com/users/web-flow/repos",
+            "events_url" : "https://api.github.com/users/web-flow/events{/privacy}",
+            "received_events_url" : "https://api.github.com/users/web-flow/received_events",
+            "type" : "User",
+            "user_view_type" : "public",
+            "site_admin" : false
+          },
+          "parents" : [ {
+            "sha" : "a9515c43e12fed00d2acde683b8aceb866ab4b30",
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/a9515c43e12fed00d2acde683b8aceb866ab4b30",
+            "html_url" : "https://github.com/pulpogato/pulpogato/commit/a9515c43e12fed00d2acde683b8aceb866ab4b30"
+          }, {
+            "sha" : "f1bae74b420c51cf5f6212ba514b36ecfb2eaa2c",
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/f1bae74b420c51cf5f6212ba514b36ecfb2eaa2c",
+            "html_url" : "https://github.com/pulpogato/pulpogato/commit/f1bae74b420c51cf5f6212ba514b36ecfb2eaa2c"
+          } ]
+        },
+        "_links" : {
+          "self" : "https://api.github.com/repos/pulpogato/pulpogato/branches/main",
+          "html" : "https://github.com/pulpogato/pulpogato/tree/main"
+        },
+        "protected" : true,
+        "protection" : {
+          "enabled" : false,
+          "required_status_checks" : {
+            "enforcement_level" : "off",
+            "contexts" : [ ],
+            "checks" : [ ]
+          }
+        },
+        "protection_url" : "https://api.github.com/repos/pulpogato/pulpogato/branches/main/protection"
+      }
