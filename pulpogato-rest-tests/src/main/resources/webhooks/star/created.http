@@ -12,7 +12,7 @@ x-github-event: star
 x-github-hook-id: 2
 x-github-hook-installation-target-id: 17
 x-github-hook-installation-target-type: organization
-x-Pulpogato-Exclude: ghes-3.10,ghes-3.11,ghes-3.12
+x-Pulpogato-Exclude: ghes-3.12
 
 {
     "action": "created",

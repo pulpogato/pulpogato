@@ -5,6 +5,7 @@
 :central-prefix: image:https://img.shields.io/maven-central/v/io.github.pulpogato/
 :central-middle: ?style=for-the-badge&label=R&color=green[alt=Maven Central Version,height=25,link="https://central.sonatype.com/artifact/io.github.pulpogato/
 :central-suffix: /overview"]
+:deprecated-middle: ?style=for-the-badge&label=R&color=lightgrey[alt=Maven Central Version,height=25,link="https://central.sonatype.com/artifact/io.github.pulpogato/
 
 Pulpogato is a java client for GitHub.
 
@@ -86,12 +87,12 @@ dependencyManagement {
 |{central-prefix}pulpogato-rest-ghes-3.12{central-middle}pulpogato-rest-ghes-3.12{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.12{snapshot-middle}pulpogato-rest-ghes-3.12{snapshot-suffix}
 
 |https://docs.github.com/en/enterprise-server@3.11[GHES-3.11]
-|{central-prefix}pulpogato-graphql-ghes-3.11{central-middle}pulpogato-graphql-ghes-3.11{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.11{snapshot-middle}pulpogato-graphql-ghes-3.11{snapshot-suffix}
-|{central-prefix}pulpogato-rest-ghes-3.11{central-middle}pulpogato-rest-ghes-3.11{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.11{snapshot-middle}pulpogato-rest-ghes-3.11{snapshot-suffix}
+|{central-prefix}pulpogato-graphql-ghes-3.11{deprecated-middle}pulpogato-graphql-ghes-3.11{central-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.11{deprecated-middle}pulpogato-rest-ghes-3.11{central-suffix}
 
 |https://docs.github.com/en/enterprise-server@3.10[GHES-3.10]
-|{central-prefix}pulpogato-graphql-ghes-3.10{central-middle}pulpogato-graphql-ghes-3.10{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.10{snapshot-middle}pulpogato-graphql-ghes-3.10{snapshot-suffix}
-|{central-prefix}pulpogato-rest-ghes-3.10{central-middle}pulpogato-rest-ghes-3.10{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.10{snapshot-middle}pulpogato-rest-ghes-3.10{snapshot-suffix}
+|{central-prefix}pulpogato-graphql-ghes-3.10{deprecated-middle}pulpogato-graphql-ghes-3.10{central-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.10{deprecated-middle}pulpogato-rest-ghes-3.10{central-suffix}
 
 |===
 
