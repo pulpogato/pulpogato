@@ -1,0 +1,67 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/branches/main/protection
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Connection: keep-alive
+    body: |-
+      {
+        "url" : "https://github.example.com/api/v3/repos/pulpogato/pulpogato/branches/main/protection",
+        "required_status_checks" : {
+          "url" : "https://github.example.com/api/v3/repos/pulpogato/pulpogato/branches/main/protection/required_status_checks",
+          "strict" : false,
+          "contexts" : [ "jenkins/pulpogato" ],
+          "contexts_url" : "https://github.example.com/api/v3/repos/pulpogato/pulpogato/branches/main/protection/required_status_checks/contexts",
+          "checks" : [ {
+            "context" : "jenkins/pulpogato",
+            "app_id" : null
+          } ]
+        },
+        "required_pull_request_reviews" : {
+          "url" : "https://github.example.com/api/v3/repos/pulpogato/pulpogato/branches/main/protection/required_pull_request_reviews",
+          "dismiss_stale_reviews" : false,
+          "require_code_owner_reviews" : false,
+          "require_last_push_approval" : false,
+          "required_approving_review_count" : 0,
+          "bypass_pull_request_allowances" : {
+            "users" : [ ],
+            "teams" : [ ],
+            "apps" : [ ]
+          }
+        },
+        "required_signatures" : {
+          "url" : "https://github.example.com/api/v3/repos/pulpogato/pulpogato/branches/main/protection/required_signatures",
+          "enabled" : false
+        },
+        "enforce_admins" : {
+          "url" : "https://github.example.com/api/v3/repos/pulpogato/pulpogato/branches/main/protection/enforce_admins",
+          "enabled" : false
+        },
+        "required_linear_history" : {
+          "enabled" : false
+        },
+        "allow_force_pushes" : {
+          "enabled" : false
+        },
+        "allow_deletions" : {
+          "enabled" : false
+        },
+        "block_creations" : {
+          "enabled" : false
+        },
+        "required_conversation_resolution" : {
+          "enabled" : false
+        },
+        "lock_branch" : {
+          "enabled" : false
+        },
+        "allow_fork_syncing" : {
+          "enabled" : false
+        }
+      }
