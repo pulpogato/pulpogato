@@ -149,4 +149,56 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
                 .isNull();
     }
 
+    @Test
+    void testListFollowers() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var followers = api.listFollowersForAuthenticatedUser( 5L, 0L);
+        assertThat(followers.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(followers.getBody())
+                .isNotNull()
+                .isInstanceOf(List.class);
+        var followersBody = followers.getBody();
+        assertThat(followersBody)
+                .isNotNull()
+                .hasSize(5);
+        var follower = followersBody.getFirst();
+        assertThat(follower)
+                .isNotNull()
+                .isInstanceOf(SimpleUser.class);
+        assertThat(follower.getId()).isEqualTo(29520L);
+    }
+
+    @Test
+    void testListGpgKeysForAuthenticatedUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var gpgKeys = api.listGpgKeysForAuthenticatedUser(5L, 0L);
+        assertThat(gpgKeys.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(gpgKeys.getBody())
+                .isNotNull()
+                .isInstanceOf(List.class);
+        var gpgKeysBody = gpgKeys.getBody();
+        assertThat(gpgKeysBody)
+                .isNotNull()
+                .hasSize(1);
+        var gpgKey = gpgKeysBody.getFirst();
+        assertThat(gpgKey)
+                .isNotNull();
+        assertThat(gpgKey.getId()).isEqualTo(175109L);
+        assertThat(gpgKey.getKeyId()).isEqualTo("8B459169D13D7E09");
+    }
+
+    @Test
+    void testGetGpgKeyForAuthenticatedUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var gpgKey = api.getGpgKeyForAuthenticatedUser(175109L);
+        assertThat(gpgKey.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(gpgKey.getBody())
+                .isNotNull();
+        var gpgKeyBody = gpgKey.getBody();
+        assertThat(gpgKeyBody)
+                .isNotNull();
+        assertThat(gpgKeyBody.getId()).isEqualTo(175109L);
+        assertThat(gpgKeyBody.getKeyId()).isEqualTo("8B459169D13D7E09");
+    }
+
 }

@@ -1,10 +1,16 @@
 package io.github.pulpogato.test;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.pulpogato.common.PulpogatoModule;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.test.web.servlet.client.MockMvcHttpConnector;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -44,6 +50,14 @@ public class BaseIntegrationTest {
 
         final var webClient = WebClient.builder()
                 .clientConnector(new MockMvcHttpConnector(mockMvc))
+                .codecs(it -> {
+                    ObjectMapper mapper = new ObjectMapper()
+                            .registerModule(new JavaTimeModule())
+                            .registerModule(new PulpogatoModule())
+                            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+                    it.defaultCodecs()
+                            .jackson2JsonDecoder(new Jackson2JsonDecoder(mapper, MediaType.APPLICATION_JSON));
+                })
                 .defaultHeader("TapeName", classPart + "/" + methodPart)
                 .build();
 
