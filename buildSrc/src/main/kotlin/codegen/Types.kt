@@ -1,6 +1,7 @@
 package codegen
 
 import codegen.Annotations.jsonFormat
+import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ArrayTypeName
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.ParameterizedTypeName
@@ -30,6 +31,12 @@ object Types {
     val OFFSET_DATE_TIME: TypeName =
         ClassName.get("java.time", "OffsetDateTime")
             .annotated(jsonFormat("STRING", "yyyy-MM-dd'T'HH:mm:ssXXX"))
+            .annotated(
+                // @JsonDeserialize(using = ThingDeseralizer.class)
+                AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
+                    .addMember("using", "\$T.class", ClassName.get("io.github.pulpogato.common", "OffsetDateTimeDeserializer"))
+                    .build()
+            )
 
     // Common Types
     val EMPTY_OBJECT: ClassName = ClassName.get("io.github.pulpogato.common", "EmptyObject")
