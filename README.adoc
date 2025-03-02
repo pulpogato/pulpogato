@@ -95,3 +95,26 @@ dependencyManagement {
 
 |===
 
+== Testing
+
+=== Automatically generated tests
+
+When the REST schema contains examples, they are automatically converted to tests in the generated test sources directory.
+
+=== REST API tests
+
+To contribute a test for the REST API:
+
+1. Write a test like the ones in `UserApiIntegrationTest`.
+2. Then set up the environment variable `GITHUB_TOKEN`.
+3. **If you're running a test against a GitHub Enterprise** instance, set up `GITHUB_HOST` and `GITHUB_PORT` as well.
+4. Run a command like `./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest`.
+5. That generates a yaml file in `src/test/resources`. If it needs cleaning up for sensitive data, do so.
+
+=== REST Webhook tests
+
+To contribute a Webhook test:
+
+1. Capture the HTTP request from the webhook using any tool. If you're looking at public data, something like RequestBin is useful.
+2. Clean up the data and place it in `pulpogato-rest-tests/src/main/resources/webhooks/` under the right directory based on the `x-github-event` header.
+3. Verify the tests work.
