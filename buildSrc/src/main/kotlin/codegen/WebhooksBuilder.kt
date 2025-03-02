@@ -198,14 +198,12 @@ object WebhooksBuilder {
                         return new ${"$"}T()
                         .setSerializationInclusion(${"$"}T.Include.NON_NULL)
                         .registerModule(new ${"$"}T())
-                        .registerModule(new ${"$"}T())
                         .disable(${"$"}T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
                         .configure(${"$"}T.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         """.trimIndent(),
                     ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"),
                     ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"),
                     ClassName.get("com.fasterxml.jackson.datatype.jsr310", "JavaTimeModule"),
-                    ClassName.get("io.github.pulpogato.common", "PulpogatoModule"),
                     ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature"),
                     ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature")
                 )
