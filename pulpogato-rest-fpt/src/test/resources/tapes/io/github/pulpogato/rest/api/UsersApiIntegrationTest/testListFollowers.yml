@@ -1,0 +1,115 @@
+- request:
+    method: GET
+    uri: /user/followers
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/user/followers?per_page=5&page=2>; rel=\"next\"\
+        , <https://api.github.com/user/followers?per_page=5&page=8>; rel=\"last\""
+    body: |-
+      [ {
+        "login" : "gbaptista",
+        "id" : 29520,
+        "node_id" : "MDQ6VXNlcjI5NTIw",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/29520?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/gbaptista",
+        "html_url" : "https://github.com/gbaptista",
+        "followers_url" : "https://api.github.com/users/gbaptista/followers",
+        "following_url" : "https://api.github.com/users/gbaptista/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/gbaptista/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/gbaptista/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/gbaptista/subscriptions",
+        "organizations_url" : "https://api.github.com/users/gbaptista/orgs",
+        "repos_url" : "https://api.github.com/users/gbaptista/repos",
+        "events_url" : "https://api.github.com/users/gbaptista/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/gbaptista/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "yellowsnow",
+        "id" : 86732,
+        "node_id" : "MDQ6VXNlcjg2NzMy",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/86732?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/yellowsnow",
+        "html_url" : "https://github.com/yellowsnow",
+        "followers_url" : "https://api.github.com/users/yellowsnow/followers",
+        "following_url" : "https://api.github.com/users/yellowsnow/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/yellowsnow/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/yellowsnow/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/yellowsnow/subscriptions",
+        "organizations_url" : "https://api.github.com/users/yellowsnow/orgs",
+        "repos_url" : "https://api.github.com/users/yellowsnow/repos",
+        "events_url" : "https://api.github.com/users/yellowsnow/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/yellowsnow/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "sghill",
+        "id" : 230004,
+        "node_id" : "MDQ6VXNlcjIzMDAwNA==",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/230004?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/sghill",
+        "html_url" : "https://github.com/sghill",
+        "followers_url" : "https://api.github.com/users/sghill/followers",
+        "following_url" : "https://api.github.com/users/sghill/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/sghill/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/sghill/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/sghill/subscriptions",
+        "organizations_url" : "https://api.github.com/users/sghill/orgs",
+        "repos_url" : "https://api.github.com/users/sghill/repos",
+        "events_url" : "https://api.github.com/users/sghill/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/sghill/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "MaerF0x0",
+        "id" : 247846,
+        "node_id" : "MDQ6VXNlcjI0Nzg0Ng==",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/247846?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/MaerF0x0",
+        "html_url" : "https://github.com/MaerF0x0",
+        "followers_url" : "https://api.github.com/users/MaerF0x0/followers",
+        "following_url" : "https://api.github.com/users/MaerF0x0/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/MaerF0x0/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/MaerF0x0/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/MaerF0x0/subscriptions",
+        "organizations_url" : "https://api.github.com/users/MaerF0x0/orgs",
+        "repos_url" : "https://api.github.com/users/MaerF0x0/repos",
+        "events_url" : "https://api.github.com/users/MaerF0x0/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/MaerF0x0/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "christopinka",
+        "id" : 521413,
+        "node_id" : "MDQ6VXNlcjUyMTQxMw==",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/521413?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/christopinka",
+        "html_url" : "https://github.com/christopinka",
+        "followers_url" : "https://api.github.com/users/christopinka/followers",
+        "following_url" : "https://api.github.com/users/christopinka/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/christopinka/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/christopinka/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/christopinka/subscriptions",
+        "organizations_url" : "https://api.github.com/users/christopinka/orgs",
+        "repos_url" : "https://api.github.com/users/christopinka/repos",
+        "events_url" : "https://api.github.com/users/christopinka/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/christopinka/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      } ]
