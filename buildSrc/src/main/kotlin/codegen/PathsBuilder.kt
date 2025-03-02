@@ -250,6 +250,7 @@ object PathsBuilder {
                     "query" ->
                         AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestParam"))
                             .addMember("value", "\$S", theParameter.name)
+                            .addMember("required", "\$L", theParameter.required)
                             .build()
                     "body" -> buildBodyAnnotation(theParameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
                     "path" ->
