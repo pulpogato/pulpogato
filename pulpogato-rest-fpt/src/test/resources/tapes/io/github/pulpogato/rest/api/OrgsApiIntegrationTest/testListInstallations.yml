@@ -1,0 +1,76 @@
+- request:
+    method: GET
+    uri: /orgs/corp/installations
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "total_count": 1,
+        "installations": [
+          {
+            "id": 55482842,
+            "client_id": "Iv1.9f820358a2aa6747",
+            "account": {
+              "login": "pulpogato",
+              "id": 183456368,
+              "node_id": "O_kgDOCu9ScA",
+              "avatar_url": "https://avatars.githubusercontent.com/u/183456368?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/pulpogato",
+              "html_url": "https://github.com/pulpogato",
+              "followers_url": "https://api.github.com/users/pulpogato/followers",
+              "following_url": "https://api.github.com/users/pulpogato/following{/other_user}",
+              "gists_url": "https://api.github.com/users/pulpogato/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/pulpogato/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/pulpogato/subscriptions",
+              "organizations_url": "https://api.github.com/users/pulpogato/orgs",
+              "repos_url": "https://api.github.com/users/pulpogato/repos",
+              "events_url": "https://api.github.com/users/pulpogato/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/pulpogato/received_events",
+              "type": "Organization",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "repository_selection": "all",
+            "access_tokens_url": "https://api.github.com/app/installations/55482842/access_tokens",
+            "repositories_url": "https://api.github.com/installation/repositories",
+            "html_url": "https://github.com/organizations/pulpogato/settings/installations/55482842",
+            "app_id": 2740,
+            "app_slug": "renovate",
+            "target_id": 183456368,
+            "target_type": "Organization",
+            "permissions": {
+              "checks": "write",
+              "issues": "write",
+              "members": "read",
+              "contents": "write",
+              "metadata": "read",
+              "packages": "read",
+              "statuses": "write",
+              "workflows": "write",
+              "pull_requests": "write",
+              "administration": "read",
+              "vulnerability_alerts": "read"
+            },
+            "events": [
+              "issues",
+              "pull_request",
+              "push",
+              "repository"
+            ],
+            "created_at": "2024-10-01T06:07:46.000-07:00",
+            "updated_at": "2025-02-16T18:23:21.000-08:00",
+            "single_file_name": null,
+            "has_multiple_single_files": false,
+            "single_file_paths": [],
+            "suspended_by": null,
+            "suspended_at": null
+          }
+        ]
+      }

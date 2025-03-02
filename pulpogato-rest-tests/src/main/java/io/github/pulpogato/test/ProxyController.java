@@ -50,12 +50,10 @@ public class ProxyController {
 
             log.info("Fetching live data from server: {}", request.getRequestURI());
 
-            URI uri = new URI("https", null, server, port, request.getRequestURI(), request.getQueryString(), null);
-
             HttpEntity<String> entity = new HttpEntity<>(body, buildRequestHeaders(request));
-
-            ResponseEntity<String> exchange = getLiveResponse(method, uri, entity);
+            ResponseEntity<String> exchange = getLiveResponse(method, buildUri(request), entity);
             Map<String, String> singleValueMap = getInterestingResponseHeaders(exchange);
+
             var response = Exchange.Response.builder()
                     .statusCode(exchange.getStatusCode().value())
                     .headers(singleValueMap)
@@ -64,6 +62,17 @@ public class ProxyController {
             tape.getExchanges().add(Exchange.builder().request(exchangeRequest).response(response.build()).build());
             return exchange;
         }
+    }
+
+    private static URI buildUri(HttpServletRequest request) throws URISyntaxException {
+        String githubToken = System.getenv("GITHUB_TOKEN");
+        String githubHost = Optional.ofNullable(System.getenv("GITHUB_HOST")).orElse(server);
+        int githubPort = Integer.parseInt(Optional.ofNullable(System.getenv("GITHUB_PORT")).orElse(String.valueOf(port)));
+        if (githubToken == null) {
+            throw new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found.");
+        }
+        var prefix = githubHost.equals(server) ? "" : "/api/v3";
+        return new URI("https", null, githubHost, githubPort, prefix + request.getRequestURI(), request.getQueryString(), null);
     }
 
     private static ResponseEntity<String> getLiveResponse(HttpMethod method, URI uri, HttpEntity<String> entity) {
@@ -87,9 +96,6 @@ public class ProxyController {
                     }
                 });
 
-        /*
-         * export GITHUB_TOKEN=$(gh auth token)
-         */
         String githubToken = Optional.ofNullable(System.getenv("GITHUB_TOKEN"))
                 .orElseThrow(() -> new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found."));
         headers.put("Authorization", List.of("Bearer " + githubToken));
