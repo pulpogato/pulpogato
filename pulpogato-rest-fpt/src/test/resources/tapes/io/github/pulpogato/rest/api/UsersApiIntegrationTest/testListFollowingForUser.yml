@@ -1,0 +1,116 @@
+- request:
+    method: GET
+    uri: /users/sghill/following
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/user/230004/following?per_page=5&page=2>; rel=\"\
+        next\", <https://api.github.com/user/230004/following?per_page=5&page=8>;\
+        \ rel=\"last\""
+    body: |-
+      [ {
+        "login" : "jashkenas",
+        "id" : 4732,
+        "node_id" : "MDQ6VXNlcjQ3MzI=",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/4732?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/jashkenas",
+        "html_url" : "https://github.com/jashkenas",
+        "followers_url" : "https://api.github.com/users/jashkenas/followers",
+        "following_url" : "https://api.github.com/users/jashkenas/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/jashkenas/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/jashkenas/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/jashkenas/subscriptions",
+        "organizations_url" : "https://api.github.com/users/jashkenas/orgs",
+        "repos_url" : "https://api.github.com/users/jashkenas/repos",
+        "events_url" : "https://api.github.com/users/jashkenas/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/jashkenas/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "bguthrie",
+        "id" : 13945,
+        "node_id" : "MDQ6VXNlcjEzOTQ1",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/13945?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/bguthrie",
+        "html_url" : "https://github.com/bguthrie",
+        "followers_url" : "https://api.github.com/users/bguthrie/followers",
+        "following_url" : "https://api.github.com/users/bguthrie/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/bguthrie/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/bguthrie/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/bguthrie/subscriptions",
+        "organizations_url" : "https://api.github.com/users/bguthrie/orgs",
+        "repos_url" : "https://api.github.com/users/bguthrie/repos",
+        "events_url" : "https://api.github.com/users/bguthrie/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/bguthrie/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "tobyclemson",
+        "id" : 16415,
+        "node_id" : "MDQ6VXNlcjE2NDE1",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/16415?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/tobyclemson",
+        "html_url" : "https://github.com/tobyclemson",
+        "followers_url" : "https://api.github.com/users/tobyclemson/followers",
+        "following_url" : "https://api.github.com/users/tobyclemson/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/tobyclemson/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/tobyclemson/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/tobyclemson/subscriptions",
+        "organizations_url" : "https://api.github.com/users/tobyclemson/orgs",
+        "repos_url" : "https://api.github.com/users/tobyclemson/repos",
+        "events_url" : "https://api.github.com/users/tobyclemson/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/tobyclemson/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "betarelease",
+        "id" : 41690,
+        "node_id" : "MDQ6VXNlcjQxNjkw",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/41690?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/betarelease",
+        "html_url" : "https://github.com/betarelease",
+        "followers_url" : "https://api.github.com/users/betarelease/followers",
+        "following_url" : "https://api.github.com/users/betarelease/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/betarelease/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/betarelease/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/betarelease/subscriptions",
+        "organizations_url" : "https://api.github.com/users/betarelease/orgs",
+        "repos_url" : "https://api.github.com/users/betarelease/repos",
+        "events_url" : "https://api.github.com/users/betarelease/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/betarelease/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      }, {
+        "login" : "tylermercier",
+        "id" : 49043,
+        "node_id" : "MDQ6VXNlcjQ5MDQz",
+        "avatar_url" : "https://avatars.githubusercontent.com/u/49043?v=4",
+        "gravatar_id" : "",
+        "url" : "https://api.github.com/users/tylermercier",
+        "html_url" : "https://github.com/tylermercier",
+        "followers_url" : "https://api.github.com/users/tylermercier/followers",
+        "following_url" : "https://api.github.com/users/tylermercier/following{/other_user}",
+        "gists_url" : "https://api.github.com/users/tylermercier/gists{/gist_id}",
+        "starred_url" : "https://api.github.com/users/tylermercier/starred{/owner}{/repo}",
+        "subscriptions_url" : "https://api.github.com/users/tylermercier/subscriptions",
+        "organizations_url" : "https://api.github.com/users/tylermercier/orgs",
+        "repos_url" : "https://api.github.com/users/tylermercier/repos",
+        "events_url" : "https://api.github.com/users/tylermercier/events{/privacy}",
+        "received_events_url" : "https://api.github.com/users/tylermercier/received_events",
+        "type" : "User",
+        "user_view_type" : "public",
+        "site_admin" : false
+      } ]

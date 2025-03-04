@@ -1,0 +1,23 @@
+- request:
+    method: GET
+    uri: /user/public_emails
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      [ {
+        "email" : "rsomasunderam@netflix.com",
+        "primary" : false,
+        "verified" : true,
+        "visibility" : null
+      }, {
+        "email" : "rahul.som@gmail.com",
+        "primary" : true,
+        "verified" : true,
+        "visibility" : "public"
+      } ]
