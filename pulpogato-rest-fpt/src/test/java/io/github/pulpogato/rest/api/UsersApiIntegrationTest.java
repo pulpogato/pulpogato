@@ -201,4 +201,176 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(gpgKeyBody.getKeyId()).isEqualTo("8B459169D13D7E09");
     }
 
+    @Test
+    void testListPublicEmailsForAuthenticatedUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var response = api.listPublicEmailsForAuthenticatedUser(5L, 0L);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull()
+                .isInstanceOf(List.class);
+        var emails = response.getBody();
+        assertThat(emails).hasSize(2);
+
+        var first = emails.getFirst();
+        assertThat(first.getEmail()).isEqualTo("rsomasunderam@netflix.com");
+        assertThat(first.getPrimary()).isFalse();
+        assertThat(first.getVerified()).isTrue();
+        assertThat(first.getVisibility()).isNull();
+
+        var second = emails.get(1);
+        assertThat(second.getEmail()).isEqualTo("rahul.som@gmail.com");
+        assertThat(second.getPrimary()).isTrue();
+        assertThat(second.getVerified()).isTrue();
+        assertThat(second.getVisibility()).isEqualTo("public");
+    }
+
+    @Test
+    void testListEmailsForAuthenticatedUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+        var response = api.listEmailsForAuthenticatedUser(5L, 0L);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull()
+                .isInstanceOf(List.class);
+        var emails = response.getBody();
+        assertThat(emails).hasSize(3);
+
+        var first = emails.getFirst();
+        assertThat(first.getEmail()).isEqualTo("rahul.som@gmail.com");
+        assertThat(first.getPrimary()).isTrue();
+        assertThat(first.getVerified()).isTrue();
+        assertThat(first.getVisibility()).isEqualTo("public");
+
+        var second = emails.get(1);
+        assertThat(second.getEmail()).isEqualTo("rsom@certifydatasystems.com");
+        assertThat(second.getPrimary()).isFalse();
+        assertThat(second.getVerified()).isTrue();
+        assertThat(second.getVisibility()).isNull();
+
+        var third = emails.get(2);
+        assertThat(third.getEmail()).isEqualTo("rsomasunderam@netflix.com");
+        assertThat(third.getPrimary()).isFalse();
+        assertThat(third.getVerified()).isTrue();
+        assertThat(third.getVisibility()).isNull();
+
+    }
+
+    @Test
+    void testListSocialAccountsForAuthenticatedUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+
+        var response = api.listSocialAccountsForAuthenticatedUser(5L, 0L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull()
+                .isInstanceOf(List.class);
+
+        var socialAccount = response.getBody().getFirst();
+        assertThat(socialAccount).isNotNull();
+
+        assertThat(socialAccount.getProvider()).isEqualTo("twitter");
+        assertThat(socialAccount.getUrl()).isEqualTo("https://twitter.com/rahulsom");
+    }
+
+    @Test
+    public void testGetById() {
+        UsersApi api = factory.createClient(UsersApi.class);
+
+        var response = api.getById(230004L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+
+        // TODO: This should be a PublicUser
+        assertThat(body.getPrivateUser()).isNotNull();
+
+        var user = body.getPrivateUser();
+
+        assertThat(user.getLogin()).isEqualTo("sghill");
+        assertThat(user.getName()).isEqualTo("Steve Hill");
+        assertThat(user.getCompany()).isEqualTo("Netflix");
+        assertThat(user.getLocation()).isEqualTo("SF Bay Area");
+        assertThat(user.getEmail()).isEqualTo("sghill.dev@gmail.com");
+        assertThat(user.getPublicRepos()).isEqualTo(228);
+        assertThat(user.getPublicGists()).isEqualTo(18);
+        assertThat(user.getFollowers()).isEqualTo(50);
+        assertThat(user.getFollowing()).isEqualTo(40);
+    }
+
+    @Test
+    public void testGetByUsername() {
+        UsersApi api = factory.createClient(UsersApi.class);
+
+        var response = api.getByUsername("sghill");
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+
+        // TODO: This should be a PublicUser
+        assertThat(body.getPrivateUser()).isNotNull();
+
+        var user = body.getPrivateUser();
+
+        assertThat(user.getLogin()).isEqualTo("sghill");
+        assertThat(user.getName()).isEqualTo("Steve Hill");
+        assertThat(user.getCompany()).isEqualTo("Netflix");
+        assertThat(user.getLocation()).isEqualTo("SF Bay Area");
+        assertThat(user.getEmail()).isEqualTo("sghill.dev@gmail.com");
+        assertThat(user.getPublicRepos()).isEqualTo(228);
+        assertThat(user.getPublicGists()).isEqualTo(18);
+        assertThat(user.getFollowers()).isEqualTo(50);
+        assertThat(user.getFollowing()).isEqualTo(40);
+    }
+
+    @Test
+    public void testListFollowersForUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+
+        var response = api.listFollowersForUser("sghill", 5L, 0L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+
+        assertThat(body).hasSize(5);
+
+        var follower = body.getFirst();
+
+        assertThat(follower).isNotNull();
+        assertThat(follower.getId()).isEqualTo(13945L);
+        assertThat(follower.getLogin()).isEqualTo("bguthrie");
+    }
+
+    @Test
+    void testListFollowingForUser() {
+        UsersApi api = factory.createClient(UsersApi.class);
+
+        var response = api.listFollowingForUser("sghill", 5L, 0L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+
+        assertThat(body).hasSize(5);
+
+        var following = body.getFirst();
+
+        assertThat(following).isNotNull();
+        assertThat(following.getId()).isEqualTo(4732L);
+        assertThat(following.getLogin()).isEqualTo("jashkenas");
+    }
+
 }
