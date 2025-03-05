@@ -73,7 +73,7 @@ public class TestUtils {
                     final JsonValue newValue = it.get("value");
                     if (op.equals("replace")) {
                         final var pathSteps = Arrays.stream(path.split("/")).dropWhile(String::isEmpty).toList();
-                        final JsonValue oldValue = traverse(source.asJsonObject(), pathSteps);
+                        final JsonValue oldValue = traverse(source, pathSteps);
                         if (oldValue == null) {
                             softly.fail(MessageFormat.format("Changes found: {0} {1} <missing> -> {2}", op, path, newValue));
                         } else {
