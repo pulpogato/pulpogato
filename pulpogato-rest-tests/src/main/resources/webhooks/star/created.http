@@ -90,7 +90,7 @@ x-Pulpogato-Exclude: ghes-3.12
         "ssh_url": "git@github.example.com:orgname/reposlug.git",
         "clone_url": "https://github.example.com/orgname/reposlug.git",
         "svn_url": "https://github.example.com/orgname/reposlug",
-        "homepage": "https://bfgui.netflix.net",
+        "homepage": "https://foo/bar",
         "size": 14117,
         "stargazers_count": 4,
         "watchers_count": 4,
