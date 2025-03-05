@@ -18,10 +18,6 @@ object IgnoredTests {
                         to "https://github.com/github/rest-api-description/issues/4427",
                 "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
                         to "https://github.com/github/rest-api-description/issues/4472",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
-                        to "TODO: Diagnose this",
                 "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
                         to "TODO: Diagnose this",
                 "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
@@ -44,10 +40,6 @@ object IgnoredTests {
                         to "https://github.com/github/rest-api-description/issues/4427",
                 "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
                         to "https://github.com/github/rest-api-description/issues/4472",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
-                        to "TODO: Diagnose this",
                 "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
                         to "TODO: Diagnose this",
                 "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
@@ -74,10 +66,6 @@ object IgnoredTests {
                         to "https://github.com/github/rest-api-description/issues/4427",
                 "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
                         to "https://github.com/github/rest-api-description/issues/4472",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
-                        to "TODO: Diagnose this",
                 "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
                         to "TODO: Diagnose this",
                 "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
@@ -106,10 +94,6 @@ object IgnoredTests {
                         to "https://github.com/github/rest-api-description/issues/4472",
                 "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
                         to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
-                        to "TODO: Diagnose this",
                 "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
                         to "TODO: Diagnose this",
                 "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
@@ -135,10 +119,6 @@ object IgnoredTests {
                 "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
                         to "https://github.com/github/rest-api-description/issues/4472",
                 "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
                         to "TODO: Diagnose this",
                 "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
                         to "TODO: Diagnose this",
@@ -189,10 +169,6 @@ object IgnoredTests {
                 "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
                         to "https://github.com/github/rest-api-description/issues/4472",
                 "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-in-progress-conclusion/value"
-                        to "TODO: Diagnose this",
-                "#/paths/~1repos~1{owner}~1{repo}~1check-runs/post/requestBody/content/application~1json/examples/example-of-completed-conclusion/value"
                         to "TODO: Diagnose this",
                 "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
                         to "TODO: Diagnose this",
