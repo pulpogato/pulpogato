@@ -9,17 +9,7 @@ object Annotations {
     /*
      Lombok Annotations
      */
-    fun requiredArgsConstructor(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "RequiredArgsConstructor")).build()
-
-    fun getter(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "Getter")).build()
-
-    fun setter(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "Setter")).build()
-
-    fun lombokBuilder(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "Builder")).build()
-
-    fun noArgsConstructor(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "NoArgsConstructor")).build()
-
-    fun allArgsConstructor(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", "AllArgsConstructor")).build()
+    fun lombok(name: String): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", name)).build()
 
     /*
      Jackson Annotations
