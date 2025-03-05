@@ -20,19 +20,10 @@ private fun createProject(variant: String,  ghesVersion:String) {
     project(":${projectName}").buildFileName = "../${variant}.gradle.kts"
 }
 
-createProject("graphql", "fpt")
-createProject("graphql", "ghec")
-createProject("graphql", "ghes-3.15")
-createProject("graphql", "ghes-3.14")
-createProject("graphql", "ghes-3.13")
-createProject("graphql", "ghes-3.12")
-
-createProject("rest", "fpt")
-createProject("rest", "ghec")
-createProject("rest", "ghes-3.15")
-createProject("rest", "ghes-3.14")
-createProject("rest", "ghes-3.13")
-createProject("rest", "ghes-3.12")
-
 include("${rootProject.name}-common")
 include("${rootProject.name}-rest-tests")
+
+listOf("fpt", "ghes") + (12..15).map { "ghes-3.$it" }.forEach { ghesVersion ->
+    createProject("graphql", ghesVersion)
+    createProject("rest", ghesVersion)
+}

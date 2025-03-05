@@ -1,16 +1,11 @@
 package codegen.ext
 
-import codegen.Annotations.allArgsConstructor
 import codegen.Annotations.deserializerAnnotation
 import codegen.Annotations.generated
-import codegen.Annotations.getter
 import codegen.Annotations.jsonProperty
 import codegen.Annotations.jsonValue
-import codegen.Annotations.lombokBuilder
-import codegen.Annotations.noArgsConstructor
-import codegen.Annotations.requiredArgsConstructor
+import codegen.Annotations.lombok
 import codegen.Annotations.serializerAnnotation
-import codegen.Annotations.setter
 import codegen.Annotations.singleValueAsArray
 import codegen.Annotations.typeGenerated
 import codegen.Context
@@ -212,9 +207,8 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
         val theType =
             TypeSpec.classBuilder(className)
                 .addJavadoc(schemaJavadoc())
-                .addAnnotation(getter())
-                .addAnnotation(setter())
                 .addAnnotation(generated(0))
+                .addAnnotation(lombok("Data"))
                 .addModifiers(Modifier.PUBLIC)
 
         val fields = ArrayList<Pair<TypeName, String>>()
@@ -328,9 +322,9 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
             .addType(serializer)
             .addAnnotation(deserializerAnnotation(className, deserializer))
             .addAnnotation(serializerAnnotation(className, serializer))
-            .addAnnotation(lombokBuilder())
-            .addAnnotation(noArgsConstructor())
-            .addAnnotation(allArgsConstructor())
+            .addAnnotation(lombok("Builder"))
+            .addAnnotation(lombok("NoArgsConstructor"))
+            .addAnnotation(lombok("AllArgsConstructor"))
 
         theType.build()
     }
@@ -345,12 +339,11 @@ private fun Map.Entry<String, Schema<*>>.buildSimpleObject(
     val builder =
         TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(getter())
-            .addAnnotation(setter())
             .addAnnotation(generated(0))
-            .addAnnotation(lombokBuilder())
-            .addAnnotation(noArgsConstructor())
-            .addAnnotation(allArgsConstructor())
+            .addAnnotation(lombok("Data"))
+            .addAnnotation(lombok("Builder"))
+            .addAnnotation(lombok("NoArgsConstructor"))
+            .addAnnotation(lombok("AllArgsConstructor"))
 
     addProperties(isArray, nameRef, builder)
 
@@ -388,9 +381,10 @@ private fun Map.Entry<String, Schema<*>>.buildEnum(className: ClassName): TypeSp
         TypeSpec.enumBuilder(className.simpleName())
             .addModifiers(Modifier.PUBLIC)
             .addJavadoc(schemaJavadoc())
-            .addAnnotation(getter())
             .addAnnotation(generated(0))
-            .addAnnotation(requiredArgsConstructor())
+            .addAnnotation(lombok("Getter"))
+            .addAnnotation(lombok("RequiredArgsConstructor"))
+            .addAnnotation(lombok("ToString"))
             .addField(
                 FieldSpec.builder(String::class.java, "value", Modifier.PRIVATE, Modifier.FINAL)
                     .addAnnotation(jsonValue())
