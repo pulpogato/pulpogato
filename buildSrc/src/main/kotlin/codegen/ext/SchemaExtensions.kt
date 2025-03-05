@@ -233,7 +233,11 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                     val rad = keyValuePair.referenceAndDefinition("", classRef)!!
                     rad.let {
                         if (rad.second != null) {
-                            theType.addType(rad.second!!.toBuilder().addModifiers(Modifier.STATIC).build())
+                            val builder = rad.second!!.toBuilder()
+                            if (rad.first is ClassName) {
+                                addProperties(false, rad.first as ClassName, builder)
+                            }
+                            theType.addType(builder.addModifiers(Modifier.STATIC).build())
                         }
                         val fieldSpec =
                             FieldSpec
@@ -253,6 +257,7 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                             fields.add(Pair(fieldSpec.type(), fieldSpec.name().pascalCase()))
                         }
                     }
+
                 }
             }
 
@@ -347,24 +352,35 @@ private fun Map.Entry<String, Schema<*>>.buildSimpleObject(
             .addAnnotation(noArgsConstructor())
             .addAnnotation(allArgsConstructor())
 
+    addProperties(isArray, nameRef, builder)
+
+    return builder.build()
+}
+
+private fun Map.Entry<String, Schema<*>>.addProperties(isArray: Boolean, nameRef: ClassName, builder: TypeSpec.Builder) {
+    val knownFields = builder.build().fieldSpecs().map { it.name() }
+    val knownSubTypes = builder.build().typeSpecs().map { it.name() }
+
     value.properties?.forEach { p ->
         val extraStack = if (isArray) arrayOf("properties") else arrayOf("properties", p.key)
         Context.withSchemaStack(*extraStack) {
             p.referenceAndDefinition("", nameRef)?.let { (d, s) ->
                 s?.let {
-                    builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
+                    if (!knownSubTypes.contains(it.name())) {
+                        builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
+                    }
                 }
-                builder.addField(
-                    FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
-                        .addAnnotation(jsonProperty(p.key))
-                        .addAnnotation(generated(0))
-                        .build(),
-                )
+                if (!knownFields.contains(p.key.unkeywordize().camelCase())) {
+                    builder.addField(
+                        FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
+                            .addAnnotation(jsonProperty(p.key))
+                            .addAnnotation(generated(0))
+                            .build(),
+                    )
+                }
             }
         }
     }
-
-    return builder.build()
 }
 
 private fun Map.Entry<String, Schema<*>>.buildEnum(className: ClassName): TypeSpec {
