@@ -41,11 +41,11 @@ object WebhooksBuilder {
 
                 val unitTestBuilder = TypeSpec.classBuilder("${k.pascalCase()}WebhooksTest")
 
-                val requestBodyTypes = mutableMapOf<String, ClassName>()
+                val requestBodyTypes = mutableMapOf<String, Pair<String, ClassName>>()
                 v.forEach { (name, webhook) ->
                     val requestBody = createWebhookInterface(name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testController)
-                    // println("k=$k, name=$name")
-                    requestBodyTypes[name] = requestBody
+                    val methodName = "process" + webhook.readOperationsMap().values.first().operationId.replace("/", "-").pascalCase()
+                    requestBodyTypes[name] = Pair(methodName, requestBody)
                 }
 
                 if (v.size > 1) {
@@ -87,8 +87,10 @@ object WebhooksBuilder {
                     val printWriter = PrintWriter(routerBuilder)
                     printWriter.println("final var action = (requestBody.isObject() && requestBody.has(\"action\")) ? requestBody.get(\"action\").asText() : null;")
                     printWriter.println("return switch (action) {")
-                    requestBodyTypes.forEach { (name, type) ->
-                        printWriter.print("    case \"${name.replace("-", "_").replace(k, "").replace(Regex("^_"), "")}\" -> process${name.pascalCase()}(${headers.joinToString(", ") { it.camelCase() }},")
+                    requestBodyTypes.forEach { (name, methodNameAndType) ->
+                        val cleanedAction = name.replace("-", "_").replace(k, "").replace(Regex("^_"), "")
+                        val (methodName, type) = methodNameAndType
+                        printWriter.print("    case \"$cleanedAction\" -> $methodName(${headers.joinToString(", ") { it.camelCase() }},")
                         printWriter.println(" getObjectMapper().treeToValue(requestBody, ${type.simpleName()}.class));")
                     }
                     printWriter.println("    default -> ${"$"}T.badRequest().build();")
@@ -257,10 +259,7 @@ object WebhooksBuilder {
                 "\n",
             )
 
-        val methodName =
-        ("process" + operation.operationId.replace("/", "-").pascalCase())
-//            .replace("processExemptionRequestSecretScanning", "processBypassRequestSecretScanning")
-            .replace("processExemptionRequest", "processBypassRequest")
+        val methodName = "process" + operation.operationId.replace("/", "-").pascalCase()
         val methodSpecBuilder =
             Context.withSchemaStack("#", "webhooks", name, "post") {
                 val methodSpecBuilder =
