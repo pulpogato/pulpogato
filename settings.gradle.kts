@@ -11,8 +11,8 @@ develocity {
 
 rootProject.name = "pulpogato"
 
-private fun createProject(variant: String,  ghesVersion:String) {
-    val projectName = "${rootProject.name}-$variant-$ghesVersion"
+private fun createProject(variant: String, ghVersion:String) {
+    val projectName = "${rootProject.name}-$variant-$ghVersion"
     if (!file(projectName).exists()) {
         file(projectName).mkdirs()
     }
@@ -23,7 +23,8 @@ private fun createProject(variant: String,  ghesVersion:String) {
 include("${rootProject.name}-common")
 include("${rootProject.name}-rest-tests")
 
-listOf("fpt", "ghes") + (12..15).map { "ghes-3.$it" }.forEach { ghesVersion ->
-    createProject("graphql", ghesVersion)
-    createProject("rest", ghesVersion)
+val allVersions = listOf("fpt", "ghec") + (12..15).map { "ghes-3.$it" }
+allVersions.forEach { ghVersion ->
+    createProject("graphql", ghVersion)
+    createProject("rest", ghVersion)
 }
