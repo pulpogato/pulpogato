@@ -24,8 +24,8 @@ dependencies {
 
 fun getUrl(projectVariant: String): String {
     val path = if (projectVariant == "fpt") "api.github.com" else projectVariant
-    val commit = "fe14ea7d381f04c8bb5bd7b13a97114eab1b173e"
-    return "https://github.com/github/rest-api-description/raw/$commit/descriptions-next/$path/$path.json"
+    val ref = "main"
+    return "https://github.com/github/rest-api-description/raw/$ref/descriptions-next/$path/$path.json"
 }
 
 val projectVariant = project.name.replace("${rootProject.name}-rest-", "")
