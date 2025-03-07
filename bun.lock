@@ -1,0 +1,13 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "dependencies": {
+        "rest-api-description": "github:github/rest-api-description",
+      },
+    },
+  },
+  "packages": {
+    "rest-api-description": ["rest-api-description@github:github/rest-api-description#ec3aef0", {}, "github-rest-api-description-ec3aef0"],
+  }
+}

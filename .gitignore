@@ -7,3 +7,5 @@ build
 *.hprof
 
 .kotlin
+
+node_modules
