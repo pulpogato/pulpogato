@@ -1,5 +1,6 @@
 import codegen.Main
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     alias(libs.plugins.javaLibrary)
@@ -23,27 +24,31 @@ dependencies {
 
 fun getUrl(projectVariant: String): String {
     val path = if (projectVariant == "fpt") "api.github.com" else projectVariant
-    return "rest-api-description/descriptions-next/$path/$path.json"
+    val submoduleStatus = ProcessBuilder("git", "submodule", "status", "rest-api-description").start()
+    if (submoduleStatus.waitFor() != 0) {
+        throw IllegalStateException("Submodule rest-api-description is not initialized")
+    }
+    val ref = submoduleStatus.inputStream.bufferedReader().readText().split(" ")[0].substring(1)
+    return "https://github.com/github/rest-api-description/raw/$ref/descriptions-next/$path/$path.json"
 }
 
 val projectVariant = project.name.replace("${rootProject.name}-rest-", "")
 
 description = "REST types for $projectVariant"
 
-val copySchema = tasks.register("copySchema") {
-    doLast {
-        copy {
-            from("${rootDir}/${getUrl(projectVariant)}")
-            into(file("${project.layout.buildDirectory.get()}/generated/resources/main"))
-            rename { _ -> "schema.json" }
-        }
-    }
-    inputs.file("${rootDir}/${getUrl(projectVariant)}")
-    outputs.file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
+val downloadSchema = tasks.register<Download>("downloadSchema") {
+    src(getUrl(projectVariant))
+    dest(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
+    onlyIfModified(true)
+    tempAndMove(true)
+    useETag("all")
+
+    inputs.property("url", getUrl(projectVariant))
+    outputs.file(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
 }
 
 val generateJava = tasks.register("generateJava") {
-    dependsOn(copySchema)
+    dependsOn(downloadSchema)
     inputs.file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
     inputs.dir("${rootDir}/buildSrc/src")
     inputs.file("${rootDir}/buildSrc/build.gradle.kts")
@@ -72,7 +77,7 @@ tasks.named("javadocJar") {
     dependsOn("spotlessApply")
 }
 tasks.processResources {
-    dependsOn(copySchema)
+    dependsOn(downloadSchema)
 }
 
 sourceSets {
