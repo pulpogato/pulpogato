@@ -55,6 +55,12 @@ object Annotations {
             .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", ClassName.get("com.fasterxml.jackson.annotation", "JsonFormat"))
             .build()
 
+    fun jsonIncludeNonNull(): AnnotationSpec {
+        return AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"))
+            .addMember("value", "\$T.Include.NON_NULL", ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"))
+            .build()
+    }
+
     /*
      GH Annotations
      */

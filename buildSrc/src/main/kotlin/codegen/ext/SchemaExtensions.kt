@@ -2,6 +2,7 @@ package codegen.ext
 
 import codegen.Annotations.deserializerAnnotation
 import codegen.Annotations.generated
+import codegen.Annotations.jsonIncludeNonNull
 import codegen.Annotations.jsonProperty
 import codegen.Annotations.jsonValue
 import codegen.Annotations.lombok
@@ -11,6 +12,7 @@ import codegen.Annotations.typeGenerated
 import codegen.Context
 import codegen.MarkdownHelper
 import codegen.Types
+import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
@@ -344,6 +346,7 @@ private fun Map.Entry<String, Schema<*>>.buildSimpleObject(
             .addAnnotation(lombok("Builder"))
             .addAnnotation(lombok("NoArgsConstructor"))
             .addAnnotation(lombok("AllArgsConstructor"))
+            .addAnnotation(jsonIncludeNonNull())
 
     addProperties(isArray, nameRef, builder)
 
