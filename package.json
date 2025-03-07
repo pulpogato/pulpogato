@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "rest-api-description": "github:github/rest-api-description"
+  }
+}
