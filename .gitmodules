@@ -2,3 +2,4 @@
 	path = rest-api-description
 	url = https://github.com/github/rest-api-description
 	shallow = true
+	branch = main
