@@ -22,10 +22,10 @@ jobs:
           git config user.email "actions@github.com"
           git checkout -b bun-update-branch
           bun update
-          git add .
           if git diff --quiet; then
             echo "No changes to rest-api-description"
           else
+            git add .
             VERSION=$(bun pm ls | grep rest-api-description | cut -d '#' -f 2)
             git commit -m "chore(deps): Update rest-api-description to $VERSION"
             git push origin bun-update-branch
