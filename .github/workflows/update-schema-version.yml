@@ -17,14 +17,13 @@ jobs:
           bun-version-file: ".bun-version"
 
       - name: Update dependencies
-        run: bun update
-
-      - name: Commit changes
-        run: |
+        run: |-
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+          git checkout -b bun-update-branch
+          bun update
           git add .
-          git diff --quiet || git commit -m "chore: bun update"
+          git diff --quiet || git commit -m "chore(deps): Update rest-api-description to $(bun pm ls | grep rest-api-description | cut -d '#' -f 2)"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
