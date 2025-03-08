@@ -1,0 +1,40 @@
+name: Update Schema Version
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  bun-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Update dependencies
+        run: bun update
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git diff --quiet || git commit -m "chore: bun update"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          branch: bun-update-branch
+          title: 'Bun Update'
+          body: 'Automatic update of bun dependencies.'
+          commit-message: 'chore: bun update'
+          base: 'main'
+          auto-merge: true
