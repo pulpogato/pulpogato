@@ -23,12 +23,15 @@ jobs:
           git checkout -b bun-update-branch
           bun update
           git add .
-          git diff --quiet || git commit -m "chore(deps): Update rest-api-description to $(bun pm ls | grep rest-api-description | cut -d '#' -f 2)"
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: bun-update-branch
-          title: 'Update rest-api-description schema version'
-          commit-message: 'chore: Update rest-api-description schema version'
-          base: 'main'
+          if git diff --quiet; then
+            echo "No changes to rest-api-description"
+          else
+            VERSION=$(bun pm ls | grep rest-api-description | cut -d '#' -f 2)
+            git commit -m "chore(deps): Update rest-api-description to $VERSION"
+            git push origin bun-update-branch
+            gh pr create \
+              --title "Update rest-api-description to $VERSION" \
+              --body "" \
+              --base main \
+              --head bun-update-branch
+          fi
