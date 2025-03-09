@@ -37,3 +37,11 @@ subprojects {
 waena {
     publishMode.set(WaenaExtension.PublishMode.Central)
 }
+
+tasks.register("bunInstall") {
+    doLast {
+        exec {
+            commandLine("bun", "install")
+        }
+    }
+}
