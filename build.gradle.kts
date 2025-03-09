@@ -32,6 +32,10 @@ subprojects {
     repositories {
         mavenCentral()
     }
+    tasks.withType<AbstractArchiveTask>().configureEach {
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+    }
 }
 
 waena {
