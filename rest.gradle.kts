@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
     id("com.diffplug.spotless") version "7.0.2"
+    id("jacoco")
 }
 
 dependencies {
@@ -142,4 +143,16 @@ spotless {
 
 tasks.named("spotlessJava").configure {
     dependsOn(generateJava)
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
