@@ -101,7 +101,7 @@ dependencyManagement {
 Install JDK 21 first.
 
 To get the rest schemas, install https://bun.sh/docs/installation[bun].
-Then run `bun install` in the root directory.
+The gradle build will use bun to download schemas.
 
 To build, run `./gradlew build`.
 If you have low memory or CPU, you can customize parallelism with `--max-workers`.

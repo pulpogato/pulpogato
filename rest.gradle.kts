@@ -38,6 +38,7 @@ val copySchema = tasks.register("copySchema") {
             rename { _ -> "schema.json" }
         }
     }
+    dependsOn(":bunInstall")
     inputs.file("${rootDir}/${getUrl(projectVariant)}")
     outputs.file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
 }
