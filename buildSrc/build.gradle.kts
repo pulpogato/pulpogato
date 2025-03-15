@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    alias(libs.plugins.kotlin)
+    `kotlin-dsl`
     alias(libs.plugins.ktlint)
 }
 
@@ -24,5 +24,12 @@ dependencies {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+gradlePlugin {
+    val restCodegen by plugins.creating {
+        id = "io.github.pulpogato.rest-codegen"
+        implementationClass = "io.github.pulpogato.restcodegen.RestCodegenPlugin"
     }
 }

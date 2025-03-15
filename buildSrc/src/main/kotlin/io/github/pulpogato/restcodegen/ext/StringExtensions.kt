@@ -1,4 +1,4 @@
-package codegen.ext
+package io.github.pulpogato.restcodegen.ext
 
 /**
  * Converts a string to PascalCase.

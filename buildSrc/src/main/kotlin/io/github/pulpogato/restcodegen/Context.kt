@@ -1,4 +1,4 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
 import io.swagger.v3.oas.models.OpenAPI
 

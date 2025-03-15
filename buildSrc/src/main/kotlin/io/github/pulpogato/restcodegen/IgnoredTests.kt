@@ -1,4 +1,4 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
 object IgnoredTests {
     /**

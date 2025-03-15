@@ -1,9 +1,9 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
-import codegen.Annotations.generated
-import codegen.ext.camelCase
-import codegen.ext.className
-import codegen.ext.pascalCase
+import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.ext.camelCase
+import io.github.pulpogato.restcodegen.ext.className
+import io.github.pulpogato.restcodegen.ext.pascalCase
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.FieldSpec
@@ -20,6 +20,7 @@ import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
 import javax.lang.model.element.Modifier
+import kotlin.collections.get
 
 object WebhooksBuilder {
     fun buildWebhooks(

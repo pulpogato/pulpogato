@@ -1,10 +1,10 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
-import codegen.Annotations.generated
-import codegen.ext.camelCase
-import codegen.ext.pascalCase
-import codegen.ext.referenceAndDefinition
-import codegen.ext.unkeywordize
+import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.ext.camelCase
+import io.github.pulpogato.restcodegen.ext.pascalCase
+import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
+import io.github.pulpogato.restcodegen.ext.unkeywordize
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.JavaFile
