@@ -14,10 +14,13 @@ object Annotations {
     /*
      Jackson Annotations
      */
-    fun jsonValue(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.annotation", "JsonValue")).build()
+    private fun jacksonClass(simpleName: String, vararg additional: String): ClassName =
+        ClassName.get("com.fasterxml.jackson.annotation", simpleName, *additional)
+
+    fun jsonValue(): AnnotationSpec = AnnotationSpec.builder(jacksonClass("JsonValue")).build()
 
     fun jsonProperty(property: String): AnnotationSpec =
-        AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.annotation", "JsonProperty"))
+        AnnotationSpec.builder(jacksonClass("JsonProperty"))
             .addMember("value", "\$S", property)
             .build()
 
@@ -42,8 +45,8 @@ object Annotations {
         pattern: String? = null,
     ): AnnotationSpec {
         val spec =
-            AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.annotation", "JsonFormat"))
-                .addMember("shape", "\$T.$shape", ClassName.get("com.fasterxml.jackson.annotation", "JsonFormat", "Shape"))
+            AnnotationSpec.builder(jacksonClass("JsonFormat"))
+                .addMember("shape", "\$T.$shape", jacksonClass("JsonFormat", "Shape"))
         if (pattern != null) {
             spec.addMember("pattern", "\$S", pattern)
         }
@@ -51,13 +54,13 @@ object Annotations {
     }
 
     fun singleValueAsArray(): AnnotationSpec =
-        AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.annotation", "JsonFormat"))
-            .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", ClassName.get("com.fasterxml.jackson.annotation", "JsonFormat"))
+        AnnotationSpec.builder(jacksonClass( "JsonFormat"))
+            .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", jacksonClass("JsonFormat"))
             .build()
 
     fun jsonIncludeNonNull(): AnnotationSpec {
-        return AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"))
-            .addMember("value", "\$T.Include.NON_NULL", ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"))
+        return AnnotationSpec.builder(jacksonClass("JsonInclude"))
+            .addMember("value", "\$T.Include.NON_NULL", jacksonClass("JsonInclude"))
             .build()
     }
 

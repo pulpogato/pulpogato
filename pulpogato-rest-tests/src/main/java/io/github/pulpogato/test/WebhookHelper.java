@@ -1,6 +1,8 @@
 package io.github.pulpogato.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WebhookHelper {
     private static Set<String> getWebhookNames() {
         return new Reflections("webhooks", Scanners.Resources).getResources(Pattern.compile(".+\\.http"));

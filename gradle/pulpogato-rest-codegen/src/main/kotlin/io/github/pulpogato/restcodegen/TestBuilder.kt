@@ -81,7 +81,7 @@ object TestBuilder {
 
     private fun normalize(input: Any?): Any? {
         return when (input) {
-            is List<*> -> input.map { it -> normalize(it) }
+            is List<*> -> input.map { normalize(it) }
             is Map<*, *> -> normalizeMap(input)
             else -> input
         }
