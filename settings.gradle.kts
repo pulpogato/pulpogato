@@ -23,7 +23,7 @@ private fun createProject(variant: String, ghVersion:String) {
 include("${rootProject.name}-common")
 include("${rootProject.name}-rest-tests")
 
-val allVersions = listOf("fpt", "ghec") + (12..15).map { "ghes-3.$it" }
+val allVersions = listOf("fpt", "ghec") + (12..16).map { "ghes-3.$it" }
 allVersions.forEach { ghVersion ->
     createProject("graphql", ghVersion)
     createProject("rest", ghVersion)
