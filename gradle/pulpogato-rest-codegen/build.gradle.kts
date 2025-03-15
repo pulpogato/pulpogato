@@ -19,6 +19,8 @@ dependencies {
     implementation(libs.bundles.commonmark)
     implementation(libs.commonsText)
     implementation(libs.javapoet)
+    implementation(libs.spotless)
+    implementation(libs.palantirJavaFormat)
 }
 
 java {

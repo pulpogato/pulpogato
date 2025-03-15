@@ -28,3 +28,5 @@ allVersions.forEach { ghVersion ->
     createProject("graphql", ghVersion)
     createProject("rest", ghVersion)
 }
+
+includeBuild("gradle/pulpogato-rest-codegen")
