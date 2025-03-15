@@ -10,6 +10,8 @@
 Pulpogato is a java client for GitHub.
 
 image:https://img.shields.io/coverallsCoverage/github/pulpogato/pulpogato?branch=main&style=for-the-badge[Coveralls, link="https://coveralls.io/github/pulpogato/pulpogato"]
+&nbsp;
+image:https://img.shields.io/github/commits-since/pulpogato/pulpogato/latest?style=for-the-badge[GitHub commits since latest release, link="https://github.com/pulpogato/pulpogato/releases/new"]
 
 == Usage
 
