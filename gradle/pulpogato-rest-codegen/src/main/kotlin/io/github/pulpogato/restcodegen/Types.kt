@@ -1,38 +1,40 @@
 package io.github.pulpogato.restcodegen
 
-import io.github.pulpogato.restcodegen.Annotations.jsonFormat
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ArrayTypeName
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
+import io.github.pulpogato.restcodegen.Annotations.jsonFormat
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.OffsetDateTime
 
 object Types {
     // Almost Primitives
-    val BOOLEAN: ClassName = ClassName.get("java.lang", "Boolean")
-    val INTEGER: ClassName = ClassName.get("java.lang", "Integer")
-    val LONG: ClassName = ClassName.get("java.lang", "Long")
-    val FLOAT: ClassName = ClassName.get("java.lang", "Float")
-    val DOUBLE: ClassName = ClassName.get("java.lang", "Double")
-    val STRING: ClassName = ClassName.get("java.lang", "String")
-    val BIG_DECIMAL: ClassName = ClassName.get("java.math", "BigDecimal")
+    val BOOLEAN: ClassName = ClassName.get(java.lang.Boolean::class.java)
+    val INTEGER: ClassName = ClassName.get(java.lang.Integer::class.java)
+    val LONG: ClassName = ClassName.get(java.lang.Long::class.java)
+    val FLOAT: ClassName = ClassName.get(java.lang.Float::class.java)
+    val DOUBLE: ClassName = ClassName.get(java.lang.Double::class.java)
+    val STRING: ClassName = ClassName.get(java.lang.String::class.java)
+    val BIG_DECIMAL: ClassName = ClassName.get(BigDecimal::class.java)
     val BYTE_ARRAY: ArrayTypeName = ArrayTypeName.of(TypeName.BYTE)
-    val URI: ClassName = ClassName.get("java.net", "URI")
-    val UUID: ClassName = ClassName.get("java.util", "UUID")
-    val VOID: ClassName = ClassName.get("java.lang", "Void")
+    val URI: ClassName = ClassName.get(java.net.URI::class.java)
+    val UUID: ClassName = ClassName.get(java.util.UUID::class.java)
+    val VOID: ClassName = ClassName.get(Void::class.java)
 
     // Time types
     val EPOCH_TIME: TypeName =
-        ClassName.get("java.time", "OffsetDateTime")
+        ClassName.get(OffsetDateTime::class.java)
             .annotated(jsonFormat("NUMBER_INT"))
     val LOCAL_DATE: TypeName =
-        ClassName.get("java.time", "LocalDate")
+        ClassName.get(LocalDate::class.java)
             .annotated(jsonFormat("STRING", "yyyy-MM-dd"))
     val OFFSET_DATE_TIME: TypeName =
-        ClassName.get("java.time", "OffsetDateTime")
+        ClassName.get(OffsetDateTime::class.java)
             .annotated(jsonFormat("STRING", "yyyy-MM-dd'T'HH:mm:ssXXX"))
             .annotated(
-                // @JsonDeserialize(using = ThingDeseralizer.class)
                 AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
                     .addMember("using", "\$T.class", ClassName.get("io.github.pulpogato.common", "OffsetDateTimeDeserializer"))
                     .build()
@@ -40,17 +42,17 @@ object Types {
 
     // Common Types
     val EMPTY_OBJECT: ClassName = ClassName.get("io.github.pulpogato.common", "EmptyObject")
-    val OBJECT: ClassName = ClassName.get("java.lang", "Object")
+    val OBJECT: ClassName = ClassName.get(Object::class.java)
     val STRING_OBJECT_OR_INTEGER: ClassName = ClassName.get("io.github.pulpogato.common", "StringObjectOrInteger")
     val STRING_OR_INTEGER: ClassName = ClassName.get("io.github.pulpogato.common", "StringOrInteger")
     val STRING_OR_OBJECT: ClassName = ClassName.get("io.github.pulpogato.common", "StringOrObject")
     val TODO: ClassName = ClassName.get("io.github.pulpogato.common", "Todo")
 
     // Utility types
-    val LIST: ClassName = ClassName.get("java.util", "List")
-    val MAP: ClassName = ClassName.get("java.util", "Map")
+    val LIST: ClassName = ClassName.get(List::class.java)
+    val MAP: ClassName = ClassName.get(Map::class.java)
 
     // Common Parameterized Types
-    val LIST_OF_STRINGS: ParameterizedTypeName = ParameterizedTypeName.get(LIST, ClassName.get("java.lang", "String"))
-    val MAP_STRING_OBJECT: ParameterizedTypeName = ParameterizedTypeName.get(MAP, ClassName.get("java.lang", "String"), ClassName.get("java.lang", "Object"))
+    val LIST_OF_STRINGS: ParameterizedTypeName = ParameterizedTypeName.get(LIST, STRING)
+    val MAP_STRING_OBJECT: ParameterizedTypeName = ParameterizedTypeName.get(MAP, STRING, OBJECT)
 }

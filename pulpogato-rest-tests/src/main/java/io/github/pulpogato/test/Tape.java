@@ -44,7 +44,7 @@ public class Tape implements Closeable {
             }
         } catch (IOException e) {
             log.error("Failed to load tape: {}", resourceName, e);
-            throw new RuntimeException(e);
+            throw new TapeLoadingException(e);
         }
 
         return new Tape(fileName, new ArrayList<>(exchanges));

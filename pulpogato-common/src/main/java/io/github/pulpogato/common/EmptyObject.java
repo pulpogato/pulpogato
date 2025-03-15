@@ -12,5 +12,6 @@ public class EmptyObject {
      * Creates an empty object without any properties.
      */
     public EmptyObject() {
+        // Empty Default Constructor
     }
 }

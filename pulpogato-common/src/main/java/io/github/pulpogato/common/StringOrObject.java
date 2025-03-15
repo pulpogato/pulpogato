@@ -26,6 +26,7 @@ public class StringOrObject {
      * Creates an instance that can be a String, or an Object.
      */
     public StringOrObject() {
+        // Empty Default Constructor
     }
 
     static class CustomDeserializer extends FancyDeserializer<StringOrObject> {
