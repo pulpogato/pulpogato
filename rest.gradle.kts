@@ -132,3 +132,7 @@ tasks.jacocoTestReport {
         html.required = true
     }
 }
+
+tasks.withType<JavaCompile>() {
+    options.setIncremental(true)
+}
