@@ -30,17 +30,12 @@ val projectVariant = project.name.replace("${rootProject.name}-rest-", "")
 
 description = "REST types for $projectVariant"
 
-val copySchema = tasks.register("copySchema") {
-    doLast {
-        copy {
-            from("${rootDir}/${getUrl(projectVariant)}")
-            into(file("${project.layout.buildDirectory.get()}/generated/resources/main"))
-            rename { _ -> "schema.json" }
-        }
-    }
+val copySchema: TaskProvider<Copy> = tasks.register("copySchema", Copy::class.java) {
+    from("${rootDir}/${getUrl(projectVariant)}")
+    into(file("${project.layout.buildDirectory.get()}/generated/resources/main"))
+    rename { _ -> "schema.json" }
+
     dependsOn(":bunInstall")
-    inputs.file("${rootDir}/${getUrl(projectVariant)}")
-    outputs.file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
 }
 
 val generateJava = tasks.named("generateJava")
