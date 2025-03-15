@@ -42,10 +42,8 @@ waena {
     publishMode.set(WaenaExtension.PublishMode.Central)
 }
 
-tasks.register("bunInstall") {
-    doLast {
-        exec {
-            commandLine("bun", "install")
-        }
-    }
+tasks.register("bunInstall", Exec::class) {
+    commandLine("bun", "install")
+    inputs.files("package.json", "bun.lock")
+    outputs.dir("node_modules")
 }
