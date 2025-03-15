@@ -26,9 +26,7 @@ object JsonRefValidator {
                     .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }
                     .count { hasError(json, it) }
             }
-        if (count > 0) {
-            throw IllegalStateException("Found $count errors in JSON references")
-        }
+        check(count <= 0) { "Found $count errors in JSON references" }
     }
 
     private fun hasError(
