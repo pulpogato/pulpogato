@@ -1,6 +1,6 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
-import codegen.ext.referenceAndDefinition
+import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
 import com.palantir.javapoet.JavaFile
 import io.swagger.v3.oas.models.OpenAPI
 import java.io.File

@@ -1,4 +1,4 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
@@ -47,8 +47,8 @@ object JsonRefValidator {
                 val index = name.toIntOrNull()
                 current =
                     when {
-                        index != null && index < 200 -> current[index]
-                        else -> current[name]
+                        index != null && index < 200 -> (current as JsonNode)[index]
+                        else -> (current as JsonNode)[name]
                     }
             }
         }

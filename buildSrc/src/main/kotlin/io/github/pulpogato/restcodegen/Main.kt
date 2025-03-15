@@ -1,4 +1,4 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.parser.OpenAPIParser

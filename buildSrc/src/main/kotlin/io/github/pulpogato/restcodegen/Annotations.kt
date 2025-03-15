@@ -1,4 +1,4 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName

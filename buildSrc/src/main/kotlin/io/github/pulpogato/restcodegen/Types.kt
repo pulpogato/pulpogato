@@ -1,6 +1,6 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
-import codegen.Annotations.jsonFormat
+import io.github.pulpogato.restcodegen.Annotations.jsonFormat
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ArrayTypeName
 import com.palantir.javapoet.ClassName

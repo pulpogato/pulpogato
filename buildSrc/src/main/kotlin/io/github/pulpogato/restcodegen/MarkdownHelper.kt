@@ -1,4 +1,4 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
 import org.apache.commons.text.WordUtils
 import org.commonmark.ext.gfm.tables.TablesExtension

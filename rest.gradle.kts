@@ -1,4 +1,3 @@
-import codegen.Main
 import com.adarshr.gradle.testlogger.theme.ThemeType
 
 plugins {
@@ -8,6 +7,7 @@ plugins {
     alias(libs.plugins.pitest)
     id("com.diffplug.spotless") version "7.0.2"
     id("jacoco")
+    id("io.github.pulpogato.rest-codegen")
 }
 
 dependencies {
@@ -44,24 +44,17 @@ val copySchema = tasks.register("copySchema") {
     outputs.file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
 }
 
-val generateJava = tasks.register("generateJava") {
+val generateJava = tasks.named("generateJava")
+
+generateJava.configure {
     dependsOn(copySchema)
-    inputs.file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
-    inputs.dir("${rootDir}/buildSrc/src")
-    inputs.file("${rootDir}/buildSrc/build.gradle.kts")
+}
 
-    doLast {
-        file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen").mkdirs()
-
-        Main().process(
-            file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"),
-            file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen"),
-            "io.github.pulpogato",
-            file("${project.layout.buildDirectory.get()}/generated/sources/test")
-        )
-    }
-    outputs.dir(file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen"))
-    outputs.dir(file("${project.layout.buildDirectory.get()}/generated/sources/test"))
+codegen {
+    schema.set(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
+    packageName.set("io.github.pulpogato")
+    mainDir.set(file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen"))
+    testDir.set(file("${project.layout.buildDirectory.get()}/generated/sources/test"))
 }
 
 tasks.compileJava {

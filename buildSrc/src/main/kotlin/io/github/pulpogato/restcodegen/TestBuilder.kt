@@ -1,12 +1,13 @@
-package codegen
+package io.github.pulpogato.restcodegen
 
-import codegen.ext.pascalCase
+import io.github.pulpogato.restcodegen.ext.pascalCase
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.TypeName
 import java.util.TreeMap
+import kotlin.collections.get
 
 object TestBuilder {
     fun buildTest(
