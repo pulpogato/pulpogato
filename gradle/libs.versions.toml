@@ -12,11 +12,13 @@ kotlin = "2.1.10"
 ktlint = "12.2.0"
 lombok = "1.18.36"
 mockito = "5.16.0"
+palantirJavaFormat = "2.58.0"
 pitest = "1.18.2"
 pitestJunit5Plugin = "1.2.2"
 pitestPlugin = "1.15.0"
 reflections = "0.10.2"
 slf4j = "2.0.17"
+spotless = "7.0.2"
 spring = "6.2.4"
 springBoot = "3.4.3"
 swaggerParser = "2.1.25"
@@ -36,10 +38,12 @@ javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+palantirJavaFormat = { group = "com.palantir.javaformat", name = "palantir-java-format", version.ref = "palantirJavaFormat" }
 pitest = { group = "org.pitest", name = "pitest", version.ref = "pitest" }
 pitestJunit5Plugin = { group = "org.pitest", name = "pitest-junit5-plugin", version.ref = "pitestJunit5Plugin" }
 reflections = { group = "org.reflections", name = "reflections", version.ref = "reflections" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+spotless = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 springBootTest = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springBoot" }
 springBootWeb = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "springBoot" }
 springBootWebflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "springBoot" }

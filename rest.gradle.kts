@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
-    id("com.diffplug.spotless") version "7.0.2"
     id("jacoco")
     id("io.github.pulpogato.rest-codegen")
 }
@@ -58,13 +57,13 @@ codegen {
 }
 
 tasks.compileJava {
-    dependsOn("spotlessApply")
+    dependsOn(generateJava)
 }
 tasks.named("sourcesJar") {
-    dependsOn("spotlessApply")
+    dependsOn(generateJava)
 }
 tasks.named("javadocJar") {
-    dependsOn("spotlessApply")
+    dependsOn(generateJava)
 }
 tasks.processResources {
     dependsOn(copySchema)
@@ -125,17 +124,6 @@ tasks {
     test {
         jvmArgs("-javaagent:${mockitoAgent.asPath}")
     }
-}
-
-spotless {
-    java {
-        target("build/generated/**/*.java")
-        palantirJavaFormat()
-    }
-}
-
-tasks.named("spotlessJava").configure {
-    dependsOn(generateJava)
 }
 
 tasks.test {
