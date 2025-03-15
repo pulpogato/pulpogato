@@ -5,9 +5,11 @@ plugins {
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
-    id("jacoco")
     id("io.github.pulpogato.rest-codegen")
+    id("com.github.kt3k.coveralls").version("2.12.2")
 }
+
+val mockitoAgent = configurations.create("mockitoAgent")
 
 dependencies {
     compileOnly(libs.annotations)
@@ -19,6 +21,8 @@ dependencies {
 
     testImplementation(project(":${rootProject.name}-rest-tests"))
     testImplementation(libs.bundles.springBoot)
+    testImplementation(libs.mockito)
+    mockitoAgent(libs.mockito) { isTransitive = false }
 }
 
 fun getUrl(projectVariant: String): String {
@@ -110,29 +114,17 @@ pitest {
     outputFormats.set(setOf("XML", "HTML"))
 }
 
-val mockitoAgent = configurations.create("mockitoAgent")
-dependencies {
-    testImplementation(libs.mockito)
-    mockitoAgent(libs.mockito) { isTransitive = false }
-}
 tasks {
     test {
         jvmArgs("-javaagent:${mockitoAgent.asPath}")
     }
 }
 
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
-
 tasks.withType<JavaCompile>() {
     options.setIncremental(true)
+}
+
+coveralls {
+    saveAsFile= true
+    sendToCoveralls = false
 }
