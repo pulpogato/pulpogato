@@ -1,5 +1,11 @@
 package io.github.pulpogato.restcodegen
 
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.TypeSpec
@@ -14,15 +20,10 @@ object Annotations {
     /*
      Jackson Annotations
      */
-    private fun jacksonClass(
-        simpleName: String,
-        vararg additional: String,
-    ): ClassName = ClassName.get("com.fasterxml.jackson.annotation", simpleName, *additional)
-
-    fun jsonValue(): AnnotationSpec = AnnotationSpec.builder(jacksonClass("JsonValue")).build()
+    fun jsonValue(): AnnotationSpec = AnnotationSpec.builder(ClassName.get(JsonValue::class.java)).build()
 
     fun jsonProperty(property: String): AnnotationSpec =
-        AnnotationSpec.builder(jacksonClass("JsonProperty"))
+        AnnotationSpec.builder(ClassName.get(JsonProperty::class.java))
             .addMember("value", "\$S", property)
             .build()
 
@@ -30,7 +31,7 @@ object Annotations {
         className: String,
         serializer: TypeSpec,
     ): AnnotationSpec =
-        AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonSerialize"))
+        AnnotationSpec.builder(ClassName.get(JsonSerialize::class.java))
             .addMember("using", "$className.${serializer.name()}.class")
             .build()
 
@@ -38,7 +39,7 @@ object Annotations {
         className: String,
         deserializer: TypeSpec,
     ): AnnotationSpec =
-        AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
+        AnnotationSpec.builder(ClassName.get(JsonDeserialize::class.java))
             .addMember("using", "$className.${deserializer.name()}.class")
             .build()
 
@@ -47,8 +48,8 @@ object Annotations {
         pattern: String? = null,
     ): AnnotationSpec {
         val spec =
-            AnnotationSpec.builder(jacksonClass("JsonFormat"))
-                .addMember("shape", "\$T.$shape", jacksonClass("JsonFormat", "Shape"))
+            AnnotationSpec.builder(ClassName.get(JsonFormat::class.java))
+                .addMember("shape", "\$T.$shape", ClassName.get(JsonFormat.Shape::class.java))
         if (pattern != null) {
             spec.addMember("pattern", "\$S", pattern)
         }
@@ -56,13 +57,13 @@ object Annotations {
     }
 
     fun singleValueAsArray(): AnnotationSpec =
-        AnnotationSpec.builder(jacksonClass("JsonFormat"))
-            .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", jacksonClass("JsonFormat"))
+        AnnotationSpec.builder(ClassName.get(JsonFormat::class.java))
+            .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", ClassName.get(JsonFormat::class.java))
             .build()
 
     fun jsonIncludeNonNull(): AnnotationSpec {
-        return AnnotationSpec.builder(jacksonClass("JsonInclude"))
-            .addMember("value", "\$T.Include.NON_NULL", jacksonClass("JsonInclude"))
+        return AnnotationSpec.builder(ClassName.get(JsonInclude::class.java))
+            .addMember("value", "\$T.Include.NON_NULL", ClassName.get(JsonInclude::class.java))
             .build()
     }
 
@@ -82,9 +83,6 @@ object Annotations {
             .addMember("codeRef", "\$S", codeRef(offset))
             .build()
 
-    /*
-     GH Annotations
-     */
     fun typeGenerated(): AnnotationSpec =
         AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "TypeGenerated"))
             .addMember("codeRef", "\$S", codeRef(0))
