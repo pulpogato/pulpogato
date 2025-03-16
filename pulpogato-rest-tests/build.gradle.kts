@@ -9,8 +9,8 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    implementation("javax.json:javax.json-api:1.1.4")
-    implementation("org.glassfish:javax.json:1.1.4")
+    implementation(libs.jsonApi)
+    implementation(libs.glassfishJson)
     implementation(project(":${rootProject.name}-common"))
 
     implementation(libs.reflections)
