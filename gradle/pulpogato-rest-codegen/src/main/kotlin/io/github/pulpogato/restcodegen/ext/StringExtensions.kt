@@ -20,6 +20,7 @@ fun String.camelCase() = this.pascalCase().replaceFirstChar { it.lowercaseChar()
  */
 fun String.trainCase() =
     this
+        .split(Regex("(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")).joinToString("-")
         .replace(".", "-")
         .replace("_", "-")
         .replace("'", "-")

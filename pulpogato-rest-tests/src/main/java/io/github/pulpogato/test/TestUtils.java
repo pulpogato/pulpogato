@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.assertj.core.api.SoftAssertions;
 
 import javax.json.*;
@@ -19,8 +17,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestUtils {
+    private TestUtils() {
+        // Empty Default Private Constructor. This should not be instantiated.
+    }
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -113,17 +113,15 @@ public class TestUtils {
                 JsonValue.ValueType.TRUE,
                 JsonValue.ValueType.NUMBER
         );
-        if (newValue.getValueType() == JsonValue.ValueType.STRING && convertableTypes.contains(oldValue.getValueType()) ) {
+        if (newValue.getValueType() == JsonValue.ValueType.STRING && convertableTypes.contains(oldValue.getValueType())) {
             return Json.createValue(oldValue.toString());
         }
         return oldValue;
     }
 
     private static JsonValue flattenNewArray(final JsonValue oldValue, final JsonValue newValue) {
-        if (oldValue.getValueType() == JsonValue.ValueType.STRING && newValue.getValueType() == JsonValue.ValueType.ARRAY) {
-            if (newValue.asJsonArray().size() == 1) {
-                return newValue.asJsonArray().getFirst();
-            }
+        if (oldValue.getValueType() == JsonValue.ValueType.STRING && newValue.getValueType() == JsonValue.ValueType.ARRAY && newValue.asJsonArray().size() == 1) {
+            return newValue.asJsonArray().getFirst();
         }
         return newValue;
     }

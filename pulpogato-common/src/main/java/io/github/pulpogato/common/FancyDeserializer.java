@@ -53,7 +53,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
     /**
      * The supplier that creates a new instance of the class
      */
-    private final Supplier<T> initializer;
+    private final transient Supplier<T> initializer;
 
     /**
      * The mode of deserialization
@@ -63,7 +63,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
     /**
      * The fields that can be set on the class
      */
-    private final List<SettableField<T, ?>> fields;
+    private final transient List<SettableField<T, ?>> fields;
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
@@ -95,7 +95,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
     private void setAllFields(String mapAsString, T returnValue) {
         for (var pair : fields) {
             final boolean successful = setField(pair, mapAsString, returnValue);
-            if (mode == Mode.oneOf && successful) {
+            if (mode == Mode.ONE_OF && successful) {
                 return;
             }
         }
