@@ -1,5 +1,10 @@
 package io.github.pulpogato.restcodegen
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.FieldSpec
@@ -105,10 +110,11 @@ object WebhooksBuilder {
                         .addMethod(
                             methodBuilder
                                 .addParameter(
-                                    ParameterSpec.builder(
-                                        ClassName.get("com.fasterxml.jackson.databind", "JsonNode"),
-                                        "requestBody",
-                                    )
+                                    ParameterSpec
+                                        .builder(
+                                            ClassName.get(JsonNode::class.java),
+                                            "requestBody",
+                                        )
                                         .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
                                         .addAnnotation(generated(0))
                                         .build(),
@@ -119,7 +125,7 @@ object WebhooksBuilder {
                         .addMethod(
                             MethodSpec.methodBuilder("getObjectMapper")
                                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                                .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                                .returns(ClassName.get(ObjectMapper::class.java))
                                 .build(),
                         )
                 }
@@ -133,7 +139,7 @@ object WebhooksBuilder {
                     testController.addSuperinterface(
                         ParameterizedTypeName.get(
                             ClassName.get(webhooksPackage, "${k.pascalCase()}Webhooks"),
-                            ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                            TEST_RESPONSE,
                         ),
                     )
                 }
@@ -201,7 +207,7 @@ object WebhooksBuilder {
             .addMethod(
                 MethodSpec.methodBuilder("objectMapper")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.context.annotation", "Bean")).build())
-                    .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                    .returns(ClassName.get(ObjectMapper::class.java))
                     .addStatement(
                         """
                         return new ${"$"}T()
@@ -210,11 +216,11 @@ object WebhooksBuilder {
                         .disable(${"$"}T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
                         .configure(${"$"}T.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         """.trimIndent(),
-                        ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"),
-                        ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"),
-                        ClassName.get("com.fasterxml.jackson.datatype.jsr310", "JavaTimeModule"),
-                        ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature"),
-                        ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature"),
+                        ClassName.get(ObjectMapper::class.java),
+                        ClassName.get(JsonInclude::class.java),
+                        ClassName.get(JavaTimeModule::class.java),
+                        ClassName.get(DeserializationFeature::class.java),
+                        ClassName.get(DeserializationFeature::class.java),
                     )
                     .build(),
             )
@@ -224,14 +230,14 @@ object WebhooksBuilder {
     private fun buildTestController(): TypeSpec.Builder =
         TypeSpec.classBuilder("TestController")
             .addField(
-                FieldSpec.builder(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"), "objectMapper")
+                FieldSpec.builder(ClassName.get(ObjectMapper::class.java), "objectMapper")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
                     .build(),
             )
             .addMethod(
                 MethodSpec.methodBuilder("getObjectMapper")
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                    .returns(ClassName.get(ObjectMapper::class.java))
                     .addStatement("return objectMapper")
                     .build(),
             )
@@ -384,6 +390,8 @@ object WebhooksBuilder {
         return bodyType!!
     }
 
+    private val TEST_RESPONSE = ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+
     private fun buildTestControllerMethod(
         methodName: String,
         name: String,
@@ -394,7 +402,7 @@ object WebhooksBuilder {
             .returns(
                 ParameterizedTypeName.get(
                     ClassName.get("org.springframework.http", "ResponseEntity"),
-                    ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                    TEST_RESPONSE,
                 ),
             )
             .addModifiers(Modifier.PUBLIC)
@@ -408,7 +416,7 @@ object WebhooksBuilder {
                     )
                 """.trimIndent(),
                 ClassName.get("org.springframework.http", "ResponseEntity"),
-                ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                TEST_RESPONSE,
                 name,
             )
 
