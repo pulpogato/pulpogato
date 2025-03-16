@@ -38,7 +38,9 @@ jobs:
 
     - name: Build
       if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-      run: ./gradlew build --max-workers=2 --continue
+      run: |
+        ./gradlew --project-dir gradle/pulpogato-rest-codegen check
+        ./gradlew build --max-workers=2 --continue
 
     - name: Build Snapshot
       if: github.ref == 'refs/heads/main'

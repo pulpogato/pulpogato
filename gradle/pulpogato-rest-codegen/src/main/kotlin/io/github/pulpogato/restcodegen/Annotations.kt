@@ -14,8 +14,10 @@ object Annotations {
     /*
      Jackson Annotations
      */
-    private fun jacksonClass(simpleName: String, vararg additional: String): ClassName =
-        ClassName.get("com.fasterxml.jackson.annotation", simpleName, *additional)
+    private fun jacksonClass(
+        simpleName: String,
+        vararg additional: String,
+    ): ClassName = ClassName.get("com.fasterxml.jackson.annotation", simpleName, *additional)
 
     fun jsonValue(): AnnotationSpec = AnnotationSpec.builder(jacksonClass("JsonValue")).build()
 
@@ -54,7 +56,7 @@ object Annotations {
     }
 
     fun singleValueAsArray(): AnnotationSpec =
-        AnnotationSpec.builder(jacksonClass( "JsonFormat"))
+        AnnotationSpec.builder(jacksonClass("JsonFormat"))
             .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", jacksonClass("JsonFormat"))
             .build()
 

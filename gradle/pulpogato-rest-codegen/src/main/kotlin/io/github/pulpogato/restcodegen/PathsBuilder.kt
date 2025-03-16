@@ -1,10 +1,5 @@
 package io.github.pulpogato.restcodegen
 
-import io.github.pulpogato.restcodegen.Annotations.generated
-import io.github.pulpogato.restcodegen.ext.camelCase
-import io.github.pulpogato.restcodegen.ext.pascalCase
-import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
-import io.github.pulpogato.restcodegen.ext.unkeywordize
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.JavaFile
@@ -13,6 +8,11 @@ import com.palantir.javapoet.ParameterSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
+import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.ext.camelCase
+import io.github.pulpogato.restcodegen.ext.pascalCase
+import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
+import io.github.pulpogato.restcodegen.ext.unkeywordize
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem.HttpMethod
@@ -131,9 +131,10 @@ object PathsBuilder {
                                 .build(),
                         )
                     }
-                    val suitableAnnotations = respRef.annotations().filter {
-                        (it.type() as ClassName).simpleName() != "JsonFormat"
-                    }
+                    val suitableAnnotations =
+                        respRef.annotations().filter {
+                            (it.type() as ClassName).simpleName() != "JsonFormat"
+                        }
                     typeDef.addMethod(buildNonVoidMethod(methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef, suitableAnnotations))
                 }
             }
@@ -144,21 +145,22 @@ object PathsBuilder {
         successResponse: MutableMap.MutableEntry<String, ApiResponse>,
         contentType: String,
         details: MediaType,
-        respRef: TypeName
-    ): List<MethodSpec> = Context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples") {
-        val examples =
-            when {
-                contentType.contains("json") -> details.examples ?: emptyMap()
-                else -> emptyMap()
-            }
-        examples
-            .filter { (_, v) -> v.value != null }
-            .map { (k, v) ->
-                Context.withSchemaStack(k, "value") {
-                    TestBuilder.buildTest("${successResponse.key}$k", v.value, respRef)
+        respRef: TypeName,
+    ): List<MethodSpec> =
+        Context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples") {
+            val examples =
+                when {
+                    contentType.contains("json") -> details.examples ?: emptyMap()
+                    else -> emptyMap()
                 }
-            }
-    }
+            examples
+                .filter { (_, v) -> v.value != null }
+                .map { (k, v) ->
+                    Context.withSchemaStack(k, "value") {
+                        TestBuilder.buildTest("${successResponse.key}$k", v.value, respRef)
+                    }
+                }
+        }
 
     private fun buildNonVoidMethod(
         methodName: String,
@@ -167,25 +169,31 @@ object PathsBuilder {
         contentType: String,
         parameterSpecs: List<ParameterSpec>,
         respRef: TypeName,
-        suitableAnnotations: List<AnnotationSpec>
-    ): MethodSpec? = MethodSpec.methodBuilder(methodName)
-        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-        .addJavadoc(javadoc)
-        .addAnnotation(
-            AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
-                .addMember("value", "\$S", atomicMethod.path)
-                .addMember("accept", "\$S", contentType)
-                .build(),
-        )
-        .addAnnotation(generated(0))
-        .addParameters(parameterSpecs)
-        .returns(
-            ParameterizedTypeName.get(
-                ClassName.get("org.springframework.http", "ResponseEntity"),
-                respRef.withoutAnnotations().annotated(suitableAnnotations)
+        suitableAnnotations: List<AnnotationSpec>,
+    ): MethodSpec? {
+        val exchangeAnnotation = atomicMethod.method.name.lowercase().pascalCase() + "Exchange"
+        return MethodSpec.methodBuilder(methodName)
+            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+            .addJavadoc(javadoc)
+            .addAnnotation(
+                AnnotationSpec
+                    .builder(
+                        ClassName.get("org.springframework.web.service.annotation", exchangeAnnotation),
+                    )
+                    .addMember("value", "\$S", atomicMethod.path)
+                    .addMember("accept", "\$S", contentType)
+                    .build(),
             )
-        )
-        .build()
+            .addAnnotation(generated(0))
+            .addParameters(parameterSpecs)
+            .returns(
+                ParameterizedTypeName.get(
+                    ClassName.get("org.springframework.http", "ResponseEntity"),
+                    respRef.withoutAnnotations().annotated(suitableAnnotations),
+                ),
+            )
+            .build()
+    }
 
     private fun buildVoidMethod(
         atomicMethod: AtomicMethod,
@@ -193,19 +201,23 @@ object PathsBuilder {
         parameters: List<Parameter>,
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
-        testClass: TypeSpec.Builder
-    ): MethodSpec? = MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
-        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-        .addJavadoc(javadoc)
-        .addAnnotation(
-            AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
-                .addMember("value", "\$S", atomicMethod.path)
-                .build(),
-        )
-        .addAnnotation(generated(0))
-        .addParameters(parameters.map { buildParameter(it, atomicMethod, typeDef, typeRef, testClass) })
-        .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
-        .build()
+        testClass: TypeSpec.Builder,
+    ): MethodSpec? =
+        MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
+            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+            .addJavadoc(javadoc)
+            .addAnnotation(
+                AnnotationSpec
+                    .builder(
+                        ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"),
+                    )
+                    .addMember("value", "\$S", atomicMethod.path)
+                    .build(),
+            )
+            .addAnnotation(generated(0))
+            .addParameters(parameters.map { buildParameter(it, atomicMethod, typeDef, typeRef, testClass) })
+            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
+            .build()
 
     private fun suffixContentType(key: String) =
         when (key) {
@@ -277,14 +289,17 @@ object PathsBuilder {
                             .addMember("value", "\$S", theParameter.name)
                             .addMember("required", "\$L", theParameter.required)
                             .build()
+
                     "body" -> buildBodyAnnotation(theParameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
                     "path" ->
                         AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PathVariable"))
                             .addMember("value", "\$S", theParameter.name)
                             .build()
+
                     "header" ->
                         AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
                             .build()
+
                     else -> throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
                 },
             )

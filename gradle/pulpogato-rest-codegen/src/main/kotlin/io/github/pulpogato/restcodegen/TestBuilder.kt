@@ -1,11 +1,11 @@
 package io.github.pulpogato.restcodegen
 
-import io.github.pulpogato.restcodegen.ext.pascalCase
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.TypeName
+import io.github.pulpogato.restcodegen.ext.pascalCase
 import java.util.TreeMap
 import kotlin.collections.get
 
@@ -67,15 +67,18 @@ object TestBuilder {
                 """
                 Failed to build test for ${Context.getSchemaStackRef()}.
                 ValueType: ${example.javaClass}
-                Formatted: ${formatted}
-                Value: ${example}                
-                """.trimIndent(), e
+                Formatted: $formatted
+                Value: $example                
+                """.trimIndent(),
+                e,
             )
         }
     }
 
-    private fun format(om: ObjectMapper, parsed: Any): String {
-
+    private fun format(
+        om: ObjectMapper,
+        parsed: Any,
+    ): String {
         return om.writerWithDefaultPrettyPrinter().writeValueAsString(normalize(parsed))
     }
 

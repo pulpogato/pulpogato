@@ -12,8 +12,11 @@ import kotlin.io.path.extension
 
 open class GenerateJavaTask : DefaultTask() {
     @InputFile lateinit var schema: Provider<File>
+
     @Input lateinit var packageName: Provider<String>
+
     @OutputDirectory lateinit var mainDir: Provider<File>
+
     @OutputDirectory lateinit var testDir: Provider<File>
 
     @TaskAction
