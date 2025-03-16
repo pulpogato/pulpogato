@@ -373,30 +373,7 @@ object WebhooksBuilder {
                 .build()
         interfaceBuilder.addMethod(methodSpec)
 
-        val testControllerMethod =
-            MethodSpec.methodBuilder(methodName)
-                .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
-                .addException(Types.EXCEPTION)
-                .returns(
-                    ParameterizedTypeName.get(
-                        ClassName.get("org.springframework.http", "ResponseEntity"),
-                        ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
-                    ),
-                )
-                .addModifiers(Modifier.PUBLIC)
-                .addStatement(
-                    """
-                    return ${"$"}T.ok(
-                        ${"$"}T.builder()
-                            .webhookName("${"$"}L")
-                            .body(objectMapper.writeValueAsString(requestBody))
-                            .build()
-                        )
-                    """.trimIndent(),
-                    ClassName.get("org.springframework.http", "ResponseEntity"),
-                    ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
-                    name,
-                )
+        val testControllerMethod = buildTestControllerMethod(methodName, name)
 
         methodSpec.parameters().forEach { t ->
             testControllerMethod.addParameter(ParameterSpec.builder(t.type(), t.name()).build())
@@ -406,6 +383,34 @@ object WebhooksBuilder {
 
         return bodyType!!
     }
+
+    private fun buildTestControllerMethod(
+        methodName: String,
+        name: String,
+    ): MethodSpec.Builder =
+        MethodSpec.methodBuilder(methodName)
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
+            .addException(Types.EXCEPTION)
+            .returns(
+                ParameterizedTypeName.get(
+                    ClassName.get("org.springframework.http", "ResponseEntity"),
+                    ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                ),
+            )
+            .addModifiers(Modifier.PUBLIC)
+            .addStatement(
+                """
+                return ${"$"}T.ok(
+                    ${"$"}T.builder()
+                        .webhookName("${"$"}L")
+                        .body(objectMapper.writeValueAsString(requestBody))
+                        .build()
+                    )
+                """.trimIndent(),
+                ClassName.get("org.springframework.http", "ResponseEntity"),
+                ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                name,
+            )
 
     private fun getSubcategory(operation: Operation): String? {
         val xGitHub = operation.extensions["x-github"] ?: throw RuntimeException("Missing x-github extension")
