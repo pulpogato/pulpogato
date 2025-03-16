@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
+
 buildscript {
     repositories {
         mavenCentral()
@@ -8,6 +10,7 @@ buildscript {
 plugins {
     `kotlin-dsl`
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.testLogger)
 }
 
 repositories {
@@ -21,6 +24,9 @@ dependencies {
     implementation(libs.javapoet)
     implementation(libs.spotless)
     implementation(libs.palantirJavaFormat)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.assertj)
 }
 
 java {
@@ -34,4 +40,17 @@ gradlePlugin {
         id = "io.github.pulpogato.rest-codegen"
         implementationClass = "io.github.pulpogato.restcodegen.RestCodegenPlugin"
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+testlogger {
+    theme = if (System.getProperty("idea.active") == "true") ThemeType.PLAIN else ThemeType.MOCHA
+    slowThreshold = 5000
+
+    showPassed = false
+    showSkipped = true
+    showFailed = true
 }
