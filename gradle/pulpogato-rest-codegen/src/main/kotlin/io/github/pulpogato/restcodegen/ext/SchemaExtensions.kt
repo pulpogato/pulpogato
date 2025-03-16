@@ -284,7 +284,7 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                     MethodSpec.constructorBuilder()
                         .addModifiers(Modifier.PUBLIC)
                         .addStatement(
-                            """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.$type, ${"$"}T.of(
+                            """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
                         |    ${"$"}L
                         |))
                             """.trimMargin(),
@@ -306,7 +306,7 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                     MethodSpec.constructorBuilder()
                         .addModifiers(Modifier.PUBLIC)
                         .addStatement(
-                            """super(${"$"}T.class, ${"$"}T.$type, ${"$"}T.of(
+                            """super(${"$"}T.class, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
                         |    ${"$"}L
                         |))
                             """.trimMargin(),

@@ -1,7 +1,5 @@
 package io.github.pulpogato.common;
 
-import lombok.NoArgsConstructor;
-
 /**
  * <strong>Empty Object</strong>
  * <p>

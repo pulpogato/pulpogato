@@ -46,4 +46,6 @@ tasks.register("bunInstall", Exec::class) {
     commandLine("bun", "install")
     inputs.files("package.json", "bun.lock")
     outputs.dir("node_modules")
+    description = "Install locked version of github/rest-api-description"
+    group = "build setup"
 }

@@ -1,3 +1,5 @@
+rootProject.name = "pulpogato-rest-codegen"
+
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {

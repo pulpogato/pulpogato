@@ -31,7 +31,7 @@ public class StringObjectOrInteger {
 
     static class CustomDeserializer extends FancyDeserializer<StringObjectOrInteger> {
         public CustomDeserializer() {
-            super(StringObjectOrInteger.class, StringObjectOrInteger::new, Mode.oneOf, List.of(
+            super(StringObjectOrInteger.class, StringObjectOrInteger::new, Mode.ONE_OF, List.of(
                     new SettableField<>(String.class, StringObjectOrInteger::setStringValue),
                     new SettableField<>(Long.class, StringObjectOrInteger::setIntegerValue),
                     new SettableField<>(Map.class, StringObjectOrInteger::setObjectValue)
@@ -41,7 +41,7 @@ public class StringObjectOrInteger {
 
     static class CustomSerializer extends FancySerializer<StringObjectOrInteger> {
         public CustomSerializer() {
-            super(StringObjectOrInteger.class, Mode.oneOf, List.of(
+            super(StringObjectOrInteger.class, Mode.ONE_OF, List.of(
                     new GettableField<>(String.class, StringObjectOrInteger::getStringValue),
                     new GettableField<>(Long.class, StringObjectOrInteger::getIntegerValue),
                     new GettableField<>(Map.class, StringObjectOrInteger::getObjectValue)

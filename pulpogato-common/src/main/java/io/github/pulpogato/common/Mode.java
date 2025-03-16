@@ -7,13 +7,13 @@ public enum Mode {
     /**
      * Any of
      */
-    anyOf,
+    ANY_OF,
     /**
      * All of
      */
-    allOf,
+    ALL_OF,
     /**
      * One of
      */
-    oneOf
+    ONE_OF
 }

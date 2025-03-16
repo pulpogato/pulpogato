@@ -3,7 +3,6 @@ package io.github.pulpogato.common;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -31,7 +30,7 @@ public class StringOrObject {
 
     static class CustomDeserializer extends FancyDeserializer<StringOrObject> {
         public CustomDeserializer() {
-            super(StringOrObject.class, StringOrObject::new, Mode.oneOf, List.of(
+            super(StringOrObject.class, StringOrObject::new, Mode.ONE_OF, List.of(
                     new SettableField<>(String.class, StringOrObject::setStringValue),
                     new SettableField<>(Map.class, StringOrObject::setObjectValue)
             ));
@@ -40,7 +39,7 @@ public class StringOrObject {
 
     static class CustomSerializer extends FancySerializer<StringOrObject> {
         public CustomSerializer() {
-            super(StringOrObject.class, Mode.oneOf, List.of(
+            super(StringOrObject.class, Mode.ONE_OF, List.of(
                     new GettableField<>(String.class, StringOrObject::getStringValue),
                     new GettableField<>(Map.class, StringOrObject::getObjectValue)
             ));

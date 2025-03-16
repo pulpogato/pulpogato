@@ -26,9 +26,10 @@ import java.util.Set;
 @RestController
 @Slf4j
 public class ProxyController {
-    private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String server = "api.github.com";
-    private static final int port = 443;
+    private static final String DEFAULT_SERVER = "api.github.com";
+    private static final int DEFAULT_PORT = 443;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @RequestMapping("/**")
     @SuppressWarnings("unused")
@@ -66,16 +67,16 @@ public class ProxyController {
 
     private static URI buildUri(HttpServletRequest request) throws URISyntaxException {
         String githubToken = System.getenv("GITHUB_TOKEN");
-        String githubHost = Optional.ofNullable(System.getenv("GITHUB_HOST")).orElse(server);
-        int githubPort = Integer.parseInt(Optional.ofNullable(System.getenv("GITHUB_PORT")).orElse(String.valueOf(port)));
+        String githubHost = Optional.ofNullable(System.getenv("GITHUB_HOST")).orElse(DEFAULT_SERVER);
+        int githubPort = Integer.parseInt(Optional.ofNullable(System.getenv("GITHUB_PORT")).orElse(String.valueOf(DEFAULT_PORT)));
         if (githubToken == null) {
             throw new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found.");
         }
-        var prefix = githubHost.equals(server) ? "" : "/api/v3";
+        var prefix = githubHost.equals(DEFAULT_SERVER) ? "" : "/api/v3";
         return new URI("https", null, githubHost, githubPort, prefix + request.getRequestURI(), request.getQueryString(), null);
     }
 
-    private static ResponseEntity<String> getLiveResponse(HttpMethod method, URI uri, HttpEntity<String> entity) {
+    private ResponseEntity<String> getLiveResponse(HttpMethod method, URI uri, HttpEntity<String> entity) {
         try {
             return restTemplate.exchange(uri, method, entity, String.class);
         } catch (HttpClientErrorException e) {

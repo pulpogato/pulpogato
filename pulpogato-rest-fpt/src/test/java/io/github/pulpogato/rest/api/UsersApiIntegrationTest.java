@@ -276,7 +276,7 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testGetById() {
+    void testGetById() {
         UsersApi api = factory.createClient(UsersApi.class);
 
         var response = api.getById(230004L);
@@ -304,7 +304,7 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testGetByUsername() {
+    void testGetByUsername() {
         UsersApi api = factory.createClient(UsersApi.class);
 
         var response = api.getByUsername("sghill");
@@ -332,7 +332,7 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testListFollowersForUser() {
+    void testListFollowersForUser() {
         UsersApi api = factory.createClient(UsersApi.class);
 
         var response = api.listFollowersForUser("sghill", 5L, 0L);

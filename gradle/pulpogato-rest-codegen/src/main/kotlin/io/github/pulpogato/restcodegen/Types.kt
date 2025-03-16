@@ -11,9 +11,11 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 object Types {
+    private const val COMMON_PACKAGE = "io.github.pulpogato.common"
+
     // Almost Primitives
     val BOOLEAN: ClassName = ClassName.get(java.lang.Boolean::class.java)
-    val INTEGER: ClassName = ClassName.get(java.lang.Integer::class.java)
+    val INTEGER: ClassName = ClassName.get(Integer::class.java)
     val LONG: ClassName = ClassName.get(java.lang.Long::class.java)
     val FLOAT: ClassName = ClassName.get(java.lang.Float::class.java)
     val DOUBLE: ClassName = ClassName.get(java.lang.Double::class.java)
@@ -36,17 +38,17 @@ object Types {
             .annotated(jsonFormat("STRING", "yyyy-MM-dd'T'HH:mm:ssXXX"))
             .annotated(
                 AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
-                    .addMember("using", "\$T.class", ClassName.get("io.github.pulpogato.common", "OffsetDateTimeDeserializer"))
+                    .addMember("using", "\$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
                     .build()
             )
 
     // Common Types
-    val EMPTY_OBJECT: ClassName = ClassName.get("io.github.pulpogato.common", "EmptyObject")
+    val EMPTY_OBJECT: ClassName = ClassName.get(COMMON_PACKAGE, "EmptyObject")
     val OBJECT: ClassName = ClassName.get(Object::class.java)
-    val STRING_OBJECT_OR_INTEGER: ClassName = ClassName.get("io.github.pulpogato.common", "StringObjectOrInteger")
-    val STRING_OR_INTEGER: ClassName = ClassName.get("io.github.pulpogato.common", "StringOrInteger")
-    val STRING_OR_OBJECT: ClassName = ClassName.get("io.github.pulpogato.common", "StringOrObject")
-    val TODO: ClassName = ClassName.get("io.github.pulpogato.common", "Todo")
+    val STRING_OBJECT_OR_INTEGER: ClassName = ClassName.get(COMMON_PACKAGE, "StringObjectOrInteger")
+    val STRING_OR_INTEGER: ClassName = ClassName.get(COMMON_PACKAGE, "StringOrInteger")
+    val STRING_OR_OBJECT: ClassName = ClassName.get(COMMON_PACKAGE, "StringOrObject")
+    val TODO: ClassName = ClassName.get(COMMON_PACKAGE, "Todo")
 
     // Utility types
     val LIST: ClassName = ClassName.get(List::class.java)

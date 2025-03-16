@@ -57,7 +57,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
     /**
      * The fields that can be read from the class
      */
-    private final List<GettableField<T, ?>> fields;
+    private final transient List<GettableField<T, ?>> fields;
 
     @Override
     public void serialize(T value, JsonGenerator gen, SerializerProvider provider) throws IOException {
@@ -66,7 +66,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
                 .filter(Objects::nonNull)
                 .toList();
 
-        if (mode == Mode.oneOf) {
+        if (mode == Mode.ONE_OF) {
             final Object o = serialized.isEmpty() ? null : serialized.getFirst();
             switch (o) {
                 case Integer i -> gen.writeNumber(i);
