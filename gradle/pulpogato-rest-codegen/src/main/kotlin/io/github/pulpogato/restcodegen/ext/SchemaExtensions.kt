@@ -302,11 +302,16 @@ private fun getGettableFields(
     fields.map { (type, name) ->
         CodeBlock.of(
             "new \$T<>(\$T.class, \$T::get$name)",
-            ClassName.get("io.github.pulpogato.common", "FancySerializer", "GettableField"),
+            pulpogatoClass("FancySerializer", "GettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
     }
+
+private fun pulpogatoClass(
+    simpleName: String,
+    vararg simpleNames: String,
+): ClassName = ClassName.get("io.github.pulpogato.common", simpleName, *simpleNames)
 
 private fun getSettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
@@ -315,7 +320,7 @@ private fun getSettableFields(
     fields.map { (type, name) ->
         CodeBlock.of(
             "new \$T<>(\$T.class, \$T::set$name)",
-            ClassName.get("io.github.pulpogato.common", "FancyDeserializer", "SettableField"),
+            pulpogatoClass("FancyDeserializer", "SettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
@@ -328,7 +333,7 @@ private fun buildSerializer(
 ): TypeSpec =
     TypeSpec.classBuilder("${className}Serializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .superclass(ParameterizedTypeName.get(ClassName.get("io.github.pulpogato.common", "FancySerializer"), ClassName.get("", className)))
+        .superclass(ParameterizedTypeName.get(pulpogatoClass("FancySerializer"), ClassName.get("", className)))
         .addMethod(
             MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -338,8 +343,8 @@ private fun buildSerializer(
                         |))
                     """.trimMargin(),
                     ClassName.get("", className),
-                    ClassName.get("io.github.pulpogato.common", "Mode"),
-                    ClassName.get("java.util", "List"),
+                    pulpogatoClass("Mode"),
+                    Types.LIST,
                     CodeBlock.join(gettableFields, ",\n    "),
                 )
                 .build(),
@@ -353,7 +358,7 @@ private fun buildDeserializer(
 ): TypeSpec =
     TypeSpec.classBuilder("${className}Deserializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .superclass(ParameterizedTypeName.get(ClassName.get("io.github.pulpogato.common", "FancyDeserializer"), ClassName.get("", className)))
+        .superclass(ParameterizedTypeName.get(pulpogatoClass("FancyDeserializer"), ClassName.get("", className)))
         .addMethod(
             MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -364,8 +369,8 @@ private fun buildDeserializer(
                     """.trimMargin(),
                     ClassName.get("", className),
                     ClassName.get("", className),
-                    ClassName.get("io.github.pulpogato.common", "Mode"),
-                    ClassName.get("java.util", "List"),
+                    pulpogatoClass("Mode"),
+                    Types.LIST,
                     CodeBlock.join(settableFields, ",\n    "),
                 )
                 .build(),

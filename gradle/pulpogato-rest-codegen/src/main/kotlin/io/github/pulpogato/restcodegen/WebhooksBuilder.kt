@@ -60,7 +60,7 @@ object WebhooksBuilder {
                                     .build(),
                             )
                             .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
-                            .addException(ClassName.get("java.lang", "Exception"))
+                            .addException(Types.EXCEPTION)
                             .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
                     val headers = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
                     headers
@@ -79,7 +79,7 @@ object WebhooksBuilder {
                             }
                             methodBuilder
                                 .addParameter(
-                                    ParameterSpec.builder(ClassName.get("java.lang", "String"), it.camelCase())
+                                    ParameterSpec.builder(Types.STRING, it.camelCase())
                                         .addAnnotation(parameterAnnotation.build())
                                         .addAnnotation(generated(0))
                                         .build(),
@@ -179,15 +179,15 @@ object WebhooksBuilder {
             )
             .addMethod(
                 MethodSpec.methodBuilder("doTest")
-                    .addParameter(ClassName.get("java.lang", "String"), "hookname")
-                    .addParameter(ClassName.get("java.lang", "String"), "filename")
+                    .addParameter(Types.STRING, "hookname")
+                    .addParameter(Types.STRING, "filename")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params", "ParameterizedTest")).build())
                     .addAnnotation(
                         AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params.provider", "MethodSource"))
                             .addMember("value", "\$S", "files")
                             .build(),
                     )
-                    .addException(ClassName.get("java.lang", "Exception"))
+                    .addException(Types.EXCEPTION)
                     .addStatement("\$T.testWebhook(hookname, filename, mvc)", ClassName.get("io.github.pulpogato.test", "WebhookHelper"))
                     .build(),
             )
@@ -319,7 +319,7 @@ object WebhooksBuilder {
                                 Context.withSchemaStack("parameters", idx.toString()) {
                                     methodSpecBuilder
                                         .addParameter(
-                                            ParameterSpec.builder(ClassName.get("java.lang", "String"), it.name.camelCase())
+                                            ParameterSpec.builder(Types.STRING, it.name.camelCase())
                                                 .addAnnotation(parameterAnnotation.build())
                                                 .addAnnotation(generated(0))
                                                 .build(),
@@ -369,14 +369,14 @@ object WebhooksBuilder {
 
         val methodSpec =
             methodSpecBuilder
-                .addException(ClassName.get("java.lang", "Exception"))
+                .addException(Types.EXCEPTION)
                 .build()
         interfaceBuilder.addMethod(methodSpec)
 
         val testControllerMethod =
             MethodSpec.methodBuilder(methodName)
                 .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
-                .addException(ClassName.get("java.lang", "Exception"))
+                .addException(Types.EXCEPTION)
                 .returns(
                     ParameterizedTypeName.get(
                         ClassName.get("org.springframework.http", "ResponseEntity"),
