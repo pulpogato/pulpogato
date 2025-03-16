@@ -234,17 +234,7 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                             }
                             theType.addType(builder.addModifiers(Modifier.STATIC).build())
                         }
-                        val fieldSpec =
-                            FieldSpec
-                                .builder(
-                                    keyValuePair.referenceAndDefinition("", classRef)!!.first,
-                                    keyValuePair.key.unkeywordize().camelCase(),
-                                    Modifier.PRIVATE,
-                                )
-                                .addJavadoc(keyValuePair.schemaJavadoc().split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
-                                .addAnnotation(generated(0))
-                                .addAnnotation(jsonProperty(keyValuePair.key))
-                                .build()
+                        val fieldSpec = buildFieldSpec(keyValuePair, classRef)
                         theType.addField(fieldSpec)
                         if (fieldSpec.type() is ParameterizedTypeName) {
                             fields.add(Pair((fieldSpec.type() as ParameterizedTypeName).rawType(), fieldSpec.name().pascalCase()))
@@ -256,68 +246,10 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                 }
             }
 
-        val settableFields =
-            fields.map { (type, name) ->
-                CodeBlock.of(
-                    "new \$T<>(\$T.class, \$T::set$name)",
-                    ClassName.get("io.github.pulpogato.common", "FancyDeserializer", "SettableField"),
-                    type.withoutAnnotations(),
-                    ClassName.get("", className),
-                )
-            }
-
-        val gettableFields =
-            fields.map { (type, name) ->
-                CodeBlock.of(
-                    "new \$T<>(\$T.class, \$T::get$name)",
-                    ClassName.get("io.github.pulpogato.common", "FancySerializer", "GettableField"),
-                    type.withoutAnnotations(),
-                    ClassName.get("", className),
-                )
-            }
-
-        val deserializer =
-            TypeSpec.classBuilder("${className}Deserializer")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get("io.github.pulpogato.common", "FancyDeserializer"), ClassName.get("", className)))
-                .addMethod(
-                    MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addStatement(
-                            """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
-                        |    ${"$"}L
-                        |))
-                            """.trimMargin(),
-                            ClassName.get("", className),
-                            ClassName.get("", className),
-                            ClassName.get("io.github.pulpogato.common", "Mode"),
-                            ClassName.get("java.util", "List"),
-                            CodeBlock.join(settableFields, ",\n    "),
-                        )
-                        .build(),
-                )
-                .build()
-
-        val serializer =
-            TypeSpec.classBuilder("${className}Serializer")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get("io.github.pulpogato.common", "FancySerializer"), ClassName.get("", className)))
-                .addMethod(
-                    MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addStatement(
-                            """super(${"$"}T.class, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
-                        |    ${"$"}L
-                        |))
-                            """.trimMargin(),
-                            ClassName.get("", className),
-                            ClassName.get("io.github.pulpogato.common", "Mode"),
-                            ClassName.get("java.util", "List"),
-                            CodeBlock.join(gettableFields, ",\n    "),
-                        )
-                        .build(),
-                )
-                .build()
+        val settableFields = getSettableFields(fields, className)
+        val gettableFields = getGettableFields(fields, className)
+        val deserializer = buildDeserializer(className, type, settableFields)
+        val serializer = buildSerializer(className, type, gettableFields)
 
         theType.addType(deserializer)
             .addType(serializer)
@@ -330,6 +262,93 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
         theType.build()
     }
 }
+
+private fun buildFieldSpec(
+    keyValuePair: Map.Entry<String, Schema<Any>>,
+    classRef: ClassName
+): FieldSpec = FieldSpec
+    .builder(
+        keyValuePair.referenceAndDefinition("", classRef)!!.first,
+        keyValuePair.key.unkeywordize().camelCase(),
+        Modifier.PRIVATE,
+    )
+    .addJavadoc(keyValuePair.schemaJavadoc().split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
+    .addAnnotation(generated(0))
+    .addAnnotation(jsonProperty(keyValuePair.key))
+    .build()
+
+private fun getGettableFields(
+    fields: ArrayList<Pair<TypeName, String>>,
+    className: String?
+): List<CodeBlock> = fields.map { (type, name) ->
+    CodeBlock.of(
+        "new \$T<>(\$T.class, \$T::get$name)",
+        ClassName.get("io.github.pulpogato.common", "FancySerializer", "GettableField"),
+        type.withoutAnnotations(),
+        ClassName.get("", className),
+    )
+}
+
+private fun getSettableFields(
+    fields: ArrayList<Pair<TypeName, String>>,
+    className: String?
+): List<CodeBlock> = fields.map { (type, name) ->
+    CodeBlock.of(
+        "new \$T<>(\$T.class, \$T::set$name)",
+        ClassName.get("io.github.pulpogato.common", "FancyDeserializer", "SettableField"),
+        type.withoutAnnotations(),
+        ClassName.get("", className),
+    )
+}
+
+private fun buildSerializer(
+    className: String?,
+    type: String,
+    gettableFields: List<CodeBlock>
+): TypeSpec = TypeSpec.classBuilder("${className}Serializer")
+    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+    .superclass(ParameterizedTypeName.get(ClassName.get("io.github.pulpogato.common", "FancySerializer"), ClassName.get("", className)))
+    .addMethod(
+        MethodSpec.constructorBuilder()
+            .addModifiers(Modifier.PUBLIC)
+            .addStatement(
+                """super(${"$"}T.class, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
+                        |    ${"$"}L
+                        |))
+                            """.trimMargin(),
+                ClassName.get("", className),
+                ClassName.get("io.github.pulpogato.common", "Mode"),
+                ClassName.get("java.util", "List"),
+                CodeBlock.join(gettableFields, ",\n    "),
+            )
+            .build(),
+    )
+    .build()
+
+private fun buildDeserializer(
+    className: String?,
+    type: String,
+    settableFields: List<CodeBlock>
+): TypeSpec = TypeSpec.classBuilder("${className}Deserializer")
+    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+    .superclass(ParameterizedTypeName.get(ClassName.get("io.github.pulpogato.common", "FancyDeserializer"), ClassName.get("", className)))
+    .addMethod(
+        MethodSpec.constructorBuilder()
+            .addModifiers(Modifier.PUBLIC)
+            .addStatement(
+                """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
+                        |    ${"$"}L
+                        |))
+                            """.trimMargin(),
+                ClassName.get("", className),
+                ClassName.get("", className),
+                ClassName.get("io.github.pulpogato.common", "Mode"),
+                ClassName.get("java.util", "List"),
+                CodeBlock.join(settableFields, ",\n    "),
+            )
+            .build(),
+    )
+    .build()
 
 private fun Map.Entry<String, Schema<*>>.buildSimpleObject(
     isArray: Boolean,
