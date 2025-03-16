@@ -9,6 +9,7 @@ import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.pascalCase
 import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
@@ -54,7 +55,9 @@ object PathsBuilder {
                             .addJavadoc(apiDescription ?: "")
                     }
 
-                val testClass = TypeSpec.classBuilder(interfaceName + "Test")
+                val testClass =
+                    TypeSpec.classBuilder(interfaceName + "Test")
+                        .addAnnotation(testExtension())
                 val typeRef = ClassName.get(packageName, interfaceName)
 
                 atomicMethods.forEach { atomicMethod ->

@@ -7,8 +7,13 @@ import java.lang.annotation.RetentionPolicy;
  * Indicates that the class was generated.
  */
 @SuppressWarnings("unused")
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Generated {
+    /**
+     * The version of the GitHub API Spec
+     * @return The version of the GitHub API Spec
+     */
+    String ghVersion();
     /**
      * The location of the type in the schema
      * @return The location as a json reference

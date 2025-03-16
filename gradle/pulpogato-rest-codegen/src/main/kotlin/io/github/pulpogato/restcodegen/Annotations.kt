@@ -71,6 +71,7 @@ object Annotations {
      */
     fun generated(offset: Int): AnnotationSpec =
         AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "Generated"))
+            .addMember("ghVersion", "\$S", Context.instance.get().version)
             .addMember(
                 "schemaRef",
                 "\$S",
@@ -95,4 +96,12 @@ object Annotations {
         val frame = frames[2 + offset]
         return "${frame.fileName}:${frame.lineNumber}"
     }
+
+    /*
+     Test Annotations
+     */
+    fun testExtension(): AnnotationSpec =
+        AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api.extension", "ExtendWith"))
+            .addMember("value", "\$T.class", ClassName.get("io.github.pulpogato.test", "IgnoredTestContext"))
+            .build()
 }

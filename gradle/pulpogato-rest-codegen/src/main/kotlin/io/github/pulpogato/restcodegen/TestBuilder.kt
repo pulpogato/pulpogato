@@ -1,7 +1,6 @@
 package io.github.pulpogato.restcodegen
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.TypeName
@@ -32,23 +31,11 @@ object TestBuilder {
 
         val testUtilsClass = ClassName.get("io.github.pulpogato.test", "TestUtils")
 
-        val ignoredTestsForVersion = IgnoredTests.causes[Context.instance.get().version] ?: mapOf()
-        val ignoreCause = ignoredTestsForVersion[Context.getSchemaStackRef()]
-        val ignoreAnnotation =
-            if (ignoreCause != null) {
-                AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Disabled"))
-                    .addMember("value", "\$S", ignoreCause)
-                    .build()
-            } else {
-                null
-            }
-
         try {
             val methodSpec =
                 MethodSpec.methodBuilder("test${key.pascalCase()}")
                     .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                     .addAnnotation(Annotations.generated(1))
-                    .addAnnotations(listOfNotNull(ignoreAnnotation))
                     .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
                     .addStatement("\$T input = /* language=JSON */ \$L", String::class.java, formatted.blockQuote())
                     .addStatement("var softly = new \$T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
