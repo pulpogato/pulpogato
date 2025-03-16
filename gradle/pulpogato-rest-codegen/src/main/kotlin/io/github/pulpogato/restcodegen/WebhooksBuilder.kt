@@ -1,9 +1,5 @@
 package io.github.pulpogato.restcodegen
 
-import io.github.pulpogato.restcodegen.Annotations.generated
-import io.github.pulpogato.restcodegen.ext.camelCase
-import io.github.pulpogato.restcodegen.ext.className
-import io.github.pulpogato.restcodegen.ext.pascalCase
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.FieldSpec
@@ -13,6 +9,10 @@ import com.palantir.javapoet.ParameterSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
+import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.ext.camelCase
+import io.github.pulpogato.restcodegen.ext.className
+import io.github.pulpogato.restcodegen.ext.pascalCase
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
@@ -36,9 +36,10 @@ object WebhooksBuilder {
             .entries
             .groupBy { getSubcategory(it.value.readOperationsMap().values.first())!! }
             .forEach { (k, v) ->
-                val interfaceBuilder = TypeSpec.interfaceBuilder("${k.pascalCase()}Webhooks")
-                    .addModifiers(Modifier.PUBLIC)
-                    .addTypeVariable(TypeVariableName.get("T"))
+                val interfaceBuilder =
+                    TypeSpec.interfaceBuilder("${k.pascalCase()}Webhooks")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addTypeVariable(TypeVariableName.get("T"))
 
                 val unitTestBuilder = TypeSpec.classBuilder("${k.pascalCase()}WebhooksTest")
 
@@ -50,16 +51,17 @@ object WebhooksBuilder {
                 }
 
                 if (v.size > 1) {
-                    val methodBuilder = MethodSpec.methodBuilder("process${k.pascalCase()}")
-                        .addAnnotation(generated(0))
-                        .addAnnotation(
-                            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
-                                .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
-                                .build(),
-                        )
-                        .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
-                        .addException(ClassName.get("java.lang", "Exception"))
-                        .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
+                    val methodBuilder =
+                        MethodSpec.methodBuilder("process${k.pascalCase()}")
+                            .addAnnotation(generated(0))
+                            .addAnnotation(
+                                AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
+                                    .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
+                                    .build(),
+                            )
+                            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
+                            .addException(ClassName.get("java.lang", "Exception"))
+                            .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
                     val headers = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
                     headers
                         .forEach {
@@ -86,7 +88,9 @@ object WebhooksBuilder {
 
                     val routerBuilder = StringWriter()
                     val printWriter = PrintWriter(routerBuilder)
-                    printWriter.println("final var action = (requestBody.isObject() && requestBody.has(\"action\")) ? requestBody.get(\"action\").asText() : null;")
+                    printWriter.println(
+                        "final var action = (requestBody.isObject() && requestBody.has(\"action\")) ? requestBody.get(\"action\").asText() : null;",
+                    )
                     printWriter.println("return switch (action) {")
                     requestBodyTypes.forEach { (name, methodNameAndType) ->
                         val cleanedAction = name.replace("-", "_").replace(k, "").replace(Regex("^_"), "")
@@ -102,20 +106,21 @@ object WebhooksBuilder {
                             methodBuilder
                                 .addParameter(
                                     ParameterSpec.builder(
-                                        ClassName.get("com.fasterxml.jackson.databind", "JsonNode"), "requestBody"
+                                        ClassName.get("com.fasterxml.jackson.databind", "JsonNode"),
+                                        "requestBody",
                                     )
                                         .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
                                         .addAnnotation(generated(0))
-                                        .build()
+                                        .build(),
                                 )
                                 .addCode(routerBuilder.toString(), ClassName.get("org.springframework.http", "ResponseEntity"))
-                                .build()
+                                .build(),
                         )
                         .addMethod(
                             MethodSpec.methodBuilder("getObjectMapper")
                                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                                 .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
-                                .build()
+                                .build(),
                         )
                 }
 
@@ -128,8 +133,8 @@ object WebhooksBuilder {
                     testController.addSuperinterface(
                         ParameterizedTypeName.get(
                             ClassName.get(webhooksPackage, "${k.pascalCase()}Webhooks"),
-                            ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
-                        )
+                            ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                        ),
                     )
                 }
 
@@ -139,7 +144,6 @@ object WebhooksBuilder {
                         .build()
                         .writeTo(testDir)
                 }
-
             }
         val testConfig = buildTestConfig(testController.build())
         val integrationTestBuilder = buildIntegrationTest(testConfig.build())
@@ -148,93 +152,96 @@ object WebhooksBuilder {
             .writeTo(testDir)
     }
 
-    private fun buildIntegrationTest(testConfig: TypeSpec): TypeSpec.Builder = TypeSpec.classBuilder("WebhooksIntegrationTest")
-        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "WebMvcTest")).build())
-        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "AutoConfigureMockMvc")).build())
-        .addField(
-            FieldSpec.builder(ClassName.get("org.springframework.test.web.servlet", "MockMvc"), "mvc")
-                .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
-                .build()
-        )
-        .addMethod(
-            MethodSpec.methodBuilder("files")
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                .returns(
-                    ParameterizedTypeName.get(
-                        ClassName.get("java.util.stream", "Stream"),
-                        ClassName.get("org.junit.jupiter.params.provider", "Arguments")
+    private fun buildIntegrationTest(testConfig: TypeSpec): TypeSpec.Builder =
+        TypeSpec.classBuilder("WebhooksIntegrationTest")
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "WebMvcTest")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "AutoConfigureMockMvc")).build())
+            .addField(
+                FieldSpec.builder(ClassName.get("org.springframework.test.web.servlet", "MockMvc"), "mvc")
+                    .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
+                    .build(),
+            )
+            .addMethod(
+                MethodSpec.methodBuilder("files")
+                    .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                    .returns(
+                        ParameterizedTypeName.get(
+                            ClassName.get("java.util.stream", "Stream"),
+                            ClassName.get("org.junit.jupiter.params.provider", "Arguments"),
+                        ),
                     )
-                )
-                .addStatement(
-                    "return \$T.getArguments(\"\$L\")",
-                    ClassName.get("io.github.pulpogato.test", "WebhookHelper"),
-                    Context.instance.get().version
-                )
-                .build()
-        )
-        .addMethod(
-            MethodSpec.methodBuilder("doTest")
-                .addParameter(ClassName.get("java.lang", "String"), "hookname")
-                .addParameter(ClassName.get("java.lang", "String"), "filename")
-                .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params", "ParameterizedTest")).build())
-                .addAnnotation(
-                    AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params.provider", "MethodSource"))
-                        .addMember("value", "\$S", "files")
-                        .build()
-                )
-                .addException(ClassName.get("java.lang", "Exception"))
-                .addStatement("\$T.testWebhook(hookname, filename, mvc)", ClassName.get("io.github.pulpogato.test", "WebhookHelper"))
-                .build()
-        )
-        .addType(testConfig)
+                    .addStatement(
+                        "return \$T.getArguments(\"\$L\")",
+                        ClassName.get("io.github.pulpogato.test", "WebhookHelper"),
+                        Context.instance.get().version,
+                    )
+                    .build(),
+            )
+            .addMethod(
+                MethodSpec.methodBuilder("doTest")
+                    .addParameter(ClassName.get("java.lang", "String"), "hookname")
+                    .addParameter(ClassName.get("java.lang", "String"), "filename")
+                    .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params", "ParameterizedTest")).build())
+                    .addAnnotation(
+                        AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params.provider", "MethodSource"))
+                            .addMember("value", "\$S", "files")
+                            .build(),
+                    )
+                    .addException(ClassName.get("java.lang", "Exception"))
+                    .addStatement("\$T.testWebhook(hookname, filename, mvc)", ClassName.get("io.github.pulpogato.test", "WebhookHelper"))
+                    .build(),
+            )
+            .addType(testConfig)
 
-    private fun buildTestConfig(testController: TypeSpec): TypeSpec.Builder = TypeSpec.classBuilder("TestConfig")
-        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.context", "TestConfiguration")).build())
-        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot", "SpringBootConfiguration")).build())
-        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.servlet.config.annotation", "EnableWebMvc")).build())
-        .addMethod(
-            MethodSpec.methodBuilder("objectMapper")
-                .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.context.annotation", "Bean")).build())
-                .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
-                .addStatement(
-                    """
+    private fun buildTestConfig(testController: TypeSpec): TypeSpec.Builder =
+        TypeSpec.classBuilder("TestConfig")
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.context", "TestConfiguration")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot", "SpringBootConfiguration")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.servlet.config.annotation", "EnableWebMvc")).build())
+            .addMethod(
+                MethodSpec.methodBuilder("objectMapper")
+                    .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.context.annotation", "Bean")).build())
+                    .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                    .addStatement(
+                        """
                         return new ${"$"}T()
                         .setSerializationInclusion(${"$"}T.Include.NON_NULL)
                         .registerModule(new ${"$"}T())
                         .disable(${"$"}T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
                         .configure(${"$"}T.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         """.trimIndent(),
-                    ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"),
-                    ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"),
-                    ClassName.get("com.fasterxml.jackson.datatype.jsr310", "JavaTimeModule"),
-                    ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature"),
-                    ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature")
-                )
-                .build()
-        )
-        .addType(testController)
-        .addModifiers(Modifier.STATIC)
+                        ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"),
+                        ClassName.get("com.fasterxml.jackson.annotation", "JsonInclude"),
+                        ClassName.get("com.fasterxml.jackson.datatype.jsr310", "JavaTimeModule"),
+                        ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature"),
+                        ClassName.get("com.fasterxml.jackson.databind", "DeserializationFeature"),
+                    )
+                    .build(),
+            )
+            .addType(testController)
+            .addModifiers(Modifier.STATIC)
 
-    private fun buildTestController(): TypeSpec.Builder = TypeSpec.classBuilder("TestController")
-        .addField(
-            FieldSpec.builder(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"), "objectMapper")
-                .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
-                .build()
-        )
-        .addMethod(
-            MethodSpec.methodBuilder("getObjectMapper")
-                .addModifiers(Modifier.PUBLIC)
-                .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
-                .addStatement("return objectMapper")
-                .build()
-        )
-        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RestController")).build())
-        .addAnnotation(
-            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestMapping"))
-                .addMember("value", "\$S", "/webhooks")
-                .build()
-        )
-        .addModifiers(Modifier.STATIC)
+    private fun buildTestController(): TypeSpec.Builder =
+        TypeSpec.classBuilder("TestController")
+            .addField(
+                FieldSpec.builder(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"), "objectMapper")
+                    .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
+                    .build(),
+            )
+            .addMethod(
+                MethodSpec.methodBuilder("getObjectMapper")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(ClassName.get("com.fasterxml.jackson.databind", "ObjectMapper"))
+                    .addStatement("return objectMapper")
+                    .build(),
+            )
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RestController")).build())
+            .addAnnotation(
+                AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestMapping"))
+                    .addMember("value", "\$S", "/webhooks")
+                    .build(),
+            )
+            .addModifiers(Modifier.STATIC)
 
     private fun createWebhookInterface(
         name: String,
@@ -256,7 +263,7 @@ object WebhooksBuilder {
         val javadoc =
             mutableListOf(
                 MarkdownHelper.mdToHtml(operation.summary) +
-                        if (operation.description != null) "\n<br/>" + MarkdownHelper.mdToHtml(operation.description) else "",
+                    if (operation.description != null) "\n<br/>" + MarkdownHelper.mdToHtml(operation.description) else "",
                 "\n",
             )
 
@@ -319,7 +326,7 @@ object WebhooksBuilder {
                                         )
                                 }
                             }
-                            bodyType = ClassName.get("${restPackage}.schemas", type)
+                            bodyType = ClassName.get("$restPackage.schemas", type)
                             Context.withSchemaStack("requestBody") {
                                 methodSpecBuilder.addParameter(
                                     ParameterSpec.builder(bodyType, "requestBody")
@@ -356,38 +363,40 @@ object WebhooksBuilder {
                 TypeSpec.classBuilder(name.pascalCase())
                     .addMethods(tests)
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
-                    .build()
+                    .build(),
             )
         }
 
-        val methodSpec = methodSpecBuilder
-            .addException(ClassName.get("java.lang", "Exception"))
-            .build()
+        val methodSpec =
+            methodSpecBuilder
+                .addException(ClassName.get("java.lang", "Exception"))
+                .build()
         interfaceBuilder.addMethod(methodSpec)
 
-        val testControllerMethod = MethodSpec.methodBuilder(methodName)
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
-            .addException(ClassName.get("java.lang", "Exception"))
-            .returns(
-                ParameterizedTypeName.get(
-                    ClassName.get("org.springframework.http", "ResponseEntity"),
-                    ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+        val testControllerMethod =
+            MethodSpec.methodBuilder(methodName)
+                .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
+                .addException(ClassName.get("java.lang", "Exception"))
+                .returns(
+                    ParameterizedTypeName.get(
+                        ClassName.get("org.springframework.http", "ResponseEntity"),
+                        ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                    ),
                 )
-            )
-            .addModifiers(Modifier.PUBLIC)
-            .addStatement(
-                """
-                return ${"$"}T.ok(
-                    ${"$"}T.builder()
-                        .webhookName("${"$"}L")
-                        .body(objectMapper.writeValueAsString(requestBody))
-                        .build()
-                    )
-                """.trimIndent(),
-                ClassName.get("org.springframework.http", "ResponseEntity"),
-                ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
-                name
-            )
+                .addModifiers(Modifier.PUBLIC)
+                .addStatement(
+                    """
+                    return ${"$"}T.ok(
+                        ${"$"}T.builder()
+                            .webhookName("${"$"}L")
+                            .body(objectMapper.writeValueAsString(requestBody))
+                            .build()
+                        )
+                    """.trimIndent(),
+                    ClassName.get("org.springframework.http", "ResponseEntity"),
+                    ClassName.get("io.github.pulpogato.test", "TestWebhookResponse"),
+                    name,
+                )
 
         methodSpec.parameters().forEach { t ->
             testControllerMethod.addParameter(ParameterSpec.builder(t.type(), t.name()).build())
