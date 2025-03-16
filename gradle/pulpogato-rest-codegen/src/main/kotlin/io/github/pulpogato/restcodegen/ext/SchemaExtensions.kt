@@ -49,12 +49,7 @@ fun Map.Entry<String, Schema<*>>.referenceAndDefinition(
 
     return when {
         key == "empty-object" -> Pair(Types.EMPTY_OBJECT, null)
-        value.`$ref` != null -> {
-            val schemaName = value.`$ref`.replace("#/components/schemas/", "")
-            val entries = Context.instance.get().openAPI.components.schemas.filter { (k, _) -> k == schemaName }.entries
-            val schema = entries.first()
-            schema.referenceAndDefinition("", null)!!.copy(second = null)
-        }
+        value.`$ref` != null -> buildReferenceAndDefinitionFromRef()
 
         anyOf != null && anyOf.size == 1 -> {
             val anyOfValue = anyOf.first()
@@ -95,86 +90,12 @@ fun Map.Entry<String, Schema<*>>.referenceAndDefinition(
 
         types.size == 1 ->
             when (types.first()) {
-                "string" ->
-                    when {
-                        value.enum != null -> buildType("${prefix}${this.className()}", parentClass) { buildEnum(it) }
-
-                        value.format == null -> Pair(Types.STRING, null)
-                        else ->
-                            when (value.format) {
-                                "uri" -> Pair(Types.URI.annotated(typeGenerated()), null)
-                                "uuid" -> Pair(Types.UUID.annotated(typeGenerated()), null)
-                                "date" -> Pair(Types.LOCAL_DATE.annotated(typeGenerated()), null)
-                                "date-time" -> Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
-                                "binary" -> Pair(Types.BYTE_ARRAY.annotated(typeGenerated()), null)
-                                "email", "hostname", "ip/cidr", "uri-template", "repo.nwo", "ssh-key", "ssh-key fingerprint" ->
-                                    Pair(
-                                        Types.STRING.annotated(typeGenerated()),
-                                        null,
-                                    )
-
-                                else -> throw RuntimeException("Unknown string type for $key, stack: ${Context.getSchemaStackRef()}")
-                            }
-                    }
-
-                "integer" ->
-                    when (value.format) {
-                        "int32" -> Pair(Types.INTEGER.annotated(typeGenerated()), null)
-                        "timestamp" -> Pair(Types.EPOCH_TIME.annotated(typeGenerated()), null)
-                        else -> Pair(Types.LONG.annotated(typeGenerated()), null)
-                    }
-
+                "string" -> buildReferenceAndDefinitionFromString(prefix, parentClass)
+                "integer" -> buildReferenceAndDefinitionFromInteger()
                 "boolean" -> Pair(Types.BOOLEAN, null)
-                "number" ->
-                    when (value.format) {
-                        "double" -> Pair(Types.DOUBLE.annotated(typeGenerated()), null)
-                        "float" -> Pair(Types.FLOAT.annotated(typeGenerated()), null)
-                        else -> Pair(Types.BIG_DECIMAL.annotated(typeGenerated()), null)
-                    }
-
-                "array" ->
-                    Context.withSchemaStack("items") { mapOf(key to value.items).entries.first().referenceAndDefinition("", parentClass, isArray = true) }
-                        ?.let {
-                            val oldTypeGenerated =
-                                it.first.annotations()
-                                    .filter { spec -> (spec.type() as ClassName).simpleName() == "TypeGenerated" }
-                            val otherAnnotations =
-                                it.first.annotations()
-                                    .filter { spec -> (spec.type() as ClassName).simpleName() != "TypeGenerated" }
-
-                            Pair(
-                                ParameterizedTypeName.get(
-                                    Types.LIST,
-                                    it.first.withoutAnnotations()
-                                        .annotated(oldTypeGenerated),
-                                )
-                                    .annotated(otherAnnotations.distinct()).annotated(typeGenerated()),
-                                it.second,
-                            )
-                        }
-
-                "object" ->
-                    when {
-                        value.additionalProperties != null && (value.properties == null || value.properties.isEmpty()) -> {
-                            val additionalProperties = value.additionalProperties
-                            if (additionalProperties is Schema<*>) {
-                                mapOf(key to additionalProperties).entries.first().referenceAndDefinition("", parentClass)!!
-                                    .let { Pair(ParameterizedTypeName.get(Types.MAP, Types.STRING, it.first), it.second) }
-                            } else {
-                                val message = additionalProperties.javaClass
-                                println(message)
-                                Pair(Types.TODO, null)
-                            }
-                        }
-
-                        value.properties != null && value.properties.isNotEmpty() ->
-                            buildType("${prefix}${this.className()}", parentClass) {
-                                buildSimpleObject(isArray, it)
-                            }
-
-                        else -> Pair(Types.MAP_STRING_OBJECT.annotated(typeGenerated()), null)
-                    }
-
+                "number" -> buildReferenceAndDefinitionFromNumber()
+                "array" -> buildReferenceAndDefinitionFromArray(parentClass)
+                "object" -> buildReferenceAndDefinitionFromObject(parentClass, prefix, isArray)
                 else -> throw RuntimeException("Unknown type for $key, stack: ${Context.getSchemaStackRef()}")
             }
 
@@ -183,6 +104,99 @@ fun Map.Entry<String, Schema<*>>.referenceAndDefinition(
         types.toSet() == setOf("string", "object", "integer") -> Pair(Types.STRING_OBJECT_OR_INTEGER, null)
         else -> Pair(Types.TODO, null)
     }
+}
+
+private fun Map.Entry<String, Schema<*>>.buildReferenceAndDefinitionFromObject(
+    parentClass: ClassName?,
+    prefix: String,
+    isArray: Boolean,
+): Pair<TypeName, TypeSpec?> =
+    when {
+        value.additionalProperties != null && (value.properties == null || value.properties.isEmpty()) -> {
+            val additionalProperties = value.additionalProperties
+            if (additionalProperties is Schema<*>) {
+                mapOf(key to additionalProperties).entries.first().referenceAndDefinition("", parentClass)!!
+                    .let { Pair(ParameterizedTypeName.get(Types.MAP, Types.STRING, it.first), it.second) }
+            } else {
+                val message = additionalProperties.javaClass
+                println(message)
+                Pair(Types.TODO, null)
+            }
+        }
+
+        value.properties != null && value.properties.isNotEmpty() ->
+            buildType("${prefix}${this.className()}", parentClass) {
+                buildSimpleObject(isArray, it)
+            }
+
+        else -> Pair(Types.MAP_STRING_OBJECT.annotated(typeGenerated()), null)
+    }
+
+private fun Map.Entry<String, Schema<*>>.buildReferenceAndDefinitionFromArray(parentClass: ClassName?): Pair<TypeName, TypeSpec?>? =
+    Context.withSchemaStack("items") { mapOf(key to value.items).entries.first().referenceAndDefinition("", parentClass, isArray = true) }
+        ?.let {
+            val oldTypeGenerated =
+                it.first.annotations()
+                    .filter { spec -> (spec.type() as ClassName).simpleName() == "TypeGenerated" }
+            val otherAnnotations =
+                it.first.annotations()
+                    .filter { spec -> (spec.type() as ClassName).simpleName() != "TypeGenerated" }
+
+            Pair(
+                ParameterizedTypeName.get(
+                    Types.LIST,
+                    it.first.withoutAnnotations()
+                        .annotated(oldTypeGenerated),
+                )
+                    .annotated(otherAnnotations.distinct()).annotated(typeGenerated()),
+                it.second,
+            )
+        }
+
+private fun Map.Entry<String, Schema<*>>.buildReferenceAndDefinitionFromNumber(): Pair<TypeName, TypeSpec?> =
+    when (value.format) {
+        "double" -> Pair(Types.DOUBLE.annotated(typeGenerated()), null)
+        "float" -> Pair(Types.FLOAT.annotated(typeGenerated()), null)
+        else -> Pair(Types.BIG_DECIMAL.annotated(typeGenerated()), null)
+    }
+
+private fun Map.Entry<String, Schema<*>>.buildReferenceAndDefinitionFromInteger(): Pair<TypeName, TypeSpec?> =
+    when (value.format) {
+        "int32" -> Pair(Types.INTEGER.annotated(typeGenerated()), null)
+        "timestamp" -> Pair(Types.EPOCH_TIME.annotated(typeGenerated()), null)
+        else -> Pair(Types.LONG.annotated(typeGenerated()), null)
+    }
+
+private fun Map.Entry<String, Schema<*>>.buildReferenceAndDefinitionFromString(
+    prefix: String,
+    parentClass: ClassName?,
+): Pair<TypeName, TypeSpec?> =
+    when {
+        value.enum != null -> buildType("${prefix}${this.className()}", parentClass) { buildEnum(it) }
+
+        value.format == null -> Pair(Types.STRING, null)
+        else ->
+            when (value.format) {
+                "uri" -> Pair(Types.URI.annotated(typeGenerated()), null)
+                "uuid" -> Pair(Types.UUID.annotated(typeGenerated()), null)
+                "date" -> Pair(Types.LOCAL_DATE.annotated(typeGenerated()), null)
+                "date-time" -> Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
+                "binary" -> Pair(Types.BYTE_ARRAY.annotated(typeGenerated()), null)
+                "email", "hostname", "ip/cidr", "uri-template", "repo.nwo", "ssh-key", "ssh-key fingerprint" ->
+                    Pair(
+                        Types.STRING.annotated(typeGenerated()),
+                        null,
+                    )
+
+                else -> throw RuntimeException("Unknown string type for $key, stack: ${Context.getSchemaStackRef()}")
+            }
+    }
+
+private fun Map.Entry<String, Schema<*>>.buildReferenceAndDefinitionFromRef(): Pair<TypeName, TypeSpec?> {
+    val schemaName = value.`$ref`.replace("#/components/schemas/", "")
+    val entries = Context.instance.get().openAPI.components.schemas.filter { (k, _) -> k == schemaName }.entries
+    val schema = entries.first()
+    return schema.referenceAndDefinition("", null)!!.copy(second = null)
 }
 
 private fun buildType(
