@@ -16,7 +16,9 @@ import com.palantir.javapoet.TypeSpec
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem.HttpMethod
+import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.parameters.Parameter
+import io.swagger.v3.oas.models.responses.ApiResponse
 import java.io.File
 import javax.lang.model.element.Modifier
 
@@ -81,8 +83,7 @@ object PathsBuilder {
         val successResponses =
             atomicMethod.operation.responses
                 .filter { (responseCode, apiResponse) ->
-                    val content = apiResponse.content
-                    content != null && content.isNotEmpty() && responseCode.startsWith("2")
+                    !apiResponse.content.isNullOrEmpty() && responseCode.startsWith("2")
                 }
                 .toMutableMap()
 
@@ -99,20 +100,7 @@ object PathsBuilder {
         val successResponse = successResponses.entries.minByOrNull { it.key }
 
         if (successResponse == null || successResponse.value.content == null) {
-            typeDef.addMethod(
-                MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
-                    .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                    .addJavadoc(javadoc)
-                    .addAnnotation(
-                        AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
-                            .addMember("value", "\$S", atomicMethod.path)
-                            .build(),
-                    )
-                    .addAnnotation(generated(0))
-                    .addParameters(parameters.map { buildParameter(it, atomicMethod, typeDef, typeRef, testClass) })
-                    .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
-                    .build(),
-            )
+            typeDef.addMethod(buildVoidMethod(atomicMethod, javadoc, parameters, typeDef, typeRef, testClass))
         } else {
             successResponse.value.content.forEach { (contentType, details) ->
                 val rad =
@@ -130,21 +118,7 @@ object PathsBuilder {
                             1 -> atomicMethod.operationId.split('/')[1].camelCase()
                             else -> atomicMethod.operationId.split('/')[1].camelCase() + suffixContentType(contentType)
                         }
-                    val testMethods =
-                        Context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples") {
-                            val examples =
-                                when {
-                                    contentType.contains("json") -> details.examples ?: emptyMap()
-                                    else -> emptyMap()
-                                }
-                            examples
-                                .filter { (_, v) -> v.value != null }
-                                .map { (k, v) ->
-                                    Context.withSchemaStack(k, "value") {
-                                        TestBuilder.buildTest("${successResponse.key}$k", v.value, respRef)
-                                    }
-                                }
-                        }
+                    val testMethods = getTestMethods(successResponse, contentType, details, respRef)
 
                     val parameterSpecs = parameters.map { buildParameter(it, atomicMethod, typeDef, typeRef, testClass) }
                     if (contentType.contains("json") && testMethods.isNotEmpty()) {
@@ -157,30 +131,81 @@ object PathsBuilder {
                                 .build(),
                         )
                     }
-                    val suitableAnotations = respRef.annotations().filter {
+                    val suitableAnnotations = respRef.annotations().filter {
                         (it.type() as ClassName).simpleName() != "JsonFormat"
                     }
-                    typeDef.addMethod(
-                        MethodSpec.methodBuilder(methodName)
-                            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                            .addJavadoc(javadoc)
-                            .addAnnotation(
-                                AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
-                                    .addMember("value", "\$S", atomicMethod.path)
-                                    .addMember("accept", "\$S", contentType)
-                                    .build(),
-                            )
-                            .addAnnotation(generated(0))
-                            .addParameters(parameterSpecs)
-                            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"),
-                                respRef.withoutAnnotations().annotated(suitableAnotations)
-                            ))
-                            .build(),
-                    )
+                    typeDef.addMethod(buildNonVoidMethod(methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef, suitableAnnotations))
                 }
             }
         }
     }
+
+    private fun getTestMethods(
+        successResponse: MutableMap.MutableEntry<String, ApiResponse>,
+        contentType: String,
+        details: MediaType,
+        respRef: TypeName
+    ): List<MethodSpec> = Context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples") {
+        val examples =
+            when {
+                contentType.contains("json") -> details.examples ?: emptyMap()
+                else -> emptyMap()
+            }
+        examples
+            .filter { (_, v) -> v.value != null }
+            .map { (k, v) ->
+                Context.withSchemaStack(k, "value") {
+                    TestBuilder.buildTest("${successResponse.key}$k", v.value, respRef)
+                }
+            }
+    }
+
+    private fun buildNonVoidMethod(
+        methodName: String,
+        javadoc: String,
+        atomicMethod: AtomicMethod,
+        contentType: String,
+        parameterSpecs: List<ParameterSpec>,
+        respRef: TypeName,
+        suitableAnnotations: List<AnnotationSpec>
+    ): MethodSpec? = MethodSpec.methodBuilder(methodName)
+        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+        .addJavadoc(javadoc)
+        .addAnnotation(
+            AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
+                .addMember("value", "\$S", atomicMethod.path)
+                .addMember("accept", "\$S", contentType)
+                .build(),
+        )
+        .addAnnotation(generated(0))
+        .addParameters(parameterSpecs)
+        .returns(
+            ParameterizedTypeName.get(
+                ClassName.get("org.springframework.http", "ResponseEntity"),
+                respRef.withoutAnnotations().annotated(suitableAnnotations)
+            )
+        )
+        .build()
+
+    private fun buildVoidMethod(
+        atomicMethod: AtomicMethod,
+        javadoc: String,
+        parameters: List<Parameter>,
+        typeDef: TypeSpec.Builder,
+        typeRef: ClassName,
+        testClass: TypeSpec.Builder
+    ): MethodSpec? = MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
+        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+        .addJavadoc(javadoc)
+        .addAnnotation(
+            AnnotationSpec.builder(ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"))
+                .addMember("value", "\$S", atomicMethod.path)
+                .build(),
+        )
+        .addAnnotation(generated(0))
+        .addParameters(parameters.map { buildParameter(it, atomicMethod, typeDef, typeRef, testClass) })
+        .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
+        .build()
 
     private fun suffixContentType(key: String) =
         when (key) {
