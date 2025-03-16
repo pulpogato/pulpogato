@@ -15,6 +15,7 @@ import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.className
 import io.github.pulpogato.restcodegen.ext.pascalCase
@@ -46,7 +47,9 @@ object WebhooksBuilder {
                         .addModifiers(Modifier.PUBLIC)
                         .addTypeVariable(TypeVariableName.get("T"))
 
-                val unitTestBuilder = TypeSpec.classBuilder("${k.pascalCase()}WebhooksTest")
+                val unitTestBuilder =
+                    TypeSpec.classBuilder("${k.pascalCase()}WebhooksTest")
+                        .addAnnotation(testExtension())
 
                 val requestBodyTypes = mutableMapOf<String, Pair<String, ClassName>>()
                 v.forEach { (name, webhook) ->
