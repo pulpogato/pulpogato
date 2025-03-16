@@ -49,21 +49,25 @@ public class TestUtils {
     }
 
     public static void diffJson(final String input, final String output, final SoftAssertions softly) {
-        final JsonValue source = Json.createReader(new StringReader(input)).readValue();
-        final JsonValue target = Json.createReader(new StringReader(output)).readValue();
+        try (
+                final var sourceReader = Json.createReader(new StringReader(input));
+                final var targetReader = Json.createReader(new StringReader(output))
+        ) {
+            final JsonValue source = sourceReader.readValue();
+            final JsonValue target = targetReader.readValue();
 
-        if (source instanceof JsonObject && target instanceof JsonObject) {
-            assertOnDiff(softly, Json.createDiff(source.asJsonObject(), target.asJsonObject()), source);
-        } else if (source instanceof JsonArray && target instanceof JsonArray) {
-            assertOnDiff(softly, Json.createDiff(source.asJsonArray(), target.asJsonArray()), source);
-        } else if (source == null) {
-            softly.fail("Invalid source: " + null);
-        } else if (target == null) {
-            softly.fail("Invalid target: " + null);
-        } else {
-            softly.fail("Invalid inputs:: Source:" + source.getValueType() + " Target:" + target.getValueType());
+            if (source instanceof JsonObject && target instanceof JsonObject) {
+                assertOnDiff(softly, Json.createDiff(source.asJsonObject(), target.asJsonObject()), source);
+            } else if (source instanceof JsonArray && target instanceof JsonArray) {
+                assertOnDiff(softly, Json.createDiff(source.asJsonArray(), target.asJsonArray()), source);
+            } else if (source == null) {
+                softly.fail("Invalid source: " + null);
+            } else if (target == null) {
+                softly.fail("Invalid target: " + null);
+            } else {
+                softly.fail("Invalid inputs:: Source:" + source.getValueType() + " Target:" + target.getValueType());
+            }
         }
-
     }
 
     private static void assertOnDiff(final SoftAssertions softly, final JsonPatch diff, final JsonValue source) {
