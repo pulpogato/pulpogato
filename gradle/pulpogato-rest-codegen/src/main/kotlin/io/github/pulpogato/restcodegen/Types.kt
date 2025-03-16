@@ -44,6 +44,7 @@ object Types {
 
     // Common Types
     val EMPTY_OBJECT: ClassName = ClassName.get(COMMON_PACKAGE, "EmptyObject")
+    val EXCEPTION: ClassName = ClassName.get(java.lang.Exception::class.java)
     val OBJECT: ClassName = ClassName.get(Object::class.java)
     val STRING_OBJECT_OR_INTEGER: ClassName = ClassName.get(COMMON_PACKAGE, "StringObjectOrInteger")
     val STRING_OR_INTEGER: ClassName = ClassName.get(COMMON_PACKAGE, "StringOrInteger")

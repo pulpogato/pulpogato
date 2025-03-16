@@ -285,26 +285,26 @@ object PathsBuilder {
             .addAnnotation(
                 when (theParameter.`in`) {
                     "query" ->
-                        AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestParam"))
+                        AnnotationSpec.builder(webBind("RequestParam"))
                             .addMember("value", "\$S", theParameter.name)
                             .addMember("required", "\$L", theParameter.required)
                             .build()
 
                     "body" -> buildBodyAnnotation(theParameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
                     "path" ->
-                        AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PathVariable"))
+                        AnnotationSpec.builder(webBind("PathVariable"))
                             .addMember("value", "\$S", theParameter.name)
                             .build()
 
-                    "header" ->
-                        AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
-                            .build()
+                    "header" -> AnnotationSpec.builder(webBind("RequestHeader")).build()
 
                     else -> throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
                 },
             )
             .build()
     }
+
+    private fun webBind(simpleName: String): ClassName = ClassName.get("org.springframework.web.bind.annotation", simpleName)
 
     private fun buildBodyAnnotation(
         theParameter: Parameter,
@@ -333,8 +333,7 @@ object PathsBuilder {
                     .build(),
             )
         }
-        return AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody"))
-            .build()
+        return AnnotationSpec.builder(webBind("RequestBody")).build()
     }
 
     private fun getParameters(
