@@ -1,5 +1,5 @@
 - example: "#/paths/~1enterprises~1{enterprise}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/4644"
   versions:
     - ghes-3.16
     - ghec
