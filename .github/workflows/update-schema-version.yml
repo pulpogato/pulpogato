@@ -1,0 +1,15 @@
+name: Update Schema Version
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+jobs:
+  issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - run: ./update-schema-version.sh
