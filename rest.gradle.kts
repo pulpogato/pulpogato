@@ -133,6 +133,6 @@ tasks.jacocoTestReport {
     }
 }
 
-tasks.withType<JavaCompile>() {
+tasks.withType<JavaCompile> {
     options.setIncremental(true)
 }
