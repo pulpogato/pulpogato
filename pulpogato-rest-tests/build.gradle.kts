@@ -25,3 +25,7 @@ java {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
+
+tasks.withType<JavaCompile> {
+    options.setIncremental(true)
+}
