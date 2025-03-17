@@ -240,27 +240,8 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
                 }
                 newKey to it
             }
-            .forEachIndexed { index, (newKey, it) ->
-                val keyValuePair = mapOf(newKey to it).entries.first()
-                Context.withSchemaStack("$index") {
-                    val rad = keyValuePair.referenceAndDefinition("", classRef)!!
-                    rad.let {
-                        if (rad.second != null) {
-                            val builder = rad.second!!.toBuilder()
-                            if (rad.first is ClassName) {
-                                addProperties(false, rad.first as ClassName, builder)
-                            }
-                            theType.addType(builder.addModifiers(Modifier.STATIC).build())
-                        }
-                        val fieldSpec = buildFieldSpec(keyValuePair, classRef)
-                        theType.addField(fieldSpec)
-                        if (fieldSpec.type() is ParameterizedTypeName) {
-                            fields.add(Pair((fieldSpec.type() as ParameterizedTypeName).rawType(), fieldSpec.name().pascalCase()))
-                        } else {
-                            fields.add(Pair(fieldSpec.type(), fieldSpec.name().pascalCase()))
-                        }
-                    }
-                }
+            .forEachIndexed { index, (newKey, subSchema) ->
+                processSubSchema(newKey, subSchema, index, classRef, theType, fields)
             }
 
         val settableFields = getSettableFields(fields, className)
@@ -277,6 +258,37 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
             .addAnnotation(lombok("AllArgsConstructor"))
 
         theType.build()
+    }
+}
+
+private fun Map.Entry<String, Schema<*>>.processSubSchema(
+    newKey: String,
+    subSchema: Schema<Any>,
+    index: Int,
+    classRef: ClassName,
+    theType: TypeSpec.Builder,
+    fields: ArrayList<Pair<TypeName, String>>,
+) {
+    val keyValuePair = mapOf(newKey to subSchema).entries.first()
+    Context.withSchemaStack("$index") {
+        val rad = keyValuePair.referenceAndDefinition("", classRef)!!
+        rad.let {
+            if (rad.second != null) {
+                val builder = rad.second!!.toBuilder()
+                if (rad.first is ClassName) {
+                    addProperties(false, rad.first as ClassName, builder)
+                }
+                theType.addType(builder.addModifiers(Modifier.STATIC).build())
+            }
+            val fieldSpec = buildFieldSpec(keyValuePair, classRef)
+            theType.addField(fieldSpec)
+            val first =
+                when {
+                    fieldSpec.type() is ParameterizedTypeName -> (fieldSpec.type() as ParameterizedTypeName).rawType()
+                    else -> fieldSpec.type()
+                }
+            fields.add(Pair(first, fieldSpec.name().pascalCase()))
+        }
     }
 }
 
