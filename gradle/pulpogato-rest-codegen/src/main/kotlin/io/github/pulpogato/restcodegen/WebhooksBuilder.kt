@@ -36,7 +36,7 @@ object WebhooksBuilder {
         webhooksPackage: String,
         testDir: File,
     ) {
-        val testController = buildTestController()
+        val testControllerBuilder = buildTestController()
 
         openAPI.webhooks
             .entries
@@ -53,7 +53,7 @@ object WebhooksBuilder {
 
                 val requestBodyTypes = mutableMapOf<String, Pair<String, ClassName>>()
                 v.forEach { (name, webhook) ->
-                    val requestBody = createWebhookInterface(name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testController)
+                    val requestBody = createWebhookInterface(name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testControllerBuilder)
                     val methodName = "process" + webhook.readOperationsMap().values.first().operationId.replace("/", "-").pascalCase()
                     requestBodyTypes[name] = Pair(methodName, requestBody)
                 }
@@ -70,59 +70,25 @@ object WebhooksBuilder {
                             .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
                             .addException(Types.EXCEPTION)
                             .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
-                    val headers = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
-                    headers
+                    val headerNames = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
+                    headerNames
                         .forEach {
-                            val required =
-                                when {
-                                    it.startsWith("X-Hub-Signature") -> false
-                                    it.startsWith("X-GitHub-Enterprise") -> false
-                                    else -> true
-                                }
-                            val parameterAnnotation =
-                                AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
-                                    .addMember("value", "\$S", it)
-                            if (!required) {
-                                parameterAnnotation.addMember("required", "\$L", false)
-                            }
                             methodBuilder
                                 .addParameter(
                                     ParameterSpec.builder(Types.STRING, it.camelCase())
-                                        .addAnnotation(parameterAnnotation.build())
+                                        .addAnnotation(getParameterAnnotation(it).build())
                                         .addAnnotation(generated(0))
                                         .build(),
                                 )
                         }
 
-                    val routerBuilder = StringWriter()
-                    val printWriter = PrintWriter(routerBuilder)
-                    printWriter.println(
-                        "final var action = (requestBody.isObject() && requestBody.has(\"action\")) ? requestBody.get(\"action\").asText() : null;",
-                    )
-                    printWriter.println("return switch (action) {")
-                    requestBodyTypes.forEach { (name, methodNameAndType) ->
-                        val cleanedAction = name.replace("-", "_").replace(k, "").replace(Regex("^_"), "")
-                        val (methodName, type) = methodNameAndType
-                        printWriter.print("    case \"$cleanedAction\" -> $methodName(${headers.joinToString(", ") { it.camelCase() }},")
-                        printWriter.println(" getObjectMapper().treeToValue(requestBody, ${type.simpleName()}.class));")
-                    }
-                    printWriter.println("    default -> ${"$"}T.badRequest().build();")
-                    printWriter.println("};")
+                    val router = buildRouter(requestBodyTypes, k, headerNames)
 
                     interfaceBuilder
                         .addMethod(
                             methodBuilder
-                                .addParameter(
-                                    ParameterSpec
-                                        .builder(
-                                            ClassName.get(JsonNode::class.java),
-                                            "requestBody",
-                                        )
-                                        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
-                                        .addAnnotation(generated(0))
-                                        .build(),
-                                )
-                                .addCode(routerBuilder.toString(), ClassName.get("org.springframework.http", "ResponseEntity"))
+                                .addParameter(buildRequestBodyParameter())
+                                .addCode(router, ClassName.get("org.springframework.http", "ResponseEntity"))
                                 .build(),
                         )
                         .addMethod(
@@ -139,7 +105,7 @@ object WebhooksBuilder {
                         .build()
                         .writeTo(mainDir)
 
-                    testController.addSuperinterface(
+                    testControllerBuilder.addSuperinterface(
                         ParameterizedTypeName.get(
                             ClassName.get(webhooksPackage, "${k.pascalCase()}Webhooks"),
                             TEST_RESPONSE,
@@ -154,11 +120,60 @@ object WebhooksBuilder {
                         .writeTo(testDir)
                 }
             }
-        val testConfig = buildTestConfig(testController.build())
+        val testConfig = buildTestConfig(testControllerBuilder.build())
         val integrationTestBuilder = buildIntegrationTest(testConfig.build())
         JavaFile.builder(webhooksPackage, integrationTestBuilder.build())
             .build()
             .writeTo(testDir)
+    }
+
+    private fun buildRequestBodyParameter(): ParameterSpec? =
+        ParameterSpec
+            .builder(
+                ClassName.get(JsonNode::class.java),
+                "requestBody",
+            )
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
+            .addAnnotation(generated(0))
+            .build()
+
+    private fun buildRouter(
+        requestBodyTypes: Map<String, Pair<String, ClassName>>,
+        k: String,
+        headerNames: List<String>,
+    ): String {
+        val routerBuilder = StringWriter()
+        val printWriter = PrintWriter(routerBuilder)
+        printWriter.println(
+            """final var action = (requestBody.isObject() && requestBody.has("action")) ? requestBody.get("action").asText() : null;""",
+        )
+        printWriter.println("return switch (action) {")
+        requestBodyTypes.forEach { (name, methodNameAndType) ->
+            val cleanedAction = name.replace("-", "_").replace(k, "").replace(Regex("^_"), "")
+            val (methodName, type) = methodNameAndType
+            printWriter.print("    case \"$cleanedAction\" -> $methodName(${headerNames.joinToString(", ") { it.camelCase() }},")
+            printWriter.println(" getObjectMapper().treeToValue(requestBody, ${type.simpleName()}.class));")
+        }
+        printWriter.println("    default -> ${"$"}T.badRequest().build();")
+        printWriter.println("};")
+        val router = routerBuilder.toString()
+        return router
+    }
+
+    private fun getParameterAnnotation(string: String): AnnotationSpec.Builder {
+        val required =
+            when {
+                string.startsWith("X-Hub-Signature") -> false
+                string.startsWith("X-GitHub-Enterprise") -> false
+                else -> true
+            }
+        val parameterAnnotation =
+            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
+                .addMember("value", "\$S", string)
+        if (!required) {
+            parameterAnnotation.addMember("required", "\$L", false)
+        }
+        return parameterAnnotation
     }
 
     private fun buildIntegrationTest(testConfig: TypeSpec): TypeSpec.Builder =
@@ -259,7 +274,7 @@ object WebhooksBuilder {
         restPackage: String,
         interfaceBuilder: TypeSpec.Builder,
         unitTestBuilder: TypeSpec.Builder,
-        testController: TypeSpec.Builder,
+        testControllerBuilder: TypeSpec.Builder,
     ): ClassName {
         var bodyType: ClassName? = null
         if (webhook.readOperationsMap().size != 1) {
@@ -388,7 +403,7 @@ object WebhooksBuilder {
             testControllerMethod.addParameter(ParameterSpec.builder(t.type(), t.name()).build())
         }
 
-        testController.addMethod(testControllerMethod.build())
+        testControllerBuilder.addMethod(testControllerMethod.build())
 
         return bodyType!!
     }
