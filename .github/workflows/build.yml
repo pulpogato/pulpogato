@@ -8,9 +8,7 @@ on:
     tags:
     - 'v[0-9]+.[0-9]+.[0-9]+'
     - 'v[0-9]+.[0-9]+.[0-9]+-rc.[1-9][0-9]*'
-  repository_dispatch:
-    types:
-    - create-pull-request
+  workflow_dispatch:
 
 jobs:
   build:
