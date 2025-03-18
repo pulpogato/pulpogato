@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -eo pipefail
 
 if [ "$CI" != "" ]; then
     if git diff --quiet; then
@@ -28,7 +28,7 @@ else
     RAD_VERSION=$(bun pm ls | grep rest-api-description | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' | cut -d '#' -f 2)
     export RAD_VERSION
     git commit -m "chore(deps): Update rest-api-description to $RAD_VERSION"
-    git push origin ${BRANCH_NAME}
+    git push origin ${BRANCH_NAME} --force
     gh pr create \
         --title "Update rest-api-description to $RAD_VERSION" \
         --body "" \
