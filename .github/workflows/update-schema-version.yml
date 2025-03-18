@@ -19,4 +19,35 @@ jobs:
         with:
           bun-version-file: ".bun-version"
 
-      - run: ./update-schema-version.sh
+      - name: Update Schema Version
+        run: |-
+          export BRANCH_NAME=update-schema-version
+          git checkout -b $BRANCH_NAME
+          bun update
+          RAD_VERSION=$(bun pm ls | grep rest-api-description | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' | cut -d '#' -f 2)
+          export RAD_VERSION
+          git add .
+          git \
+            -c user.name='github-actions[bot]' \
+            -c user.email='github-actions[bot]@users.noreply.github.com' \
+              commit -m "Update schema version"
+
+      - uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update-schema-version
+          force: true
+
+      - name: Update Schema Version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |-
+          if [ $(gh pr list --base main --head update-schema-version | wc -l) -eq 0 ]; then
+            gh pr create \
+              --title "Update schema version" \
+              --body "" \
+              --base main \
+              --head update-schema-version
+          else
+            gh pr list --base main --head update-schema-version | cat -
+          fi
