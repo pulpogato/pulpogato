@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 if [ "$CI" != "" ]; then
     if git diff --quiet; then
         echo "No changes to main. Proceeding..."
@@ -10,6 +12,8 @@ if [ "$CI" != "" ]; then
 
     git checkout main
     git pull --rebase
+else
+    git checkout main
 fi
 bun update
 
