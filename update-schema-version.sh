@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -eo pipefail
 
 if [ "$CI" != "" ]; then
     if git diff --quiet; then
