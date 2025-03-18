@@ -8,6 +8,6 @@
     },
   },
   "packages": {
-    "rest-api-description": ["rest-api-description@github:github/rest-api-description#457a01b", {}, "github-rest-api-description-457a01b"],
+    "rest-api-description": ["rest-api-description@github:github/rest-api-description#fcf38b8", {}, "github-rest-api-description-fcf38b8"],
   }
 }
