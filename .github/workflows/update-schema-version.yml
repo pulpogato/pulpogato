@@ -51,3 +51,13 @@ jobs:
           else
             gh pr list --base main --head update-schema-version | cat -
           fi
+
+      - name: Run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |-
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.everest-preview+json" \
+            https://api.github.com/repos/pulpogato/pulpogato/dispatches \
+            -d '{"event_type": "create-pull-request"}'
