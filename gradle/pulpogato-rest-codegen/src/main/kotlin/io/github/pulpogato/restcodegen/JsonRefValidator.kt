@@ -20,8 +20,8 @@ class JsonRefValidator {
                     .filter { it.name.endsWith(".java") }
                     .flatMap {
                         it.readLines().mapIndexed { lineNumber, line -> Triple(it, lineNumber, line) }
-                            .filter { l -> l.third.matches(Regex(" +from = \".+\",")) }
-                            .map { x -> Triple(x.first, x.second, x.third.replace(Regex(" +from = \"(.+)\","), "$1")) }
+                            .filter { l -> l.third.matches(Regex(".+schemaRef *= *\".+?\".*")) }
+                            .map { x -> Triple(x.first, x.second, x.third.replace(Regex(".+schemaRef *= *\"(.+?)\".*"), "$1")) }
                     }
                     .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }
                     .count { hasError(json, it) }
@@ -49,6 +49,11 @@ class JsonRefValidator {
                         else -> (current as JsonNode)[name]
                     }
             }
+        }
+        if (current == null) {
+            val first = location.first.absolutePath.replace(Regex(".+/pulpogato/pulpogato-"), "pulpogato-")
+            println("$first:${location.second + 1}: E:BAD_REF ${location.third}")
+            return true
         }
         return false
     }

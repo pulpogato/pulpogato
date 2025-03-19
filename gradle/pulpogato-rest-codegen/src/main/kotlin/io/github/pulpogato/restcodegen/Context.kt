@@ -7,11 +7,11 @@ class Context {
 
     lateinit var version: String
 
-    private val schemaStack = mutableListOf<String>()
+    val schemaStack = mutableListOf<String>()
 
     private fun getSchemaStackRef() = schemaStack.joinToString("/") { it.replace("/", "~1") }
 
-    fun <T> withSchemaStack(
+    inline fun <T> withSchemaStack(
         vararg element: String,
         block: () -> T,
     ): T {
@@ -32,7 +32,7 @@ class Context {
     companion object {
         val instance = ThreadLocal.withInitial { Context() }!!
 
-        fun <T> withSchemaStack(
+        inline fun <T> withSchemaStack(
             vararg element: String,
             block: () -> T,
         ): T = instance.get().withSchemaStack(*element, block = block)
