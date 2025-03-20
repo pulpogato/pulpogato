@@ -2,15 +2,14 @@ package io.github.pulpogato.restcodegen
 
 import com.palantir.javapoet.JavaFile
 import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
-import io.swagger.v3.oas.models.OpenAPI
 import java.io.File
 
-object SchemasBuilder {
+class SchemasBuilder {
     fun buildSchemas(
-        openAPI: OpenAPI,
         outputDir: File,
         packageName: String,
     ) {
+        val openAPI = Context.instance.get().openAPI
         openAPI.components.schemas.forEach { entry ->
             val (_, definition) =
                 Context.withSchemaStack("#", "components", "schemas", entry.key) {

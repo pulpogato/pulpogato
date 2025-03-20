@@ -28,9 +28,8 @@ import java.io.StringWriter
 import javax.lang.model.element.Modifier
 import kotlin.collections.get
 
-object WebhooksBuilder {
+class WebhooksBuilder {
     fun buildWebhooks(
-        openAPI: OpenAPI,
         mainDir: File,
         restPackage: String,
         webhooksPackage: String,
@@ -38,6 +37,7 @@ object WebhooksBuilder {
     ) {
         val testControllerBuilder = buildTestController()
 
+        val openAPI = Context.instance.get().openAPI
         openAPI.webhooks
             .entries
             .groupBy { getSubcategory(it.value.readOperationsMap().values.first())!! }
@@ -408,7 +408,9 @@ object WebhooksBuilder {
         return bodyType!!
     }
 
-    private val TEST_RESPONSE = ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+    companion object {
+        private val TEST_RESPONSE = ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+    }
 
     private fun buildTestControllerMethod(
         methodName: String,
