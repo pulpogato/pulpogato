@@ -3,7 +3,7 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 
-object JsonRefValidator {
+class JsonRefValidator {
     /**
      * Validates the JSON references in given `roots` based on `json`.
      *

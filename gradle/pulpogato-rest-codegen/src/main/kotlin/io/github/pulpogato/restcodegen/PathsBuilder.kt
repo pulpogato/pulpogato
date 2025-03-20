@@ -23,17 +23,17 @@ import io.swagger.v3.oas.models.responses.ApiResponse
 import java.io.File
 import javax.lang.model.element.Modifier
 
-object PathsBuilder {
+class PathsBuilder {
     class AtomicMethod(val path: String, val method: HttpMethod, val operationId: String, val operation: Operation)
 
     fun buildApis(
-        openAPI: OpenAPI,
         outputDir: File,
         packageName: String,
         testDir: File,
     ) {
         val apiDir = File(outputDir, packageName.replace(".", "/"))
         apiDir.mkdirs()
+        val openAPI = Context.instance.get().openAPI
         openAPI.paths
             .flatMap { (path, pathItem) ->
                 pathItem.readOperationsMap().map { (method, operation) ->
