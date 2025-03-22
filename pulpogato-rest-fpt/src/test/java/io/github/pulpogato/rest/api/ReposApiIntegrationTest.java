@@ -5,6 +5,7 @@ import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -139,5 +140,22 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
         assertThat(body.getName()).isEqualTo("create-demo");
         assertThat(body.getFullName()).isEqualTo("pulpogato/create-demo");
         assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
+    }
+
+    @Test
+    void testCreateRepositoryInOrgWithCustomProperties() {
+        ReposApi api = factory.createClient(ReposApi.class);
+        var response = api.createInOrg("example", ReposApi.CreateInOrgRequestBody.builder()
+                .name("rsomasunderam-custom-props-demo")
+                .description("create demo")
+                .customProperties(Map.of("custom_boolean_prop", "false"))
+                .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
+        assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("example");
     }
 }

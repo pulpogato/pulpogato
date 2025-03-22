@@ -107,7 +107,7 @@ public class ProxyController {
         var requestHeadersMap = new HashMap<String, String>();
 
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            if (Set.of("user-agent", "host", "TapeName").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
+            if (Set.of("user-agent", "host", "TapeName", "Content-Length").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
                 requestHeadersMap.put(headerName, request.getHeader(headerName));
             }
         });
