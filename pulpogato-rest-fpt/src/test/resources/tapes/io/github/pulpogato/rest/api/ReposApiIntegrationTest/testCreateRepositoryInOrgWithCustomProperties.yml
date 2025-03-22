@@ -1,0 +1,167 @@
+- request:
+    method: POST
+    uri: /orgs/example/repos
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: |-
+      {
+        "name" : "rsomasunderam-custom-props-demo",
+        "description" : "create demo",
+        "custom_properties" : {
+          "custom_boolean_prop" : "false"
+        }
+      }
+  response:
+    statusCode: 201
+    headers:
+      Set-Cookie: "AWSALB=XtWlfLO1VtEhPBWIWsvJKR+nSnTwiwpnY6hRNnA3H6ghISDoQsnYoxxYaSYPKAQfEAnqODLw1j28eN+n8KyLHicZQXd9dEmbAua+SQ+AUph887WxqxGEkyvSQM8N;\
+        \ Expires=Sat, 29 Mar 2025 00:19:06 GMT; Path=/"
+      Content-Type: application/json; charset=utf-8
+      Connection: keep-alive
+      Location: https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo
+    body: |-
+      {
+        "id" : 66305,
+        "node_id" : "MDEwOlJlcG9zaXRvcnk2NjMwNQ==",
+        "name" : "rsomasunderam-custom-props-demo",
+        "full_name" : "example/rsomasunderam-custom-props-demo",
+        "private" : false,
+        "owner" : {
+          "login" : "example",
+          "id" : 17,
+          "node_id" : "MDEyOk9yZ2FuaXphdGlvbjE3",
+          "avatar_url" : "https://github.example.com/avatars/u/17?",
+          "gravatar_id" : "",
+          "url" : "https://github.example.com/api/v3/users/example",
+          "html_url" : "https://github.example.com/example",
+          "followers_url" : "https://github.example.com/api/v3/users/example/followers",
+          "following_url" : "https://github.example.com/api/v3/users/example/following{/other_user}",
+          "gists_url" : "https://github.example.com/api/v3/users/example/gists{/gist_id}",
+          "starred_url" : "https://github.example.com/api/v3/users/example/starred{/owner}{/repo}",
+          "subscriptions_url" : "https://github.example.com/api/v3/users/example/subscriptions",
+          "organizations_url" : "https://github.example.com/api/v3/users/example/orgs",
+          "repos_url" : "https://github.example.com/api/v3/users/example/repos",
+          "events_url" : "https://github.example.com/api/v3/users/example/events{/privacy}",
+          "received_events_url" : "https://github.example.com/api/v3/users/example/received_events",
+          "type" : "Organization",
+          "site_admin" : false
+        },
+        "html_url" : "https://github.example.com/example/rsomasunderam-custom-props-demo",
+        "description" : "create demo",
+        "fork" : false,
+        "url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo",
+        "forks_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/forks",
+        "keys_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/keys{/key_id}",
+        "collaborators_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/collaborators{/collaborator}",
+        "teams_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/teams",
+        "hooks_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/hooks",
+        "issue_events_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/issues/events{/number}",
+        "events_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/events",
+        "assignees_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/assignees{/user}",
+        "branches_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/branches{/branch}",
+        "tags_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/tags",
+        "blobs_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/git/blobs{/sha}",
+        "git_tags_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/git/tags{/sha}",
+        "git_refs_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/git/refs{/sha}",
+        "trees_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/git/trees{/sha}",
+        "statuses_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/statuses/{sha}",
+        "languages_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/languages",
+        "stargazers_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/stargazers",
+        "contributors_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/contributors",
+        "subscribers_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/subscribers",
+        "subscription_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/subscription",
+        "commits_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/commits{/sha}",
+        "git_commits_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/git/commits{/sha}",
+        "comments_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/comments{/number}",
+        "issue_comment_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/issues/comments{/number}",
+        "contents_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/contents/{+path}",
+        "compare_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/compare/{base}...{head}",
+        "merges_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/merges",
+        "archive_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/{archive_format}{/ref}",
+        "downloads_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/downloads",
+        "issues_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/issues{/number}",
+        "pulls_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/pulls{/number}",
+        "milestones_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/milestones{/number}",
+        "notifications_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/notifications{?since,all,participating}",
+        "labels_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/labels{/name}",
+        "releases_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/releases{/id}",
+        "deployments_url" : "https://github.example.com/api/v3/repos/example/rsomasunderam-custom-props-demo/deployments",
+        "created_at" : "2025-03-22T00:19:06Z",
+        "updated_at" : "2025-03-22T00:19:07Z",
+        "pushed_at" : "2025-03-22T00:19:07Z",
+        "git_url" : "git://github.example.com/example/rsomasunderam-custom-props-demo.git",
+        "ssh_url" : "git@github.example.com:example/rsomasunderam-custom-props-demo.git",
+        "clone_url" : "https://github.example.com/example/rsomasunderam-custom-props-demo.git",
+        "svn_url" : "https://github.example.com/example/rsomasunderam-custom-props-demo",
+        "homepage" : null,
+        "size" : 0,
+        "stargazers_count" : 0,
+        "watchers_count" : 0,
+        "language" : null,
+        "has_issues" : true,
+        "has_projects" : true,
+        "has_downloads" : true,
+        "has_wiki" : true,
+        "has_pages" : false,
+        "has_discussions" : false,
+        "forks_count" : 0,
+        "mirror_url" : null,
+        "archived" : false,
+        "disabled" : false,
+        "open_issues_count" : 0,
+        "license" : null,
+        "allow_forking" : true,
+        "is_template" : false,
+        "web_commit_signoff_required" : false,
+        "topics" : [ ],
+        "visibility" : "public",
+        "forks" : 0,
+        "open_issues" : 0,
+        "watchers" : 0,
+        "default_branch" : "main",
+        "permissions" : {
+          "admin" : true,
+          "maintain" : true,
+          "push" : true,
+          "triage" : true,
+          "pull" : true
+        },
+        "allow_squash_merge" : true,
+        "allow_merge_commit" : true,
+        "allow_rebase_merge" : true,
+        "allow_auto_merge" : false,
+        "delete_branch_on_merge" : false,
+        "allow_update_branch" : false,
+        "use_squash_pr_title_as_default" : false,
+        "squash_merge_commit_message" : "COMMIT_MESSAGES",
+        "squash_merge_commit_title" : "COMMIT_OR_PR_TITLE",
+        "merge_commit_message" : "PR_TITLE",
+        "merge_commit_title" : "MERGE_MESSAGE",
+        "custom_properties" : {
+          "custom_boolean_prop" : "false"
+        },
+        "organization" : {
+          "login" : "example",
+          "id" : 17,
+          "node_id" : "MDEyOk9yZ2FuaXphdGlvbjE3",
+          "avatar_url" : "https://github.example.com/avatars/u/17?",
+          "gravatar_id" : "",
+          "url" : "https://github.example.com/api/v3/users/example",
+          "html_url" : "https://github.example.com/example",
+          "followers_url" : "https://github.example.com/api/v3/users/example/followers",
+          "following_url" : "https://github.example.com/api/v3/users/example/following{/other_user}",
+          "gists_url" : "https://github.example.com/api/v3/users/example/gists{/gist_id}",
+          "starred_url" : "https://github.example.com/api/v3/users/example/starred{/owner}{/repo}",
+          "subscriptions_url" : "https://github.example.com/api/v3/users/example/subscriptions",
+          "organizations_url" : "https://github.example.com/api/v3/users/example/orgs",
+          "repos_url" : "https://github.example.com/api/v3/users/example/repos",
+          "events_url" : "https://github.example.com/api/v3/users/example/events{/privacy}",
+          "received_events_url" : "https://github.example.com/api/v3/users/example/received_events",
+          "type" : "Organization",
+          "site_admin" : false
+        },
+        "network_count" : 0,
+        "subscribers_count" : 0
+      }
