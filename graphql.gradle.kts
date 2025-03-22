@@ -71,7 +71,7 @@ tasks.named<GenerateJavaTask>("generateJava") {
         "Base64String" to "java.lang.String",
         "BigInt" to "java.math.BigInteger",
         "Date" to "java.time.LocalDate",
-        "DateTime" to "java.time.LocalDateTime",
+        "DateTime" to "java.time.OffsetDateTime",
         "GitObjectID" to "java.lang.String",
         "GitRefname" to "java.lang.String",
         "GitSSHRemote" to "java.lang.String",
