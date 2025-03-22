@@ -17,6 +17,12 @@ object Annotations {
      */
     fun lombok(name: String): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", name)).build()
 
+    fun superBuilder() =
+        AnnotationSpec
+            .builder(ClassName.get("lombok.experimental", "SuperBuilder"))
+            .addMember("toBuilder", "true")
+            .build()
+
     /*
      Jackson Annotations
      */

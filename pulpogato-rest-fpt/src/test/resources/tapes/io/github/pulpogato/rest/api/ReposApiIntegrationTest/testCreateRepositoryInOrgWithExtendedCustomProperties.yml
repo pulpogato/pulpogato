@@ -10,7 +10,7 @@
         "name" : "rsomasunderam-custom-props-demo",
         "description" : "create demo",
         "custom_properties" : {
-          "custom_boolean_prop" : "false"
+          "custom_boolean_prop" : false
         }
       }
   response:
@@ -138,7 +138,7 @@
         "merge_commit_message" : "PR_TITLE",
         "merge_commit_title" : "MERGE_MESSAGE",
         "custom_properties" : {
-          "custom_boolean_prop" : "false"
+          "custom_boolean_prop" : false
         },
         "organization" : {
           "login" : "example",

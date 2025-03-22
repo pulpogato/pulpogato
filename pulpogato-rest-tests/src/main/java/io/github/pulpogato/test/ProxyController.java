@@ -146,6 +146,7 @@ public class ProxyController {
                 "Last-Modified",
                 "Referrer-Policy",
                 "Server",
+                "Set-Cookie",
                 "Strict-Transport-Security",
                 "Vary",
                 "X-.+"

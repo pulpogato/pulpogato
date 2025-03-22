@@ -1,7 +1,17 @@
 package io.github.pulpogato.rest.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.rest.schemas.ContentFile;
+import io.github.pulpogato.rest.schemas.FullRepository;
 import io.github.pulpogato.test.BaseIntegrationTest;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
@@ -157,5 +167,73 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
         assertThat(body.getOwner().getLogin()).isEqualTo("example");
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    static class TestCustomProperties {
+        private Boolean customBooleanProp;
+
+        public Map<String, Object> toMap() {
+            return Map.ofEntries(
+                    Map.entry("custom_boolean_prop", this.customBooleanProp)
+            );
+        }
+
+        public static TestCustomProperties fromMap(Map<String, Object> map) {
+            return TestCustomProperties.builder()
+                    .customBooleanProp((Boolean) map.get("custom_boolean_prop"))
+                    .build();
+        }
+    }
+
+    @SuperBuilder(toBuilder = true)
+    @Getter
+    @Setter
+    static class ExtendedCreateInOrgRequestBody extends ReposApi.CreateInOrgRequestBody {
+        @JsonIgnore
+        private TestCustomProperties typedCustomProperties;
+
+        public ExtendedCreateInOrgRequestBody normalize() {
+            return this.toBuilder()
+                    .customProperties(typedCustomProperties.toMap())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    static class ExtendedFullRepository extends FullRepository {
+        @JsonIgnore
+        public TestCustomProperties getTypedCustomProperties() {
+            return TestCustomProperties.fromMap(this.getCustomProperties());
+        }
+    }
+
+    @Test
+    void testCreateRepositoryInOrgWithExtendedCustomProperties() throws JsonProcessingException {
+        ReposApi api = factory.createClient(ReposApi.class);
+        var response = api.createInOrg("example", ExtendedCreateInOrgRequestBody.builder()
+                .name("rsomasunderam-custom-props-demo")
+                .description("create demo")
+                .typedCustomProperties(TestCustomProperties.builder()
+                        .customBooleanProp(false)
+                        .build())
+                .build().normalize());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull()
+                .isInstanceOf(FullRepository.class);
+
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ExtendedFullRepository body = objectMapper.readValue(objectMapper.writeValueAsString(response.getBody()),
+                ExtendedFullRepository.class);
+
+        assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
+        assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("example");
+        assertThat(body.getTypedCustomProperties().getCustomBooleanProp()).isFalse();
     }
 }

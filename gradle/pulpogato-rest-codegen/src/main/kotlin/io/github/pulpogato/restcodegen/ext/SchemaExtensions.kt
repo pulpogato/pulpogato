@@ -15,6 +15,7 @@ import io.github.pulpogato.restcodegen.Annotations.jsonValue
 import io.github.pulpogato.restcodegen.Annotations.lombok
 import io.github.pulpogato.restcodegen.Annotations.serializerAnnotation
 import io.github.pulpogato.restcodegen.Annotations.singleValueAsArray
+import io.github.pulpogato.restcodegen.Annotations.superBuilder
 import io.github.pulpogato.restcodegen.Annotations.typeGenerated
 import io.github.pulpogato.restcodegen.Context
 import io.github.pulpogato.restcodegen.MarkdownHelper
@@ -253,7 +254,7 @@ private fun Map.Entry<String, Schema<*>>.buildFancyObject(
             .addType(serializer)
             .addAnnotation(deserializerAnnotation(className, deserializer))
             .addAnnotation(serializerAnnotation(className, serializer))
-            .addAnnotation(lombok("Builder"))
+            .addAnnotation(superBuilder())
             .addAnnotation(lombok("NoArgsConstructor"))
             .addAnnotation(lombok("AllArgsConstructor"))
 
@@ -400,7 +401,7 @@ private fun Map.Entry<String, Schema<*>>.buildSimpleObject(
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0))
             .addAnnotation(lombok("Data"))
-            .addAnnotation(lombok("Builder"))
+            .addAnnotation(superBuilder())
             .addAnnotation(lombok("NoArgsConstructor"))
             .addAnnotation(lombok("AllArgsConstructor"))
             .addAnnotation(jsonIncludeNonNull())
