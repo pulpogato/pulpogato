@@ -123,4 +123,21 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
         var body = response.getBody();
         assertThat(body.getRequiredStatusChecks().getContexts()).containsExactly("jenkins/pulpogato");
     }
+
+    @Test
+    void testCreateRepositoryInOrg() {
+        ReposApi api = factory.createClient(ReposApi.class);
+        var response = api.createInOrg("pulpogato", ReposApi.CreateInOrgRequestBody.builder()
+                .name("create-demo")
+                .description("create demo")
+                .homepage("https://github.com/pulpogato/create-demo")
+                .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        assertThat(body.getFullName()).isEqualTo("pulpogato/create-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
+    }
 }
