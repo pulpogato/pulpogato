@@ -19,6 +19,8 @@ dependencies {
 
     testImplementation(project(":${rootProject.name}-rest-tests"))
     testImplementation(libs.bundles.springBoot)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
 }
 
 fun getUrl(projectVariant: String): String {
