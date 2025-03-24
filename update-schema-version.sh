@@ -15,7 +15,10 @@ if [ "$CI" != "" ]; then
 else
     git checkout main
 fi
-bun update
+
+./gradlew updateRestSchemaVersion
+SHORT_SHA=$(grep github.api.version gradle.properties | cut -d'=' -f2)
+export SHORT_SHA
 
 BRANCH_NAME=update-schema-version
 
@@ -25,12 +28,10 @@ if git diff --quiet; then
 else
     git checkout -b ${BRANCH_NAME}
     git add .
-    RAD_VERSION=$(bun pm ls | grep rest-api-description | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' | cut -d '#' -f 2)
-    export RAD_VERSION
-    git commit -m "chore(deps): Update rest-api-description to $RAD_VERSION"
+    git commit -m "chore(deps): Update rest-api-description to $SHORT_SHA"
     git push origin ${BRANCH_NAME} --force
     gh pr create \
-        --title "Update rest-api-description to $RAD_VERSION" \
+        --title "Update rest-api-description to $SHORT_SHA" \
         --body "" \
         --base main \
         --head ${BRANCH_NAME}

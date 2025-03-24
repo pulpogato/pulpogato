@@ -25,25 +25,29 @@ dependencies {
 
 fun getUrl(projectVariant: String): String {
     val path = if (projectVariant == "fpt") "api.github.com" else projectVariant
-    return "node_modules/rest-api-description/descriptions-next/$path/$path.json"
+    val ref = project.ext.get("github.api.version")
+    return "https://github.com/github/rest-api-description/raw/$ref/descriptions-next/$path/$path.json"
 }
 
 val projectVariant = project.name.replace("${rootProject.name}-rest-", "")
 
 description = "REST types for $projectVariant"
 
-val copySchema: TaskProvider<Copy> = tasks.register("copySchema", Copy::class.java) {
-    from("${rootDir}/${getUrl(projectVariant)}")
-    into(file("${project.layout.buildDirectory.get()}/generated/resources/main"))
-    rename { _ -> "schema.json" }
+val downloadSchema = tasks.register("downloadSchema") {
+    val schemaLocation = file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
+    inputs.property("github.api.version", project.ext.get("github.api.version"))
+    outputs.file(schemaLocation)
 
-    dependsOn(":bunInstall")
+    doLast {
+        schemaLocation.parentFile.mkdirs()
+        schemaLocation.writeBytes(uri(getUrl(projectVariant)).toURL().readBytes())
+    }
 }
 
 val generateJava = tasks.named("generateJava")
 
 generateJava.configure {
-    dependsOn(copySchema)
+    dependsOn(downloadSchema)
 }
 
 codegen {
@@ -63,7 +67,7 @@ tasks.named("javadocJar") {
     dependsOn(generateJava)
 }
 tasks.processResources {
-    dependsOn(copySchema)
+    dependsOn(downloadSchema)
 }
 
 sourceSets {
