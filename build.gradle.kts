@@ -2,6 +2,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rahulsom.waena.WaenaExtension
 import nebula.plugin.contacts.Contact
 import nebula.plugin.contacts.ContactsExtension
+import java.net.HttpURLConnection
 
 buildscript {
     repositories {
@@ -45,7 +46,12 @@ waena {
 
 tasks.register("updateRestSchemaVersion") {
     doLast {
-        val branches = uri("https://api.github.com/repos/github/rest-api-description/branches/main").toURL()
+        val connection = uri("https://api.github.com/repos/github/rest-api-description/branches/main").toURL().openConnection()
+        val gitHubToken = System.getenv("GITHUB_TOKEN")
+        if (gitHubToken != null) {
+            (connection as HttpURLConnection).addRequestProperty("Authentication", "token $gitHubToken")
+        }
+        val branches = connection.getInputStream().bufferedReader().readText()
         val json = ObjectMapper().readTree(branches)
         val sha = json.get("commit").get("sha").asText().take(7)
         val oldProps = project.file("gradle.properties").readText()
