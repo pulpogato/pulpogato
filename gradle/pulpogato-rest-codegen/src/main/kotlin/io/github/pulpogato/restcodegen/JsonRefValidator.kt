@@ -3,7 +3,9 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 
-class JsonRefValidator {
+class JsonRefValidator(private val threshold: Int = 0) {
+    private val schemaRefRegex = Regex(".+schemaRef *= *\"(.+?)\".*")
+
     /**
      * Validates the JSON references in given `roots` based on `json`.
      *
@@ -14,19 +16,29 @@ class JsonRefValidator {
         json: JsonNode,
         roots: List<File>,
     ) {
-        val count =
-            roots.sumOf { dir ->
+        val schemaRefs =
+            roots.flatMap { dir ->
                 dir.walkTopDown()
                     .filter { it.name.endsWith(".java") }
                     .flatMap {
                         it.readLines().mapIndexed { lineNumber, line -> Triple(it, lineNumber, line) }
-                            .filter { l -> l.third.matches(Regex(" +from = \".+\",")) }
-                            .map { x -> Triple(x.first, x.second, x.third.replace(Regex(" +from = \"(.+)\","), "$1")) }
+                            .filter { (_, _, line) -> line.matches(schemaRefRegex) }
+                            .map { (file, lineNumber, line) -> Triple(file, lineNumber, line.replace(schemaRefRegex, "$1")) }
                     }
                     .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }
-                    .count { hasError(json, it) }
+                    .map {
+                        val (file, lineNumber, line) = it
+                        hasError(json, it).also { l ->
+                            if (l) {
+                                println("${file.absolutePath}:${lineNumber + 1}: E:BAD_REF \"${line}\"\n")
+                            }
+                        }
+                    }
             }
-        check(count <= 0) { "Found $count errors in JSON references" }
+        val errors = schemaRefs.count { it }
+        val total = schemaRefs.size
+        check(errors <= threshold) { "Found $errors errors in $total JSON references" }
+        println("Found $errors errors in $total JSON references")
     }
 
     private fun hasError(
@@ -37,18 +49,19 @@ class JsonRefValidator {
         var current: JsonNode? = json
         parts.forEach { t ->
             if (current == null) {
-                val first = location.first.absolutePath.replace(Regex(".+/pulpogato/pulpogato-"), "pulpogato-")
-                println("$first:${location.second + 1}: E:BAD_REF ${location.third}")
                 return true
             } else {
                 val name = t.replace("~1", "/")
-                val index = name.toIntOrNull()
+                val index = if (name.matches("\\d+".toRegex())) name.toIntOrNull() else null
                 current =
                     when {
                         index != null && index < 200 -> (current as JsonNode)[index]
                         else -> (current as JsonNode)[name]
                     }
             }
+        }
+        if (current == null) {
+            return true
         }
         return false
     }
