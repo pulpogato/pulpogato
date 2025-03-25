@@ -17,7 +17,7 @@ object Annotations {
      */
     fun lombok(name: String): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", name)).build()
 
-    fun superBuilder() =
+    fun superBuilder(): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get("lombok.experimental", "SuperBuilder"))
             .addMember("toBuilder", "true")
@@ -76,18 +76,21 @@ object Annotations {
     /*
      GH Annotations
      */
-    fun generated(offset: Int): AnnotationSpec =
-        AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "Generated"))
-            .addMember("ghVersion", "\$S", Context.instance.get().version)
-            .addMember(
-                "schemaRef",
-                "\$S",
-                Context.getSchemaStackRef()
-                    .replace("properties/requestBody", "requestBody")
-                    .replace(Regex("(oneOf|anyOf|allOf)/properties/.+?(\\d+)"), "$1/$2"),
-            )
+    fun generated(offset: Int): AnnotationSpec {
+        val builder =
+            AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "Generated"))
+                .addMember("ghVersion", "\$S", Context.instance.get().version)
+        val schemaRef =
+            Context.getSchemaStackRef()
+                .replace("properties/requestBody", "requestBody")
+                .replace(Regex("(oneOf|anyOf|allOf)/properties/.+?(\\d+)"), "$1/$2")
+        if (schemaRef.isNotEmpty()) {
+            builder.addMember("schemaRef", "\$S", schemaRef)
+        }
+        return builder
             .addMember("codeRef", "\$S", codeRef(offset))
             .build()
+    }
 
     fun typeGenerated(): AnnotationSpec =
         AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "TypeGenerated"))

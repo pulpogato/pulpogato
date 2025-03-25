@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -15,17 +16,28 @@ import kotlin.io.path.extension
 import kotlin.io.readText
 
 open class GenerateJavaTask : DefaultTask() {
-    @InputFile lateinit var schema: Provider<File>
+    @InputFile
+    lateinit var schema: Provider<File>
 
-    @Input lateinit var packageName: Provider<String>
+    @Input
+    lateinit var packageName: Provider<String>
 
-    @OutputDirectory lateinit var mainDir: Provider<File>
+    @OutputDirectory
+    lateinit var mainDir: Provider<File>
 
-    @OutputDirectory lateinit var testDir: Provider<File>
+    @OutputDirectory
+    lateinit var testDir: Provider<File>
+
+    @Input
+    val projectName: Property<String> = project.objects.property(String::class.java)
+
+    init {
+        projectName.set(project.name)
+    }
 
     @TaskAction
     fun generate() {
-        project.file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen").mkdirs()
+        mainDir.get().mkdirs()
         val schemaFile = schema.get()
         val packageNamePrefix = packageName.get()
         val main = mainDir.get()
@@ -38,14 +50,14 @@ open class GenerateJavaTask : DefaultTask() {
 
         val openAPI = result.openAPI
         Context.instance.get().openAPI = openAPI
-        Context.instance.get().version = project.name.replace("pulpogato-rest-", "")
+        Context.instance.get().version = projectName.get().replace("pulpogato-rest-", "")
         PathsBuilder().buildApis(main, "$packageNamePrefix.rest.api", test)
         WebhooksBuilder().buildWebhooks(main, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks", test)
         SchemasBuilder().buildSchemas(main, "$packageNamePrefix.rest.schemas")
 
         // Validate JSON references
         val json = ObjectMapper().readTree(swaggerSpec)
-        JsonRefValidator().validate(json, listOf(main, test))
+        JsonRefValidator(142).validate(json, listOf(main, test))
 
         // Format generated Java code
         val javaFiles = getJavaFiles(main)

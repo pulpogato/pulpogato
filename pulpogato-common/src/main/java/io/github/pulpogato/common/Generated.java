@@ -18,7 +18,7 @@ public @interface Generated {
      * The location of the type in the schema
      * @return The location as a json reference
      */
-    String schemaRef();
+    String schemaRef() default "";
     /**
      * The generator of the class
      * @return The file and line that generated the type
