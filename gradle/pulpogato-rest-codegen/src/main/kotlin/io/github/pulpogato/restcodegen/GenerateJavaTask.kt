@@ -57,7 +57,7 @@ open class GenerateJavaTask : DefaultTask() {
 
         // Validate JSON references
         val json = ObjectMapper().readTree(swaggerSpec)
-        JsonRefValidator(142).validate(json, listOf(main, test))
+        JsonRefValidator().validate(json, listOf(main, test))
 
         // Format generated Java code
         val javaFiles = getJavaFiles(main)
