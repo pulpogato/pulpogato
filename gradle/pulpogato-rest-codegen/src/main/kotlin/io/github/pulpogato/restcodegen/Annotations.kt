@@ -50,12 +50,12 @@ object Annotations {
             .build()
 
     fun jsonFormat(
-        shape: String,
+        shape: JsonFormat.Shape,
         pattern: String? = null,
     ): AnnotationSpec {
         val spec =
             AnnotationSpec.builder(ClassName.get(JsonFormat::class.java))
-                .addMember("shape", "\$T.$shape", ClassName.get(JsonFormat.Shape::class.java))
+                .addMember("shape", "\$T.\$L", JsonFormat.Shape::class.java, shape)
         if (pattern != null) {
             spec.addMember("pattern", "\$S", pattern)
         }
@@ -64,12 +64,12 @@ object Annotations {
 
     fun singleValueAsArray(): AnnotationSpec =
         AnnotationSpec.builder(ClassName.get(JsonFormat::class.java))
-            .addMember("with", "\$L.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY", ClassName.get(JsonFormat::class.java))
+            .addMember("with", "\$T.\$L", ClassName.get(JsonFormat.Feature::class.java), JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .build()
 
     fun jsonIncludeNonNull(): AnnotationSpec {
         return AnnotationSpec.builder(ClassName.get(JsonInclude::class.java))
-            .addMember("value", "\$T.Include.NON_NULL", ClassName.get(JsonInclude::class.java))
+            .addMember("value", "\$T.\$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.NON_NULL)
             .build()
     }
 
@@ -80,10 +80,7 @@ object Annotations {
         val builder =
             AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "Generated"))
                 .addMember("ghVersion", "\$S", Context.instance.get().version)
-        val schemaRef =
-            Context.getSchemaStackRef()
-                .replace("properties/requestBody", "requestBody")
-                .replace(Regex("(oneOf|anyOf|allOf)/properties/.+?(\\d+)"), "$1/$2")
+        val schemaRef = Context.getSchemaStackRef()
         if (schemaRef.isNotEmpty()) {
             builder.addMember("schemaRef", "\$S", schemaRef)
         }

@@ -1,5 +1,6 @@
 package io.github.pulpogato.restcodegen
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ArrayTypeName
 import com.palantir.javapoet.ClassName
@@ -29,13 +30,13 @@ object Types {
     // Time types
     val EPOCH_TIME: TypeName =
         ClassName.get(OffsetDateTime::class.java)
-            .annotated(jsonFormat("NUMBER_INT"))
+            .annotated(jsonFormat(JsonFormat.Shape.NUMBER_INT))
     val LOCAL_DATE: TypeName =
         ClassName.get(LocalDate::class.java)
-            .annotated(jsonFormat("STRING", "yyyy-MM-dd"))
+            .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd"))
     val OFFSET_DATE_TIME: TypeName =
         ClassName.get(OffsetDateTime::class.java)
-            .annotated(jsonFormat("STRING", "yyyy-MM-dd'T'HH:mm:ssXXX"))
+            .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd'T'HH:mm:ssXXX"))
             .annotated(
                 AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
                     .addMember("using", "\$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
