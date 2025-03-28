@@ -9,6 +9,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.createTempDirectory
 
 class JsonRefValidatorTest {
     @TempDir lateinit var tempDir1: Path
@@ -17,13 +18,17 @@ class JsonRefValidatorTest {
 
     @TempDir lateinit var tempDir3: Path
 
+    @TempDir lateinit var tempDir4: Path
+
     private lateinit var json: JsonNode
     private lateinit var root1: File
     private lateinit var root2: File
     private lateinit var root3: File
+    private lateinit var root4: File
     private lateinit var file1: File
     private lateinit var file2: File
     private lateinit var file3: File
+    private lateinit var file4: File
 
     companion object {
         private const val REF = "\$ref"
@@ -102,6 +107,17 @@ class JsonRefValidatorTest {
                             "type": "string"
                           }
                         }
+                      },
+                      "ArrayWithIndices": {
+                        "type": "array",
+                        "items": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          }
+                        ]
                       }
                     }
                   }
@@ -158,6 +174,23 @@ class JsonRefValidatorTest {
                     """.trimIndent(),
                 )
             }
+        root4 = tempDir4.toFile()
+        root4.mkdirs()
+        file4 =
+            File(root4, "File4.java").apply {
+                createNewFile()
+                writeText(
+                    // language=java
+                    """
+                    package com.example;
+                    class Test4 {
+                        String a = "something"; // schemaRef = "/components/schemas/ArrayWithIndices/items/0",
+                        String b = "something"; // schemaRef = "/components/schemas/ArrayWithIndices/items/1",
+                        String c = "something"; // schemaRef = "/components/schemas/ArrayWithIndices/items/999", // This should fail
+                    }
+                    """.trimIndent(),
+                )
+            }
     }
 
     @Test
@@ -177,5 +210,84 @@ class JsonRefValidatorTest {
                 JsonRefValidator().validate(json, listOf(root2, root3))
             }
         Assertions.assertThat(exception).hasMessage("Found 2 errors in 4 JSON references")
+    }
+
+    @Test
+    fun `validate with threshold allows some errors`() {
+        // Should not throw with threshold of 2
+        JsonRefValidator(2).validate(json, listOf(root2, root3))
+
+        // Should throw with threshold of 1
+        val exception =
+            assertThrows<IllegalStateException> {
+                JsonRefValidator(1).validate(json, listOf(root2, root3))
+            }
+        Assertions.assertThat(exception).hasMessage("Found 2 errors in 4 JSON references")
+    }
+
+    @Test
+    fun `validate with valid array indices`() {
+        // Create a temporary file with only valid array indices
+        val tempDir = createTempDirectory().toFile()
+        File(tempDir, "ValidFile.java").apply {
+            createNewFile()
+            writeText(
+                // language=java
+                """
+                package com.example;
+                class ValidIndices {
+                    String a = "something"; // schemaRef = "/components/schemas/ArrayWithIndices/items/0",
+                    String b = "something"; // schemaRef = "/components/schemas/ArrayWithIndices/items/1",
+                }
+                """.trimIndent(),
+            )
+        }
+
+        try {
+            JsonRefValidator().validate(json, listOf(tempDir))
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `validate with invalid array indices`() {
+        // Create a temporary file with an invalid array index
+        val tempDir = createTempDirectory().toFile()
+        File(tempDir, "InvalidFile.java").apply {
+            createNewFile()
+            writeText(
+                // language=java
+                """
+                package com.example;
+                class InvalidIndices {
+                    String c = "something"; // schemaRef = "/components/schemas/ArrayWithIndices/items/999",
+                }
+                """.trimIndent(),
+            )
+        }
+
+        try {
+            val exception =
+                assertThrows<IllegalStateException> {
+                    JsonRefValidator(0).validate(json, listOf(tempDir))
+                }
+            Assertions.assertThat(exception).hasMessage("Found 1 errors in 1 JSON references")
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `validate with multiple roots`() {
+        // Should validate all valid references across multiple roots
+        JsonRefValidator().validate(json, listOf(root1, root2))
+
+        // Should count errors across all roots
+        val exception =
+            assertThrows<IllegalStateException> {
+                JsonRefValidator(0).validate(json, listOf(root1, root3, root4))
+            }
+        Assertions.assertThat(exception).hasMessage("Found 3 errors in 9 JSON references")
     }
 }
