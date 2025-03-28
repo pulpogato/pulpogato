@@ -1,11 +1,27 @@
-# Ignore Gradle project-specific cache directory
-.gradle
+### SimplerGradle template
+# Gradle template
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
 
-# Ignore Gradle build output directory
-build
+# JetBrains template
+/.idea/
+/*.iws
+/*.iml
+/*.ipr
+/out/
+/.idea_modules/
 
+# VS Code/Eclipse template
+/.classpath
+/.project
+/.settings
+/bin
+.vscode
+
+# Other
+/.attach_pid*
 *.hprof
-
 .kotlin
-
-node_modules
