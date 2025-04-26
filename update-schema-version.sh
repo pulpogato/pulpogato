@@ -26,6 +26,10 @@ if git diff --quiet; then
     echo "No changes to rest-api-description"
     exit 2
 else
+    if [ $(git branch | grep -c "${BRANCH_NAME}") -gt 0 ]; then
+        echo "Branch ${BRANCH_NAME} already exists. Deleting..."
+        git branch -D ${BRANCH_NAME}
+    fi
     git checkout -b ${BRANCH_NAME}
     git add .
     git commit -m "chore(deps): Update rest-api-description to $SHORT_SHA"
