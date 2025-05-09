@@ -56,10 +56,6 @@ open class GenerateJavaTask : DefaultTask() {
         WebhooksBuilder().buildWebhooks(context, main, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks", test)
         SchemasBuilder().buildSchemas(context, main, "$packageNamePrefix.rest.schemas")
 
-        // Validate JSON references
-        val json = ObjectMapper().readTree(swaggerSpec)
-        JsonRefValidator(142).validate(json, listOf(main, test))
-
         // Format generated Java code
         val javaFiles = getJavaFiles(main)
         val testJavaFiles = getJavaFiles(test)
@@ -68,6 +64,10 @@ open class GenerateJavaTask : DefaultTask() {
             val formatted = formatter.apply(f.readText())
             f.writeText(formatted)
         }
+
+        // Validate JSON references
+        val json = ObjectMapper().readTree(swaggerSpec)
+        JsonRefValidator(142).validate(json, listOf(main, test))
     }
 
     private fun getJavaFiles(dir: File): List<File> {
