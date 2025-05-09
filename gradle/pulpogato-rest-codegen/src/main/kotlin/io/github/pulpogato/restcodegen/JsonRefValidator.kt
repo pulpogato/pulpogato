@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 
 class JsonRefValidator(private val threshold: Int = 0) {
-    private val schemaRefRegex = Regex(".+schemaRef *= *\"(.+?)\".*")
+    private val schemaRefRegex = Regex("\\s+schemaRef\\s=\\s*\"(.+?)\"")
 
     /**
      * Validates the JSON references in given `roots` based on `json`.
@@ -20,11 +20,7 @@ class JsonRefValidator(private val threshold: Int = 0) {
             roots.flatMap { dir ->
                 dir.walkTopDown()
                     .filter { it.name.endsWith(".java") }
-                    .flatMap {
-                        it.readLines().mapIndexed { lineNumber, line -> Triple(it, lineNumber, line) }
-                            .filter { (_, _, line) -> line.matches(schemaRefRegex) }
-                            .map { (file, lineNumber, line) -> Triple(file, lineNumber, line.replace(schemaRefRegex, "$1")) }
-                    }
+                    .flatMap { f -> findSchemaRefMatches(f) }
                     .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }
                     .map {
                         val (file, lineNumber, line) = it
@@ -39,6 +35,21 @@ class JsonRefValidator(private val threshold: Int = 0) {
         val total = schemaRefs.size
         check(errors <= threshold) { "Found $errors errors in $total JSON references" }
         println("Found $errors errors in $total JSON references")
+    }
+
+    fun findSchemaRefMatches(file: File): List<Triple<File, Int, String>> {
+        val matches = mutableListOf<Triple<File, Int, String>>()
+        val fileContent = file.readText()
+
+        schemaRefRegex.findAll(fileContent).forEach { matchResult ->
+            val match = matchResult.groupValues[1] // Extract the captured group
+            val startIndex = matchResult.range.first
+            val precedingText = fileContent.substring(0, startIndex)
+            val lineNumber = precedingText.count { it == '\n' } + 1 // Calculate line number
+            matches.add(Triple(file, lineNumber, match))
+        }
+
+        return matches
     }
 
     private fun hasError(
