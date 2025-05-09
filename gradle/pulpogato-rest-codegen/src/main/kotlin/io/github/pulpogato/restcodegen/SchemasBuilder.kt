@@ -13,7 +13,7 @@ class SchemasBuilder {
         openAPI.components.schemas.forEach { entry ->
             val (_, definition) =
                 Context.withSchemaStack("#", "components", "schemas", entry.key) {
-                    entry.referenceAndDefinition("", null)!!
+                    referenceAndDefinition(entry, "", null)!!
                 }
             definition?.let {
                 JavaFile.builder(packageName, it).build().writeTo(outputDir)

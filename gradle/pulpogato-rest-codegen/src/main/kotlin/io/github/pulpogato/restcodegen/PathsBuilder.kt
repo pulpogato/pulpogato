@@ -108,8 +108,11 @@ class PathsBuilder {
             successResponse.value.content.forEach { (contentType, details) ->
                 val rad =
                     Context.withSchemaStack("responses", successResponse.key, "content", contentType, "schema") {
-                        mapOf("${atomicMethod.operationId.split('/')[1].pascalCase()}${successResponse.key}" to details.schema).entries.first()
-                            .referenceAndDefinition("", typeRef)
+                        referenceAndDefinition(
+                            mapOf("${atomicMethod.operationId.split('/')[1].pascalCase()}${successResponse.key}" to details.schema).entries.first(),
+                            "",
+                            typeRef,
+                        )
                     }
                 rad!!.let { r ->
                     r.second?.let {
@@ -272,8 +275,7 @@ class PathsBuilder {
     ): ParameterSpec {
         val operationName = atomicMethod.operationId.split('/')[1]
         val (ref, def) =
-            mapOf(theParameter.name to theParameter.schema).entries.first()
-                .referenceAndDefinition(operationName.pascalCase(), typeRef)!!
+            referenceAndDefinition(mapOf(theParameter.name to theParameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
 
         if (def != null) {
             val matchingType = typeDef.build().typeSpecs().find { k -> k.name() == def.name() }
@@ -361,8 +363,11 @@ class PathsBuilder {
             val firstEntry = requestBody.content.firstEntry()
             Context.withSchemaStack("requestBody", "content", firstEntry.key, "schema") {
                 val (_, def) =
-                    mapOf("requestBody" to firstEntry.value.schema).entries.first()
-                        .referenceAndDefinition(atomicMethod.operationId.split('/')[1].pascalCase(), typeRef)!!
+                    referenceAndDefinition(
+                        mapOf("requestBody" to firstEntry.value.schema).entries.first(),
+                        atomicMethod.operationId.split('/')[1].pascalCase(),
+                        typeRef,
+                    )!!
                 def?.let {
                     val matchingType = typeDef.build().typeSpecs().find { k -> k.name() == it.name() }
                     if (matchingType == null) {
