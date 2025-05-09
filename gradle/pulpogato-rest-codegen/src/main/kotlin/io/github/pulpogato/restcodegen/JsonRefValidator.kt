@@ -30,7 +30,7 @@ class JsonRefValidator(private val threshold: Int = 0) {
                         val (file, lineNumber, line) = it
                         hasError(json, it).also { l ->
                             if (l) {
-                                println("${file.absolutePath}:${lineNumber + 1}: E:BAD_REF \"${line}\"\n")
+                                println("${file.absolutePath}:${lineNumber + 1}:\n\tE:BAD_REF \"${line}\"\n")
                             }
                         }
                     }

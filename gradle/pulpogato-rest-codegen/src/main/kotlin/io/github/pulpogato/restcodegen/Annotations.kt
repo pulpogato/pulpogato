@@ -76,11 +76,14 @@ object Annotations {
     /*
      GH Annotations
      */
-    fun generated(offset: Int): AnnotationSpec {
+    fun generated(
+        offset: Int,
+        context: Context,
+    ): AnnotationSpec {
         val builder =
             AnnotationSpec.builder(ClassName.get("io.github.pulpogato.common", "Generated"))
-                .addMember("ghVersion", "\$S", Context.instance.get().version)
-        val schemaRef = Context.getSchemaStackRef()
+                .addMember("ghVersion", "\$S", context.version)
+        val schemaRef = context.getSchemaStackRef()
         if (schemaRef.isNotEmpty()) {
             builder.addMember("schemaRef", "\$S", schemaRef)
         }

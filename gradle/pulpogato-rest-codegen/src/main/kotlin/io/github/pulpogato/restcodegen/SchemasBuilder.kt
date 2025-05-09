@@ -6,15 +6,14 @@ import java.io.File
 
 class SchemasBuilder {
     fun buildSchemas(
+        context: Context,
         outputDir: File,
         packageName: String,
     ) {
-        val openAPI = Context.instance.get().openAPI
+        val openAPI = context.openAPI
         openAPI.components.schemas.forEach { entry ->
             val (_, definition) =
-                Context.withSchemaStack("#", "components", "schemas", entry.key) {
-                    referenceAndDefinition(entry, "", null)!!
-                }
+                referenceAndDefinition(context.withSchemaStack("#", "components", "schemas", entry.key), entry, "", null)!!
             definition?.let {
                 JavaFile.builder(packageName, it).build().writeTo(outputDir)
             }

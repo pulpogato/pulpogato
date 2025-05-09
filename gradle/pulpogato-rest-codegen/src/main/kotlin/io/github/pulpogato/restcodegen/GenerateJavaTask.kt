@@ -49,11 +49,12 @@ open class GenerateJavaTask : DefaultTask() {
         val result = OpenAPIParser().readContents(swaggerSpec, listOf(), parseOptions)
 
         val openAPI = result.openAPI
-        Context.instance.get().openAPI = openAPI
-        Context.instance.get().version = projectName.get().replace("pulpogato-rest-", "")
-        PathsBuilder().buildApis(main, "$packageNamePrefix.rest.api", test)
-        WebhooksBuilder().buildWebhooks(main, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks", test)
-        SchemasBuilder().buildSchemas(main, "$packageNamePrefix.rest.schemas")
+        val version = projectName.get().replace("pulpogato-rest-", "")
+
+        val context = Context(openAPI, version, emptyList())
+        PathsBuilder().buildApis(context, main, "$packageNamePrefix.rest.api", test)
+        WebhooksBuilder().buildWebhooks(context, main, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks", test)
+        SchemasBuilder().buildSchemas(context, main, "$packageNamePrefix.rest.schemas")
 
         // Validate JSON references
         val json = ObjectMapper().readTree(swaggerSpec)

@@ -39,6 +39,7 @@ fun typesAre(
 ) = types.toSet() == oneOf.flatMap { it.types ?: listOf() }.toSet()
 
 fun referenceAndDefinition(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     prefix: String,
     parentClass: ClassName?,
@@ -50,11 +51,11 @@ fun referenceAndDefinition(
 
     return when {
         entry.key == "empty-object" -> Pair(Types.EMPTY_OBJECT, null)
-        entry.value.`$ref` != null -> buildReferenceAndDefinitionFromRef(entry)
+        entry.value.`$ref` != null -> buildReferenceAndDefinitionFromRef(context, entry)
 
         anyOf != null && anyOf.size == 1 -> {
             val anyOfValue = anyOf.first()
-            referenceAndDefinition(mapOf(entry.key to anyOfValue).entries.first(), "", null)!!
+            referenceAndDefinition(context, mapOf(entry.key to anyOfValue).entries.first(), "", null)!!
         }
 
         oneOf != null && isSingleOrArray(oneOf, "string") -> Pair(Types.LIST_OF_STRINGS.annotated(typeGenerated(), singleValueAsArray()), null)
@@ -62,27 +63,27 @@ fun referenceAndDefinition(
         oneOf != null && typesAre(oneOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         anyOf != null ->
             buildType("${prefix}${entry.className()}", parentClass) {
-                buildFancyObject(entry, anyOf, "anyOf", it)
+                buildFancyObject(context, entry, anyOf, "anyOf", it)
             }
 
         oneOf != null ->
             buildType("${prefix}${entry.className()}", parentClass) {
-                buildFancyObject(entry, oneOf, "oneOf", it)
+                buildFancyObject(context, entry, oneOf, "oneOf", it)
             }
 
         allOf != null ->
             buildType("${prefix}${entry.className()}", parentClass) {
-                buildFancyObject(entry, allOf, "allOf", it)
+                buildFancyObject(context, entry, allOf, "allOf", it)
             }
 
         types == null && entry.value.properties != null ->
-            referenceAndDefinition(mapOf(entry.key to entry.value.also { it.types = mutableSetOf("object") }).entries.first(), "", parentClass)!!
+            referenceAndDefinition(context, mapOf(entry.key to entry.value.also { it.types = mutableSetOf("object") }).entries.first(), "", parentClass)!!
 
         types == null && entry.value.properties != null && entry.value.properties.isEmpty() && entry.value.additionalProperties == false ->
             Pair(Types.VOID.annotated(typeGenerated()), null)
 
         types == null && entry.value.properties != null && entry.value.properties.isNotEmpty() ->
-            buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(entry, it) }
+            buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
 
         types == null -> Pair(Types.OBJECT.annotated(typeGenerated()), null)
 
@@ -90,13 +91,13 @@ fun referenceAndDefinition(
 
         types.size == 1 ->
             when (types.first()) {
-                "string" -> buildReferenceAndDefinitionFromString(entry, prefix, parentClass)
+                "string" -> buildReferenceAndDefinitionFromString(context, entry, prefix, parentClass)
                 "integer" -> buildReferenceAndDefinitionFromInteger(entry)
                 "boolean" -> Pair(Types.BOOLEAN, null)
                 "number" -> buildReferenceAndDefinitionFromNumber(entry)
-                "array" -> buildReferenceAndDefinitionFromArray(entry, parentClass)
-                "object" -> buildReferenceAndDefinitionFromObject(entry, parentClass, prefix)
-                else -> throw RuntimeException("Unknown type for ${entry.key}, stack: ${Context.getSchemaStackRef()}")
+                "array" -> buildReferenceAndDefinitionFromArray(context, entry, parentClass)
+                "object" -> buildReferenceAndDefinitionFromObject(context, entry, parentClass, prefix)
+                else -> throw RuntimeException("Unknown type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
             }
 
         types.toSet() == setOf("string", "integer") -> Pair(Types.STRING_OR_INTEGER, null)
@@ -107,6 +108,7 @@ fun referenceAndDefinition(
 }
 
 private fun buildReferenceAndDefinitionFromObject(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     parentClass: ClassName?,
     prefix: String,
@@ -115,10 +117,13 @@ private fun buildReferenceAndDefinitionFromObject(
         entry.value.additionalProperties != null && (entry.value.properties == null || entry.value.properties.isEmpty()) -> {
             val additionalProperties = entry.value.additionalProperties
             if (additionalProperties is Schema<*>) {
-                Context.withSchemaStack("additionalProperties") {
-                    referenceAndDefinition(mapOf(entry.key to additionalProperties).entries.first(), "", parentClass)!!
-                        .let { Pair(ParameterizedTypeName.get(Types.MAP, Types.STRING, it.first), it.second) }
-                }
+                referenceAndDefinition(
+                    context.withSchemaStack("additionalProperties"),
+                    mapOf(entry.key to additionalProperties).entries.first(),
+                    "",
+                    parentClass,
+                )!!
+                    .let { Pair(ParameterizedTypeName.get(Types.MAP, Types.STRING, it.first), it.second) }
             } else {
                 val message = additionalProperties.javaClass
                 println(message)
@@ -128,7 +133,7 @@ private fun buildReferenceAndDefinitionFromObject(
 
         entry.value.properties != null && entry.value.properties.isNotEmpty() ->
             buildType("${prefix}${entry.className()}", parentClass) {
-                buildSimpleObject(entry, it)
+                buildSimpleObject(context, entry, it)
             }
 
         else -> Pair(Types.MAP_STRING_OBJECT.annotated(typeGenerated()), null)
@@ -136,10 +141,12 @@ private fun buildReferenceAndDefinitionFromObject(
 }
 
 private fun buildReferenceAndDefinitionFromArray(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     parentClass: ClassName?,
-): Pair<TypeName, TypeSpec?>? =
-    Context.withSchemaStack("items") { referenceAndDefinition(mapOf(entry.key to entry.value.items).entries.first(), "", parentClass) }
+): Pair<TypeName, TypeSpec?>? {
+    val context1 = context.withSchemaStack("items")
+    return referenceAndDefinition(context1, mapOf(entry.key to entry.value.items).entries.first(), "", parentClass)
         ?.let {
             val oldTypeGenerated =
                 it.first.annotations()
@@ -158,6 +165,7 @@ private fun buildReferenceAndDefinitionFromArray(
                 it.second,
             )
         }
+}
 
 private fun buildReferenceAndDefinitionFromNumber(entry: Map.Entry<String, Schema<*>>): Pair<TypeName, TypeSpec?> =
     when (entry.value.format) {
@@ -174,12 +182,13 @@ private fun buildReferenceAndDefinitionFromInteger(entry: Map.Entry<String, Sche
     }
 
 private fun buildReferenceAndDefinitionFromString(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     prefix: String,
     parentClass: ClassName?,
 ): Pair<TypeName, TypeSpec?> =
     when {
-        entry.value.enum != null -> buildType("${prefix}${entry.className()}", parentClass) { buildEnum(entry, it) }
+        entry.value.enum != null -> buildType("${prefix}${entry.className()}", parentClass) { buildEnum(context, entry, it) }
 
         entry.value.format == null -> Pair(Types.STRING, null)
         else ->
@@ -195,15 +204,18 @@ private fun buildReferenceAndDefinitionFromString(
                         null,
                     )
 
-                else -> throw RuntimeException("Unknown string type for ${entry.key}, stack: ${Context.getSchemaStackRef()}")
+                else -> throw RuntimeException("Unknown string type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
             }
     }
 
-private fun buildReferenceAndDefinitionFromRef(entry: Map.Entry<String, Schema<*>>): Pair<TypeName, TypeSpec?> {
+private fun buildReferenceAndDefinitionFromRef(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+): Pair<TypeName, TypeSpec?> {
     val schemaName = entry.value.`$ref`.replace("#/components/schemas/", "")
-    val entries = Context.instance.get().openAPI.components.schemas.filter { (k, _) -> k == schemaName }.entries
+    val entries = context.openAPI.components.schemas.filter { (k, _) -> k == schemaName }.entries
     val schema = entries.first()
-    return referenceAndDefinition(schema, "", null)!!.copy(second = null)
+    return referenceAndDefinition(context, schema, "", null)!!.copy(second = null)
 }
 
 private fun buildType(
@@ -224,54 +236,52 @@ private fun buildType(
 }
 
 private fun buildFancyObject(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     subSchemas: List<Schema<Any>>,
     type: String,
     classRef: ClassName,
 ): TypeSpec {
     val className = classRef.simpleName()
-    return Context.withSchemaStack(type) {
-        val theType =
-            TypeSpec.classBuilder(className)
-                .addJavadoc(schemaJavadoc(entry))
-                .addAnnotation(generated(0))
-                .addAnnotation(lombok("Data"))
-                .addModifiers(Modifier.PUBLIC)
+    val theType =
+        TypeSpec.classBuilder(className)
+            .addJavadoc(schemaJavadoc(entry))
+            .addAnnotation(generated(0, context.withSchemaStack(type)))
+            .addAnnotation(lombok("Data"))
+            .addModifiers(Modifier.PUBLIC)
 
-        val fields = ArrayList<Pair<TypeName, String>>()
+    val fields = ArrayList<Pair<TypeName, String>>()
 
-        subSchemas
-            .mapIndexed { index, it ->
-                var newKey = entry.key + index
-                if (it.`$ref` != null) {
-                    newKey = it.`$ref`.replace("#/components/schemas/", "")
-                }
-                newKey to it
+    subSchemas
+        .mapIndexed { index, it ->
+            var newKey = entry.key + index
+            if (it.`$ref` != null) {
+                newKey = it.`$ref`.replace("#/components/schemas/", "")
             }
-            .forEachIndexed { index, (newKey, subSchema) ->
-                Context.withSchemaStack("$index") {
-                    processSubSchema(entry, newKey, subSchema, classRef, theType, fields)
-                }
-            }
+            newKey to it
+        }
+        .forEachIndexed { index, (newKey, subSchema) ->
+            processSubSchema(context.withSchemaStack(type, "$index"), entry, newKey, subSchema, classRef, theType, fields)
+        }
 
-        val settableFields = getSettableFields(fields, className)
-        val gettableFields = getGettableFields(fields, className)
-        val deserializer = buildDeserializer(className, type, settableFields)
-        val serializer = buildSerializer(className, type, gettableFields)
+    val settableFields = getSettableFields(fields, className)
+    val gettableFields = getGettableFields(fields, className)
+    val deserializer = buildDeserializer(className, type, settableFields)
+    val serializer = buildSerializer(className, type, gettableFields)
 
-        theType.addType(deserializer)
-            .addType(serializer)
-            .addAnnotation(deserializerAnnotation(className, deserializer))
-            .addAnnotation(serializerAnnotation(className, serializer))
-            .addAnnotation(superBuilder())
-            .addAnnotation(lombok("NoArgsConstructor"))
-            .addAnnotation(lombok("AllArgsConstructor"))
+    theType.addType(deserializer)
+        .addType(serializer)
+        .addAnnotation(deserializerAnnotation(className, deserializer))
+        .addAnnotation(serializerAnnotation(className, serializer))
+        .addAnnotation(superBuilder())
+        .addAnnotation(lombok("NoArgsConstructor"))
+        .addAnnotation(lombok("AllArgsConstructor"))
 
-        theType.build()
-    }
+    return theType.build()
 }
 
 private fun processSubSchema(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     newKey: String,
     subSchema: Schema<Any>,
@@ -280,16 +290,16 @@ private fun processSubSchema(
     fields: ArrayList<Pair<TypeName, String>>,
 ) {
     val keyValuePair = mapOf(newKey to subSchema).entries.first()
-    val rad = referenceAndDefinition(keyValuePair, "", classRef)!!
+    val rad = referenceAndDefinition(context, keyValuePair, "", classRef)!!
     rad.let {
         if (rad.second != null) {
             val builder = rad.second!!.toBuilder()
             if (rad.first is ClassName) {
-                addProperties(entry, rad.first as ClassName, builder)
+                addProperties(context, entry, rad.first as ClassName, builder)
             }
             theType.addType(builder.addModifiers(Modifier.STATIC).build())
         }
-        val fieldSpec = buildFieldSpec(keyValuePair, classRef)
+        val fieldSpec = buildFieldSpec(context, keyValuePair, classRef)
         theType.addField(fieldSpec)
         val first =
             when {
@@ -301,17 +311,18 @@ private fun processSubSchema(
 }
 
 private fun buildFieldSpec(
+    context: Context,
     keyValuePair: Map.Entry<String, Schema<Any>>,
     classRef: ClassName,
 ): FieldSpec =
     FieldSpec
         .builder(
-            referenceAndDefinition(keyValuePair, "", classRef)!!.first,
+            referenceAndDefinition(context, keyValuePair, "", classRef)!!.first,
             keyValuePair.key.unkeywordize().camelCase(),
             Modifier.PRIVATE,
         )
         .addJavadoc(schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
-        .addAnnotation(generated(0))
+        .addAnnotation(generated(0, context))
         .addAnnotation(jsonProperty(keyValuePair.key))
         .build()
 
@@ -398,6 +409,7 @@ private fun buildDeserializer(
         .build()
 
 private fun buildSimpleObject(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     nameRef: ClassName,
 ): TypeSpec {
@@ -406,19 +418,20 @@ private fun buildSimpleObject(
     val builder =
         TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(generated(0))
+            .addAnnotation(generated(0, context))
             .addAnnotation(lombok("Data"))
             .addAnnotation(superBuilder())
             .addAnnotation(lombok("NoArgsConstructor"))
             .addAnnotation(lombok("AllArgsConstructor"))
             .addAnnotation(jsonIncludeNonNull())
 
-    addProperties(entry, nameRef, builder)
+    addProperties(context, entry, nameRef, builder)
 
     return builder.build()
 }
 
 private fun addProperties(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     nameRef: ClassName,
     builder: TypeSpec.Builder,
@@ -427,27 +440,27 @@ private fun addProperties(
     val knownSubTypes = builder.build().typeSpecs().map { it.name() }
 
     entry.value.properties?.forEach { p ->
-        Context.withSchemaStack("properties", p.key) {
-            referenceAndDefinition(p, "", nameRef)?.let { (d, s) ->
-                s?.let {
-                    if (!knownSubTypes.contains(it.name())) {
-                        builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
-                    }
+        referenceAndDefinition(context.withSchemaStack("properties", p.key), p, "", nameRef)?.let { (d, s) ->
+
+            s?.let {
+                if (!knownSubTypes.contains(it.name())) {
+                    builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
                 }
-                if (!knownFields.contains(p.key.unkeywordize().camelCase())) {
-                    builder.addField(
-                        FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
-                            .addAnnotation(jsonProperty(p.key))
-                            .addAnnotation(generated(0))
-                            .build(),
-                    )
-                }
+            }
+            if (!knownFields.contains(p.key.unkeywordize().camelCase())) {
+                builder.addField(
+                    FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
+                        .addAnnotation(jsonProperty(p.key))
+                        .addAnnotation(generated(0, context.withSchemaStack("properties", p.key)))
+                        .build(),
+                )
             }
         }
     }
 }
 
 private fun buildEnum(
+    context: Context,
     entry: Map.Entry<String, Schema<*>>,
     className: ClassName,
 ): TypeSpec {
@@ -455,7 +468,7 @@ private fun buildEnum(
         TypeSpec.enumBuilder(className.simpleName())
             .addModifiers(Modifier.PUBLIC)
             .addJavadoc(schemaJavadoc(entry))
-            .addAnnotation(generated(0))
+            .addAnnotation(generated(0, context))
             .addAnnotation(lombok("Getter"))
             .addAnnotation(lombok("RequiredArgsConstructor"))
             .addAnnotation(lombok("ToString"))

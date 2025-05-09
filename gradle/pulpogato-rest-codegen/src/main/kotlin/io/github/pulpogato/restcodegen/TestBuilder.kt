@@ -10,6 +10,7 @@ import kotlin.collections.get
 
 object TestBuilder {
     fun buildTest(
+        context: Context,
         key: String,
         example: Any,
         className: TypeName,
@@ -19,11 +20,11 @@ object TestBuilder {
         val formatted: String =
             try {
                 val parsed = om.readValue(example.toString(), TreeMap::class.java)
-                format(om, parsed)
+                format(context, om, parsed)
             } catch (_: Exception) {
                 try {
                     val parsed = om.readValue(example.toString(), List::class.java)
-                    format(om, parsed)
+                    format(context, om, parsed)
                 } catch (_: Exception) {
                     example.toString()
                 }
@@ -35,7 +36,7 @@ object TestBuilder {
             val methodSpec =
                 MethodSpec.methodBuilder("test${key.pascalCase()}")
                     .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
-                    .addAnnotation(Annotations.generated(1))
+                    .addAnnotation(Annotations.generated(1, context))
                     .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
                     .addStatement("\$T input = /* language=JSON */ \$L", String::class.java, formatted.blockQuote())
                     .addStatement("var softly = new \$T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
@@ -52,7 +53,7 @@ object TestBuilder {
         } catch (e: Exception) {
             throw RuntimeException(
                 """
-                Failed to build test for ${Context.getSchemaStackRef()}.
+                Failed to build test for ${context.getSchemaStackRef()}.
                 ValueType: ${example.javaClass}
                 Formatted: $formatted
                 Value: $example                
@@ -63,25 +64,32 @@ object TestBuilder {
     }
 
     private fun format(
+        context: Context,
         om: ObjectMapper,
         parsed: Any,
     ): String {
-        return om.writerWithDefaultPrettyPrinter().writeValueAsString(normalize(parsed))
+        return om.writerWithDefaultPrettyPrinter().writeValueAsString(normalize(context, parsed))
     }
 
-    private fun normalize(input: Any?): Any? {
+    private fun normalize(
+        context: Context,
+        input: Any?,
+    ): Any? {
         return when (input) {
-            is List<*> -> input.map { normalize(it) }
-            is Map<*, *> -> normalizeMap(input)
+            is List<*> -> input.map { normalize(context, it) }
+            is Map<*, *> -> normalizeMap(context, input)
             else -> input
         }
     }
 
-    private fun normalizeMap(input: Map<*, *>): Any {
+    private fun normalizeMap(
+        context: Context,
+        input: Map<*, *>,
+    ): Any {
         if (input.size == 1 && input.containsKey("\$ref")) {
-            return normalize(Context.instance.get().openAPI.components.examples[input["\$ref"].toString().replace("#/components/examples/", "")]?.value)!!
+            return normalize(context, context.openAPI.components.examples[input["\$ref"].toString().replace("#/components/examples/", "")]?.value)!!
         }
-        return input.entries.associate { (k, v) -> k to normalize(v) }
+        return input.entries.associate { (k, v) -> k to normalize(context, v) }
     }
 
     private fun String.quote() = "\"$this\""

@@ -30,6 +30,7 @@ import kotlin.collections.get
 
 class WebhooksBuilder {
     fun buildWebhooks(
+        context: Context,
         mainDir: File,
         restPackage: String,
         webhooksPackage: String,
@@ -37,7 +38,7 @@ class WebhooksBuilder {
     ) {
         val testControllerBuilder = buildTestController()
 
-        val openAPI = Context.instance.get().openAPI
+        val openAPI = context.openAPI
         openAPI.webhooks
             .entries
             .groupBy { getSubcategory(it.value.readOperationsMap().values.first())!! }
@@ -53,7 +54,8 @@ class WebhooksBuilder {
 
                 val requestBodyTypes = mutableMapOf<String, Pair<String, ClassName>>()
                 v.forEach { (name, webhook) ->
-                    val requestBody = createWebhookInterface(name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testControllerBuilder)
+                    val requestBody =
+                        createWebhookInterface(context, name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testControllerBuilder)
                     val methodName = "process" + webhook.readOperationsMap().values.first().operationId.replace("/", "-").pascalCase()
                     requestBodyTypes[name] = Pair(methodName, requestBody)
                 }
@@ -61,7 +63,7 @@ class WebhooksBuilder {
                 if (v.size > 1) {
                     val methodBuilder =
                         MethodSpec.methodBuilder("process${k.pascalCase()}")
-                            .addAnnotation(generated(0))
+                            .addAnnotation(generated(0, context))
                             .addAnnotation(
                                 AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
                                     .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
@@ -77,7 +79,7 @@ class WebhooksBuilder {
                                 .addParameter(
                                     ParameterSpec.builder(Types.STRING, it.camelCase())
                                         .addAnnotation(getParameterAnnotation(it).build())
-                                        .addAnnotation(generated(0))
+                                        .addAnnotation(generated(0, context))
                                         .build(),
                                 )
                         }
@@ -87,7 +89,7 @@ class WebhooksBuilder {
                     interfaceBuilder
                         .addMethod(
                             methodBuilder
-                                .addParameter(buildRequestBodyParameter())
+                                .addParameter(buildRequestBodyParameter(context))
                                 .addCode(router, ClassName.get("org.springframework.http", "ResponseEntity"))
                                 .build(),
                         )
@@ -121,20 +123,20 @@ class WebhooksBuilder {
                 }
             }
         val testConfig = buildTestConfig(testControllerBuilder.build())
-        val integrationTestBuilder = buildIntegrationTest(testConfig.build())
+        val integrationTestBuilder = buildIntegrationTest(context, testConfig.build())
         JavaFile.builder(webhooksPackage, integrationTestBuilder.build())
             .build()
             .writeTo(testDir)
     }
 
-    private fun buildRequestBodyParameter(): ParameterSpec? =
+    private fun buildRequestBodyParameter(context: Context): ParameterSpec =
         ParameterSpec
             .builder(
                 ClassName.get(JsonNode::class.java),
                 "requestBody",
             )
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
-            .addAnnotation(generated(0))
+            .addAnnotation(generated(0, context))
             .build()
 
     private fun buildRouter(
@@ -176,7 +178,10 @@ class WebhooksBuilder {
         return parameterAnnotation
     }
 
-    private fun buildIntegrationTest(testConfig: TypeSpec): TypeSpec.Builder =
+    private fun buildIntegrationTest(
+        context: Context,
+        testConfig: TypeSpec,
+    ): TypeSpec.Builder =
         TypeSpec.classBuilder("WebhooksIntegrationTest")
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "WebMvcTest")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "AutoConfigureMockMvc")).build())
@@ -197,7 +202,7 @@ class WebhooksBuilder {
                     .addStatement(
                         "return \$T.getArguments(\"\$L\")",
                         ClassName.get("io.github.pulpogato.test", "WebhookHelper"),
-                        Context.instance.get().version,
+                        context.version,
                     )
                     .build(),
             )
@@ -268,6 +273,7 @@ class WebhooksBuilder {
             .addModifiers(Modifier.STATIC)
 
     private fun createWebhookInterface(
+        context: Context,
         name: String,
         webhook: PathItem,
         openAPI: OpenAPI,
@@ -292,94 +298,92 @@ class WebhooksBuilder {
             )
 
         val methodName = "process" + operation.operationId.replace("/", "-").pascalCase()
+        val context1 = context.withSchemaStack("#", "webhooks", name, "post")
         val methodSpecBuilder =
-            Context.withSchemaStack("#", "webhooks", name, "post") {
-                val methodSpecBuilder =
-                    MethodSpec.methodBuilder(methodName)
-                        .addAnnotation(generated(0))
-                        .addAnnotation(
-                            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
-                                .addMember("headers", "\$S", "X-Github-Event=$name")
-                                .build(),
-                        )
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(
-                            ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")),
-                        )
+            MethodSpec.methodBuilder(methodName)
+                .addAnnotation(generated(0, context1))
+                .addAnnotation(
+                    AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
+                        .addMember("headers", "\$S", "X-Github-Event=$name")
+                        .build(),
+                )
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(
+                    ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")),
+                )
 
-                operation.parameters.filter { it.`in` == "header" }.forEach {
-                    javadoc.add("@param ${it.name.camelCase()} '${it.name}' header. Example: <code>${it.example}</code>")
-                }
-                javadoc.add("@param requestBody The request body")
-                javadoc.add("")
-                javadoc.add("@return It doesn't really matter. A 200 means success. Anything else means failure.")
-                if (operation.externalDocs != null) {
-                    javadoc.add("")
-                    javadoc.add("@see <a href=\"${operation.externalDocs.url}\">${operation.externalDocs.description ?: "GitHub Docs"}</a>")
-                }
+        operation.parameters.filter { it.`in` == "header" }.forEach {
+            javadoc.add("@param ${it.name.camelCase()} '${it.name}' header. Example: <code>${it.example}</code>")
+        }
+        javadoc.add("@param requestBody The request body")
+        javadoc.add("")
+        javadoc.add("@return It doesn't really matter. A 200 means success. Anything else means failure.")
+        if (operation.externalDocs != null) {
+            javadoc.add("")
+            javadoc.add("@see <a href=\"${operation.externalDocs.url}\">${operation.externalDocs.description ?: "GitHub Docs"}</a>")
+        }
 
-                val requestBody = operation.requestBody
+        val requestBody = operation.requestBody
 
-                requestBody.content
-                    .filter { entry -> entry.key.contains("json") }
-                    .forEach { firstEntry ->
-                        if (firstEntry.value.schema.`$ref` != null) {
-                            val ref = firstEntry.value.schema.`$ref`.replace("#/components/schemas/", "")
-                            val schema = openAPI.components.schemas.entries.first { it.key == ref }
-                            val type = schema.className()
-                            operation.parameters.filter { it.`in` == "header" }.forEachIndexed { idx, it ->
-                                val required =
-                                    when {
-                                        it.name.startsWith("X-Hub-Signature") -> false
-                                        it.name.startsWith("X-GitHub-Enterprise") -> false
-                                        else -> true
-                                    }
-                                val parameterAnnotation =
-                                    AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
-                                        .addMember("value", "\$S", it.name)
-                                if (!required) {
-                                    parameterAnnotation.addMember("required", "\$L", false)
-                                }
-                                Context.withSchemaStack("parameters", idx.toString()) {
-                                    methodSpecBuilder
-                                        .addParameter(
-                                            ParameterSpec.builder(Types.STRING, it.name.camelCase())
-                                                .addAnnotation(parameterAnnotation.build())
-                                                .addAnnotation(generated(0))
-                                                .build(),
-                                        )
-                                }
+        requestBody.content
+            .filter { entry -> entry.key.contains("json") }
+            .forEach { firstEntry ->
+                if (firstEntry.value.schema.`$ref` != null) {
+                    val ref = firstEntry.value.schema.`$ref`.replace("#/components/schemas/", "")
+                    val schema = openAPI.components.schemas.entries.first { it.key == ref }
+                    val type = schema.className()
+                    operation.parameters.filter { it.`in` == "header" }.forEachIndexed { idx, it ->
+                        val required =
+                            when {
+                                it.name.startsWith("X-Hub-Signature") -> false
+                                it.name.startsWith("X-GitHub-Enterprise") -> false
+                                else -> true
                             }
-                            bodyType = ClassName.get("$restPackage.schemas", type)
-                            Context.withSchemaStack("requestBody") {
-                                methodSpecBuilder.addParameter(
-                                    ParameterSpec.builder(bodyType, "requestBody")
-                                        .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
-                                        .addAnnotation(generated(0))
-                                        .build(),
+                        val parameterAnnotation =
+                            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
+                                .addMember("value", "\$S", it.name)
+                        if (!required) {
+                            parameterAnnotation.addMember("required", "\$L", false)
+                        }
+                        val context2 = context1.withSchemaStack("parameters", idx.toString())
+                        methodSpecBuilder
+                            .addParameter(
+                                ParameterSpec.builder(Types.STRING, it.name.camelCase())
+                                    .addAnnotation(parameterAnnotation.build())
+                                    .addAnnotation(generated(0, context2))
+                                    .build(),
+                            )
+                    }
+                    bodyType = ClassName.get("$restPackage.schemas", type)
+                    methodSpecBuilder.addParameter(
+                        ParameterSpec.builder(bodyType, "requestBody")
+                            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
+                            .addAnnotation(generated(0, context1.withSchemaStack("requestBody")))
+                            .build(),
+                    )
+
+                    methodSpecBuilder.addJavadoc(javadoc.joinToString("\n"))
+
+                    val examples = firstEntry.value.examples
+                    if (firstEntry.key.contains("json")) {
+                        examples?.forEach { (key, value) ->
+                            val ref1 = value.`$ref`
+                            val example = openAPI.components.examples.entries.firstOrNull { it.key == ref1.replace("#/components/examples/", "") }
+                            if (example != null) {
+                                tests.add(
+                                    TestBuilder.buildTest(
+                                        context1.withSchemaStack("requestBody", "content", firstEntry.key, "examples"),
+                                        key,
+                                        example.value.value,
+                                        bodyType!!,
+                                    ),
                                 )
                             }
-
-                            methodSpecBuilder.addJavadoc(javadoc.joinToString("\n"))
-
-                            val examples = firstEntry.value.examples
-                            if (firstEntry.key.contains("json")) {
-                                Context.withSchemaStack("requestBody", "content", firstEntry.key, "examples") {
-                                    examples?.forEach { (key, value) ->
-                                        val ref1 = value.`$ref`
-                                        val example = openAPI.components.examples.entries.firstOrNull { it.key == ref1.replace("#/components/examples/", "") }
-                                        if (example != null) {
-                                            tests.add(TestBuilder.buildTest(key, example.value.value, bodyType!!))
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            throw RuntimeException("Unknown type for ${firstEntry.value.schema}")
                         }
                     }
-
-                methodSpecBuilder
+                } else {
+                    throw RuntimeException("Unknown type for ${firstEntry.value.schema}")
+                }
             }
 
         if (tests.isNotEmpty()) {
