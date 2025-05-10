@@ -38,7 +38,8 @@ else
         --title "Update rest-api-description to $SHORT_SHA" \
         --body "" \
         --base main \
-        --head ${BRANCH_NAME}
+        --head ${BRANCH_NAME} \
+        --label "dependency"
     gh pr merge --auto --merge
     git checkout main
     if [ "$CI" != "" ]; then
