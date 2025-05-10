@@ -61,44 +61,7 @@ class WebhooksBuilder {
                 }
 
                 if (v.size > 1) {
-                    val methodBuilder =
-                        MethodSpec.methodBuilder("process${k.pascalCase()}")
-                            .addAnnotation(generated(0, context))
-                            .addAnnotation(
-                                AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
-                                    .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
-                                    .build(),
-                            )
-                            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
-                            .addException(Types.EXCEPTION)
-                            .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
-                    val headerNames = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
-                    headerNames
-                        .forEach {
-                            methodBuilder
-                                .addParameter(
-                                    ParameterSpec.builder(Types.STRING, it.camelCase())
-                                        .addAnnotation(getParameterAnnotation(it).build())
-                                        .addAnnotation(generated(0, context))
-                                        .build(),
-                                )
-                        }
-
-                    val router = buildRouter(requestBodyTypes, k, headerNames)
-
-                    interfaceBuilder
-                        .addMethod(
-                            methodBuilder
-                                .addParameter(buildRequestBodyParameter(context))
-                                .addCode(router, ClassName.get("org.springframework.http", "ResponseEntity"))
-                                .build(),
-                        )
-                        .addMethod(
-                            MethodSpec.methodBuilder("getObjectMapper")
-                                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                                .returns(ClassName.get(ObjectMapper::class.java))
-                                .build(),
-                        )
+                    buildSyntheticMethod(context, k, v, requestBodyTypes, interfaceBuilder)
                 }
 
                 val interfaceSpec = interfaceBuilder.build()
@@ -127,6 +90,53 @@ class WebhooksBuilder {
         JavaFile.builder(webhooksPackage, integrationTestBuilder.build())
             .build()
             .writeTo(testDir)
+    }
+
+    private fun buildSyntheticMethod(
+        context: Context,
+        k: String,
+        v: List<MutableMap.MutableEntry<String, PathItem>>,
+        requestBodyTypes: MutableMap<String, Pair<String, ClassName>>,
+        interfaceBuilder: TypeSpec.Builder,
+    ) {
+        val methodBuilder =
+            MethodSpec.methodBuilder("process${k.pascalCase()}")
+                .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
+                .addAnnotation(
+                    AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
+                        .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
+                        .build(),
+                )
+                .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
+                .addException(Types.EXCEPTION)
+                .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
+        val headerNames = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
+        headerNames
+            .forEach {
+                methodBuilder
+                    .addParameter(
+                        ParameterSpec.builder(Types.STRING, it.camelCase())
+                            .addAnnotation(getParameterAnnotation(it).build())
+                            .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
+                            .build(),
+                    )
+            }
+
+        val router = buildRouter(requestBodyTypes, k, headerNames)
+
+        interfaceBuilder
+            .addMethod(
+                methodBuilder
+                    .addParameter(buildRequestBodyParameter(context.withSchemaStack("#", "synthetic")))
+                    .addCode(router, ClassName.get("org.springframework.http", "ResponseEntity"))
+                    .build(),
+            )
+            .addMethod(
+                MethodSpec.methodBuilder("getObjectMapper")
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .returns(ClassName.get(ObjectMapper::class.java))
+                    .build(),
+            )
     }
 
     private fun buildRequestBodyParameter(context: Context): ParameterSpec =

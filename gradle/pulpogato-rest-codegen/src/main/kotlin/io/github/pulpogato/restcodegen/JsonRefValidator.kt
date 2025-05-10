@@ -63,6 +63,9 @@ class JsonRefValidator(private val threshold: Int = 0) {
         json: JsonNode,
         location: Triple<File, Int, String>,
     ): String? {
+        if (location.third == "#/synthetic") {
+            return null
+        }
         val parts = location.third.split("/").drop(1)
         var lastVerified = "#"
         var current: JsonNode? = json
