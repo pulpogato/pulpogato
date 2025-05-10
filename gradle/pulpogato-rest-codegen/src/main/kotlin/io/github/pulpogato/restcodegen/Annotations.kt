@@ -86,6 +86,8 @@ object Annotations {
         val schemaRef = context.getSchemaStackRef()
         if (schemaRef.isNotEmpty()) {
             builder.addMember("schemaRef", "\$S", schemaRef)
+        } else {
+            throw IllegalArgumentException("SchemaRef is empty")
         }
         return builder
             .addMember("codeRef", "\$S", codeRef(offset))
