@@ -32,9 +32,9 @@ class WebhooksBuilder {
     fun buildWebhooks(
         context: Context,
         mainDir: File,
+        testDir: File,
         restPackage: String,
         webhooksPackage: String,
-        testDir: File,
     ) {
         val testControllerBuilder = buildTestController()
 

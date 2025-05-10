@@ -28,11 +28,11 @@ class PathsBuilder {
 
     fun buildApis(
         context: Context,
-        outputDir: File,
-        packageName: String,
+        mainDir: File,
         testDir: File,
+        packageName: String,
     ) {
-        val apiDir = File(outputDir, packageName.replace(".", "/"))
+        val apiDir = File(mainDir, packageName.replace(".", "/"))
         apiDir.mkdirs()
         val openAPI = context.openAPI
         openAPI.paths
@@ -70,7 +70,7 @@ class PathsBuilder {
                     )
                 }
 
-                JavaFile.builder(packageName, pathInterface.build()).build().writeTo(outputDir)
+                JavaFile.builder(packageName, pathInterface.build()).build().writeTo(mainDir)
                 val typeClassBuilt = testClass.build()
                 if (typeClassBuilt.methodSpecs().isNotEmpty() || typeClassBuilt.typeSpecs().isNotEmpty()) {
                     JavaFile.builder(packageName, typeClassBuilt).build().writeTo(testDir)
@@ -184,7 +184,7 @@ class PathsBuilder {
         parameterSpecs: List<ParameterSpec>,
         respRef: TypeName,
         suitableAnnotations: List<AnnotationSpec>,
-    ): MethodSpec? {
+    ): MethodSpec {
         val exchangeAnnotation = atomicMethod.method.name.lowercase().pascalCase() + "Exchange"
         return MethodSpec.methodBuilder(methodName)
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
@@ -214,7 +214,7 @@ class PathsBuilder {
         atomicMethod: AtomicMethod,
         javadoc: String,
         parameters: List<Pair<Parameter, ParameterSpec>>,
-    ): MethodSpec? =
+    ): MethodSpec =
         MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .addJavadoc(javadoc)
