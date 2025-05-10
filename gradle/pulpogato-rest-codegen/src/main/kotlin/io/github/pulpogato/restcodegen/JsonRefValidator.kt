@@ -25,13 +25,20 @@ class JsonRefValidator(private val threshold: Int = 0) {
                     .map {
                         val (file, lineNumber, line) = it
                         hasError(json, it).also { l ->
-                            if (l) {
-                                println("${file.absolutePath}:${lineNumber + 1}:\n\tE:BAD_REF \"${line}\"\n")
+                            if (l != null) {
+                                println(
+                                    """
+                                    |${file.absolutePath}:${lineNumber + 1}
+                                    |    Bad Ref   : "$line"
+                                    |    Last Found: "$l"
+                                    |
+                                    """.trimMargin(),
+                                )
                             }
                         }
                     }
             }
-        val errors = schemaRefs.count { it }
+        val errors = schemaRefs.count { it != null }
         val total = schemaRefs.size
         check(errors <= threshold) { "Found $errors errors in $total JSON references" }
         println("Found $errors errors in $total JSON references")
@@ -55,12 +62,13 @@ class JsonRefValidator(private val threshold: Int = 0) {
     private fun hasError(
         json: JsonNode,
         location: Triple<File, Int, String>,
-    ): Boolean {
+    ): String? {
         val parts = location.third.split("/").drop(1)
+        var lastVerified = "#"
         var current: JsonNode? = json
         parts.forEach { t ->
             if (current == null) {
-                return true
+                return lastVerified
             } else {
                 val name = t.replace("~1", "/")
                 val index = if (name.matches("\\d+".toRegex())) name.toIntOrNull() else null
@@ -69,11 +77,14 @@ class JsonRefValidator(private val threshold: Int = 0) {
                         index != null && index < 200 -> (current as JsonNode)[index]
                         else -> (current as JsonNode)[name]
                     }
+                if (current != null) {
+                    lastVerified += "/$t"
+                }
             }
         }
         if (current == null) {
-            return true
+            return lastVerified
         }
-        return false
+        return null
     }
 }

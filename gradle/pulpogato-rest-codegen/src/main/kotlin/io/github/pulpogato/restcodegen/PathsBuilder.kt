@@ -86,7 +86,7 @@ class PathsBuilder {
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
     ) {
-        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef)
+        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef, testClass)
 
         val successResponses =
             atomicMethod.operation.responses
@@ -100,7 +100,7 @@ class PathsBuilder {
         }
 
         val javadoc =
-            buildMethodJavadoc(atomicMethod, parameters)
+            buildMethodJavadoc(atomicMethod, parameters.map { it.first })
                 .split("\n")
                 .dropLastWhile { it.isEmpty() }
                 .joinToString("\n")
@@ -108,7 +108,7 @@ class PathsBuilder {
         val successResponse = successResponses.entries.minByOrNull { it.key }
 
         if (successResponse == null || successResponse.value.content == null) {
-            typeDef.addMethod(buildVoidMethod(context, atomicMethod, javadoc, parameters, typeDef, typeRef, testClass))
+            typeDef.addMethod(buildVoidMethod(context, atomicMethod, javadoc, parameters))
         } else {
             successResponse.value.content.forEach { (contentType, details) ->
                 val rad =
@@ -130,7 +130,7 @@ class PathsBuilder {
                         }
                     val testMethods = getTestMethods(context, successResponse, contentType, details, respRef)
 
-                    val parameterSpecs = parameters.map { buildParameter(context, it, atomicMethod, typeDef, typeRef, testClass) }
+                    val parameterSpecs = parameters.map { it.second }
                     if (contentType.contains("json") && testMethods.isNotEmpty()) {
                         testClass.addType(
                             TypeSpec.classBuilder(methodName.pascalCase() + "Response")
@@ -213,10 +213,7 @@ class PathsBuilder {
         context: Context,
         atomicMethod: AtomicMethod,
         javadoc: String,
-        parameters: List<Parameter>,
-        typeDef: TypeSpec.Builder,
-        typeRef: ClassName,
-        testClass: TypeSpec.Builder,
+        parameters: List<Pair<Parameter, ParameterSpec>>,
     ): MethodSpec? =
         MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
@@ -230,7 +227,7 @@ class PathsBuilder {
                     .build(),
             )
             .addAnnotation(generated(0, context))
-            .addParameters(parameters.map { buildParameter(context, it, atomicMethod, typeDef, typeRef, testClass) })
+            .addParameters(parameters.map { it.second })
             .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
             .build()
 
@@ -361,15 +358,29 @@ class PathsBuilder {
         openAPI: OpenAPI,
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
-    ): List<Parameter> {
+        testClass: TypeSpec.Builder,
+    ): List<Pair<Parameter, ParameterSpec>> {
         val parameters =
             atomicMethod.operation.parameters
-                ?.mapNotNull { parameter ->
+                ?.mapIndexed { idx, parameter ->
                     if (parameter.`$ref` == null) {
-                        parameter
+                        Pair(
+                            parameter,
+                            buildParameter(
+                                context.withSchemaStack("parameters", idx.toString(), "schema"), parameter,
+                                atomicMethod, typeDef, typeRef, testClass,
+                            ),
+                        )
                     } else {
                         val refName = parameter.`$ref`.replace("#/components/parameters/", "")
-                        openAPI.components.parameters[refName]
+                        val newParameter = openAPI.components.parameters[refName]!!
+                        Pair(
+                            newParameter,
+                            buildParameter(
+                                context.withSchemaStack("#", "components", "parameters", refName, "schema"), newParameter,
+                                atomicMethod, typeDef, typeRef, testClass,
+                            ),
+                        )
                     }
                 }?.toMutableList() ?: mutableListOf()
 
@@ -389,14 +400,19 @@ class PathsBuilder {
                     typeDef.addType(it.toBuilder().addModifiers(Modifier.STATIC, Modifier.PUBLIC).build())
                 }
             }
-            parameters.add(
+            val bodyParameter =
                 Parameter()
                     .`in`("body")
                     .name("requestBody")
                     .description(requestBody.description ?: "The request body")
                     .schema(firstEntry.value.schema)
                     .examples(firstEntry.value.examples)
-                    .required(true),
+                    .required(true)
+            parameters.add(
+                Pair(
+                    bodyParameter,
+                    buildParameter(context, bodyParameter, atomicMethod, typeDef, typeRef, testClass),
+                ),
             )
         }
         return parameters.toList()
