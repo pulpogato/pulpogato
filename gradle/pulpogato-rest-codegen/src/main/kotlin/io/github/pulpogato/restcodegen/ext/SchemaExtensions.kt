@@ -295,7 +295,8 @@ private fun processSubSchema(
         if (rad.second != null) {
             val builder = rad.second!!.toBuilder()
             if (rad.first is ClassName) {
-                addProperties(context, entry, rad.first as ClassName, builder)
+                val parentStack = context.schemaStack.dropLast(2).toTypedArray()
+                addProperties(context.withSchemaStack(*parentStack), entry, rad.first as ClassName, builder)
             }
             theType.addType(builder.addModifiers(Modifier.STATIC).build())
         }
