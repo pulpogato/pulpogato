@@ -215,7 +215,7 @@ private fun buildReferenceAndDefinitionFromRef(
     val schemaName = entry.value.`$ref`.replace("#/components/schemas/", "")
     val entries = context.openAPI.components.schemas.filter { (k, _) -> k == schemaName }.entries
     val schema = entries.first()
-    return referenceAndDefinition(context, schema, "", null)!!.copy(second = null)
+    return referenceAndDefinition(context.withSchemaStack("#", "components", "schemas", schemaName), schema, "", null)!!.copy(second = null)
 }
 
 private fun buildType(

@@ -67,7 +67,7 @@ open class GenerateJavaTask : DefaultTask() {
 
         // Validate JSON references
         val json = ObjectMapper().readTree(swaggerSpec)
-        JsonRefValidator(142).validate(json, listOf(main, test))
+        JsonRefValidator(140).validate(json, listOf(main, test))
     }
 
     private fun getJavaFiles(dir: File): List<File> {
