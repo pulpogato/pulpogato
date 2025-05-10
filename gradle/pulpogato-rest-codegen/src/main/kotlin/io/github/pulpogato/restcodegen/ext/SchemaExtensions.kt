@@ -239,14 +239,14 @@ private fun buildFancyObject(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
     subSchemas: List<Schema<Any>>,
-    type: String,
+    fancyObjectType: String,
     classRef: ClassName,
 ): TypeSpec {
     val className = classRef.simpleName()
     val theType =
         TypeSpec.classBuilder(className)
             .addJavadoc(schemaJavadoc(entry))
-            .addAnnotation(generated(0, context.withSchemaStack(type)))
+            .addAnnotation(generated(0, context.withSchemaStack(fancyObjectType)))
             .addAnnotation(lombok("Data"))
             .addModifiers(Modifier.PUBLIC)
 
@@ -261,13 +261,13 @@ private fun buildFancyObject(
             newKey to it
         }
         .forEachIndexed { index, (newKey, subSchema) ->
-            processSubSchema(context.withSchemaStack(type, "$index"), entry, newKey, subSchema, classRef, theType, fields)
+            processSubSchema(context.withSchemaStack(fancyObjectType, "$index"), entry, newKey, subSchema, classRef, theType, fields)
         }
 
     val settableFields = getSettableFields(fields, className)
     val gettableFields = getGettableFields(fields, className)
-    val deserializer = buildDeserializer(className, type, settableFields)
-    val serializer = buildSerializer(className, type, gettableFields)
+    val deserializer = buildDeserializer(className, fancyObjectType, settableFields)
+    val serializer = buildSerializer(className, fancyObjectType, gettableFields)
 
     theType.addType(deserializer)
         .addType(serializer)
@@ -329,7 +329,7 @@ private fun buildFieldSpec(
 
 private fun getGettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
-    className: String?,
+    className: String,
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
@@ -359,8 +359,8 @@ private fun getSettableFields(
     }
 
 private fun buildSerializer(
-    className: String?,
-    type: String,
+    className: String,
+    fancyObjectType: String,
     gettableFields: List<CodeBlock>,
 ): TypeSpec =
     TypeSpec.classBuilder("${className}Serializer")
@@ -370,7 +370,7 @@ private fun buildSerializer(
             MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
-                    """super(${"$"}T.class, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
+                    """super(${"$"}T.class, ${"$"}T.${fancyObjectType.trainCase()}, ${"$"}T.of(
                         |    ${"$"}L
                         |))
                     """.trimMargin(),
@@ -384,8 +384,8 @@ private fun buildSerializer(
         .build()
 
 private fun buildDeserializer(
-    className: String?,
-    type: String,
+    className: String,
+    fancyObjectType: String,
     settableFields: List<CodeBlock>,
 ): TypeSpec =
     TypeSpec.classBuilder("${className}Deserializer")
@@ -395,7 +395,7 @@ private fun buildDeserializer(
             MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
-                    """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${type.trainCase()}, ${"$"}T.of(
+                    """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${fancyObjectType.trainCase()}, ${"$"}T.of(
                         |    ${"$"}L
                         |))
                     """.trimMargin(),
@@ -435,21 +435,21 @@ private fun addProperties(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
     nameRef: ClassName,
-    builder: TypeSpec.Builder,
+    classBuilder: TypeSpec.Builder,
 ) {
-    val knownFields = builder.build().fieldSpecs().map { it.name() }
-    val knownSubTypes = builder.build().typeSpecs().map { it.name() }
+    val knownFields = classBuilder.build().fieldSpecs().map { it.name() }
+    val knownSubTypes = classBuilder.build().typeSpecs().map { it.name() }
 
     entry.value.properties?.forEach { p ->
         referenceAndDefinition(context.withSchemaStack("properties", p.key), p, "", nameRef)?.let { (d, s) ->
 
             s?.let {
                 if (!knownSubTypes.contains(it.name())) {
-                    builder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
+                    classBuilder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
                 }
             }
             if (!knownFields.contains(p.key.unkeywordize().camelCase())) {
-                builder.addField(
+                classBuilder.addField(
                     FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
                         .addAnnotation(jsonProperty(p.key))
                         .addAnnotation(generated(0, context.withSchemaStack("properties", p.key)))

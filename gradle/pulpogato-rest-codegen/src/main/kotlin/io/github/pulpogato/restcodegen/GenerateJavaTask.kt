@@ -52,8 +52,8 @@ open class GenerateJavaTask : DefaultTask() {
         val version = projectName.get().replace("pulpogato-rest-", "")
 
         val context = Context(openAPI, version, emptyList())
-        PathsBuilder().buildApis(context, main, "$packageNamePrefix.rest.api", test)
-        WebhooksBuilder().buildWebhooks(context, main, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks", test)
+        PathsBuilder().buildApis(context, main, test, "$packageNamePrefix.rest.api")
+        WebhooksBuilder().buildWebhooks(context, main, test, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks")
         SchemasBuilder().buildSchemas(context, main, "$packageNamePrefix.rest.schemas")
 
         // Format generated Java code
