@@ -91,8 +91,8 @@ dependencyManagement {
 |{central-prefix}pulpogato-rest-ghes-3.13{central-middle}pulpogato-rest-ghes-3.13{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.13{snapshot-middle}pulpogato-rest-ghes-3.13{snapshot-suffix}
 
 |https://docs.github.com/en/enterprise-server@3.12[GHES-3.12]
-|{central-prefix}pulpogato-graphql-ghes-3.12{central-middle}pulpogato-graphql-ghes-3.12{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.12{snapshot-middle}pulpogato-graphql-ghes-3.12{snapshot-suffix}
-|{central-prefix}pulpogato-rest-ghes-3.12{central-middle}pulpogato-rest-ghes-3.12{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.12{snapshot-middle}pulpogato-rest-ghes-3.12{snapshot-suffix}
+|{central-prefix}pulpogato-graphql-ghes-3.12{deprecated-middle}pulpogato-graphql-ghes-3.12{central-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.12{deprecated-middle}pulpogato-rest-ghes-3.12{central-suffix}
 
 |https://docs.github.com/en/enterprise-server@3.11[GHES-3.11]
 |{central-prefix}pulpogato-graphql-ghes-3.11{deprecated-middle}pulpogato-graphql-ghes-3.11{central-suffix}
