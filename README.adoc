@@ -90,6 +90,15 @@ dependencyManagement {
 |{central-prefix}pulpogato-graphql-ghes-3.13{central-middle}pulpogato-graphql-ghes-3.13{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.13{snapshot-middle}pulpogato-graphql-ghes-3.13{snapshot-suffix}
 |{central-prefix}pulpogato-rest-ghes-3.13{central-middle}pulpogato-rest-ghes-3.13{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.13{snapshot-middle}pulpogato-rest-ghes-3.13{snapshot-suffix}
 
+|===
+
+.EOL Versions
+[%collapsible]
+====
+
+|===
+|GitHub Version |GraphQL |REST
+
 |https://docs.github.com/en/enterprise-server@3.12[GHES-3.12]
 |{central-prefix}pulpogato-graphql-ghes-3.12{deprecated-middle}pulpogato-graphql-ghes-3.12{central-suffix}
 |{central-prefix}pulpogato-rest-ghes-3.12{deprecated-middle}pulpogato-rest-ghes-3.12{central-suffix}
@@ -103,6 +112,8 @@ dependencyManagement {
 |{central-prefix}pulpogato-rest-ghes-3.10{deprecated-middle}pulpogato-rest-ghes-3.10{central-suffix}
 
 |===
+
+====
 
 == Development
 
