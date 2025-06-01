@@ -278,7 +278,6 @@ class PathsBuilder {
         atomicMethod: AtomicMethod,
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
-        testClass: TypeSpec.Builder,
     ): ParameterSpec {
         val operationName = atomicMethod.operationId.split('/')[1]
         val (ref, def) =
@@ -302,7 +301,7 @@ class PathsBuilder {
                             .addMember("required", "\$L", theParameter.required)
                             .build()
 
-                    "body" -> buildBodyAnnotation(context, theParameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
+                    "body" -> AnnotationSpec.builder(webBind("RequestBody")).build()
                     "path" ->
                         AnnotationSpec.builder(webBind("PathVariable"))
                             .addMember("value", "\$S", theParameter.name)
@@ -318,7 +317,7 @@ class PathsBuilder {
 
     private fun webBind(simpleName: String): ClassName = ClassName.get("org.springframework.web.bind.annotation", simpleName)
 
-    private fun buildBodyAnnotation(
+    private fun buildBodyTestCode(
         context: Context,
         theParameter: Parameter,
         paramName: String,
@@ -327,7 +326,7 @@ class PathsBuilder {
         testClass: TypeSpec.Builder,
         operationName: String,
         typeRef: ClassName,
-    ): AnnotationSpec {
+    ) {
         val testMethods =
             (theParameter.examples ?: emptyMap())
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
@@ -349,7 +348,6 @@ class PathsBuilder {
                     .build(),
             )
         }
-        return AnnotationSpec.builder(webBind("RequestBody")).build()
     }
 
     private fun getParameters(
@@ -368,7 +366,7 @@ class PathsBuilder {
                             parameter,
                             buildParameter(
                                 context.withSchemaStack("parameters", idx.toString(), "schema"), parameter,
-                                atomicMethod, typeDef, typeRef, testClass,
+                                atomicMethod, typeDef, typeRef,
                             ),
                         )
                     } else {
@@ -378,7 +376,7 @@ class PathsBuilder {
                             newParameter,
                             buildParameter(
                                 context.withSchemaStack("#", "components", "parameters", refName, "schema"), newParameter,
-                                atomicMethod, typeDef, typeRef, testClass,
+                                atomicMethod, typeDef, typeRef,
                             ),
                         )
                     }
@@ -411,10 +409,31 @@ class PathsBuilder {
             parameters.add(
                 Pair(
                     bodyParameter,
-                    buildParameter(context, bodyParameter, atomicMethod, typeDef, typeRef, testClass),
+                    buildParameter(context.withSchemaStack("requestBody", "content", firstEntry.key, "schema"), bodyParameter, atomicMethod, typeDef, typeRef),
                 ),
             )
         }
+
+        // Generate test code for body parameters separately
+        generateParameterTestCode(context, parameters, atomicMethod, testClass, typeRef)
+
         return parameters.toList()
+    }
+
+    private fun generateParameterTestCode(
+        context: Context,
+        parameters: List<Pair<Parameter, ParameterSpec>>,
+        atomicMethod: AtomicMethod,
+        testClass: TypeSpec.Builder,
+        typeRef: ClassName,
+    ) {
+        parameters.forEach { (parameter, _) ->
+            if (parameter.`in` == "body") {
+                val operationName = atomicMethod.operationId.split('/')[1]
+                val paramName = parameter.name.unkeywordize().camelCase()
+                val (ref, _) = referenceAndDefinition(context, mapOf(parameter.name to parameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
+                buildBodyTestCode(context, parameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
+            }
+        }
     }
 }
