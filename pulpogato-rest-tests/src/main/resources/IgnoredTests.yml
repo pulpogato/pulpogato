@@ -13,15 +13,6 @@
   reason: "TODO: Diagnose this"
   versions:
     - ghec
-- example: "#/paths/~1markdown~1raw/post/requestBody/content/application~1json/examples/default/value"
-  reason: "TODO: Something to do with MIME types"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/paths/~1markdown~1raw/post/requestBody/content/text~1plain/examples/default/value"
   reason: "TODO: Diagnose this"
   versions:
