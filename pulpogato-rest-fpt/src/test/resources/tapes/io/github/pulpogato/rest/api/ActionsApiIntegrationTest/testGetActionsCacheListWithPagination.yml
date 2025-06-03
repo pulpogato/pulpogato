@@ -1,0 +1,99 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/actions/caches
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/repositories/825463572/actions/caches?per_page=10&page=6>;\
+        \ rel=\"last\", <https://api.github.com/repositories/825463572/actions/caches?per_page=10&page=2>;\
+        \ rel=\"next\""
+    body: |-
+      {
+        "total_count" : 60,
+        "actions_caches" : [ {
+          "id" : 446432213,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-home-v1|Linux-X64|dependency-submission[ede3be4c0fdef7ed501327630618b499]-2d5f4ba41d27f1d848a3eba0371ca46d2fa613df",
+          "version" : "efbc4f98d90c3a37d4c88199cd0a027f9a903840cd0ec083c3af7c7fd4363155",
+          "last_accessed_at" : "2025-06-03T05:53:24.752653000Z",
+          "created_at" : "2025-06-03T05:53:24.752653000Z",
+          "size_in_bytes" : 1635409
+        }, {
+          "id" : 446432162,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-groovy-dsl-v1-326d0f12705f34786a36390b9919a669",
+          "version" : "442afb47616becd79896b18d86ee5a006ddc168b640702ea228a90bdb3f6ec81",
+          "last_accessed_at" : "2025-06-03T05:53:23.702354000Z",
+          "created_at" : "2025-06-03T05:53:23.702354000Z",
+          "size_in_bytes" : 126799
+        }, {
+          "id" : 446432155,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-instrumented-jars-v1-82e66f945655cf21d4c4a3df3b6e789a",
+          "version" : "4ff68880fc166bea1723f6e820e283e0fd6763c7bca74475854693616d42f46a",
+          "last_accessed_at" : "2025-06-03T05:53:23.643895000Z",
+          "created_at" : "2025-06-03T05:53:23.643895000Z",
+          "size_in_bytes" : 82140
+        }, {
+          "id" : 443098223,
+          "ref" : "refs/heads/main",
+          "key" : "setup-java-Linux-x64-gradle-bd6a6ddea646e85a63d6d4404c9a68d7e8fced49fc9f6a3d27f7ea861d7d2d10",
+          "version" : "5015d68fc48322bc962181073013e02b525502a4093566f767969e784014b308",
+          "last_accessed_at" : "2025-06-03T05:52:59.186975000Z",
+          "created_at" : "2025-06-02T16:34:14.369129000Z",
+          "size_in_bytes" : 180985886
+        }, {
+          "id" : 443019568,
+          "ref" : "refs/heads/main",
+          "key" : "Linux-jdk21-temurin-gradle-dcbfeeed4cbcfc2c9de5e1ae7d004b9668242b3b7fb1c0a694cb5ce816e8a405",
+          "version" : "4ef909cf7b5e7fb32c65ec497172b398ecc2676cd69e17d96f6f56e030f06ddf",
+          "last_accessed_at" : "2025-06-03T05:52:50.004135000Z",
+          "created_at" : "2025-06-02T16:21:43.479279000Z",
+          "size_in_bytes" : 532715578
+        }, {
+          "id" : 443015943,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-dependencies-v1-d94df6ed54d816d8a93be97daead422c",
+          "version" : "1c52a3a7b4256dbf4cb0b91ebdf0637b7fca6c8cf427ab687855671174f38301",
+          "last_accessed_at" : "2025-06-03T05:52:48.143377000Z",
+          "created_at" : "2025-06-02T16:21:07.026465000Z",
+          "size_in_bytes" : 196270679
+        }, {
+          "id" : 440490566,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-transforms-v1-e35cd38d48165e46fc2b5b50d5dc7e42",
+          "version" : "00fad2af547a30f915e8e6c098d917113dab5c377ae72e2251ec69f666d9cbcb",
+          "last_accessed_at" : "2025-06-03T05:52:48.141866000Z",
+          "created_at" : "2025-06-02T10:34:37.621064000Z",
+          "size_in_bytes" : 112310915
+        }, {
+          "id" : 443166165,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-instrumented-jars-v1-a34482e85c47d91b3eaf11de464a6216",
+          "version" : "4ff68880fc166bea1723f6e820e283e0fd6763c7bca74475854693616d42f46a",
+          "last_accessed_at" : "2025-06-03T05:52:48.141014000Z",
+          "created_at" : "2025-06-02T16:45:40.812759000Z",
+          "size_in_bytes" : 82189
+        }, {
+          "id" : 392789998,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-generated-gradle-jars-v1-fad19d40ad32a668b27a94b4c541a75f",
+          "version" : "462834f9bc2dc42886c389c81e267bca6a9a9928f33cb39079d751a9b2dcf2ac",
+          "last_accessed_at" : "2025-06-03T05:52:48.140142000Z",
+          "created_at" : "2025-05-22T21:29:41.857775000Z",
+          "size_in_bytes" : 41093261
+        }, {
+          "id" : 392789987,
+          "ref" : "refs/heads/main",
+          "key" : "gradle-wrapper-zips-v1-a85438407cadad5878c39138dd4a9c7a",
+          "version" : "06a32b39df8dfff64ec0e9ed66396d2eaf1dcd2d6e30d292d7f665122488c351",
+          "last_accessed_at" : "2025-06-03T05:52:48.138212000Z",
+          "created_at" : "2025-05-22T21:29:42.187546000Z",
+          "size_in_bytes" : 136706114
+        } ]
+      }
