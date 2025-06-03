@@ -1,0 +1,31 @@
+- request:
+    method: GET
+    uri: /licenses
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      [ {
+        "key" : "apache-2.0",
+        "name" : "Apache License 2.0",
+        "spdx_id" : "Apache-2.0",
+        "url" : "https://api.github.com/licenses/apache-2.0",
+        "node_id" : "MDc6TGljZW5zZTI="
+      }, {
+        "key" : "gpl-3.0",
+        "name" : "GNU General Public License v3.0",
+        "spdx_id" : "GPL-3.0",
+        "url" : "https://api.github.com/licenses/gpl-3.0",
+        "node_id" : "MDc6TGljZW5zZTk="
+      }, {
+        "key" : "mit",
+        "name" : "MIT License",
+        "spdx_id" : "MIT",
+        "url" : "https://api.github.com/licenses/mit",
+        "node_id" : "MDc6TGljZW5zZTEz"
+      } ]
