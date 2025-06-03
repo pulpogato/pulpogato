@@ -1,0 +1,17 @@
+- request:
+    method: GET
+    uri: /octocat
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/octocat-stream
+    body: null
+  response:
+    statusCode: 415
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "message" : "Unsupported 'Accept' header: 'application/octocat-stream'. Must accept 'application/json'.",
+        "documentation_url" : "https://docs.github.com/v3/media",
+        "status" : "415"
+      }
