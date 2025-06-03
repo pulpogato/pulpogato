@@ -1,0 +1,379 @@
+- request:
+    method: GET
+    uri: /search/topics
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/search/topics?q=java&page=2>; rel=\"next\", <https://api.github.com/search/topics?q=java&page=34>;\
+        \ rel=\"last\""
+    body: |-
+      {
+        "total_count" : 8483,
+        "incomplete_results" : false,
+        "items" : [ {
+          "name" : "java",
+          "display_name" : "Java",
+          "short_description" : "Java is an object-oriented programming language used mainly for web, desktop, embedded devices and mobile applications.",
+          "description" : "Java was originally developed as an alternative to the C/C++ programming languages. It is now mainly used for building web, desktop, mobile, and embedded applications. Java is owned and licensed through Oracle, with free and open source implementations available from Oracle and other vendors.",
+          "created_by" : "James Gosling",
+          "released" : "May 23, 1995",
+          "created_at" : "2016-12-14T21:15:34Z",
+          "updated_at" : "2025-06-03T15:25:40Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "javascript",
+          "display_name" : "JavaScript",
+          "short_description" : "JavaScript (JS) is a lightweight interpreted programming language with first-class functions.",
+          "description" : "JavaScript (JS) is a lightweight interpreted or JIT-compiled programming language with first-class functions. While it is most well-known as the scripting language for Web pages, many non-browser environments also use it, such as Node.js, Apache CouchDB and Adobe Acrobat. JavaScript is a prototype-based, multi-paradigm, dynamic language, supporting object-oriented, imperative, and declarative (e.g. functional programming) styles.",
+          "created_by" : "Brendan Eich",
+          "released" : "December 4, 1995",
+          "created_at" : "2016-11-28T18:41:00Z",
+          "updated_at" : "2025-06-03T16:36:04Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "html-css-javascript",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-03T03:50:58Z",
+          "updated_at" : "2025-06-02T08:50:22Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "minecraft",
+          "display_name" : "Minecraft",
+          "short_description" : "Minecraft is a sandbox video game.",
+          "description" : "Published by Mojang, Minecraft is a game that allows its players virtually unlimited creative and building authority in their 3D cube world.",
+          "created_by" : "Markus Persson, Jens Bergensten",
+          "released" : "November 18, 2011",
+          "created_at" : "2016-12-24T05:36:32Z",
+          "updated_at" : "2025-06-03T14:18:36Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "spring-boot",
+          "display_name" : "Spring Boot",
+          "short_description" : "Spring Boot is a coding and configuration model for Java applications.",
+          "description" : "Spring Boot is a coding and configuration model for Java applications. Spring was developed by Pivotal Software.",
+          "created_by" : "Pivotal Software",
+          "released" : "October 1, 2002",
+          "created_at" : "2017-01-31T21:25:56Z",
+          "updated_at" : "2025-06-03T13:21:51Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "javafx",
+          "display_name" : "JavaFX",
+          "short_description" : "JavaFX is a Java library used to create graphical user interfaces for desktop, as well mobile and embedded devices.",
+          "description" : "JavaFX is an open source, next generation client application platform for desktop, mobile and embedded systems built with Java. It is offered as a cross-platform Java library and it delivers consistent graphical user interfaces across a wide range of operating systems and devices. Applications developed with JavaFX can be run on devices such as desktop computers, mobile phones, TVs, tablets, and more.",
+          "created_by" : "Oracle",
+          "released" : "December 4, 2008",
+          "created_at" : "2017-01-31T21:49:48Z",
+          "updated_at" : "2025-05-26T13:42:19Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "hacktoberfest",
+          "display_name" : "Hacktoberfest",
+          "short_description" : "Hacktoberfest is a month-long celebration of open source projects, their maintainers, and the entire community of contributors.",
+          "description" : "**Hacktoberfest** is a month-long celebration of open source projects, their maintainers, and the entire community of contributors. Each October, open source maintainers give new contributors extra attention as they guide developers through their first pull requests on GitHub.\n\n# By programming language\n[JavaScript](https://github.com/topics/hacktoberfest?l=javascript) &bull; [Python](https://github.com/topics/hacktoberfest?l=python) &bull; [Java](https://github.com/topics/hacktoberfest?l=java)",
+          "created_by" : "DigitalOcean and GitHub",
+          "released" : "October 2014",
+          "created_at" : "2017-02-02T18:01:06Z",
+          "updated_at" : "2025-06-03T14:09:52Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "android",
+          "display_name" : "Android",
+          "short_description" : "Android is an operating system built by Google designed for mobile devices.",
+          "description" : "Android was designed and built by Google in 2008. The operating system is written mainly in Java, with core components in C and C++. It is built on top of the Linux kernel, giving it incorporated security benefits.",
+          "created_by" : "Google",
+          "released" : "September 23, 2008",
+          "created_at" : "2016-12-05T08:18:35Z",
+          "updated_at" : "2025-06-03T14:24:04Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "spring",
+          "display_name" : "Spring",
+          "short_description" : "A powerful lightweight application development framework used for Java applications.",
+          "description" : "Spring Framework provides a comprehensive programming and configuration model for modern Java-based enterprise applications - on any kind of deployment platform.",
+          "created_by" : "Pivotal Software",
+          "released" : "October 1, 2002",
+          "created_at" : "2017-01-31T21:25:51Z",
+          "updated_at" : "2025-06-03T13:22:49Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "maven",
+          "display_name" : "Maven",
+          "short_description" : "Maven is a build automation tool used primarily for Java projects.",
+          "description" : "Apache Maven is a software project management and comprehension tool. Based on the concept of a project object model (POM), Maven can manage a project's build, reporting, and documentation from a central piece of information. Maven is typically used for Java projects.",
+          "created_by" : "Apache Software Foundation",
+          "released" : "July 13, 2004",
+          "created_at" : "2017-01-31T21:33:07Z",
+          "updated_at" : "2025-06-03T12:45:01Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "csharp",
+          "display_name" : "C#",
+          "short_description" : "C# (\"C sharp\") is an object-oriented and type-safe programming language.",
+          "description" : "C# (pronounced \"C sharp\") is a simple, modern, object-oriented, and type-safe programming language.\n\nIts roots in the C family of languages makes C# immediately familiar to C, C++, and Java programmers.",
+          "created_by" : "Anders Hejlsberg",
+          "released" : "January 2002",
+          "created_at" : "2017-01-31T21:27:17Z",
+          "updated_at" : "2025-06-03T12:16:39Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "kotlin",
+          "display_name" : "Kotlin",
+          "short_description" : "Kotlin is a statically typed programming language for multiplatform applications.",
+          "description" : "Kotlin is a statically typed programming language for modern multiplatform applications. 100% interoperable with Java and Android, it now supports JavaScript and native with LLVM (including iOS). It was developed by JetBrains in 2011, and designed to be a new language for the Java Virtual Machine (JVM) that can compile quickly.",
+          "created_by" : "JetBrains",
+          "released" : "February 15, 2016",
+          "created_at" : "2016-12-05T08:18:49Z",
+          "updated_at" : "2025-06-03T12:56:57Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "javascript-library",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-01-31T22:38:27Z",
+          "updated_at" : "2025-02-19T18:34:45Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "javaee",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-01T02:15:17Z",
+          "updated_at" : "2025-03-06T12:29:39Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "javascript-game",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-01T14:56:48Z",
+          "updated_at" : "2025-04-28T04:44:40Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "swing",
+          "display_name" : "Swing",
+          "short_description" : "Swing is a cross-platform user-interface toolkit to build desktop applications with Java and is packaged with the Java SDK.",
+          "description" : "Swing is a cross-platform user-interface toolkit to build desktop applications with Java and is packaged with the Java SDK. Build a user interface with different look-and-feels for any platform including macOS, Windows, and Linux. With the efficiency of multithreading, Swing can integrate with Java backend tools to create a full-stack Java desktop application.",
+          "created_by" : "Oracle",
+          "released" : "March 1998",
+          "created_at" : "2017-01-31T21:26:22Z",
+          "updated_at" : "2025-04-27T17:51:33Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "javascipt",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-07T11:34:06Z",
+          "updated_at" : "2023-04-14T11:49:13Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "javaweb",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-03T01:44:57Z",
+          "updated_at" : "2025-01-09T07:37:58Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "oops-in-java",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-10-25T01:59:31Z",
+          "updated_at" : "2025-04-21T11:39:03Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "jenkins",
+          "display_name" : "Jenkins",
+          "short_description" : "A free and open source automation server written in Java.",
+          "description" : "Jenkins is a free and open source automation server written in Java. Jenkins helps to automate the non-human part of the software development process, with continuous integration and facilitating technical aspects of continuous delivery.",
+          "created_by" : "Kohsuke Kawaguchi",
+          "released" : "February 2, 2011",
+          "created_at" : "2016-12-19T17:21:19Z",
+          "updated_at" : "2025-05-12T17:22:46Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "javascript-framework",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-01-31T21:43:04Z",
+          "updated_at" : "2025-02-19T18:35:15Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "javaswing",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-14T08:40:54Z",
+          "updated_at" : "2022-03-02T03:41:26Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "leetcode-java",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-07T08:27:42Z",
+          "updated_at" : "2025-05-30T15:31:05Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "java-library",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-01T07:33:07Z",
+          "updated_at" : "2025-04-27T19:55:08Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "selenium-java",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-01-31T22:23:14Z",
+          "updated_at" : "2025-02-26T03:00:07Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "calculator-javascript",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-27T07:46:46Z",
+          "updated_at" : "2023-09-07T23:35:37Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "scala",
+          "display_name" : "Scala",
+          "short_description" : "Scala is an object-oriented programming language.",
+          "description" : "Scala is a general-purpose programming language providing support for functional programming and a strong static type system. Designed to be concise, many of Scala's design decisions aimed to address criticisms of Java.",
+          "created_by" : "Martin Odersky",
+          "released" : "January 20, 2004",
+          "created_at" : "2017-01-31T21:08:41Z",
+          "updated_at" : "2025-06-03T11:33:51Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "javascript-applications",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-02-01T18:57:48Z",
+          "updated_at" : "2023-10-11T14:10:30Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "java17",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2021-04-26T19:53:33Z",
+          "updated_at" : "2025-03-27T16:56:03Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        }, {
+          "name" : "java-17",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2020-02-03T19:05:37Z",
+          "updated_at" : "2025-03-27T16:56:04Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        } ]
+      }

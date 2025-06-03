@@ -1,0 +1,140 @@
+- request:
+    method: GET
+    uri: /search/topics
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/search/topics?q=machine-learning&per_page=10&page=2>;\
+        \ rel=\"next\", <https://api.github.com/search/topics?q=machine-learning&per_page=10&page=87>;\
+        \ rel=\"last\""
+    body: |-
+      {
+        "total_count" : 863,
+        "incomplete_results" : false,
+        "items" : [ {
+          "name" : "machine-learning",
+          "display_name" : "Machine learning",
+          "short_description" : "Machine learning is a way of modeling and interpreting data that allows a piece of software to respond intelligently.",
+          "description" : "Machine learning is the practice of teaching a computer to learn. The concept uses pattern recognition, as well as other forms of predictive algorithms, to make judgments on incoming data. This field is closely related to artificial intelligence and computational statistics.",
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-01-18T04:41:59Z",
+          "updated_at" : "2025-06-03T16:36:24Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "pytorch",
+          "display_name" : "PyTorch",
+          "short_description" : "PyTorch is an open source machine learning library.",
+          "description" : "PyTorch is an open source machine learning library based on the Torch library, used for applications such as computer vision and natural language processing, primarily developed by Facebook's AI Research lab.",
+          "created_by" : "Facebook's AI Research lab (FAIR)",
+          "released" : "September 2016",
+          "created_at" : "2017-01-31T22:32:35Z",
+          "updated_at" : "2025-05-31T09:36:43Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "nlp",
+          "display_name" : "Natural language processing",
+          "short_description" : "Natural language processing (NLP) is the study of how computers and humans interact.",
+          "description" : "Natural language processing (NLP) is a field of computer science that studies how computers and humans interact. In the 1950s, Alan Turing published an article that proposed a measure of intelligence, now called the Turing test. More modern techniques, such as deep learning, have produced results in the fields of language modeling, parsing, and natural-language tasks.",
+          "created_by" : "Alan Turing",
+          "released" : null,
+          "created_at" : "2016-12-15T22:56:05Z",
+          "updated_at" : "2025-06-03T15:06:16Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "deep-learning",
+          "display_name" : "Deep learning",
+          "short_description" : "Deep Learning is an artificial neural network composed of many layers.",
+          "description" : "Deep learning is an AI function and a subset of machine learning, used for processing large amounts of complex data. Deep learning can automatically create algorithms based on data patterns.",
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-01-31T21:27:12Z",
+          "updated_at" : "2025-06-03T16:35:16Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "aws",
+          "display_name" : "Amazon Web Services",
+          "short_description" : "Amazon Web Services provides on-demand cloud computing platforms on a subscription basis.",
+          "description" : "Amazon Web Services (AWS) is a subsidiary of Amazon.com that provides on-demand cloud computing platforms to individuals, companies, and governments, on a subscription basis. Compute, storage, database, networking, security, management & developer tools, AI & machine learning, analytics, etc. are some of the primary aspects of AWS.",
+          "created_by" : null,
+          "released" : "March 2006",
+          "created_at" : "2016-12-27T11:19:54Z",
+          "updated_at" : "2025-06-03T16:35:00Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "llm",
+          "display_name" : "Large Language Model",
+          "short_description" : "Machine learning models trained on vast amounts of text data to understand and generate human-like language.",
+          "description" : "A large language model (LLM) is a type of machine learning model designed for understanding, generating, and interacting with human language. These models are trained on extensive datasets containing text from books, articles, websites, and other sources to learn patterns, context, and semantics in language. LLMs are widely used in applications like chatbots, code generation, translation, summarization, and more. They are often built using transformer architectures and are central to the field of generative AI.",
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2022-03-31T20:13:54Z",
+          "updated_at" : "2025-06-03T02:24:46Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "scikit-learn",
+          "display_name" : "scikit-learn",
+          "short_description" : "scikit-learn is a Python module for machine learning.",
+          "description" : "scikit-learn is a widely-used Python module for classic machine learning. It is built on top of SciPy.",
+          "created_by" : "David Cournapeau",
+          "released" : "January 05, 2010",
+          "created_at" : "2017-01-31T21:47:19Z",
+          "updated_at" : "2025-06-03T13:28:05Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "streamlit",
+          "display_name" : "Streamlit",
+          "short_description" : "Streamlit is an open source Python library that makes it easy to create custom web apps for machine learning and data science.",
+          "description" : "Streamlit is an open source Python library that makes it easy to create and share beautiful, custom web apps for machine learning and data science.\nTurn your data scripts into shareable web apps in minutes, without requiring any front-end web experience.",
+          "created_by" : "Adrien Treuille, Amanda Kelly, Thiago Teixeira",
+          "released" : "March 27, 2018",
+          "created_at" : "2019-10-02T23:15:16Z",
+          "updated_at" : "2025-06-02T21:23:22Z",
+          "featured" : false,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "jupyter-notebook",
+          "display_name" : "Jupyter Notebook",
+          "short_description" : "Jupyter Notebooks are documents that contain live code, visualizations, and narrative text.",
+          "description" : "The Jupyter Notebook, previously known as the IPython Notebook, is a language-agnostic HTML notebook application for Project Jupyter. Jupyter notebooks are documents that allow for creating and sharing live code, equations, visualizations, and narrative text together. People use them for data cleaning and transformation, numerical simulation, statistical modeling, data visualization, machine learning, and much more.",
+          "created_by" : "Fernando Pérez, Brian Granger, and Min Ragan-Kelley",
+          "released" : "December 2011",
+          "created_at" : "2017-01-31T22:00:05Z",
+          "updated_at" : "2025-06-03T13:02:04Z",
+          "featured" : true,
+          "curated" : true,
+          "score" : 1.0
+        }, {
+          "name" : "unsupervised-machine-learning",
+          "display_name" : null,
+          "short_description" : null,
+          "description" : null,
+          "created_by" : null,
+          "released" : null,
+          "created_at" : "2017-03-16T18:19:24Z",
+          "updated_at" : "2024-12-30T06:28:54Z",
+          "featured" : false,
+          "curated" : false,
+          "score" : 1.0
+        } ]
+      }
