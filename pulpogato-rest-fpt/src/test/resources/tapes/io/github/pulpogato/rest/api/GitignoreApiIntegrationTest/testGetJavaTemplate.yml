@@ -1,0 +1,16 @@
+- request:
+    method: GET
+    uri: /gitignore/templates/Java
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "name" : "Java",
+        "source" : "# Compiled class file\n*.class\n\n# Log file\n*.log\n\n# BlueJ files\n*.ctxt\n\n# Mobile Tools for Java (J2ME)\n.mtj.tmp/\n\n# Package Files #\n*.jar\n*.war\n*.nar\n*.ear\n*.zip\n*.tar.gz\n*.rar\n\n# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml\nhs_err_pid*\nreplay_pid*\n"
+      }
