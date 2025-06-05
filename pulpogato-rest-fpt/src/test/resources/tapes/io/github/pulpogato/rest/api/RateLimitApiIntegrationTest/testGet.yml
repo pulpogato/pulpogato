@@ -1,0 +1,100 @@
+- request:
+    method: GET
+    uri: /rate_limit
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "resources" : {
+          "core" : {
+            "limit" : 5000,
+            "used" : 8,
+            "remaining" : 4992,
+            "reset" : 1749014024
+          },
+          "search" : {
+            "limit" : 30,
+            "used" : 0,
+            "remaining" : 30,
+            "reset" : 1749011183
+          },
+          "graphql" : {
+            "limit" : 5000,
+            "used" : 0,
+            "remaining" : 5000,
+            "reset" : 1749014723
+          },
+          "integration_manifest" : {
+            "limit" : 5000,
+            "used" : 0,
+            "remaining" : 5000,
+            "reset" : 1749014723
+          },
+          "source_import" : {
+            "limit" : 100,
+            "used" : 0,
+            "remaining" : 100,
+            "reset" : 1749011183
+          },
+          "code_scanning_upload" : {
+            "limit" : 5000,
+            "used" : 8,
+            "remaining" : 4992,
+            "reset" : 1749014024
+          },
+          "code_scanning_autofix" : {
+            "limit" : 10,
+            "used" : 0,
+            "remaining" : 10,
+            "reset" : 1749011183
+          },
+          "actions_runner_registration" : {
+            "limit" : 10000,
+            "used" : 0,
+            "remaining" : 10000,
+            "reset" : 1749014723
+          },
+          "scim" : {
+            "limit" : 15000,
+            "used" : 0,
+            "remaining" : 15000,
+            "reset" : 1749014723
+          },
+          "dependency_snapshots" : {
+            "limit" : 100,
+            "used" : 0,
+            "remaining" : 100,
+            "reset" : 1749011183
+          },
+          "audit_log" : {
+            "limit" : 1750,
+            "used" : 0,
+            "remaining" : 1750,
+            "reset" : 1749014723
+          },
+          "audit_log_streaming" : {
+            "limit" : 15,
+            "used" : 0,
+            "remaining" : 15,
+            "reset" : 1749014723
+          },
+          "code_search" : {
+            "limit" : 10,
+            "used" : 0,
+            "remaining" : 10,
+            "reset" : 1749011183
+          }
+        },
+        "rate" : {
+          "limit" : 5000,
+          "used" : 8,
+          "remaining" : 4992,
+          "reset" : 1749014024
+        }
+      }
