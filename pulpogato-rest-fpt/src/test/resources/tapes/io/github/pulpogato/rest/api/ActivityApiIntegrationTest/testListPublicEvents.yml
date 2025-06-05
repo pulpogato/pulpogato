@@ -1,0 +1,492 @@
+- request:
+    method: GET
+    uri: /events
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/events?per_page=10&page=2>; rel=\"next\", <https://api.github.com/events?per_page=10&page=28>;\
+        \ rel=\"last\""
+    body: |-
+      [ {
+        "id" : "50486820386",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 4898379,
+          "login" : "james2037",
+          "display_login" : "james2037",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/james2037",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/4898379?"
+        },
+        "repo" : {
+          "id" : 915561009,
+          "name" : "james2037/mcp-php-server",
+          "url" : "https://api.github.com/repos/james2037/mcp-php-server"
+        },
+        "payload" : {
+          "repository_id" : 915561009,
+          "push_id" : 24687531036,
+          "size" : 1,
+          "distinct_size" : 1,
+          "ref" : "refs/heads/master",
+          "head" : "367bba8b3a4e7f48e8d965696bcbb39e4ec8efd7",
+          "before" : "d7e1cf85987a60fff49485db5ed2e01d2cfe337c",
+          "commits" : [ {
+            "sha" : "367bba8b3a4e7f48e8d965696bcbb39e4ec8efd7",
+            "author" : {
+              "email" : "161369871+google-labs-jules[bot]@users.noreply.github.com",
+              "name" : "google-labs-jules[bot]"
+            },
+            "message" : "Refactor: Use token_get_all in Registry::getClassFromFile\n\nI replaced the fragile regex-based class and interface/enum detection in MCP\\Server\\Registry::getClassFromFile with a more robust solution using the `token_get_all` PHP built-in function.\n\nThe new implementation correctly handles namespaces, classes, interfaces, and enums. It also gracefully handles files with no class/interface/enum definition or files with syntax errors.\n\nI updated unit tests to cover the new implementation, including test cases for files with interfaces, enums, syntax errors, and no class/interface/enum definition.",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/james2037/mcp-php-server/commits/367bba8b3a4e7f48e8d965696bcbb39e4ec8efd7"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820393",
+        "type" : "DeleteEvent",
+        "actor" : {
+          "id" : 29139614,
+          "login" : "renovate[bot]",
+          "display_login" : "renovate",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/renovate%5Bbot%5D",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/29139614?"
+        },
+        "repo" : {
+          "id" : 880540912,
+          "name" : "rupaschomaker/home-cluster",
+          "url" : "https://api.github.com/repos/rupaschomaker/home-cluster"
+        },
+        "payload" : {
+          "ref" : "renovate/flux-qbittorrent-22.5.x",
+          "ref_type" : "branch",
+          "pusher_type" : "user"
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820391",
+        "type" : "IssueCommentEvent",
+        "actor" : {
+          "id" : 10258444,
+          "login" : "BadJukeBox",
+          "display_login" : "BadJukeBox",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/BadJukeBox",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/10258444?"
+        },
+        "repo" : {
+          "id" : 972587536,
+          "name" : "wowsims/mop",
+          "url" : "https://api.github.com/repos/wowsims/mop"
+        },
+        "payload" : {
+          "action" : "created",
+          "issue" : {
+            "url" : "https://api.github.com/repos/wowsims/mop/issues/96",
+            "repository_url" : "https://api.github.com/repos/wowsims/mop",
+            "labels_url" : "https://api.github.com/repos/wowsims/mop/issues/96/labels{/name}",
+            "comments_url" : "https://api.github.com/repos/wowsims/mop/issues/96/comments",
+            "events_url" : "https://api.github.com/repos/wowsims/mop/issues/96/events",
+            "html_url" : "https://github.com/wowsims/mop/pull/96",
+            "id" : 3072349588,
+            "node_id" : "PR_kwDOOfiCEM6WpUCe",
+            "number" : 96,
+            "title" : "[Draft] Frost Mage Spec Fixes for MOP",
+            "user" : {
+              "login" : "BadJukeBox",
+              "id" : 10258444,
+              "node_id" : "MDQ6VXNlcjEwMjU4NDQ0",
+              "avatar_url" : "https://avatars.githubusercontent.com/u/10258444?v=4",
+              "gravatar_id" : "",
+              "url" : "https://api.github.com/users/BadJukeBox",
+              "html_url" : "https://github.com/BadJukeBox",
+              "followers_url" : "https://api.github.com/users/BadJukeBox/followers",
+              "following_url" : "https://api.github.com/users/BadJukeBox/following{/other_user}",
+              "gists_url" : "https://api.github.com/users/BadJukeBox/gists{/gist_id}",
+              "starred_url" : "https://api.github.com/users/BadJukeBox/starred{/owner}{/repo}",
+              "subscriptions_url" : "https://api.github.com/users/BadJukeBox/subscriptions",
+              "organizations_url" : "https://api.github.com/users/BadJukeBox/orgs",
+              "repos_url" : "https://api.github.com/users/BadJukeBox/repos",
+              "events_url" : "https://api.github.com/users/BadJukeBox/events{/privacy}",
+              "received_events_url" : "https://api.github.com/users/BadJukeBox/received_events",
+              "type" : "User",
+              "user_view_type" : "public",
+              "site_admin" : false
+            },
+            "labels" : [ {
+              "id" : 8518017880,
+              "node_id" : "LA_kwDOOfiCEM8AAAAB-7ajWA",
+              "url" : "https://api.github.com/repos/wowsims/mop/labels/Druid",
+              "name" : "Druid",
+              "color" : "FF7C0A",
+              "default" : false,
+              "description" : ""
+            }, {
+              "id" : 8518019100,
+              "node_id" : "LA_kwDOOfiCEM8AAAAB-7aoHA",
+              "url" : "https://api.github.com/repos/wowsims/mop/labels/Mage",
+              "name" : "Mage",
+              "color" : "3FC7EB",
+              "default" : false,
+              "description" : ""
+            } ],
+            "state" : "open",
+            "locked" : false,
+            "assignee" : null,
+            "assignees" : [ ],
+            "milestone" : null,
+            "comments" : 7,
+            "created_at" : "2025-05-19T03:03:37Z",
+            "updated_at" : "2025-06-04T04:24:53Z",
+            "closed_at" : null,
+            "author_association" : "NONE",
+            "type" : null,
+            "active_lock_reason" : null,
+            "draft" : true,
+            "pull_request" : {
+              "url" : "https://api.github.com/repos/wowsims/mop/pulls/96",
+              "html_url" : "https://github.com/wowsims/mop/pull/96",
+              "diff_url" : "https://github.com/wowsims/mop/pull/96.diff",
+              "patch_url" : "https://github.com/wowsims/mop/pull/96.patch",
+              "merged_at" : null
+            },
+            "body" : "Current To Do List:\r\n\r\nFrost and Frost adjacent spells:\r\n- [x] Frostbolt\r\n- [x] Frostfire Bolt\r\n- [x] Frozen Orb\r\n- [x] Ice Lane\r\n- [x] Cone of Cold\r\n- [x] Frost Nova\r\n- [x] Living Bomb\r\n- [x] Frost Bomb\r\n- [ ] Nether Tempest\r\n- [x] Icy Veins\r\n- [x] Evocation/Invcocation\r\n- [x] Frost Armor\r\n- [x] Mage Armor\r\n- [x] Molten Armor\r\n- [x] Summon Water Elemental\r\n- [ ] Alter Time\r\n\r\nPassives:\r\n\r\n- [x] Fingers of Frost\r\n- [x] Brain Freeze\r\n- [x] Mastery: Icicles\r\n- [x] Wizardry?\r\n\r\nTalents:\r\n\r\n- [x] Presence of Mind\r\n- [x] Ice Floes (If we care about movement) \r\n- [x] Nether Tempest\r\n- [x] Living Bomb\r\n- [x] Frost Bomb\r\n- [x] Invocation\r\n- [x] Rune of Power\r\n- [ ] Incanter's Ward\r\n\r\nGlyphs:\r\n\r\n- [x] Cone of Cold\r\n- [x] Frostfire Bolt\r\n- [x] Glyph of Icy Veins\r\n- [x] Splitting Ice\r\n- [x] Water Elemental\r\n\r\nAPL:\r\n\r\n- [ ] APL\r\n",
+            "reactions" : {
+              "url" : "https://api.github.com/repos/wowsims/mop/issues/96/reactions",
+              "total_count" : 0,
+              "+1" : 0,
+              "-1" : 0,
+              "laugh" : 0,
+              "hooray" : 0,
+              "confused" : 0,
+              "heart" : 0,
+              "rocket" : 0,
+              "eyes" : 0
+            },
+            "timeline_url" : "https://api.github.com/repos/wowsims/mop/issues/96/timeline",
+            "performed_via_github_app" : null,
+            "state_reason" : null
+          },
+          "comment" : {
+            "url" : "https://api.github.com/repos/wowsims/mop/issues/comments/2938438410",
+            "html_url" : "https://github.com/wowsims/mop/pull/96#issuecomment-2938438410",
+            "issue_url" : "https://api.github.com/repos/wowsims/mop/issues/96",
+            "id" : 2938438410,
+            "node_id" : "IC_kwDOOfiCEM6vJQMK",
+            "user" : {
+              "login" : "BadJukeBox",
+              "id" : 10258444,
+              "node_id" : "MDQ6VXNlcjEwMjU4NDQ0",
+              "avatar_url" : "https://avatars.githubusercontent.com/u/10258444?v=4",
+              "gravatar_id" : "",
+              "url" : "https://api.github.com/users/BadJukeBox",
+              "html_url" : "https://github.com/BadJukeBox",
+              "followers_url" : "https://api.github.com/users/BadJukeBox/followers",
+              "following_url" : "https://api.github.com/users/BadJukeBox/following{/other_user}",
+              "gists_url" : "https://api.github.com/users/BadJukeBox/gists{/gist_id}",
+              "starred_url" : "https://api.github.com/users/BadJukeBox/starred{/owner}{/repo}",
+              "subscriptions_url" : "https://api.github.com/users/BadJukeBox/subscriptions",
+              "organizations_url" : "https://api.github.com/users/BadJukeBox/orgs",
+              "repos_url" : "https://api.github.com/users/BadJukeBox/repos",
+              "events_url" : "https://api.github.com/users/BadJukeBox/events{/privacy}",
+              "received_events_url" : "https://api.github.com/users/BadJukeBox/received_events",
+              "type" : "User",
+              "user_view_type" : "public",
+              "site_admin" : false
+            },
+            "created_at" : "2025-06-04T04:24:51Z",
+            "updated_at" : "2025-06-04T04:24:51Z",
+            "author_association" : "NONE",
+            "body" : "Frozen Orb always casts exactly 2 times in each of my sims. I put prints in the disable from the EnableWithTimeout and it gets disabled each time, just for some reason it never casts again after and i'm rather stumped.",
+            "reactions" : {
+              "url" : "https://api.github.com/repos/wowsims/mop/issues/comments/2938438410/reactions",
+              "total_count" : 0,
+              "+1" : 0,
+              "-1" : 0,
+              "laugh" : 0,
+              "hooray" : 0,
+              "confused" : 0,
+              "heart" : 0,
+              "rocket" : 0,
+              "eyes" : 0
+            },
+            "performed_via_github_app" : null
+          }
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z",
+        "org" : {
+          "id" : 90122803,
+          "login" : "wowsims",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/wowsims",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/90122803?"
+        }
+      }, {
+        "id" : "50486820390",
+        "type" : "CreateEvent",
+        "actor" : {
+          "id" : 112667640,
+          "login" : "purna-madala",
+          "display_login" : "purna-madala",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/purna-madala",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/112667640?"
+        },
+        "repo" : {
+          "id" : 995829607,
+          "name" : "purna-madala/website-multi",
+          "url" : "https://api.github.com/repos/purna-madala/website-multi"
+        },
+        "payload" : {
+          "ref" : "main",
+          "ref_type" : "branch",
+          "master_branch" : "main",
+          "description" : null,
+          "pusher_type" : "user"
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820370",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 157407079,
+          "login" : "Serden-YilmazKose",
+          "display_login" : "Serden-YilmazKose",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/Serden-YilmazKose",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/157407079?"
+        },
+        "repo" : {
+          "id" : 995827587,
+          "name" : "Serden-YilmazKose/finally",
+          "url" : "https://api.github.com/repos/Serden-YilmazKose/finally"
+        },
+        "payload" : {
+          "repository_id" : 995827587,
+          "push_id" : 24687531049,
+          "size" : 1,
+          "distinct_size" : 1,
+          "ref" : "refs/heads/main",
+          "head" : "6eac155b8b1a7ec79ad19c11936cc0ca7a583cdf",
+          "before" : "f12cd1b7d1c7a1421ae0d06b87fc9300bb2a0fe1",
+          "commits" : [ {
+            "sha" : "6eac155b8b1a7ec79ad19c11936cc0ca7a583cdf",
+            "author" : {
+              "email" : "Serden-Yilmaz.Kose@student.oulu.fi",
+              "name" : "Serden-Yilmaz Kose"
+            },
+            "message" : "Added hugo files",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/Serden-YilmazKose/finally/commits/6eac155b8b1a7ec79ad19c11936cc0ca7a583cdf"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820363",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 41898282,
+          "login" : "github-actions[bot]",
+          "display_login" : "github-actions",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/github-actions%5Bbot%5D",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/41898282?"
+        },
+        "repo" : {
+          "id" : 894792992,
+          "name" : "imajul/parking",
+          "url" : "https://api.github.com/repos/imajul/parking"
+        },
+        "payload" : {
+          "repository_id" : 894792992,
+          "push_id" : 24687531040,
+          "size" : 1,
+          "distinct_size" : 1,
+          "ref" : "refs/heads/main",
+          "head" : "04e25b0b568c806834c94ba6da11efd02696b0c4",
+          "before" : "605d5901f201d84d5c3fd9c52eaf7f320d0f0c8b",
+          "commits" : [ {
+            "sha" : "04e25b0b568c806834c94ba6da11efd02696b0c4",
+            "author" : {
+              "email" : "41898282+github-actions[bot]@users.noreply.github.com",
+              "name" : "github-actions[bot]"
+            },
+            "message" : "Actualizar números aleatorios",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/imajul/parking/commits/04e25b0b568c806834c94ba6da11efd02696b0c4"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820342",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 150555815,
+          "login" : "ChristoTF2",
+          "display_login" : "ChristoTF2",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/ChristoTF2",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/150555815?"
+        },
+        "repo" : {
+          "id" : 967593893,
+          "name" : "G1-UPC-PRE-1ASI0657-2501-Forgeon/FrontEnd_IronCladRentals",
+          "url" : "https://api.github.com/repos/G1-UPC-PRE-1ASI0657-2501-Forgeon/FrontEnd_IronCladRentals"
+        },
+        "payload" : {
+          "repository_id" : 967593893,
+          "push_id" : 24687531001,
+          "size" : 2,
+          "distinct_size" : 2,
+          "ref" : "refs/heads/development",
+          "head" : "8d4c5a4ca34a79e14b573c1bd90ba0a8fc76d49a",
+          "before" : "894cc5ac2442a9f8737be71b65ae1d54c3315d94",
+          "commits" : [ {
+            "sha" : "03ab22476cf720431aa40a08029e2d59343c874c",
+            "author" : {
+              "email" : "150555815+ChristoTF2@users.noreply.github.com",
+              "name" : "Christian"
+            },
+            "message" : "Feat: Added map to Rent",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/G1-UPC-PRE-1ASI0657-2501-Forgeon/FrontEnd_IronCladRentals/commits/03ab22476cf720431aa40a08029e2d59343c874c"
+          }, {
+            "sha" : "8d4c5a4ca34a79e14b573c1bd90ba0a8fc76d49a",
+            "author" : {
+              "email" : "150555815+ChristoTF2@users.noreply.github.com",
+              "name" : "Christian"
+            },
+            "message" : "Merge branch 'development' of https://github.com/G1-UPC-PRE-1ASI0657-2501-Forgeon/FrontEnd_IronCladRentals into development",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/G1-UPC-PRE-1ASI0657-2501-Forgeon/FrontEnd_IronCladRentals/commits/8d4c5a4ca34a79e14b573c1bd90ba0a8fc76d49a"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z",
+        "org" : {
+          "id" : 207811231,
+          "login" : "G1-UPC-PRE-1ASI0657-2501-Forgeon",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/G1-UPC-PRE-1ASI0657-2501-Forgeon",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/207811231?"
+        }
+      }, {
+        "id" : "50486820350",
+        "type" : "CreateEvent",
+        "actor" : {
+          "id" : 209343871,
+          "login" : "Khushi12k",
+          "display_login" : "Khushi12k",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/Khushi12k",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/209343871?"
+        },
+        "repo" : {
+          "id" : 995829625,
+          "name" : "Khushi12k/Circle",
+          "url" : "https://api.github.com/repos/Khushi12k/Circle"
+        },
+        "payload" : {
+          "ref" : null,
+          "ref_type" : "repository",
+          "master_branch" : "main",
+          "description" : null,
+          "pusher_type" : "user"
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820332",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 41898282,
+          "login" : "github-actions[bot]",
+          "display_login" : "github-actions",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/github-actions%5Bbot%5D",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/41898282?"
+        },
+        "repo" : {
+          "id" : 385654608,
+          "name" : "DrummerViking/DrummerViking",
+          "url" : "https://api.github.com/repos/DrummerViking/DrummerViking"
+        },
+        "payload" : {
+          "repository_id" : 385654608,
+          "push_id" : 24687531004,
+          "size" : 1,
+          "distinct_size" : 1,
+          "ref" : "refs/heads/main",
+          "head" : "4e8323f74ac51114e224419de6d925637d40d2fa",
+          "before" : "fd05d4b5e463f3faf61227715b30d3aa326c09ef",
+          "commits" : [ {
+            "sha" : "4e8323f74ac51114e224419de6d925637d40d2fa",
+            "author" : {
+              "email" : "agustin.gallegos@masked.com",
+              "name" : "Agustin Gallegos"
+            },
+            "message" : "Auto updating my readme",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/DrummerViking/DrummerViking/commits/4e8323f74ac51114e224419de6d925637d40d2fa"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z"
+      }, {
+        "id" : "50486820323",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 67844597,
+          "login" : "FedericoDM",
+          "display_login" : "FedericoDM",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/FedericoDM",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/67844597?"
+        },
+        "repo" : {
+          "id" : 770840890,
+          "name" : "Energy-Lab-Pollution/twitter_search",
+          "url" : "https://api.github.com/repos/Energy-Lab-Pollution/twitter_search"
+        },
+        "payload" : {
+          "repository_id" : 770840890,
+          "push_id" : 24687531014,
+          "size" : 1,
+          "distinct_size" : 1,
+          "ref" : "refs/heads/llm-classification",
+          "head" : "6933702545538b89d22acc44780a71d8738e5c2d",
+          "before" : "e464ce9b0c41fe73dad64f2f9c70bdb9dc5fdf85",
+          "commits" : [ {
+            "sha" : "6933702545538b89d22acc44780a71d8738e5c2d",
+            "author" : {
+              "email" : "fd.molina@outlook.com",
+              "name" : "Federico Domínguez Molina"
+            },
+            "message" : "Finished script to classify users",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/Energy-Lab-Pollution/twitter_search/commits/6933702545538b89d22acc44780a71d8738e5c2d"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:24:53Z",
+        "org" : {
+          "id" : 163471591,
+          "login" : "Energy-Lab-Pollution",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/Energy-Lab-Pollution",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/163471591?"
+        }
+      } ]
