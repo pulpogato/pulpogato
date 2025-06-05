@@ -1,0 +1,598 @@
+- request:
+    method: GET
+    uri: /users/rahulsom/events/public
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/user/193047/events/public?per_page=5&page=2>;\
+        \ rel=\"next\", <https://api.github.com/user/193047/events/public?per_page=5&page=51>;\
+        \ rel=\"last\""
+    body: |-
+      [ {
+        "id" : "50486444578",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 193047,
+          "login" : "rahulsom",
+          "display_login" : "rahulsom",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?"
+        },
+        "repo" : {
+          "id" : 825463572,
+          "name" : "pulpogato/pulpogato",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato"
+        },
+        "payload" : {
+          "repository_id" : 825463572,
+          "push_id" : 24687339966,
+          "size" : 2,
+          "distinct_size" : 2,
+          "ref" : "refs/heads/main",
+          "head" : "17d9d9f588baf816657bed5fcbd5af2e1e373909",
+          "before" : "115e8ca8a62a4efd450f649a6bf4e83cb1dbcc9f",
+          "commits" : [ {
+            "sha" : "4dfa04997c7077cf7791696d7ca8f4875bfe0cff",
+            "author" : {
+              "email" : "rahul.som@gmail.com",
+              "name" : "Rahul Somasunderam"
+            },
+            "message" : "test: Add tests for SearchApi",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/4dfa04997c7077cf7791696d7ca8f4875bfe0cff"
+          }, {
+            "sha" : "17d9d9f588baf816657bed5fcbd5af2e1e373909",
+            "author" : {
+              "email" : "rahul.som@gmail.com",
+              "name" : "Rahul Somasunderam"
+            },
+            "message" : "Merge pull request #390 from pulpogato/add-tests-search\n\ntest: Add tests for SearchApi",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/17d9d9f588baf816657bed5fcbd5af2e1e373909"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:06:55Z",
+        "org" : {
+          "id" : 183456368,
+          "login" : "pulpogato",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/pulpogato",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?"
+        }
+      }, {
+        "id" : "50486444547",
+        "type" : "DeleteEvent",
+        "actor" : {
+          "id" : 193047,
+          "login" : "rahulsom",
+          "display_login" : "rahulsom",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?"
+        },
+        "repo" : {
+          "id" : 825463572,
+          "name" : "pulpogato/pulpogato",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato"
+        },
+        "payload" : {
+          "ref" : "add-tests-search",
+          "ref_type" : "branch",
+          "pusher_type" : "user"
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:06:55Z",
+        "org" : {
+          "id" : 183456368,
+          "login" : "pulpogato",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/pulpogato",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?"
+        }
+      }, {
+        "id" : "50486444179",
+        "type" : "PullRequestEvent",
+        "actor" : {
+          "id" : 193047,
+          "login" : "rahulsom",
+          "display_login" : "rahulsom",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?"
+        },
+        "repo" : {
+          "id" : 825463572,
+          "name" : "pulpogato/pulpogato",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato"
+        },
+        "payload" : {
+          "action" : "closed",
+          "number" : 390,
+          "pull_request" : {
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/390",
+            "id" : 2564634128,
+            "node_id" : "PR_kwDOMTOTFM6Y3TYQ",
+            "html_url" : "https://github.com/pulpogato/pulpogato/pull/390",
+            "diff_url" : "https://github.com/pulpogato/pulpogato/pull/390.diff",
+            "patch_url" : "https://github.com/pulpogato/pulpogato/pull/390.patch",
+            "issue_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues/390",
+            "number" : 390,
+            "state" : "closed",
+            "locked" : false,
+            "title" : "test: Add tests for SearchApi",
+            "user" : {
+              "login" : "rahulsom",
+              "id" : 193047,
+              "node_id" : "MDQ6VXNlcjE5MzA0Nw==",
+              "avatar_url" : "https://avatars.githubusercontent.com/u/193047?v=4",
+              "gravatar_id" : "",
+              "url" : "https://api.github.com/users/rahulsom",
+              "html_url" : "https://github.com/rahulsom",
+              "followers_url" : "https://api.github.com/users/rahulsom/followers",
+              "following_url" : "https://api.github.com/users/rahulsom/following{/other_user}",
+              "gists_url" : "https://api.github.com/users/rahulsom/gists{/gist_id}",
+              "starred_url" : "https://api.github.com/users/rahulsom/starred{/owner}{/repo}",
+              "subscriptions_url" : "https://api.github.com/users/rahulsom/subscriptions",
+              "organizations_url" : "https://api.github.com/users/rahulsom/orgs",
+              "repos_url" : "https://api.github.com/users/rahulsom/repos",
+              "events_url" : "https://api.github.com/users/rahulsom/events{/privacy}",
+              "received_events_url" : "https://api.github.com/users/rahulsom/received_events",
+              "type" : "User",
+              "user_view_type" : "public",
+              "site_admin" : false
+            },
+            "body" : null,
+            "created_at" : "2025-06-03T16:52:30Z",
+            "updated_at" : "2025-06-04T04:06:53Z",
+            "closed_at" : "2025-06-04T04:06:53Z",
+            "merged_at" : "2025-06-04T04:06:53Z",
+            "merge_commit_sha" : "17d9d9f588baf816657bed5fcbd5af2e1e373909",
+            "assignee" : null,
+            "assignees" : [ ],
+            "requested_reviewers" : [ ],
+            "requested_teams" : [ ],
+            "labels" : [ {
+              "id" : 8592800960,
+              "node_id" : "LA_kwDOMTOTFM8AAAACACu8wA",
+              "url" : "https://api.github.com/repos/pulpogato/pulpogato/labels/test",
+              "name" : "test",
+              "color" : "194F17",
+              "default" : false,
+              "description" : ""
+            } ],
+            "milestone" : null,
+            "draft" : false,
+            "commits_url" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/390/commits",
+            "review_comments_url" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/390/comments",
+            "review_comment_url" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/comments{/number}",
+            "comments_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues/390/comments",
+            "statuses_url" : "https://api.github.com/repos/pulpogato/pulpogato/statuses/4dfa04997c7077cf7791696d7ca8f4875bfe0cff",
+            "head" : {
+              "label" : "pulpogato:add-tests-search",
+              "ref" : "add-tests-search",
+              "sha" : "4dfa04997c7077cf7791696d7ca8f4875bfe0cff",
+              "user" : {
+                "login" : "pulpogato",
+                "id" : 183456368,
+                "node_id" : "O_kgDOCu9ScA",
+                "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?v=4",
+                "gravatar_id" : "",
+                "url" : "https://api.github.com/users/pulpogato",
+                "html_url" : "https://github.com/pulpogato",
+                "followers_url" : "https://api.github.com/users/pulpogato/followers",
+                "following_url" : "https://api.github.com/users/pulpogato/following{/other_user}",
+                "gists_url" : "https://api.github.com/users/pulpogato/gists{/gist_id}",
+                "starred_url" : "https://api.github.com/users/pulpogato/starred{/owner}{/repo}",
+                "subscriptions_url" : "https://api.github.com/users/pulpogato/subscriptions",
+                "organizations_url" : "https://api.github.com/users/pulpogato/orgs",
+                "repos_url" : "https://api.github.com/users/pulpogato/repos",
+                "events_url" : "https://api.github.com/users/pulpogato/events{/privacy}",
+                "received_events_url" : "https://api.github.com/users/pulpogato/received_events",
+                "type" : "Organization",
+                "user_view_type" : "public",
+                "site_admin" : false
+              },
+              "repo" : {
+                "id" : 825463572,
+                "node_id" : "R_kgDOMTOTFA",
+                "name" : "pulpogato",
+                "full_name" : "pulpogato/pulpogato",
+                "private" : false,
+                "owner" : {
+                  "login" : "pulpogato",
+                  "id" : 183456368,
+                  "node_id" : "O_kgDOCu9ScA",
+                  "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?v=4",
+                  "gravatar_id" : "",
+                  "url" : "https://api.github.com/users/pulpogato",
+                  "html_url" : "https://github.com/pulpogato",
+                  "followers_url" : "https://api.github.com/users/pulpogato/followers",
+                  "following_url" : "https://api.github.com/users/pulpogato/following{/other_user}",
+                  "gists_url" : "https://api.github.com/users/pulpogato/gists{/gist_id}",
+                  "starred_url" : "https://api.github.com/users/pulpogato/starred{/owner}{/repo}",
+                  "subscriptions_url" : "https://api.github.com/users/pulpogato/subscriptions",
+                  "organizations_url" : "https://api.github.com/users/pulpogato/orgs",
+                  "repos_url" : "https://api.github.com/users/pulpogato/repos",
+                  "events_url" : "https://api.github.com/users/pulpogato/events{/privacy}",
+                  "received_events_url" : "https://api.github.com/users/pulpogato/received_events",
+                  "type" : "Organization",
+                  "user_view_type" : "public",
+                  "site_admin" : false
+                },
+                "html_url" : "https://github.com/pulpogato/pulpogato",
+                "description" : "Generated GitHub Java Client",
+                "fork" : false,
+                "url" : "https://api.github.com/repos/pulpogato/pulpogato",
+                "forks_url" : "https://api.github.com/repos/pulpogato/pulpogato/forks",
+                "keys_url" : "https://api.github.com/repos/pulpogato/pulpogato/keys{/key_id}",
+                "collaborators_url" : "https://api.github.com/repos/pulpogato/pulpogato/collaborators{/collaborator}",
+                "teams_url" : "https://api.github.com/repos/pulpogato/pulpogato/teams",
+                "hooks_url" : "https://api.github.com/repos/pulpogato/pulpogato/hooks",
+                "issue_events_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues/events{/number}",
+                "events_url" : "https://api.github.com/repos/pulpogato/pulpogato/events",
+                "assignees_url" : "https://api.github.com/repos/pulpogato/pulpogato/assignees{/user}",
+                "branches_url" : "https://api.github.com/repos/pulpogato/pulpogato/branches{/branch}",
+                "tags_url" : "https://api.github.com/repos/pulpogato/pulpogato/tags",
+                "blobs_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/blobs{/sha}",
+                "git_tags_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/tags{/sha}",
+                "git_refs_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/refs{/sha}",
+                "trees_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/trees{/sha}",
+                "statuses_url" : "https://api.github.com/repos/pulpogato/pulpogato/statuses/{sha}",
+                "languages_url" : "https://api.github.com/repos/pulpogato/pulpogato/languages",
+                "stargazers_url" : "https://api.github.com/repos/pulpogato/pulpogato/stargazers",
+                "contributors_url" : "https://api.github.com/repos/pulpogato/pulpogato/contributors",
+                "subscribers_url" : "https://api.github.com/repos/pulpogato/pulpogato/subscribers",
+                "subscription_url" : "https://api.github.com/repos/pulpogato/pulpogato/subscription",
+                "commits_url" : "https://api.github.com/repos/pulpogato/pulpogato/commits{/sha}",
+                "git_commits_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/commits{/sha}",
+                "comments_url" : "https://api.github.com/repos/pulpogato/pulpogato/comments{/number}",
+                "issue_comment_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues/comments{/number}",
+                "contents_url" : "https://api.github.com/repos/pulpogato/pulpogato/contents/{+path}",
+                "compare_url" : "https://api.github.com/repos/pulpogato/pulpogato/compare/{base}...{head}",
+                "merges_url" : "https://api.github.com/repos/pulpogato/pulpogato/merges",
+                "archive_url" : "https://api.github.com/repos/pulpogato/pulpogato/{archive_format}{/ref}",
+                "downloads_url" : "https://api.github.com/repos/pulpogato/pulpogato/downloads",
+                "issues_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues{/number}",
+                "pulls_url" : "https://api.github.com/repos/pulpogato/pulpogato/pulls{/number}",
+                "milestones_url" : "https://api.github.com/repos/pulpogato/pulpogato/milestones{/number}",
+                "notifications_url" : "https://api.github.com/repos/pulpogato/pulpogato/notifications{?since,all,participating}",
+                "labels_url" : "https://api.github.com/repos/pulpogato/pulpogato/labels{/name}",
+                "releases_url" : "https://api.github.com/repos/pulpogato/pulpogato/releases{/id}",
+                "deployments_url" : "https://api.github.com/repos/pulpogato/pulpogato/deployments",
+                "created_at" : "2024-07-07T21:03:05Z",
+                "updated_at" : "2025-06-03T19:56:02Z",
+                "pushed_at" : "2025-06-03T19:56:01Z",
+                "git_url" : "git://github.com/pulpogato/pulpogato.git",
+                "ssh_url" : "git@github.com:pulpogato/pulpogato.git",
+                "clone_url" : "https://github.com/pulpogato/pulpogato.git",
+                "svn_url" : "https://github.com/pulpogato/pulpogato",
+                "homepage" : "",
+                "size" : 1068,
+                "stargazers_count" : 2,
+                "watchers_count" : 2,
+                "language" : "Kotlin",
+                "has_issues" : true,
+                "has_projects" : false,
+                "has_downloads" : true,
+                "has_wiki" : false,
+                "has_pages" : false,
+                "has_discussions" : false,
+                "forks_count" : 0,
+                "mirror_url" : null,
+                "archived" : false,
+                "disabled" : false,
+                "open_issues_count" : 1,
+                "license" : {
+                  "key" : "apache-2.0",
+                  "name" : "Apache License 2.0",
+                  "spdx_id" : "Apache-2.0",
+                  "url" : "https://api.github.com/licenses/apache-2.0",
+                  "node_id" : "MDc6TGljZW5zZTI="
+                },
+                "allow_forking" : true,
+                "is_template" : false,
+                "web_commit_signoff_required" : false,
+                "topics" : [ "api", "github", "java" ],
+                "visibility" : "public",
+                "forks" : 0,
+                "open_issues" : 1,
+                "watchers" : 2,
+                "default_branch" : "main"
+              }
+            },
+            "base" : {
+              "label" : "pulpogato:main",
+              "ref" : "main",
+              "sha" : "2d5f4ba41d27f1d848a3eba0371ca46d2fa613df",
+              "user" : {
+                "login" : "pulpogato",
+                "id" : 183456368,
+                "node_id" : "O_kgDOCu9ScA",
+                "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?v=4",
+                "gravatar_id" : "",
+                "url" : "https://api.github.com/users/pulpogato",
+                "html_url" : "https://github.com/pulpogato",
+                "followers_url" : "https://api.github.com/users/pulpogato/followers",
+                "following_url" : "https://api.github.com/users/pulpogato/following{/other_user}",
+                "gists_url" : "https://api.github.com/users/pulpogato/gists{/gist_id}",
+                "starred_url" : "https://api.github.com/users/pulpogato/starred{/owner}{/repo}",
+                "subscriptions_url" : "https://api.github.com/users/pulpogato/subscriptions",
+                "organizations_url" : "https://api.github.com/users/pulpogato/orgs",
+                "repos_url" : "https://api.github.com/users/pulpogato/repos",
+                "events_url" : "https://api.github.com/users/pulpogato/events{/privacy}",
+                "received_events_url" : "https://api.github.com/users/pulpogato/received_events",
+                "type" : "Organization",
+                "user_view_type" : "public",
+                "site_admin" : false
+              },
+              "repo" : {
+                "id" : 825463572,
+                "node_id" : "R_kgDOMTOTFA",
+                "name" : "pulpogato",
+                "full_name" : "pulpogato/pulpogato",
+                "private" : false,
+                "owner" : {
+                  "login" : "pulpogato",
+                  "id" : 183456368,
+                  "node_id" : "O_kgDOCu9ScA",
+                  "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?v=4",
+                  "gravatar_id" : "",
+                  "url" : "https://api.github.com/users/pulpogato",
+                  "html_url" : "https://github.com/pulpogato",
+                  "followers_url" : "https://api.github.com/users/pulpogato/followers",
+                  "following_url" : "https://api.github.com/users/pulpogato/following{/other_user}",
+                  "gists_url" : "https://api.github.com/users/pulpogato/gists{/gist_id}",
+                  "starred_url" : "https://api.github.com/users/pulpogato/starred{/owner}{/repo}",
+                  "subscriptions_url" : "https://api.github.com/users/pulpogato/subscriptions",
+                  "organizations_url" : "https://api.github.com/users/pulpogato/orgs",
+                  "repos_url" : "https://api.github.com/users/pulpogato/repos",
+                  "events_url" : "https://api.github.com/users/pulpogato/events{/privacy}",
+                  "received_events_url" : "https://api.github.com/users/pulpogato/received_events",
+                  "type" : "Organization",
+                  "user_view_type" : "public",
+                  "site_admin" : false
+                },
+                "html_url" : "https://github.com/pulpogato/pulpogato",
+                "description" : "Generated GitHub Java Client",
+                "fork" : false,
+                "url" : "https://api.github.com/repos/pulpogato/pulpogato",
+                "forks_url" : "https://api.github.com/repos/pulpogato/pulpogato/forks",
+                "keys_url" : "https://api.github.com/repos/pulpogato/pulpogato/keys{/key_id}",
+                "collaborators_url" : "https://api.github.com/repos/pulpogato/pulpogato/collaborators{/collaborator}",
+                "teams_url" : "https://api.github.com/repos/pulpogato/pulpogato/teams",
+                "hooks_url" : "https://api.github.com/repos/pulpogato/pulpogato/hooks",
+                "issue_events_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues/events{/number}",
+                "events_url" : "https://api.github.com/repos/pulpogato/pulpogato/events",
+                "assignees_url" : "https://api.github.com/repos/pulpogato/pulpogato/assignees{/user}",
+                "branches_url" : "https://api.github.com/repos/pulpogato/pulpogato/branches{/branch}",
+                "tags_url" : "https://api.github.com/repos/pulpogato/pulpogato/tags",
+                "blobs_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/blobs{/sha}",
+                "git_tags_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/tags{/sha}",
+                "git_refs_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/refs{/sha}",
+                "trees_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/trees{/sha}",
+                "statuses_url" : "https://api.github.com/repos/pulpogato/pulpogato/statuses/{sha}",
+                "languages_url" : "https://api.github.com/repos/pulpogato/pulpogato/languages",
+                "stargazers_url" : "https://api.github.com/repos/pulpogato/pulpogato/stargazers",
+                "contributors_url" : "https://api.github.com/repos/pulpogato/pulpogato/contributors",
+                "subscribers_url" : "https://api.github.com/repos/pulpogato/pulpogato/subscribers",
+                "subscription_url" : "https://api.github.com/repos/pulpogato/pulpogato/subscription",
+                "commits_url" : "https://api.github.com/repos/pulpogato/pulpogato/commits{/sha}",
+                "git_commits_url" : "https://api.github.com/repos/pulpogato/pulpogato/git/commits{/sha}",
+                "comments_url" : "https://api.github.com/repos/pulpogato/pulpogato/comments{/number}",
+                "issue_comment_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues/comments{/number}",
+                "contents_url" : "https://api.github.com/repos/pulpogato/pulpogato/contents/{+path}",
+                "compare_url" : "https://api.github.com/repos/pulpogato/pulpogato/compare/{base}...{head}",
+                "merges_url" : "https://api.github.com/repos/pulpogato/pulpogato/merges",
+                "archive_url" : "https://api.github.com/repos/pulpogato/pulpogato/{archive_format}{/ref}",
+                "downloads_url" : "https://api.github.com/repos/pulpogato/pulpogato/downloads",
+                "issues_url" : "https://api.github.com/repos/pulpogato/pulpogato/issues{/number}",
+                "pulls_url" : "https://api.github.com/repos/pulpogato/pulpogato/pulls{/number}",
+                "milestones_url" : "https://api.github.com/repos/pulpogato/pulpogato/milestones{/number}",
+                "notifications_url" : "https://api.github.com/repos/pulpogato/pulpogato/notifications{?since,all,participating}",
+                "labels_url" : "https://api.github.com/repos/pulpogato/pulpogato/labels{/name}",
+                "releases_url" : "https://api.github.com/repos/pulpogato/pulpogato/releases{/id}",
+                "deployments_url" : "https://api.github.com/repos/pulpogato/pulpogato/deployments",
+                "created_at" : "2024-07-07T21:03:05Z",
+                "updated_at" : "2025-06-03T19:56:02Z",
+                "pushed_at" : "2025-06-03T19:56:01Z",
+                "git_url" : "git://github.com/pulpogato/pulpogato.git",
+                "ssh_url" : "git@github.com:pulpogato/pulpogato.git",
+                "clone_url" : "https://github.com/pulpogato/pulpogato.git",
+                "svn_url" : "https://github.com/pulpogato/pulpogato",
+                "homepage" : "",
+                "size" : 1068,
+                "stargazers_count" : 2,
+                "watchers_count" : 2,
+                "language" : "Kotlin",
+                "has_issues" : true,
+                "has_projects" : false,
+                "has_downloads" : true,
+                "has_wiki" : false,
+                "has_pages" : false,
+                "has_discussions" : false,
+                "forks_count" : 0,
+                "mirror_url" : null,
+                "archived" : false,
+                "disabled" : false,
+                "open_issues_count" : 1,
+                "license" : {
+                  "key" : "apache-2.0",
+                  "name" : "Apache License 2.0",
+                  "spdx_id" : "Apache-2.0",
+                  "url" : "https://api.github.com/licenses/apache-2.0",
+                  "node_id" : "MDc6TGljZW5zZTI="
+                },
+                "allow_forking" : true,
+                "is_template" : false,
+                "web_commit_signoff_required" : false,
+                "topics" : [ "api", "github", "java" ],
+                "visibility" : "public",
+                "forks" : 0,
+                "open_issues" : 1,
+                "watchers" : 2,
+                "default_branch" : "main"
+              }
+            },
+            "_links" : {
+              "self" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/390"
+              },
+              "html" : {
+                "href" : "https://github.com/pulpogato/pulpogato/pull/390"
+              },
+              "issue" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/issues/390"
+              },
+              "comments" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/issues/390/comments"
+              },
+              "review_comments" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/390/comments"
+              },
+              "review_comment" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/comments{/number}"
+              },
+              "commits" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/pulls/390/commits"
+              },
+              "statuses" : {
+                "href" : "https://api.github.com/repos/pulpogato/pulpogato/statuses/4dfa04997c7077cf7791696d7ca8f4875bfe0cff"
+              }
+            },
+            "author_association" : "COLLABORATOR",
+            "auto_merge" : null,
+            "active_lock_reason" : null,
+            "merged" : true,
+            "mergeable" : null,
+            "rebaseable" : null,
+            "mergeable_state" : "unknown",
+            "merged_by" : {
+              "login" : "rahulsom",
+              "id" : 193047,
+              "node_id" : "MDQ6VXNlcjE5MzA0Nw==",
+              "avatar_url" : "https://avatars.githubusercontent.com/u/193047?v=4",
+              "gravatar_id" : "",
+              "url" : "https://api.github.com/users/rahulsom",
+              "html_url" : "https://github.com/rahulsom",
+              "followers_url" : "https://api.github.com/users/rahulsom/followers",
+              "following_url" : "https://api.github.com/users/rahulsom/following{/other_user}",
+              "gists_url" : "https://api.github.com/users/rahulsom/gists{/gist_id}",
+              "starred_url" : "https://api.github.com/users/rahulsom/starred{/owner}{/repo}",
+              "subscriptions_url" : "https://api.github.com/users/rahulsom/subscriptions",
+              "organizations_url" : "https://api.github.com/users/rahulsom/orgs",
+              "repos_url" : "https://api.github.com/users/rahulsom/repos",
+              "events_url" : "https://api.github.com/users/rahulsom/events{/privacy}",
+              "received_events_url" : "https://api.github.com/users/rahulsom/received_events",
+              "type" : "User",
+              "user_view_type" : "public",
+              "site_admin" : false
+            },
+            "comments" : 2,
+            "review_comments" : 2,
+            "maintainer_can_modify" : false,
+            "commits" : 1,
+            "additions" : 3434,
+            "deletions" : 0,
+            "changed_files" : 7
+          }
+        },
+        "public" : true,
+        "created_at" : "2025-06-04T04:06:54Z",
+        "org" : {
+          "id" : 183456368,
+          "login" : "pulpogato",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/pulpogato",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?"
+        }
+      }, {
+        "id" : "50474611605",
+        "type" : "PushEvent",
+        "actor" : {
+          "id" : 193047,
+          "login" : "rahulsom",
+          "display_login" : "rahulsom",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?"
+        },
+        "repo" : {
+          "id" : 825463572,
+          "name" : "pulpogato/pulpogato",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato"
+        },
+        "payload" : {
+          "repository_id" : 825463572,
+          "push_id" : 24681375329,
+          "size" : 2,
+          "distinct_size" : 2,
+          "ref" : "refs/heads/main",
+          "head" : "115e8ca8a62a4efd450f649a6bf4e83cb1dbcc9f",
+          "before" : "50d6183de5fd8e44971c72c4870edf24554f3229",
+          "commits" : [ {
+            "sha" : "39c34a4a2c9225aec69ca8aecf2b1f542a8c3a75",
+            "author" : {
+              "email" : "rahul.som@gmail.com",
+              "name" : "Rahul Somasunderam"
+            },
+            "message" : "chore(deps): Update rest-api-description to bf4af7c",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/39c34a4a2c9225aec69ca8aecf2b1f542a8c3a75"
+          }, {
+            "sha" : "115e8ca8a62a4efd450f649a6bf4e83cb1dbcc9f",
+            "author" : {
+              "email" : "rahul.som@gmail.com",
+              "name" : "Rahul Somasunderam"
+            },
+            "message" : "Merge pull request #391 from pulpogato/update-schema-version\n\nUpdate rest-api-description to bf4af7c",
+            "distinct" : true,
+            "url" : "https://api.github.com/repos/pulpogato/pulpogato/commits/115e8ca8a62a4efd450f649a6bf4e83cb1dbcc9f"
+          } ]
+        },
+        "public" : true,
+        "created_at" : "2025-06-03T19:56:02Z",
+        "org" : {
+          "id" : 183456368,
+          "login" : "pulpogato",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/pulpogato",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?"
+        }
+      }, {
+        "id" : "50474611393",
+        "type" : "DeleteEvent",
+        "actor" : {
+          "id" : 193047,
+          "login" : "rahulsom",
+          "display_login" : "rahulsom",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?"
+        },
+        "repo" : {
+          "id" : 825463572,
+          "name" : "pulpogato/pulpogato",
+          "url" : "https://api.github.com/repos/pulpogato/pulpogato"
+        },
+        "payload" : {
+          "ref" : "update-schema-version",
+          "ref_type" : "branch",
+          "pusher_type" : "user"
+        },
+        "public" : true,
+        "created_at" : "2025-06-03T19:56:02Z",
+        "org" : {
+          "id" : 183456368,
+          "login" : "pulpogato",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/orgs/pulpogato",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/183456368?"
+        }
+      } ]
