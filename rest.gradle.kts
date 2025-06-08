@@ -1,4 +1,5 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.javaLibrary)
@@ -40,7 +41,14 @@ val downloadSchema = tasks.register("downloadSchema") {
 
     doLast {
         schemaLocation.parentFile.mkdirs()
-        schemaLocation.writeBytes(uri(getUrl(projectVariant)).toURL().readBytes())
+        val schemaBytes = uri(getUrl(projectVariant)).toURL().readBytes()
+        schemaLocation.writeBytes(schemaBytes)
+        
+        // Calculate SHA256 checksum
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(schemaBytes)
+        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+        project.ext.set("github.api.sha256", sha256)
     }
 }
 
@@ -141,4 +149,22 @@ tasks.jacocoTestReport {
 
 tasks.withType<JavaCompile> {
     options.setIncremental(true)
+}
+
+publishing {
+    publications {
+        named<MavenPublication>("nebula") {
+            pom {
+                withXml {
+                    val root = asNode()
+                    val propertiesNode = root.get("properties") as groovy.util.NodeList
+                    if (propertiesNode.isNotEmpty()) {
+                        val propNode = propertiesNode.first() as groovy.util.Node
+                        propNode.appendNode("github.api.version", project.ext.get("github.api.version").toString())
+                        propNode.appendNode("github.api.sha256", project.ext.get("github.api.sha256").toString())
+                    }
+                }
+            }
+        }
+    }
 }

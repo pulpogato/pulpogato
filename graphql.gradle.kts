@@ -1,5 +1,6 @@
 import com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask
 import de.undercouch.gradle.tasks.download.Download
+import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.javaLibrary)
@@ -37,6 +38,15 @@ val downloadSchema = tasks.register<Download>("downloadSchema") {
 
     inputs.property("url", getUrl(projectVariant))
     outputs.file(originalSchemaLocation)
+    
+    doLast {
+        // Calculate SHA256 checksum of downloaded schema
+        val schemaBytes = originalSchemaLocation.readBytes()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(schemaBytes)
+        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+        project.ext.set("github.schema.sha256", sha256)
+    }
 }
 
 val transformSchema = tasks.register<Sync>("transformSchema") {
@@ -109,4 +119,25 @@ tasks.withType<Javadoc>().configureEach {
         addStringOption("encoding", "UTF-8")
         addStringOption("charSet", "UTF-8")
     }
+}
+
+publishing {
+    publications {
+        named<MavenPublication>("nebula") {
+            pom {
+                withXml {
+                    val root = asNode()
+                    val propertiesNode = root.get("properties") as groovy.util.NodeList
+                    if (propertiesNode.isNotEmpty()) {
+                        val propNode = propertiesNode.first() as groovy.util.Node
+                        propNode.appendNode("github.schema.sha256", project.ext.get("github.schema.sha256").toString())
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.withType<GenerateMavenPom>().configureEach {
+    dependsOn(downloadSchema)
 }
