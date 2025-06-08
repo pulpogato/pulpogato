@@ -24,24 +24,27 @@ val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")
 
 description = "GraphQL types for $projectVariant"
 
+val originalSchemaLocation = file("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls")
+val transformedSchemaLocation = file("${project.layout.buildDirectory.get()}/resources/main-tmp/schema.graphqls")
+
 val downloadSchema = tasks.register<Download>("downloadSchema") {
     src(getUrl(projectVariant))
-    dest(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
+    dest(originalSchemaLocation)
     onlyIfModified(true)
     tempAndMove(true)
     useETag("all")
     quiet(true)
 
     inputs.property("url", getUrl(projectVariant))
-    outputs.file(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
+    outputs.file(originalSchemaLocation)
 }
 
-val transformSchema = tasks.register<Copy>("transformSchema") {
+val transformSchema = tasks.register<Sync>("transformSchema") {
     dependsOn(downloadSchema)
-    inputs.file(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
-    outputs.file(file("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls"))
+    inputs.file(originalSchemaLocation)
+    outputs.file(transformedSchemaLocation)
 
-    from(file("${project.layout.buildDirectory.get()}/resources/main/schema.original.graphqls"))
+    from(originalSchemaLocation)
     into(file("${project.layout.buildDirectory.get()}/resources/main"))
     rename("schema.original.graphqls", "schema.graphqls")
 
@@ -61,7 +64,7 @@ val transformSchema = tasks.register<Copy>("transformSchema") {
 tasks.named<GenerateJavaTask>("generateJava") {
     dependsOn(transformSchema)
 
-    schemaPaths = mutableListOf("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls")
+    schemaPaths = mutableListOf(transformedSchemaLocation)
     packageName = "io.github.pulpogato.graphql"
     generateClientv2 = true
     includeQueries = mutableListOf("")
