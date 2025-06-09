@@ -50,11 +50,13 @@ jobs:
 
     - uses: gradle/actions/setup-gradle@v4
 
-    - name: Build
+    - name: Build Codegen
       if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-      run: |
-        ./gradlew --project-dir gradle/pulpogato-rest-codegen check pitest
-        ./gradlew build pitest --max-workers=2 --continue
+      run: ./gradlew --project-dir gradle/pulpogato-rest-codegen check pitest
+
+    - name: Build Main Project
+      if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
+      run: ./gradlew build pitest --max-workers=2 --continue
 
     - name: Build Snapshot
       if: github.ref == 'refs/heads/main'
