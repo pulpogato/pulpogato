@@ -44,8 +44,14 @@ fun referenceAndDefinition(
     prefix: String,
     parentClass: ClassName?,
 ): Pair<TypeName, TypeSpec?>? {
-    val types = entry.value.types?.filterNotNull()?.filter { it != "null" }
-    val anyOf = entry.value.anyOf?.filterNotNull()?.filter { it.types != setOf("null") }
+    val types =
+        entry.value.types
+            ?.filterNotNull()
+            ?.filter { it != "null" }
+    val anyOf =
+        entry.value.anyOf
+            ?.filterNotNull()
+            ?.filter { it.types != setOf("null") }
     val oneOf = entry.value.oneOf?.filterNotNull()
     val allOf = entry.value.allOf?.filterNotNull()
 
@@ -112,8 +118,8 @@ private fun buildReferenceAndDefinitionFromObject(
     entry: Map.Entry<String, Schema<*>>,
     parentClass: ClassName?,
     prefix: String,
-): Pair<TypeName, TypeSpec?> {
-    return when {
+): Pair<TypeName, TypeSpec?> =
+    when {
         entry.value.additionalProperties != null && (entry.value.properties == null || entry.value.properties.isEmpty()) -> {
             val additionalProperties = entry.value.additionalProperties
             if (additionalProperties is Schema<*>) {
@@ -138,7 +144,6 @@ private fun buildReferenceAndDefinitionFromObject(
 
         else -> Pair(Types.MAP_STRING_OBJECT.annotated(typeGenerated()), null)
     }
-}
 
 private fun buildReferenceAndDefinitionFromArray(
     context: Context,
@@ -149,19 +154,23 @@ private fun buildReferenceAndDefinitionFromArray(
     return referenceAndDefinition(context1, mapOf(entry.key to entry.value.items).entries.first(), "", parentClass)
         ?.let {
             val oldTypeGenerated =
-                it.first.annotations()
+                it.first
+                    .annotations()
                     .filter { spec -> (spec.type() as ClassName).simpleName() == "TypeGenerated" }
             val otherAnnotations =
-                it.first.annotations()
+                it.first
+                    .annotations()
                     .filter { spec -> (spec.type() as ClassName).simpleName() != "TypeGenerated" }
 
             Pair(
-                ParameterizedTypeName.get(
-                    Types.LIST,
-                    it.first.withoutAnnotations()
-                        .annotated(oldTypeGenerated),
-                )
-                    .annotated(otherAnnotations.distinct()).annotated(typeGenerated()),
+                ParameterizedTypeName
+                    .get(
+                        Types.LIST,
+                        it.first
+                            .withoutAnnotations()
+                            .annotated(oldTypeGenerated),
+                    ).annotated(otherAnnotations.distinct())
+                    .annotated(typeGenerated()),
                 it.second,
             )
         }
@@ -213,7 +222,10 @@ private fun buildReferenceAndDefinitionFromRef(
     entry: Map.Entry<String, Schema<*>>,
 ): Pair<TypeName, TypeSpec?> {
     val schemaName = entry.value.`$ref`.replace("#/components/schemas/", "")
-    val entries = context.openAPI.components.schemas.filter { (k, _) -> k == schemaName }.entries
+    val entries =
+        context.openAPI.components.schemas
+            .filter { (k, _) -> k == schemaName }
+            .entries
     val schema = entries.first()
     return referenceAndDefinition(context.withSchemaStack("#", "components", "schemas", schemaName), schema, "", null)!!.copy(second = null)
 }
@@ -244,7 +256,8 @@ private fun buildFancyObject(
 ): TypeSpec {
     val className = classRef.simpleName()
     val theType =
-        TypeSpec.classBuilder(className)
+        TypeSpec
+            .classBuilder(className)
             .addJavadoc(schemaJavadoc(entry))
             .addAnnotation(generated(0, context.withSchemaStack(fancyObjectType)))
             .addAnnotation(lombok("Data"))
@@ -259,8 +272,7 @@ private fun buildFancyObject(
                 newKey = it.`$ref`.replace("#/components/schemas/", "")
             }
             newKey to it
-        }
-        .forEachIndexed { index, (newKey, subSchema) ->
+        }.forEachIndexed { index, (newKey, subSchema) ->
             processSubSchema(context.withSchemaStack(fancyObjectType, "$index"), entry, newKey, subSchema, classRef, theType, fields)
         }
 
@@ -269,7 +281,8 @@ private fun buildFancyObject(
     val deserializer = buildDeserializer(className, fancyObjectType, settableFields)
     val serializer = buildSerializer(className, fancyObjectType, gettableFields)
 
-    theType.addType(deserializer)
+    theType
+        .addType(deserializer)
         .addType(serializer)
         .addAnnotation(deserializerAnnotation(className, deserializer))
         .addAnnotation(serializerAnnotation(className, serializer))
@@ -321,8 +334,7 @@ private fun buildFieldSpec(
             referenceAndDefinition(context, keyValuePair, "", classRef)!!.first,
             keyValuePair.key.unkeywordize().camelCase(),
             Modifier.PRIVATE,
-        )
-        .addJavadoc(schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
+        ).addJavadoc(schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
         .addAnnotation(generated(0, context))
         .addAnnotation(jsonProperty(keyValuePair.key))
         .build()
@@ -363,11 +375,13 @@ private fun buildSerializer(
     fancyObjectType: String,
     gettableFields: List<CodeBlock>,
 ): TypeSpec =
-    TypeSpec.classBuilder("${className}Serializer")
+    TypeSpec
+        .classBuilder("${className}Serializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .superclass(ParameterizedTypeName.get(pulpogatoClass("FancySerializer"), ClassName.get("", className)))
         .addMethod(
-            MethodSpec.constructorBuilder()
+            MethodSpec
+                .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
                     """super(${"$"}T.class, ${"$"}T.${fancyObjectType.trainCase()}, ${"$"}T.of(
@@ -378,21 +392,21 @@ private fun buildSerializer(
                     pulpogatoClass("Mode"),
                     Types.LIST,
                     CodeBlock.join(gettableFields, ",\n    "),
-                )
-                .build(),
-        )
-        .build()
+                ).build(),
+        ).build()
 
 private fun buildDeserializer(
     className: String,
     fancyObjectType: String,
     settableFields: List<CodeBlock>,
 ): TypeSpec =
-    TypeSpec.classBuilder("${className}Deserializer")
+    TypeSpec
+        .classBuilder("${className}Deserializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .superclass(ParameterizedTypeName.get(pulpogatoClass("FancyDeserializer"), ClassName.get("", className)))
         .addMethod(
-            MethodSpec.constructorBuilder()
+            MethodSpec
+                .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
                     """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${fancyObjectType.trainCase()}, ${"$"}T.of(
@@ -404,10 +418,8 @@ private fun buildDeserializer(
                     pulpogatoClass("Mode"),
                     Types.LIST,
                     CodeBlock.join(settableFields, ",\n    "),
-                )
-                .build(),
-        )
-        .build()
+                ).build(),
+        ).build()
 
 private fun buildSimpleObject(
     context: Context,
@@ -417,7 +429,8 @@ private fun buildSimpleObject(
     val name = nameRef.simpleName()
 
     val builder =
-        TypeSpec.classBuilder(name)
+        TypeSpec
+            .classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0, context))
             .addAnnotation(lombok("Data"))
@@ -450,7 +463,8 @@ private fun addProperties(
             }
             if (!knownFields.contains(p.key.unkeywordize().camelCase())) {
                 classBuilder.addField(
-                    FieldSpec.builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
+                    FieldSpec
+                        .builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
                         .addAnnotation(jsonProperty(p.key))
                         .addAnnotation(generated(0, context.withSchemaStack("properties", p.key)))
                         .build(),
@@ -466,7 +480,8 @@ private fun buildEnum(
     className: ClassName,
 ): TypeSpec {
     val builder =
-        TypeSpec.enumBuilder(className.simpleName())
+        TypeSpec
+            .enumBuilder(className.simpleName())
             .addModifiers(Modifier.PUBLIC)
             .addJavadoc(schemaJavadoc(entry))
             .addAnnotation(generated(0, context))
@@ -474,7 +489,8 @@ private fun buildEnum(
             .addAnnotation(lombok("RequiredArgsConstructor"))
             .addAnnotation(lombok("ToString"))
             .addField(
-                FieldSpec.builder(String::class.java, "value", Modifier.PRIVATE, Modifier.FINAL)
+                FieldSpec
+                    .builder(String::class.java, "value", Modifier.PRIVATE, Modifier.FINAL)
                     .addAnnotation(jsonValue())
                     .addJavadoc("\$S", "The value of the enum")
                     .build(),

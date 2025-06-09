@@ -10,10 +10,10 @@ class RestCodegenPlugin : Plugin<Project> {
         val extension = target.extensions.create("codegen", RestCodegenExtension::class.java, target)
         val generateJava = target.tasks.register("generateJava", GenerateJavaTask::class.java)
         generateJava.configure {
-            schema = DefaultProvider { -> extension.schema.get().asFile }
-            packageName = DefaultProvider { -> extension.packageName.get() }
-            mainDir = DefaultProvider { -> extension.mainDir.get().asFile }
-            testDir = DefaultProvider { -> extension.testDir.get().asFile }
+            schema = DefaultProvider { extension.schema.get().asFile }
+            packageName = DefaultProvider { extension.packageName.get() }
+            mainDir = DefaultProvider { extension.mainDir.get().asFile }
+            testDir = DefaultProvider { extension.testDir.get().asFile }
         }
     }
 }

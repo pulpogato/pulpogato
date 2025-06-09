@@ -29,16 +29,20 @@ object Types {
 
     // Time types
     val EPOCH_TIME: TypeName =
-        ClassName.get(OffsetDateTime::class.java)
+        ClassName
+            .get(OffsetDateTime::class.java)
             .annotated(jsonFormat(JsonFormat.Shape.NUMBER_INT))
     val LOCAL_DATE: TypeName =
-        ClassName.get(LocalDate::class.java)
+        ClassName
+            .get(LocalDate::class.java)
             .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd"))
     val OFFSET_DATE_TIME: TypeName =
-        ClassName.get(OffsetDateTime::class.java)
+        ClassName
+            .get(OffsetDateTime::class.java)
             .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd'T'HH:mm:ssXXX"))
             .annotated(
-                AnnotationSpec.builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
+                AnnotationSpec
+                    .builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
                     .addMember("using", "\$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
                     .build(),
             )

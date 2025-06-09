@@ -3,7 +3,9 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 
-class JsonRefValidator(private val threshold: Int = 0) {
+class JsonRefValidator(
+    private val threshold: Int = 0,
+) {
     private val schemaRefRegex = Regex("\\s+schemaRef\\s=\\s*\"(.+?)\"")
 
     /**
@@ -18,7 +20,8 @@ class JsonRefValidator(private val threshold: Int = 0) {
     ) {
         val schemaRefs =
             roots.flatMap { dir ->
-                dir.walkTopDown()
+                dir
+                    .walkTopDown()
                     .filter { it.name.endsWith(".java") }
                     .flatMap { f -> findSchemaRefMatches(f) }
                     .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }

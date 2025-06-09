@@ -70,10 +70,10 @@ open class GenerateJavaTask : DefaultTask() {
         JsonRefValidator(0).validate(json, listOf(main, test))
     }
 
-    private fun getJavaFiles(dir: File): List<File> {
-        return dir.walk()
+    private fun getJavaFiles(dir: File): List<File> =
+        dir
+            .walk()
             .filter { it.isFile }
             .filter { it.toPath().extension == "java" }
             .toList()
-    }
 }

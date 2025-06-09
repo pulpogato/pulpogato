@@ -34,7 +34,8 @@ object TestBuilder {
 
         try {
             val methodSpec =
-                MethodSpec.methodBuilder("test${key.pascalCase()}")
+                MethodSpec
+                    .methodBuilder("test${key.pascalCase()}")
                     .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                     .addAnnotation(Annotations.generated(1, context))
                     .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
@@ -45,8 +46,7 @@ object TestBuilder {
                         testUtilsClass,
                         ClassName.get("com.fasterxml.jackson.core.type", "TypeReference"),
                         className.withoutAnnotations(),
-                    )
-                    .addStatement("softly.assertThat(processed).isNotNull()")
+                    ).addStatement("softly.assertThat(processed).isNotNull()")
                     .addStatement("softly.assertAll()")
                     .build()
             return methodSpec
@@ -67,27 +67,28 @@ object TestBuilder {
         context: Context,
         om: ObjectMapper,
         parsed: Any,
-    ): String {
-        return om.writerWithDefaultPrettyPrinter().writeValueAsString(normalize(context, parsed))
-    }
+    ): String = om.writerWithDefaultPrettyPrinter().writeValueAsString(normalize(context, parsed))
 
     private fun normalize(
         context: Context,
         input: Any?,
-    ): Any? {
-        return when (input) {
+    ): Any? =
+        when (input) {
             is List<*> -> input.map { normalize(context, it) }
             is Map<*, *> -> normalizeMap(context, input)
             else -> input
         }
-    }
 
     private fun normalizeMap(
         context: Context,
         input: Map<*, *>,
     ): Any {
         if (input.size == 1 && input.containsKey("\$ref")) {
-            return normalize(context, context.openAPI.components.examples[input["\$ref"].toString().replace("#/components/examples/", "")]?.value)!!
+            return normalize(
+                context,
+                context.openAPI.components.examples[input["\$ref"].toString().replace("#/components/examples/", "")]
+                    ?.value,
+            )!!
         }
         return input.entries.associate { (k, v) -> k to normalize(context, v) }
     }
