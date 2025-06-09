@@ -62,8 +62,8 @@ springBoot = ["springBootTest", "springBootWeb", "springBootWebflux"]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
 download = { id = "de.undercouch.download", version.ref = "download" }
 javaLibrary = { id = "java-library" }
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitestPlugin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }
 waenaPublished = { id = "com.github.rahulsom.waena.published", version.ref = "waena" }
 waenaRoot = { id = "com.github.rahulsom.waena.root", version.ref = "waena" }

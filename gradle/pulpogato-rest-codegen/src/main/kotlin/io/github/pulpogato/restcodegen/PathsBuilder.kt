@@ -24,7 +24,12 @@ import java.io.File
 import javax.lang.model.element.Modifier
 
 class PathsBuilder {
-    class AtomicMethod(val path: String, val method: HttpMethod, val operationId: String, val operation: Operation)
+    class AtomicMethod(
+        val path: String,
+        val method: HttpMethod,
+        val operationId: String,
+        val operation: Operation,
+    )
 
     fun buildApis(
         context: Context,
@@ -40,8 +45,7 @@ class PathsBuilder {
                 pathItem.readOperationsMap().map { (method, operation) ->
                     AtomicMethod(path, method, operation.operationId, operation)
                 }
-            }
-            .groupBy { it.operationId.split('/')[0] }
+            }.groupBy { it.operationId.split('/')[0] }
             .forEach { (groupName, atomicMethods) ->
                 val docTag = atomicMethods[0].operation.tags[0]
                 val apiDescription = openAPI.tags.find { it.name == docTag }!!.description
@@ -49,13 +53,15 @@ class PathsBuilder {
 
                 val tagIndex = openAPI.tags!!.indexOfFirst { docTag == it.name }.toString()
                 val pathInterface =
-                    TypeSpec.interfaceBuilder(interfaceName)
+                    TypeSpec
+                        .interfaceBuilder(interfaceName)
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
                         .addJavadoc(apiDescription ?: "")
 
                 val testClass =
-                    TypeSpec.classBuilder(interfaceName + "Test")
+                    TypeSpec
+                        .classBuilder(interfaceName + "Test")
                         .addAnnotation(testExtension())
                 val typeRef = ClassName.get(packageName, interfaceName)
 
@@ -92,8 +98,7 @@ class PathsBuilder {
             atomicMethod.operation.responses
                 .filter { (responseCode, apiResponse) ->
                     !apiResponse.content.isNullOrEmpty() && responseCode.startsWith("2")
-                }
-                .toMutableMap()
+                }.toMutableMap()
 
         if (successResponses.size > 1 && successResponses.containsKey("204")) {
             successResponses.remove("204")
@@ -133,7 +138,8 @@ class PathsBuilder {
                     val parameterSpecs = parameters.map { it.second }
                     if (contentType.contains("json") && testMethods.isNotEmpty()) {
                         testClass.addType(
-                            TypeSpec.classBuilder(methodName.pascalCase() + "Response")
+                            TypeSpec
+                                .classBuilder(methodName.pascalCase() + "Response")
                                 .addAnnotation(generated(0, context))
                                 .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
                                 .addMethods(testMethods)
@@ -185,28 +191,29 @@ class PathsBuilder {
         respRef: TypeName,
         suitableAnnotations: List<AnnotationSpec>,
     ): MethodSpec {
-        val exchangeAnnotation = atomicMethod.method.name.lowercase().pascalCase() + "Exchange"
-        return MethodSpec.methodBuilder(methodName)
+        val exchangeAnnotation =
+            atomicMethod.method.name
+                .lowercase()
+                .pascalCase() + "Exchange"
+        return MethodSpec
+            .methodBuilder(methodName)
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .addJavadoc(javadoc)
             .addAnnotation(
                 AnnotationSpec
                     .builder(
                         ClassName.get("org.springframework.web.service.annotation", exchangeAnnotation),
-                    )
-                    .addMember("value", "\$S", atomicMethod.path)
+                    ).addMember("value", "\$S", atomicMethod.path)
                     .addMember("accept", "\$S", contentType)
                     .build(),
-            )
-            .addAnnotation(generated(0, context))
+            ).addAnnotation(generated(0, context))
             .addParameters(parameterSpecs)
             .returns(
                 ParameterizedTypeName.get(
                     ClassName.get("org.springframework.http", "ResponseEntity"),
                     respRef.withoutAnnotations().annotated(suitableAnnotations),
                 ),
-            )
-            .build()
+            ).build()
     }
 
     private fun buildVoidMethod(
@@ -215,18 +222,22 @@ class PathsBuilder {
         javadoc: String,
         parameters: List<Pair<Parameter, ParameterSpec>>,
     ): MethodSpec =
-        MethodSpec.methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
+        MethodSpec
+            .methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .addJavadoc(javadoc)
             .addAnnotation(
                 AnnotationSpec
                     .builder(
-                        ClassName.get("org.springframework.web.service.annotation", atomicMethod.method.name.lowercase().pascalCase() + "Exchange"),
-                    )
-                    .addMember("value", "\$S", atomicMethod.path)
+                        ClassName.get(
+                            "org.springframework.web.service.annotation",
+                            atomicMethod.method.name
+                                .lowercase()
+                                .pascalCase() + "Exchange",
+                        ),
+                    ).addMember("value", "\$S", atomicMethod.path)
                     .build(),
-            )
-            .addAnnotation(generated(0, context))
+            ).addAnnotation(generated(0, context))
             .addParameters(parameters.map { it.second })
             .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
             .build()
@@ -292,18 +303,21 @@ class PathsBuilder {
 
         val paramName = theParameter.name.unkeywordize().camelCase()
 
-        return ParameterSpec.builder(ref, paramName)
+        return ParameterSpec
+            .builder(ref, paramName)
             .addAnnotation(
                 when (theParameter.`in`) {
                     "query" ->
-                        AnnotationSpec.builder(webBind("RequestParam"))
+                        AnnotationSpec
+                            .builder(webBind("RequestParam"))
                             .addMember("value", "\$S", theParameter.name)
                             .addMember("required", "\$L", theParameter.required)
                             .build()
 
                     "body" -> AnnotationSpec.builder(webBind("RequestBody")).build()
                     "path" ->
-                        AnnotationSpec.builder(webBind("PathVariable"))
+                        AnnotationSpec
+                            .builder(webBind("PathVariable"))
                             .addMember("value", "\$S", theParameter.name)
                             .build()
 
@@ -311,8 +325,7 @@ class PathsBuilder {
 
                     else -> throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
                 },
-            )
-            .build()
+            ).build()
     }
 
     private fun webBind(simpleName: String): ClassName = ClassName.get("org.springframework.web.bind.annotation", simpleName)
@@ -332,7 +345,16 @@ class PathsBuilder {
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
                 .map { (k, v) ->
                     TestBuilder.buildTest(
-                        context.withSchemaStack("requestBody", "content", atomicMethod.operation.requestBody.content.firstEntry().key, "examples", k, "value"),
+                        context.withSchemaStack(
+                            "requestBody",
+                            "content",
+                            atomicMethod.operation.requestBody.content
+                                .firstEntry()
+                                .key,
+                            "examples",
+                            k,
+                            "value",
+                        ),
                         "${paramName}_$k",
                         v.value,
                         ref,
@@ -340,7 +362,8 @@ class PathsBuilder {
                 }
         if (testMethods.isNotEmpty()) {
             testClass.addType(
-                TypeSpec.classBuilder("${operationName}RequestBody".pascalCase())
+                TypeSpec
+                    .classBuilder("${operationName}RequestBody".pascalCase())
                     .addJavadoc("Tests {@link $typeRef#${atomicMethod.operationId.split('/')[1].camelCase()}}")
                     .addAnnotation(generated(0, context))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
@@ -365,8 +388,11 @@ class PathsBuilder {
                         Pair(
                             parameter,
                             buildParameter(
-                                context.withSchemaStack("parameters", idx.toString(), "schema"), parameter,
-                                atomicMethod, typeDef, typeRef,
+                                context.withSchemaStack("parameters", idx.toString(), "schema"),
+                                parameter,
+                                atomicMethod,
+                                typeDef,
+                                typeRef,
                             ),
                         )
                     } else {
@@ -375,8 +401,11 @@ class PathsBuilder {
                         Pair(
                             newParameter,
                             buildParameter(
-                                context.withSchemaStack("#", "components", "parameters", refName, "schema"), newParameter,
-                                atomicMethod, typeDef, typeRef,
+                                context.withSchemaStack("#", "components", "parameters", refName, "schema"),
+                                newParameter,
+                                atomicMethod,
+                                typeDef,
+                                typeRef,
                             ),
                         )
                     }

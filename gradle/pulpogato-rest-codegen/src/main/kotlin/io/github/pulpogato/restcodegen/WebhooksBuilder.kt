@@ -41,22 +41,38 @@ class WebhooksBuilder {
         val openAPI = context.openAPI
         openAPI.webhooks
             .entries
-            .groupBy { getSubcategory(it.value.readOperationsMap().values.first())!! }
-            .forEach { (k, v) ->
+            .groupBy {
+                getSubcategory(
+                    it.value
+                        .readOperationsMap()
+                        .values
+                        .first(),
+                )!!
+            }.forEach { (k, v) ->
                 val interfaceBuilder =
-                    TypeSpec.interfaceBuilder("${k.pascalCase()}Webhooks")
+                    TypeSpec
+                        .interfaceBuilder("${k.pascalCase()}Webhooks")
                         .addModifiers(Modifier.PUBLIC)
                         .addTypeVariable(TypeVariableName.get("T"))
 
                 val unitTestBuilder =
-                    TypeSpec.classBuilder("${k.pascalCase()}WebhooksTest")
+                    TypeSpec
+                        .classBuilder("${k.pascalCase()}WebhooksTest")
                         .addAnnotation(testExtension())
 
                 val requestBodyTypes = mutableMapOf<String, Pair<String, ClassName>>()
                 v.forEach { (name, webhook) ->
                     val requestBody =
                         createWebhookInterface(context, name, webhook, openAPI, restPackage, interfaceBuilder, unitTestBuilder, testControllerBuilder)
-                    val methodName = "process" + webhook.readOperationsMap().values.first().operationId.replace("/", "-").pascalCase()
+                    val methodName =
+                        "process" +
+                            webhook
+                                .readOperationsMap()
+                                .values
+                                .first()
+                                .operationId
+                                .replace("/", "-")
+                                .pascalCase()
                     requestBodyTypes[name] = Pair(methodName, requestBody)
                 }
 
@@ -66,7 +82,8 @@ class WebhooksBuilder {
 
                 val interfaceSpec = interfaceBuilder.build()
                 if (interfaceSpec.methodSpecs().isNotEmpty()) {
-                    JavaFile.builder(webhooksPackage, interfaceSpec)
+                    JavaFile
+                        .builder(webhooksPackage, interfaceSpec)
                         .build()
                         .writeTo(mainDir)
 
@@ -80,14 +97,16 @@ class WebhooksBuilder {
 
                 val testClassSpec = unitTestBuilder.build()
                 if (testClassSpec.typeSpecs().isNotEmpty()) {
-                    JavaFile.builder(webhooksPackage, testClassSpec)
+                    JavaFile
+                        .builder(webhooksPackage, testClassSpec)
                         .build()
                         .writeTo(testDir)
                 }
             }
         val testConfig = buildTestConfig(testControllerBuilder.build())
         val integrationTestBuilder = buildIntegrationTest(context, testConfig.build())
-        JavaFile.builder(webhooksPackage, integrationTestBuilder.build())
+        JavaFile
+            .builder(webhooksPackage, integrationTestBuilder.build())
             .build()
             .writeTo(testDir)
     }
@@ -100,22 +119,32 @@ class WebhooksBuilder {
         interfaceBuilder: TypeSpec.Builder,
     ) {
         val methodBuilder =
-            MethodSpec.methodBuilder("process${k.pascalCase()}")
+            MethodSpec
+                .methodBuilder("process${k.pascalCase()}")
                 .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
                 .addAnnotation(
-                    AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
+                    AnnotationSpec
+                        .builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
                         .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
                         .build(),
-                )
-                .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
+                ).returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
                 .addException(Types.EXCEPTION)
                 .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
-        val headerNames = v[0].value.readOperationsMap().entries.first().value.parameters.filter { it.`in` == "header" }.map { it.name }
+        val headerNames =
+            v[0]
+                .value
+                .readOperationsMap()
+                .entries
+                .first()
+                .value.parameters
+                .filter { it.`in` == "header" }
+                .map { it.name }
         headerNames
             .forEach {
                 methodBuilder
                     .addParameter(
-                        ParameterSpec.builder(Types.STRING, it.camelCase())
+                        ParameterSpec
+                            .builder(Types.STRING, it.camelCase())
                             .addAnnotation(getParameterAnnotation(it).build())
                             .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
                             .build(),
@@ -130,9 +159,9 @@ class WebhooksBuilder {
                     .addParameter(buildRequestBodyParameter(context.withSchemaStack("#", "synthetic")))
                     .addCode(router, ClassName.get("org.springframework.http", "ResponseEntity"))
                     .build(),
-            )
-            .addMethod(
-                MethodSpec.methodBuilder("getObjectMapper")
+            ).addMethod(
+                MethodSpec
+                    .methodBuilder("getObjectMapper")
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                     .returns(ClassName.get(ObjectMapper::class.java))
                     .build(),
@@ -144,8 +173,7 @@ class WebhooksBuilder {
             .builder(
                 ClassName.get(JsonNode::class.java),
                 "requestBody",
-            )
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
+            ).addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
             .addAnnotation(generated(0, context))
             .build()
 
@@ -180,7 +208,8 @@ class WebhooksBuilder {
                 else -> true
             }
         val parameterAnnotation =
-            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
+            AnnotationSpec
+                .builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
                 .addMember("value", "\$S", string)
         if (!required) {
             parameterAnnotation.addMember("required", "\$L", false)
@@ -192,53 +221,54 @@ class WebhooksBuilder {
         context: Context,
         testConfig: TypeSpec,
     ): TypeSpec.Builder =
-        TypeSpec.classBuilder("WebhooksIntegrationTest")
+        TypeSpec
+            .classBuilder("WebhooksIntegrationTest")
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "WebMvcTest")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "AutoConfigureMockMvc")).build())
             .addField(
-                FieldSpec.builder(ClassName.get("org.springframework.test.web.servlet", "MockMvc"), "mvc")
+                FieldSpec
+                    .builder(ClassName.get("org.springframework.test.web.servlet", "MockMvc"), "mvc")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
                     .build(),
-            )
-            .addMethod(
-                MethodSpec.methodBuilder("files")
+            ).addMethod(
+                MethodSpec
+                    .methodBuilder("files")
                     .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
                     .returns(
                         ParameterizedTypeName.get(
                             ClassName.get("java.util.stream", "Stream"),
                             ClassName.get("org.junit.jupiter.params.provider", "Arguments"),
                         ),
-                    )
-                    .addStatement(
+                    ).addStatement(
                         "return \$T.getArguments(\"\$L\")",
                         ClassName.get("io.github.pulpogato.test", "WebhookHelper"),
                         context.version,
-                    )
-                    .build(),
-            )
-            .addMethod(
-                MethodSpec.methodBuilder("doTest")
+                    ).build(),
+            ).addMethod(
+                MethodSpec
+                    .methodBuilder("doTest")
                     .addParameter(Types.STRING, "hookname")
                     .addParameter(Types.STRING, "filename")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params", "ParameterizedTest")).build())
                     .addAnnotation(
-                        AnnotationSpec.builder(ClassName.get("org.junit.jupiter.params.provider", "MethodSource"))
+                        AnnotationSpec
+                            .builder(ClassName.get("org.junit.jupiter.params.provider", "MethodSource"))
                             .addMember("value", "\$S", "files")
                             .build(),
-                    )
-                    .addException(Types.EXCEPTION)
+                    ).addException(Types.EXCEPTION)
                     .addStatement("\$T.testWebhook(hookname, filename, mvc)", ClassName.get("io.github.pulpogato.test", "WebhookHelper"))
                     .build(),
-            )
-            .addType(testConfig)
+            ).addType(testConfig)
 
     private fun buildTestConfig(testController: TypeSpec): TypeSpec.Builder =
-        TypeSpec.classBuilder("TestConfig")
+        TypeSpec
+            .classBuilder("TestConfig")
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.context", "TestConfiguration")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot", "SpringBootConfiguration")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.servlet.config.annotation", "EnableWebMvc")).build())
             .addMethod(
-                MethodSpec.methodBuilder("objectMapper")
+                MethodSpec
+                    .methodBuilder("objectMapper")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.context.annotation", "Bean")).build())
                     .returns(ClassName.get(ObjectMapper::class.java))
                     .addStatement(
@@ -254,33 +284,32 @@ class WebhooksBuilder {
                         ClassName.get(JavaTimeModule::class.java),
                         ClassName.get(DeserializationFeature::class.java),
                         ClassName.get(DeserializationFeature::class.java),
-                    )
-                    .build(),
-            )
-            .addType(testController)
+                    ).build(),
+            ).addType(testController)
             .addModifiers(Modifier.STATIC)
 
     private fun buildTestController(): TypeSpec.Builder =
-        TypeSpec.classBuilder("TestController")
+        TypeSpec
+            .classBuilder("TestController")
             .addField(
-                FieldSpec.builder(ClassName.get(ObjectMapper::class.java), "objectMapper")
+                FieldSpec
+                    .builder(ClassName.get(ObjectMapper::class.java), "objectMapper")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
                     .build(),
-            )
-            .addMethod(
-                MethodSpec.methodBuilder("getObjectMapper")
+            ).addMethod(
+                MethodSpec
+                    .methodBuilder("getObjectMapper")
                     .addModifiers(Modifier.PUBLIC)
                     .returns(ClassName.get(ObjectMapper::class.java))
                     .addStatement("return objectMapper")
                     .build(),
-            )
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RestController")).build())
+            ).addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RestController")).build())
             .addAnnotation(
-                AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestMapping"))
+                AnnotationSpec
+                    .builder(ClassName.get("org.springframework.web.bind.annotation", "RequestMapping"))
                     .addMember("value", "\$S", "/webhooks")
                     .build(),
-            )
-            .addModifiers(Modifier.STATIC)
+            ).addModifiers(Modifier.STATIC)
 
     private fun createWebhookInterface(
         context: Context,
@@ -310,14 +339,15 @@ class WebhooksBuilder {
         val methodName = "process" + operation.operationId.replace("/", "-").pascalCase()
         val context1 = context.withSchemaStack("#", "webhooks", name, "post")
         val methodSpecBuilder =
-            MethodSpec.methodBuilder(methodName)
+            MethodSpec
+                .methodBuilder(methodName)
                 .addAnnotation(generated(0, context1))
                 .addAnnotation(
-                    AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
+                    AnnotationSpec
+                        .builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
                         .addMember("headers", "\$S", "X-Github-Event=$name")
                         .build(),
-                )
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                ).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(
                     ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")),
                 )
@@ -339,8 +369,12 @@ class WebhooksBuilder {
             .filter { entry -> entry.key.contains("json") }
             .forEach { firstEntry ->
                 if (firstEntry.value.schema.`$ref` != null) {
-                    val ref = firstEntry.value.schema.`$ref`.replace("#/components/schemas/", "")
-                    val schema = openAPI.components.schemas.entries.first { it.key == ref }
+                    val ref =
+                        firstEntry.value.schema.`$ref`
+                            .replace("#/components/schemas/", "")
+                    val schema =
+                        openAPI.components.schemas.entries
+                            .first { it.key == ref }
                     val type = schema.className()
                     operation.parameters.filter { it.`in` == "header" }.forEachIndexed { idx, it ->
                         val required =
@@ -350,7 +384,8 @@ class WebhooksBuilder {
                                 else -> true
                             }
                         val parameterAnnotation =
-                            AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
+                            AnnotationSpec
+                                .builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
                                 .addMember("value", "\$S", it.name)
                         if (!required) {
                             parameterAnnotation.addMember("required", "\$L", false)
@@ -358,7 +393,8 @@ class WebhooksBuilder {
                         val context2 = context1.withSchemaStack("parameters", idx.toString())
                         methodSpecBuilder
                             .addParameter(
-                                ParameterSpec.builder(Types.STRING, it.name.camelCase())
+                                ParameterSpec
+                                    .builder(Types.STRING, it.name.camelCase())
                                     .addAnnotation(parameterAnnotation.build())
                                     .addAnnotation(generated(0, context2))
                                     .build(),
@@ -366,7 +402,8 @@ class WebhooksBuilder {
                     }
                     bodyType = ClassName.get("$restPackage.schemas", type)
                     methodSpecBuilder.addParameter(
-                        ParameterSpec.builder(bodyType, "requestBody")
+                        ParameterSpec
+                            .builder(bodyType, "requestBody")
                             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.bind.annotation", "RequestBody")).build())
                             .addAnnotation(generated(0, context1.withSchemaStack("requestBody")))
                             .build(),
@@ -378,7 +415,9 @@ class WebhooksBuilder {
                     if (firstEntry.key.contains("json")) {
                         examples?.forEach { (key, value) ->
                             val ref1 = value.`$ref`
-                            val example = openAPI.components.examples.entries.firstOrNull { it.key == ref1.replace("#/components/examples/", "") }
+                            val example =
+                                openAPI.components.examples.entries
+                                    .firstOrNull { it.key == ref1.replace("#/components/examples/", "") }
                             if (example != null) {
                                 tests.add(
                                     TestBuilder.buildTest(
@@ -398,7 +437,8 @@ class WebhooksBuilder {
 
         if (tests.isNotEmpty()) {
             unitTestBuilder.addType(
-                TypeSpec.classBuilder(name.pascalCase())
+                TypeSpec
+                    .classBuilder(name.pascalCase())
                     .addMethods(tests)
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
                     .build(),
@@ -430,7 +470,8 @@ class WebhooksBuilder {
         methodName: String,
         name: String,
     ): MethodSpec.Builder =
-        MethodSpec.methodBuilder(methodName)
+        MethodSpec
+            .methodBuilder(methodName)
             .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
             .addException(Types.EXCEPTION)
             .returns(
@@ -438,8 +479,7 @@ class WebhooksBuilder {
                     ClassName.get("org.springframework.http", "ResponseEntity"),
                     TEST_RESPONSE,
                 ),
-            )
-            .addModifiers(Modifier.PUBLIC)
+            ).addModifiers(Modifier.PUBLIC)
             .addStatement(
                 """
                 return ${"$"}T.ok(

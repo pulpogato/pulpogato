@@ -112,7 +112,5 @@ class MarkdownHelperTest {
         assertThat(result.contains("\n")).isTrue()
     }
 
-    private operator fun String.times(n: Int): String {
-        return (1..n).joinToString("") { this }
-    }
+    private operator fun String.times(n: Int): String = (1..n).joinToString("") { this }
 }

@@ -7,12 +7,14 @@ import org.commonmark.renderer.html.HtmlRenderer
 
 object MarkdownHelper {
     private val parser: Parser =
-        Parser.builder()
+        Parser
+            .builder()
             .extensions(listOf(TablesExtension.create()))
             .build()
 
     private val renderer: HtmlRenderer =
-        HtmlRenderer.builder()
+        HtmlRenderer
+            .builder()
             .extensions(listOf(TablesExtension.create()))
             .build()
 
@@ -27,7 +29,8 @@ object MarkdownHelper {
             return ""
         }
         val document = parser.parse(md)
-        return renderer.render(document)
+        return renderer
+            .render(document)
             .replace("*/", "*&#47;")
             .replace(Regex("</p>\\s*<p>"), "\n<br/>\n")
             .replace("<p>", "")
@@ -45,7 +48,6 @@ object MarkdownHelper {
                     it.contains("<a href") -> it
                     else -> WordUtils.wrap(it, 120)
                 }
-            }
-            .trim()
+            }.trim()
     }
 }
