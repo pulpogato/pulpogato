@@ -55,8 +55,8 @@ val transformSchema = tasks.register<Sync>("transformSchema") {
     outputs.file(transformedSchemaLocation)
 
     from(originalSchemaLocation)
-    into(file("${project.layout.buildDirectory.get()}/resources/main"))
-    rename("schema.original.graphqls", "schema.graphqls")
+    into(transformedSchemaLocation.parent)
+    rename { transformedSchemaLocation.name }
 
     filter { currentLine ->
         currentLine
