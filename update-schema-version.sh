@@ -16,9 +16,12 @@ else
     git checkout main
 fi
 
+OLD_SHA=$(grep github.api.version gradle.properties | cut -d'=' -f2)
+export OLD_SHA
+
 ./gradlew updateRestSchemaVersion
-SHORT_SHA=$(grep github.api.version gradle.properties | cut -d'=' -f2)
-export SHORT_SHA
+NEW_SHA=$(grep github.api.version gradle.properties | cut -d'=' -f2)
+export NEW_SHA
 
 BRANCH_NAME=update-schema-version
 
@@ -32,11 +35,13 @@ else
     fi
     git checkout -b ${BRANCH_NAME}
     git add .
-    git commit -m "chore(deps): Update rest-api-description to $SHORT_SHA"
+    COMMIT_MESSAGE="chore(deps): Update rest-api-description to ${NEW_SHA}"
+    PR_BODY="See changes: https://github.com/github/rest-api-description/compare/${OLD_SHA}...${NEW_SHA}"
+    git commit -m "${COMMIT_MESSAGE}" -m "${PR_BODY}"
     git push origin ${BRANCH_NAME} --force
     gh pr create \
-        --title "Update rest-api-description to $SHORT_SHA" \
-        --body "" \
+        --title "${COMMIT_MESSAGE}" \
+        --body "${PR_BODY}" \
         --base main \
         --head ${BRANCH_NAME} \
         --label "dependency"
