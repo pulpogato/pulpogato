@@ -39,12 +39,19 @@ else
     PR_BODY="See changes: https://github.com/github/rest-api-description/compare/${OLD_SHA}...${NEW_SHA}"
     git commit -m "${COMMIT_MESSAGE}" -m "${PR_BODY}"
     git push origin ${BRANCH_NAME} --force
-    gh pr create \
-        --title "${COMMIT_MESSAGE}" \
-        --body "${PR_BODY}" \
-        --base main \
-        --head ${BRANCH_NAME} \
-        --label "dependency"
+    PR_NUMBER=$(gh pr list --head ${BRANCH_NAME} --json number -q '.[0].number' || echo "")
+    if [ -z "$PR_NUMBER" ]; then
+        gh pr create \
+            --title "${COMMIT_MESSAGE}" \
+            --body "${PR_BODY}" \
+            --base main \
+            --head ${BRANCH_NAME} \
+            --label "dependency"
+    else
+        gh pr edit ${PR_NUMBER} \
+            --title "${COMMIT_MESSAGE}" \
+            --body "${PR_BODY}"
+    fi
     gh pr merge --auto --merge
     git checkout main
     if [ "$CI" != "" ]; then
