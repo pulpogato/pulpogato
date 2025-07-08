@@ -100,7 +100,6 @@ class AnnotationsTest {
     fun `testExtension creates annotation with correct value`() {
         val result = Annotations.testExtension()
 
-        assertThat(result.type().toString()).contains("ExtendWith")
-        assertThat(result.members().get("value").toString()).contains("IgnoredTestContext.class")
+        assertThat(result.type().toString()).contains("CompositeTestExtension")
     }
 }

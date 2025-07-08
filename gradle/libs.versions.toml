@@ -10,6 +10,7 @@ javapoet = "0.7.0"
 glassfishJson = "1.1.4"
 jsonApi = "1.1.4"
 junit = "5.13.3"
+junitPlatformLauncher = "1.10.0"
 ktlint = "12.3.0"
 lombok = "1.18.38"
 mockito = "5.18.0"
@@ -39,6 +40,7 @@ jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-data
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
 jsonApi = { group = "javax.json", name = "javax.json-api", version.ref = "jsonApi" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
+junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncher" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 palantirJavaFormat = { group = "com.palantir.javaformat", name = "palantir-java-format", version.ref = "palantirJavaFormat" }
