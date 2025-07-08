@@ -49,6 +49,11 @@ val downloadSchema = tasks.register("downloadSchema") {
         val hashBytes = digest.digest(schemaBytes)
         val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
         project.ext.set("github.api.sha256", sha256)
+
+        if (!schemaLocation.exists()) {
+            throw GradleException("Failed to download schema from ${getUrl(projectVariant)}")
+        }
+
     }
 }
 
