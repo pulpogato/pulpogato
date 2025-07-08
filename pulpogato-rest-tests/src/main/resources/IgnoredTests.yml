@@ -142,7 +142,7 @@
     - ghec
     - fpt
 - example: "#/webhooks/check-run-requested-action/post/requestBody/content/application~1json/examples"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5034"
   versions:
     - ghes-3.14
     - ghes-3.15
