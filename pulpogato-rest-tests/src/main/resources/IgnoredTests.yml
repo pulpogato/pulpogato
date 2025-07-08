@@ -47,17 +47,17 @@
     - ghes-3.17
     - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repositories_parameter/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
     - ghec
     - fpt
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repository_lists/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
     - ghec
     - fpt
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repository_owners/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
     - ghec
     - fpt
@@ -124,7 +124,7 @@
     - ghec
     - fpt
 - example: "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5031"
   versions:
     - ghes-3.14
     - ghes-3.15
@@ -133,7 +133,7 @@
     - ghec
     - fpt
 - example: "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5031"
   versions:
     - ghes-3.14
     - ghes-3.15
