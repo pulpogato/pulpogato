@@ -118,7 +118,6 @@ object Annotations {
      */
     fun testExtension(): AnnotationSpec =
         AnnotationSpec
-            .builder(ClassName.get("org.junit.jupiter.api.extension", "ExtendWith"))
-            .addMember("value", "\$T.class", ClassName.get("io.github.pulpogato.test", "IgnoredTestContext"))
+            .builder(ClassName.get("io.github.pulpogato.test", "CompositeTestExtension"))
             .build()
 }

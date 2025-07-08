@@ -5,6 +5,7 @@ plugins {
 dependencies {
     api(libs.junit)
     api(libs.assertj)
+    implementation(libs.junitPlatformLauncher)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
