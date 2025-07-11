@@ -67,6 +67,7 @@ fun referenceAndDefinition(
         oneOf != null && isSingleOrArray(oneOf, "string") -> Pair(Types.LIST_OF_STRINGS.annotated(typeGenerated(), singleValueAsArray()), null)
 
         oneOf != null && typesAre(oneOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
+        anyOf != null && typesAre(anyOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         anyOf != null ->
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, anyOf, "anyOf", it)
