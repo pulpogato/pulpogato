@@ -92,9 +92,9 @@ public class TestUtils {
                 });
     }
 
-    private static void compareOldAndNew(final SoftAssertions softly, final JsonValue oldValue1, final JsonValue newValue1, final String op, final String path) {
-        final JsonValue newValue = flattenNewArray(oldValue1, newValue1);
-        final JsonValue oldValue = normalizeNonStringTypes(oldValue1, newValue);
+    private static void compareOldAndNew(final SoftAssertions softly, final JsonValue oldValue, final JsonValue newValue1, final String op, final String path) {
+        final JsonValue newValue2 = flattenNewArray(oldValue, newValue1);
+        final JsonValue newValue = normalizeNonStringTypes(newValue2, oldValue);
 
         if (oldValue.getValueType() == JsonValue.ValueType.STRING && newValue.getValueType() == JsonValue.ValueType.STRING) {
             if (oldValue.toString().equals(newValue.toString().replace("Z", "+00:00"))) {
@@ -111,16 +111,34 @@ public class TestUtils {
         }
     }
 
-    private static JsonValue normalizeNonStringTypes(final JsonValue oldValue, final JsonValue newValue) {
-        final var convertableTypes = Set.of(
-                JsonValue.ValueType.FALSE,
-                JsonValue.ValueType.TRUE,
-                JsonValue.ValueType.NUMBER
-        );
-        if (newValue.getValueType() == JsonValue.ValueType.STRING && convertableTypes.contains(oldValue.getValueType())) {
-            return Json.createValue(oldValue.toString());
+    private static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
+
+        String stringValue = switch(valueSource.getValueType()) {
+            case NUMBER -> ((JsonNumber) valueSource).numberValue().toString();
+            case TRUE, FALSE -> Boolean.toString(valueSource == JsonValue.TRUE);
+            case STRING -> ((JsonString) valueSource).getString();
+            default ->  valueSource.toString();
+        };
+
+        switch (typeSource.getValueType()) {
+            case NUMBER:
+                try {
+                    if (stringValue.contains(".")) {
+                        return Json.createValue(Double.parseDouble(stringValue));
+                    } else {
+                        return Json.createValue(Long.parseLong(stringValue));
+                    }
+                } catch (NumberFormatException e) {
+                    return valueSource;
+                }
+            case TRUE, FALSE:
+                boolean boolValue = Boolean.parseBoolean(stringValue);
+                return boolValue ? JsonValue.TRUE : JsonValue.FALSE;
+            case STRING:
+                return Json.createValue(stringValue);
+            default:
+                return valueSource;
         }
-        return oldValue;
     }
 
     private static JsonValue flattenNewArray(final JsonValue oldValue, final JsonValue newValue) {

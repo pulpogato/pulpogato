@@ -108,11 +108,6 @@
   versions:
     - ghec
     - fpt
-- example: "#/paths/~1user~1codespaces~1secrets~1{secret_name}~1repositories/put/requestBody/content/application~1json/examples/default/value"
-  reason: "FIXME: String vs Integer mismatch in parse-rewrite"
-  versions:
-    - ghec
-    - fpt
 - example: "#/paths/~1user~1codespaces~1{codespace_name}~1publish/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5046"
   versions:
