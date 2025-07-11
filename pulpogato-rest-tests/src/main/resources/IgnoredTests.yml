@@ -6,7 +6,7 @@
     - ghec
     - fpt
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets/post/requestBody/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:
     - ghec
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets~1{ruleset_id}/put/requestBody/content/application~1json/examples/default/value"
@@ -91,30 +91,17 @@
     - ghes-3.16
     - ghes-3.17
     - ghec
-- example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users/post/requestBody/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
 - example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/patch/requestBody/content/application~1json/examples/default/value"
   reason: "TODO: Diagnose this"
   versions:
     - ghec
-- example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/put/requestBody/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
-- example: "#/paths/~1user~1codespaces~1secrets~1{secret_name}/put/requestBody/content/application~1json/examples/default/value"
-  reason: "FIXME: String vs Integer mismatch in parse-rewrite"
-  versions:
-    - ghec
-    - fpt
 - example: "#/paths/~1user~1codespaces~1{codespace_name}~1publish/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5046"
   versions:
     - ghec
     - fpt
 - example: "#/paths/~1versions/get/responses/200/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
+  reason: "The API returns a List of LocalDate that cannot be serialized and compared."
   versions:
     - ghec
     - fpt
