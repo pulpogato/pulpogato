@@ -150,3 +150,19 @@
     - ghes-3.17
     - ghec
     - fpt
+- example: "#/paths/~1enterprises~1{enterprise}~1apps~1organizations~1{org}~1installations~1{installation_id}~1repositories~1remove/patch/responses/200/content/application~1json/examples/default/value"
+  reason: "https://github.com/github/rest-api-description/issues/5057"
+  versions:
+    - ghec
+- example: "#/paths/~1enterprises~1{enterprise}~1apps~1organizations~1{org}~1installations~1{installation_id}~1repositories~1add/patch/responses/200/content/application~1json/examples/default/value"
+  reason: "https://github.com/github/rest-api-description/issues/5057"
+  versions:
+    - ghec
+- example: "#/paths/~1enterprises~1{enterprise}~1apps~1organizations~1{org}~1installations~1{installation_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
+  reason: "https://github.com/github/rest-api-description/issues/5057"
+  versions:
+    - ghec
+- example: "#/paths/~1enterprises~1{enterprise}~1apps~1installable_organizations~1{org}~1accessible_repositories/get/responses/200/content/application~1json/examples/default/value"
+  reason: "https://github.com/github/rest-api-description/issues/5058"
+  versions:
+    - ghec
