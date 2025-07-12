@@ -10,7 +10,7 @@
   versions:
     - ghec
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets~1{ruleset_id}/put/requestBody/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:
     - ghec
 - example: "#/paths/~1markdown~1raw/post/requestBody/content/text~1plain/examples/default/value"
@@ -31,7 +31,7 @@
     - ghec
     - fpt
 - example: "#/paths/~1orgs~1{org}~1organization-roles/post/responses/201/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5054"
   versions:
     - ghes-3.14
     - ghes-3.15
@@ -39,7 +39,7 @@
     - ghes-3.17
     - ghec
 - example: "#/paths/~1orgs~1{org}~1organization-roles~1{role_id}/patch/responses/200/content/application~1json/examples/default/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5054"
   versions:
     - ghes-3.14
     - ghes-3.15
@@ -62,7 +62,7 @@
     - ghec
     - fpt
 - example: "#/paths/~1repos~1{owner}~1{repo}~1import/patch/requestBody/content/application~1json/examples/example-2/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5053"
   versions:
     - ghec
     - fpt
