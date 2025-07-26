@@ -2,6 +2,7 @@ changelog:
   exclude:
     authors:
       - renovate
+      - renovate[bot]
     labels:
       - dependency
   categories:
