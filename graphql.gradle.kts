@@ -11,6 +11,7 @@ plugins {
 
 dependencies {
     api(libs.jacksonCore)
+    compileOnly(libs.jakartaAnnotations)
 }
 
 fun getUrl(projectVariant: String): String {
@@ -83,6 +84,10 @@ tasks.named<GenerateJavaTask>("generateJava") {
     generateClientv2 = true
     includeQueries = mutableListOf("")
     includeMutations = mutableListOf("")
+
+    addDeprecatedAnnotation = true
+    addGeneratedAnnotation = true
+    disableDatesInGeneratedAnnotation = true
 
     typeMapping = mutableMapOf(
         "Base64String" to "java.lang.String",
