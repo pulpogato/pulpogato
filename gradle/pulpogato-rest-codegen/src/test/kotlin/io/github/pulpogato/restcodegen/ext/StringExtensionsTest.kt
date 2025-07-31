@@ -11,6 +11,7 @@ class StringExtensionsTest {
         assertThat("pascal case".pascalCase()).isEqualTo("PascalCase")
         assertThat("pascal.case".pascalCase()).isEqualTo("PascalCase")
         assertThat("pascal:case".pascalCase()).isEqualTo("PascalCase")
+        assertThat("pascal/case".pascalCase()).isEqualTo("PascalCase")
     }
 
     @Test
@@ -20,6 +21,7 @@ class StringExtensionsTest {
         assertThat("camel case".camelCase()).isEqualTo("camelCase")
         assertThat("camel.case".camelCase()).isEqualTo("camelCase")
         assertThat("camel:case".camelCase()).isEqualTo("camelCase")
+        assertThat("camel/case".camelCase()).isEqualTo("camelCase")
     }
 
     @Test

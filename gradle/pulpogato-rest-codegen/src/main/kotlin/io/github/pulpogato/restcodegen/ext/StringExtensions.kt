@@ -9,6 +9,7 @@ fun String.pascalCase() =
         .replace("_", "-")
         .replace(" ", "-")
         .replace(":", "-")
+        .replace("/", "-")
         .split('-')
         .joinToString("") { it.replaceFirstChar { x -> x.uppercaseChar() } }
 
