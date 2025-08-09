@@ -69,7 +69,7 @@ jobs:
 
     - name: Build Main Project
       if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-      run: ./gradlew build pitest --max-workers=2 --continue
+      run: ./gradlew build :pulpogato-rest-fpt:pitest --max-workers=2 --continue
 
     - name: Build Snapshot
       if: github.ref == 'refs/heads/main'
