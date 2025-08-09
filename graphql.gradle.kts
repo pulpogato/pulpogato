@@ -56,6 +56,7 @@ val downloadSchema = tasks.register<Download>("downloadSchema") {
 
 val transformSchema = tasks.register<Sync>("transformSchema") {
     dependsOn(downloadSchema)
+    dependsOn(tasks.processResources)
     inputs.file(originalSchemaLocation)
     outputs.file(transformedSchemaLocation)
 
