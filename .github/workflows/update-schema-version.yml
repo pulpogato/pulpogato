@@ -1,0 +1,36 @@
+name: Update Schema Version
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bun-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: gradle/actions/wrapper-validation@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: zulu
+          cache: gradle
+
+      - name: Update Schema Version
+        run: |-
+          ./update-schema-version.sh
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |-
+          gh workflow run build.yml --ref update-schema-version
