@@ -10,10 +10,23 @@ permissions:
   pull-requests: write
 
 jobs:
-  bun-update:
+  gh-api-update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: 1784694
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - uses: gradle/actions/wrapper-validation@v4
 
@@ -24,13 +37,9 @@ jobs:
           cache: gradle
 
       - name: Update Schema Version
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |-
           ./update-schema-version.sh
 
       - uses: gradle/actions/setup-gradle@v4
-
-      - name: Run build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |-
-          gh workflow run build.yml --ref update-schema-version
