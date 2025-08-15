@@ -166,3 +166,12 @@
   reason: "https://github.com/github/rest-api-description/issues/5058"
   versions:
     - ghec
+- example: "#/paths/~1repos~1{owner}~1{repo}~1issues~1{issue_number}/patch/requestBody/content/application~1json/examples/default/value"
+  reason: "https://github.com/github/rest-api-description/issues/5234"
+  versions:
+    - ghec
+    - fpt
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
