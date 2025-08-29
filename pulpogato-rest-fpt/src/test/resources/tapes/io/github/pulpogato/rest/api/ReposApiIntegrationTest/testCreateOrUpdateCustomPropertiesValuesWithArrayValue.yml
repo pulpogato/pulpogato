@@ -1,0 +1,18 @@
+- request:
+    method: PATCH
+    uri: /repos/corp/rsomasunderam-test/properties/values
+    protocol: HTTP/1.1
+    headers:
+      Content-Type: application/json
+    body: |-
+      {
+        "properties" : [ {
+          "property_name" : "plural_value",
+          "value" : [ "apple", "banana" ]
+        } ]
+      }
+  response:
+    statusCode: 204
+    headers:
+      Connection: keep-alive
+    body: null

@@ -28,10 +28,12 @@ fun Map.Entry<String, Schema<*>>.className() = key.pascalCase()
 fun isSingleOrArray(
     oneOf: List<Schema<Any>>,
     type: String,
-) = oneOf.size == 2 &&
-    oneOf.first().types == setOf(type) &&
-    oneOf.last().types == setOf("array") &&
-    oneOf.last().items.types == setOf(type)
+) = isSingleOrArrayOfSameType(oneOf) && oneOf.first().types == setOf(type)
+
+fun isSingleOrArrayOfSameType(oneOf: List<Schema<Any>>) =
+    oneOf.size == 2 &&
+        oneOf.last().types == setOf("array") &&
+        oneOf.last().items.types == oneOf.first().types
 
 fun typesAre(
     oneOf: List<Schema<Any>>,
@@ -64,7 +66,11 @@ fun referenceAndDefinition(
             referenceAndDefinition(context, mapOf(entry.key to anyOfValue).entries.first(), "", null)!!
         }
 
-        oneOf != null && isSingleOrArray(oneOf, "string") -> Pair(Types.LIST_OF_STRINGS.annotated(typeGenerated(), singleValueAsArray()), null)
+        oneOf != null &&
+            isSingleOrArray(
+                oneOf,
+                "string",
+            ) -> Pair(ParameterizedTypeName.get(Types.SINGULAR_OR_PLURAL, Types.STRING).annotated(typeGenerated(), singleValueAsArray()), null)
 
         oneOf != null && typesAre(oneOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         anyOf != null && typesAre(anyOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)

@@ -10,6 +10,11 @@ dependencies {
     implementation(libs.slf4j)
 
     api(libs.bundles.jackson)
+    
+    testImplementation(libs.junit)
+    testImplementation(libs.assertj)
+    testImplementation(libs.mockito)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 java {
@@ -22,4 +27,8 @@ description = "Common utilities for Pulpogato REST types"
 
 tasks.withType<JavaCompile> {
     options.setIncremental(true)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

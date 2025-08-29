@@ -61,6 +61,6 @@ object Types {
     val MAP: ClassName = ClassName.get(Map::class.java)
 
     // Common Parameterized Types
-    val LIST_OF_STRINGS: ParameterizedTypeName = ParameterizedTypeName.get(LIST, STRING)
     val MAP_STRING_OBJECT: ParameterizedTypeName = ParameterizedTypeName.get(MAP, STRING, OBJECT)
+    val SINGULAR_OR_PLURAL: ClassName = ClassName.get(COMMON_PACKAGE, "SingularOrPlural")
 }
