@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.pulpogato.common.SingularOrPlural;
 import io.github.pulpogato.rest.schemas.ContentFile;
+import io.github.pulpogato.rest.schemas.CustomPropertyValue;
 import io.github.pulpogato.rest.schemas.FullRepository;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import lombok.AllArgsConstructor;
@@ -15,6 +17,7 @@ import lombok.experimental.SuperBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -235,5 +238,72 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
         assertThat(body.getOwner().getLogin()).isEqualTo("example");
         assertThat(body.getTypedCustomProperties().getCustomBooleanProp()).isFalse();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValues() {
+        ReposApi api = factory.createClient(ReposApi.class);
+
+        var customPropertyValue = CustomPropertyValue.builder()
+                .propertyName("audit_pci")
+                .value(SingularOrPlural.singular("out_of_scope"))
+                .build();
+
+        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+                .properties(List.of(customPropertyValue))
+                .build();
+
+        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValuesWithMultipleProperties() {
+        ReposApi api = factory.createClient(ReposApi.class);
+
+        var environmentProperty = CustomPropertyValue.builder()
+                .propertyName("some_string")
+                .value(SingularOrPlural.singular("string value"))
+                .build();
+
+        var teamProperty = CustomPropertyValue.builder()
+                .propertyName("audit_sox")
+                .value(SingularOrPlural.singular("in_scope"))
+                .build();
+
+        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+                .properties(List.of(environmentProperty, teamProperty))
+                .build();
+
+        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValuesWithArrayValue() {
+        ReposApi api = factory.createClient(ReposApi.class);
+
+        var tagsProperty = CustomPropertyValue.builder()
+                .propertyName("plural_value")
+                .value(SingularOrPlural.plural(List.of("apple", "banana")))
+                .build();
+
+        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+                .properties(List.of(tagsProperty))
+                .build();
+
+        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValuesEmptyProperties() {
+        ReposApi api = factory.createClient(ReposApi.class);
+        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+                .properties(List.of())
+                .build();
+
+        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 }

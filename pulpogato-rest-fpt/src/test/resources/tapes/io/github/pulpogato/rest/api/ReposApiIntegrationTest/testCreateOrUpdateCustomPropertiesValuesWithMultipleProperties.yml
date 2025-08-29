@@ -1,0 +1,21 @@
+- request:
+    method: PATCH
+    uri: /repos/corp/rsomasunderam-test/properties/values
+    protocol: HTTP/1.1
+    headers:
+      Content-Type: application/json
+    body: |-
+      {
+        "properties" : [ {
+          "property_name" : "some_string",
+          "value" : "string value"
+        }, {
+          "property_name" : "audit_sox",
+          "value" : "in_scope"
+        } ]
+      }
+  response:
+    statusCode: 204
+    headers:
+      Connection: keep-alive
+    body: null
