@@ -19,6 +19,8 @@ dependencies {
     implementation(libs.jacksonYaml)
 
     implementation(libs.bundles.jackson)
+    
+    implementation(libs.httpclient5)
 }
 
 java {

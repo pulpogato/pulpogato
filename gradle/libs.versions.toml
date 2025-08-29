@@ -9,6 +9,7 @@ jackson = "2.19.2"
 jakarta = "3.0.0"
 javapoet = "0.7.0"
 glassfishJson = "1.1.4"
+httpclient5 = "5.2.1"
 jsonApi = "1.1.4"
 junit = "5.13.4"
 junitPlatformLauncher = "1.13.4"
@@ -35,6 +36,7 @@ commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "com
 commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonsText = { group = "org.apache.commons", name = "commons-text", version.ref = "commons-text" }
 glassfishJson = { group = "org.glassfish", name = "javax.json", version.ref = "glassfishJson" }
+httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "httpclient5" }
 jacksonCore = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jacksonTime = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
