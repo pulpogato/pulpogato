@@ -13,22 +13,44 @@ import java.util.List;
 
 /**
  * A class that can represent either a single value or a list of values of the same type.
+ *
+ * @param <T> the type of the value(s) held by this container
  */
 @JsonDeserialize(using = SingularOrPlural.CustomDeserializer.class)
 @JsonSerialize(using = SingularOrPlural.CustomSerializer.class)
 @Getter
 @Setter
 @Accessors(chain = true, fluent = false)
-@NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SingularOrPlural<T> {
     private T singular;
     private List<T> plural;
 
+    /**
+     * Default constructor for creating an empty SingularOrPlural instance.
+     */
+    public SingularOrPlural() {
+        // Empty Default Constructor
+    }
+
+    /**
+     * Creates a SingularOrPlural instance containing a single value.
+     *
+     * @param <T> the type of the value
+     * @param singular the single value to wrap
+     * @return a new SingularOrPlural instance containing the single value
+     */
     public static <T> SingularOrPlural<T> singular(T singular) {
         return new SingularOrPlural<>(singular, null);
     }
 
+    /**
+     * Creates a SingularOrPlural instance containing a list of values.
+     *
+     * @param <T> the type of the values in the list
+     * @param plural the list of values to wrap
+     * @return a new SingularOrPlural instance containing the list of values
+     */
     public static <T> SingularOrPlural<T> plural(List<T> plural) {
         return new SingularOrPlural<>(null, plural);
     }
