@@ -141,6 +141,21 @@ To contribute a test for the REST API:
 2. Then set up the environment variable `GITHUB_TOKEN`.
 3. **If you're running a test against a GitHub Enterprise** instance, set up `GITHUB_HOST` and `GITHUB_PORT` as well.
 4. Run a command like `./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest`.
++
+[source, bash]
+----
+GITHUB_TOKEN=$(gh auth token)\
+    ./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest
+----
+Or if you're using GHES:
++
+[source, bash]
+----
+GITHUB_TOKEN=$(gh auth token) \
+    GITHUB_HOST=ghes.example.com \
+    GITHUB_PORT=8443\
+    ./gradlew :pulpogato-rest-ghes-3.17:test --tests AppsApiIntegrationTest
+----
 5. That generates a yaml file in `src/test/resources`. If it needs cleaning up for sensitive data, do so.
 
 === REST Webhook tests
