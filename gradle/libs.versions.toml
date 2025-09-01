@@ -1,5 +1,5 @@
 [versions]
-annotations = "26.0.2"
+annotations = "26.0.2-1"
 assertj = "3.27.4"
 commonmark = "0.25.1"
 commons-text = "1.14.0"
