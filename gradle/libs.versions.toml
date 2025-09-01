@@ -25,7 +25,7 @@ slf4j = "2.0.17"
 spotless = "7.2.1"
 spring = "6.2.10"
 springBoot = "3.5.5"
-swaggerParser = "2.1.32"
+swaggerParser = "2.1.33"
 testLogger = "4.0.0"
 waena = "0.15.1"
 
