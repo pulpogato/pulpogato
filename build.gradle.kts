@@ -15,7 +15,7 @@ buildscript {
         classpath {
             resolutionStrategy {
                 force("org.commonmark:commonmark:0.26.0")
-                force("org.commonmark:commonmark-ext-autolink:0.25.1")
+                force("org.commonmark:commonmark-ext-autolink:0.26.0")
             }
         }
     }
