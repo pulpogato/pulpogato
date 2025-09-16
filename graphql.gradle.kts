@@ -15,11 +15,12 @@ dependencies {
 }
 
 fun getUrl(projectVariant: String): String {
-    return if (projectVariant.matches(Regex("ghes-\\d+\\.\\d+"))) {
-        "https://docs.github.com/public/$projectVariant/schema.docs-enterprise.graphql"
-    } else {
-        "https://docs.github.com/public/$projectVariant/schema.docs.graphql"
+    val prefix = "https://docs.github.com/public"
+    val filename = when {
+        projectVariant.startsWith("ghes-") -> "schema.docs-enterprise.graphql"
+        else -> "schema.docs.graphql"
     }
+    return "$prefix/$projectVariant/$filename"
 }
 
 val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")
