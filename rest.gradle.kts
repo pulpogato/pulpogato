@@ -93,6 +93,11 @@ sourceSets {
     }
 }
 
+// Exclude schema.json from the main jar
+tasks.named<Jar>("jar") {
+    exclude("schema.json")
+}
+
 tasks.withType<Javadoc>().configureEach {
     isFailOnError = false
     (options as StandardJavadocDocletOptions).apply {
