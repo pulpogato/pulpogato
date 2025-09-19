@@ -1,6 +1,6 @@
 [versions]
 annotations = "26.0.2-1"
-assertj = "3.27.4"
+assertj = "3.27.5"
 commonmark = "0.26.0"
 commons-text = "1.14.0"
 dgs = "8.1.1"
