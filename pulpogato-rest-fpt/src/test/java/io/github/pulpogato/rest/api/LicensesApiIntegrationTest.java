@@ -104,7 +104,7 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         List<LicenseSimple> featuredLicenses = response.getBody();
         assertThat(featuredLicenses)
                 .isNotEmpty()
-                .hasSizeLessThanOrEqualTo(10); // Featured licenses should be a smaller subset
+                .hasSize(3); // Featured licenses should be a smaller subset
         
         // All featured licenses should have required fields
         featuredLicenses.forEach(license -> {

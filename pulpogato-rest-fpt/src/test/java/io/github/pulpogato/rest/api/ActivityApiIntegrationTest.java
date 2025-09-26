@@ -27,16 +27,14 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         List<Event> events = response.getBody();
         assertThat(events)
                 .isNotNull()
-                .hasSizeLessThanOrEqualTo(10); // We requested max 10 per page
+                .hasSize(10); // We requested max 10 per page
         
-        if (!events.isEmpty()) {
-            Event firstEvent = events.getFirst();
-            assertThat(firstEvent.getId()).isNotNull();
-            assertThat(firstEvent.getType()).isNotNull();
-            assertThat(firstEvent.getActor()).isNotNull();
-            assertThat(firstEvent.getRepo()).isNotNull();
-            assertThat(firstEvent.getCreatedAt()).isNotNull();
-        }
+        Event firstEvent = events.getFirst();
+        assertThat(firstEvent.getId()).isNotNull();
+        assertThat(firstEvent.getType()).isNotNull();
+        assertThat(firstEvent.getActor()).isNotNull();
+        assertThat(firstEvent.getRepo()).isNotNull();
+        assertThat(firstEvent.getCreatedAt()).isNotNull();
     }
 
     @Test
@@ -80,21 +78,18 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         List<Event> events = response.getBody();
         assertThat(events)
                 .isNotNull()
-                .hasSizeLessThanOrEqualTo(5); // We requested max 5 per page
+                .hasSize(5); // We requested max 5 per page
         
-        if (!events.isEmpty()) {
-            Event firstEvent = events.getFirst();
-            assertThat(firstEvent.getId()).isNotNull();
-            assertThat(firstEvent.getType()).isNotNull();
-            assertThat(firstEvent.getActor()).isNotNull();
-            assertThat(firstEvent.getRepo()).isNotNull();
-            assertThat(firstEvent.getCreatedAt()).isNotNull();
-            
-            // Verify this is related to the github org
-            if (firstEvent.getOrg() != null) {
-                assertThat(firstEvent.getOrg().getLogin()).isEqualTo("github");
-            }
-        }
+        Event firstEvent = events.getFirst();
+        assertThat(firstEvent.getId()).isNotNull();
+        assertThat(firstEvent.getType()).isNotNull();
+        assertThat(firstEvent.getActor()).isNotNull();
+        assertThat(firstEvent.getRepo()).isNotNull();
+        assertThat(firstEvent.getCreatedAt()).isNotNull();
+        
+        // Verify this is related to the github org
+        assertThat(firstEvent.getOrg()).isNotNull();
+        assertThat(firstEvent.getOrg().getLogin()).isEqualTo("github");
     }
 
     @Test
@@ -111,19 +106,17 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         List<Event> events = response.getBody();
         assertThat(events)
                 .isNotNull()
-                .hasSizeLessThanOrEqualTo(5); // We requested max 5 per page
+                .hasSize(5); // We requested max 5 per page
         
-        if (!events.isEmpty()) {
-            Event firstEvent = events.getFirst();
-            assertThat(firstEvent.getId()).isNotNull();
-            assertThat(firstEvent.getType()).isNotNull();
-            assertThat(firstEvent.getActor()).isNotNull();
-            assertThat(firstEvent.getRepo()).isNotNull();
-            assertThat(firstEvent.getCreatedAt()).isNotNull();
-            
-            // Verify this is related to the specified repository
-            assertThat(firstEvent.getRepo().getName()).isEqualTo("octocat/Hello-World");
-        }
+        Event firstEvent = events.getFirst();
+        assertThat(firstEvent.getId()).isNotNull();
+        assertThat(firstEvent.getType()).isNotNull();
+        assertThat(firstEvent.getActor()).isNotNull();
+        assertThat(firstEvent.getRepo()).isNotNull();
+        assertThat(firstEvent.getCreatedAt()).isNotNull();
+        
+        // Verify this is related to the specified repository
+        assertThat(firstEvent.getRepo().getName()).isEqualTo("octocat/Hello-World");
     }
 
     @Test
@@ -140,17 +133,15 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         List<Repository> repositories = response.getBody();
         assertThat(repositories)
                 .isNotNull()
-                .hasSizeLessThanOrEqualTo(10); // We requested max 10 per page
+                .hasSize(1); // We have 1 starred repository
         
-        // If user has starred repositories, verify structure
-        if (!repositories.isEmpty()) {
-            Repository firstRepo = repositories.getFirst();
-            assertThat(firstRepo.getId()).isNotNull();
-            assertThat(firstRepo.getName()).isNotNull();
-            assertThat(firstRepo.getFullName()).isNotNull();
-            assertThat(firstRepo.getOwner()).isNotNull();
-            assertThat(firstRepo.getHtmlUrl()).isNotNull();
-        }
+        // Verify starred repositories structure
+        Repository firstRepo = repositories.getFirst();
+        assertThat(firstRepo.getId()).isNotNull();
+        assertThat(firstRepo.getName()).isNotNull();
+        assertThat(firstRepo.getFullName()).isNotNull();
+        assertThat(firstRepo.getOwner()).isNotNull();
+        assertThat(firstRepo.getHtmlUrl()).isNotNull();
     }
 
     @Test
@@ -166,16 +157,14 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         List<MinimalRepository> repositories = response.getBody();
         assertThat(repositories)
                 .isNotNull()
-                .hasSizeLessThanOrEqualTo(10); // We requested max 10 per page
+                .hasSize(10); // We requested max 10 per page
         
-        // If user is watching repositories, verify structure
-        if (!repositories.isEmpty()) {
-            MinimalRepository firstRepo = repositories.getFirst();
-            assertThat(firstRepo.getId()).isNotNull();
-            assertThat(firstRepo.getName()).isNotNull();
-            assertThat(firstRepo.getFullName()).isNotNull();
-            assertThat(firstRepo.getOwner()).isNotNull();
-        }
+        // Verify watched repositories structure
+        MinimalRepository firstRepo = repositories.getFirst();
+        assertThat(firstRepo.getId()).isNotNull();
+        assertThat(firstRepo.getName()).isNotNull();
+        assertThat(firstRepo.getFullName()).isNotNull();
+        assertThat(firstRepo.getOwner()).isNotNull();
     }
 
     @Test
@@ -192,19 +181,17 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         List<Event> events = response.getBody();
         assertThat(events)
                 .isNotNull()
-                .hasSizeLessThanOrEqualTo(5); // We requested max 5 per page
+                .hasSize(5); // We requested max 5 per page
         
-        if (!events.isEmpty()) {
-            Event firstEvent = events.getFirst();
-            assertThat(firstEvent.getId()).isNotNull();
-            assertThat(firstEvent.getType()).isNotNull();
-            assertThat(firstEvent.getActor()).isNotNull();
-            assertThat(firstEvent.getRepo()).isNotNull();
-            assertThat(firstEvent.getCreatedAt()).isNotNull();
-            
-            // Verify this is related to the specified user
-            assertThat(firstEvent.getActor().getLogin()).isEqualTo("rahulsom");
-        }
+        Event firstEvent = events.getFirst();
+        assertThat(firstEvent.getId()).isNotNull();
+        assertThat(firstEvent.getType()).isNotNull();
+        assertThat(firstEvent.getActor()).isNotNull();
+        assertThat(firstEvent.getRepo()).isNotNull();
+        assertThat(firstEvent.getCreatedAt()).isNotNull();
+        
+        // Verify this is related to the specified user
+        assertThat(firstEvent.getActor().getLogin()).isEqualTo("rahulsom");
     }
 
 }
