@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.waenaPublished)
 }
 
+val mockitoAgent = configurations.create("mockitoAgent")
+
 dependencies {
     compileOnly(libs.annotations)
     compileOnly(libs.lombok)
@@ -14,7 +16,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.assertj)
     testImplementation(libs.mockito)
+    testImplementation(libs.mockitoJunitJupiter)
     testRuntimeOnly(libs.junitPlatformLauncher)
+
+    mockitoAgent(libs.mockito) { isTransitive = false }
 }
 
 java {
