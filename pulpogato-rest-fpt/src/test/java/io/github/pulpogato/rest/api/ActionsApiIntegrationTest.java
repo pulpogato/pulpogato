@@ -56,9 +56,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         assertThat(cacheList.getActionsCaches()).isNotNull();
         
         // Verify pagination works
-        if (cacheList.getActionsCaches().size() > 0) {
-            assertThat(cacheList.getActionsCaches().size()).isLessThanOrEqualTo(10);
-        }
+        assertThat(cacheList.getActionsCaches()).hasSize(10);
     }
 
 }
