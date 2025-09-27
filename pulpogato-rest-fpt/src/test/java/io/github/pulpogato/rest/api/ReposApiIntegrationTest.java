@@ -249,11 +249,11 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
                 .value(SingularOrPlural.singular("out_of_scope"))
                 .build();
 
-        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
                 .properties(List.of(customPropertyValue))
                 .build();
 
-        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
@@ -271,11 +271,11 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
                 .value(SingularOrPlural.singular("in_scope"))
                 .build();
 
-        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
                 .properties(List.of(environmentProperty, teamProperty))
                 .build();
 
-        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
@@ -288,22 +288,22 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
                 .value(SingularOrPlural.plural(List.of("apple", "banana")))
                 .build();
 
-        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
                 .properties(List.of(tagsProperty))
                 .build();
 
-        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
     @Test
     void testCreateOrUpdateCustomPropertiesValuesEmptyProperties() {
         ReposApi api = factory.createClient(ReposApi.class);
-        var requestBody = ReposApi.CreateOrUpdateCustomPropertiesValuesRequestBody.builder()
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
                 .properties(List.of())
                 .build();
 
-        var response = api.createOrUpdateCustomPropertiesValues("corp", "rsomasunderam-test", requestBody);
+        var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 }
