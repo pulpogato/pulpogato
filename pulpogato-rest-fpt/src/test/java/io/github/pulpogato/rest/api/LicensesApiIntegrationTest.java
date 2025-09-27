@@ -37,9 +37,10 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         
         // Verify structure of first license
         LicenseSimple firstLicense = licenses.getFirst();
-        assertThat(firstLicense.getKey()).isNotNull();
-        assertThat(firstLicense.getName()).isNotNull();
+        assertThat(firstLicense.getKey()).isEqualTo("agpl-3.0");
+        assertThat(firstLicense.getName()).isEqualTo("GNU Affero General Public License v3.0");
         assertThat(firstLicense.getUrl()).isNotNull();
+        assertThat(firstLicense.getUrl().toString()).isEqualTo("https://api.github.com/licenses/agpl-3.0");
     }
 
     @Test
@@ -57,18 +58,17 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         assertThat(mitLicense.getName()).contains("MIT");
         assertThat(mitLicense.getSpdxId()).isEqualTo("MIT");
         assertThat(mitLicense.getBody())
-                .isNotNull()
                 .contains("MIT License")
                 .contains("Permission is hereby granted");
         assertThat(mitLicense.getConditions())
-                .isNotNull()
-                .isNotEmpty();
+                .hasSize(1)
+                .contains("include-copyright");
         assertThat(mitLicense.getPermissions())
-                .isNotNull()
-                .isNotEmpty();
+                .hasSize(4)
+                .contains("commercial-use", "modifications", "distribution", "private-use");
         assertThat(mitLicense.getLimitations())
-                .isNotNull()
-                .isNotEmpty();
+                .hasSize(2)
+                .contains("liability", "warranty");
     }
 
     @Test
@@ -86,7 +86,6 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         assertThat(apacheLicense.getName()).contains("Apache");
         assertThat(apacheLicense.getSpdxId()).isEqualTo("Apache-2.0");
         assertThat(apacheLicense.getBody())
-                .isNotNull()
                 .contains("Apache License")
                 .contains("Version 2.0");
     }
@@ -106,11 +105,11 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
                 .isNotEmpty()
                 .hasSize(3); // Featured licenses should be a smaller subset
         
-        // All featured licenses should have required fields
-        featuredLicenses.forEach(license -> {
-            assertThat(license.getKey()).isNotNull();
-            assertThat(license.getName()).isNotNull();
-            assertThat(license.getUrl()).isNotNull();
-        });
+        // Verify the first featured license has specific values
+        LicenseSimple firstFeatured = featuredLicenses.getFirst();
+        assertThat(firstFeatured.getKey()).isEqualTo("apache-2.0");
+        assertThat(firstFeatured.getName()).isEqualTo("Apache License 2.0");
+        assertThat(firstFeatured.getUrl()).isNotNull();
+        assertThat(firstFeatured.getUrl().toString()).isEqualTo("https://api.github.com/licenses/apache-2.0");
     }
 }

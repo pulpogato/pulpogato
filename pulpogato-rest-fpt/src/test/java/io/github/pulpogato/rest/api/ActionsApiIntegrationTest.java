@@ -22,8 +22,8 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         
         ActionsCacheUsageByRepository cacheUsage = response.getBody();
         assertThat(cacheUsage.getFullName()).isEqualTo("pulpogato/pulpogato");
-        assertThat(cacheUsage.getActiveCachesSizeInBytes()).isNotNull();
-        assertThat(cacheUsage.getActiveCachesCount()).isNotNull();
+        assertThat(cacheUsage.getActiveCachesSizeInBytes()).isEqualTo(9664500682L);
+        assertThat(cacheUsage.getActiveCachesCount()).isEqualTo(60);
     }
 
     @Test
@@ -37,8 +37,8 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
                 .isInstanceOf(ActionsCacheList.class);
         
         ActionsCacheList cacheList = response.getBody();
-        assertThat(cacheList.getTotalCount()).isNotNull();
-        assertThat(cacheList.getActionsCaches()).isNotNull();
+        assertThat(cacheList.getTotalCount()).isEqualTo(60);
+        assertThat(cacheList.getActionsCaches()).isNotNull().hasSize(30);
     }
 
     @Test
@@ -52,7 +52,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
                 .isInstanceOf(ActionsCacheList.class);
         
         ActionsCacheList cacheList = response.getBody();
-        assertThat(cacheList.getTotalCount()).isNotNull();
+        assertThat(cacheList.getTotalCount()).isEqualTo(60);
         assertThat(cacheList.getActionsCaches()).isNotNull();
         
         // Verify pagination works
