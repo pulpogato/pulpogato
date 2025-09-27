@@ -13,7 +13,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-class UsersApiIntegrationTest extends BaseIntegrationTest {
+    class UsersApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAuthenticatedPublic() {
@@ -27,8 +27,8 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         // TODO: This should be a PublicUser
         assertThat(body.getPrivateUser()).isNotNull();
         var privateUser = body.getPrivateUser();
-        assertThat(privateUser.getId()).isNotNull();
-        assertThat(privateUser.getLogin()).isNotNull();
+        assertThat(privateUser.getId()).isEqualTo(193047L);
+        assertThat(privateUser.getLogin()).isEqualTo("rahulsom");
     }
 
     @Test
@@ -43,10 +43,10 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
 
         assertThat(body.getPrivateUser()).isNotNull();
         var privateUser = body.getPrivateUser();
-        assertThat(privateUser.getId()).isNotNull();
-        assertThat(privateUser.getLogin()).isNotNull();
+        assertThat(privateUser.getId()).isEqualTo(193047L);
+        assertThat(privateUser.getLogin()).isEqualTo("rahulsom");
         assertThat(privateUser.getPlan()).isNotNull();
-        assertThat(privateUser.getPlan().getName()).isNotNull();
+        assertThat(privateUser.getPlan().getName()).isEqualTo("free");
     }
 
     @Test

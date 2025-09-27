@@ -24,13 +24,13 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
         List<CodeOfConduct> codesOfConduct = response.getBody();
         assertThat(codesOfConduct)
                 .isNotEmpty()
-                .hasSizeGreaterThan(0);
+                .hasSize(2);
         
         // Verify structure of codes of conduct
         CodeOfConduct firstCode = codesOfConduct.getFirst();
-        assertThat(firstCode.getKey()).isNotNull();
-        assertThat(firstCode.getName()).isNotNull();
-        assertThat(firstCode.getUrl()).isNotNull();
+        assertThat(firstCode.getKey()).isEqualTo("django");
+        assertThat(firstCode.getName()).isEqualTo("Django");
+        assertThat(firstCode.getUrl().toString()).isEqualTo("https://api.github.com/codes_of_conduct/django");
         
         // Check for common codes of conduct
         List<String> codeKeys = codesOfConduct.stream()
@@ -39,7 +39,7 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
         
         // Common codes that GitHub provides (using actual key format)
         assertThat(codeKeys)
-                .containsAnyOf("contributor_covenant", "citizen_code_of_conduct");
+                .contains("django", "contributor_covenant");
     }
 
     @Test
@@ -55,7 +55,7 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
         CodeOfConduct codeOfConduct = response.getBody();
         assertThat(codeOfConduct.getKey()).isEqualTo("contributor_covenant");
         assertThat(codeOfConduct.getName()).contains("Contributor Covenant");
-        assertThat(codeOfConduct.getUrl()).isNotNull();
+        assertThat(codeOfConduct.getUrl().toString()).isEqualTo("https://api.github.com/codes_of_conduct/contributor_covenant");
         assertThat(codeOfConduct.getBody())
                 .isNotNull()
                 .contains("Our Pledge")
@@ -75,7 +75,7 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
         CodeOfConduct codeOfConduct = response.getBody();
         assertThat(codeOfConduct.getKey()).isEqualTo("citizen_code_of_conduct");
         assertThat(codeOfConduct.getName()).contains("Citizen Code");
-        assertThat(codeOfConduct.getUrl()).isNotNull();
+        assertThat(codeOfConduct.getUrl().toString()).isEqualTo("https://api.github.com/codes_of_conduct/citizen_code_of_conduct");
         assertThat(codeOfConduct.getBody())
                 .isNotNull()
                 .isNotEmpty();

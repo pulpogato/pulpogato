@@ -25,14 +25,11 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
         
         Root root = response.getBody();
         assertThat(root.getCurrentUserUrl())
-                .isNotNull()
-                .contains("/user");
+                .isEqualTo("https://api.github.com/user");
         assertThat(root.getEmojisUrl())
-                .isNotNull()
-                .endsWith("/emojis");
+                .isEqualTo("https://api.github.com/emojis");
         assertThat(root.getEventsUrl())
-                .isNotNull()
-                .endsWith("/events");
+                .isEqualTo("https://api.github.com/events");
     }
 
     @Test
@@ -46,11 +43,11 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
                 .isInstanceOf(ApiOverview.class);
         
         ApiOverview meta = response.getBody();
-        assertThat(meta.getVerifiablePasswordAuthentication()).isNotNull();
+        assertThat(meta.getVerifiablePasswordAuthentication()).isFalse();
         assertThat(meta.getSshKeyFingerprints()).isNotNull();
-        assertThat(meta.getSshKeys()).isNotNull();
-        assertThat(meta.getHooks()).isNotNull();
-        assertThat(meta.getGit()).isNotNull();
+        assertThat(meta.getSshKeys()).hasSize(3);
+        assertThat(meta.getHooks()).hasSize(6);
+        assertThat(meta.getGit()).hasSize(36);
     }
 
 

@@ -30,11 +30,11 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
                 .hasSize(10); // We requested max 10 per page
         
         Event firstEvent = events.getFirst();
-        assertThat(firstEvent.getId()).isNotNull();
-        assertThat(firstEvent.getType()).isNotNull();
-        assertThat(firstEvent.getActor()).isNotNull();
-        assertThat(firstEvent.getRepo()).isNotNull();
-        assertThat(firstEvent.getCreatedAt()).isNotNull();
+        assertThat(firstEvent.getId()).isEqualTo("50486820386");
+        assertThat(firstEvent.getType()).isEqualTo("PushEvent");
+        assertThat(firstEvent.getActor().getLogin()).isEqualTo("james2037");
+        assertThat(firstEvent.getRepo().getName()).isEqualTo("james2037/mcp-php-server");
+        assertThat(firstEvent.getCreatedAt()).isEqualTo("2025-06-04T04:24:53Z");
     }
 
     @Test
@@ -48,15 +48,15 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
                 .isInstanceOf(Feed.class);
         
         Feed feed = response.getBody();
-        assertThat(feed.getTimelineUrl()).isNotNull();
-        assertThat(feed.getUserUrl()).isNotNull();
-        assertThat(feed.getCurrentUserPublicUrl()).isNotNull();
+        assertThat(feed.getTimelineUrl()).isEqualTo("https://github.com/timeline");
+        assertThat(feed.getUserUrl()).isEqualTo("https://github.com/{user}");
+        assertThat(feed.getCurrentUserPublicUrl()).isEqualTo("https://github.com/rahulsom");
         // getCurrentUserUrl is not present in the response, only getCurrentUserPublicUrl
         // assertThat(feed.getCurrentUserUrl()).isNotNull();
         // getCurrentUserActorUrl and getCurrentUserOrganizationUrl are not present in this response
         // assertThat(feed.getCurrentUserActorUrl()).isNotNull();
         // assertThat(feed.getCurrentUserOrganizationUrl()).isNotNull();
-        assertThat(feed.getSecurityAdvisoriesUrl()).isNotNull();
+        assertThat(feed.getSecurityAdvisoriesUrl()).isEqualTo("https://github.com/security-advisories");
         
         // Verify URLs contain expected patterns
         assertThat(feed.getTimelineUrl()).contains("timeline");
@@ -81,10 +81,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
                 .hasSize(5); // We requested max 5 per page
         
         Event firstEvent = events.getFirst();
-        assertThat(firstEvent.getId()).isNotNull();
-        assertThat(firstEvent.getType()).isNotNull();
-        assertThat(firstEvent.getActor()).isNotNull();
-        assertThat(firstEvent.getRepo()).isNotNull();
+        assertThat(firstEvent.getId()).isEqualTo("50473417741");
+        assertThat(firstEvent.getType()).isEqualTo("IssueCommentEvent");
+        assertThat(firstEvent.getActor().getLogin()).isEqualTo("Sharra-writes");
+        assertThat(firstEvent.getRepo().getName()).isEqualTo("github/docs");
         assertThat(firstEvent.getCreatedAt()).isNotNull();
         
         // Verify this is related to the github org
@@ -109,14 +109,11 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
                 .hasSize(5); // We requested max 5 per page
         
         Event firstEvent = events.getFirst();
-        assertThat(firstEvent.getId()).isNotNull();
-        assertThat(firstEvent.getType()).isNotNull();
-        assertThat(firstEvent.getActor()).isNotNull();
-        assertThat(firstEvent.getRepo()).isNotNull();
-        assertThat(firstEvent.getCreatedAt()).isNotNull();
-        
-        // Verify this is related to the specified repository
+        assertThat(firstEvent.getId()).isEqualTo("50472301049");
+        assertThat(firstEvent.getType()).isEqualTo("ForkEvent");
+        assertThat(firstEvent.getActor().getLogin()).isEqualTo("antoniovial");
         assertThat(firstEvent.getRepo().getName()).isEqualTo("octocat/Hello-World");
+        assertThat(firstEvent.getCreatedAt()).isNotNull();
     }
 
     @Test
@@ -137,11 +134,11 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         
         // Verify starred repositories structure
         Repository firstRepo = repositories.getFirst();
-        assertThat(firstRepo.getId()).isNotNull();
-        assertThat(firstRepo.getName()).isNotNull();
-        assertThat(firstRepo.getFullName()).isNotNull();
-        assertThat(firstRepo.getOwner()).isNotNull();
-        assertThat(firstRepo.getHtmlUrl()).isNotNull();
+        assertThat(firstRepo.getId()).isEqualTo(825463572L);
+        assertThat(firstRepo.getName()).isEqualTo("pulpogato");
+        assertThat(firstRepo.getFullName()).isEqualTo("pulpogato/pulpogato");
+        assertThat(firstRepo.getOwner().getLogin()).isEqualTo("pulpogato");
+        assertThat(firstRepo.getHtmlUrl()).hasToString("https://github.com/pulpogato/pulpogato");
     }
 
     @Test
@@ -161,10 +158,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         
         // Verify watched repositories structure
         MinimalRepository firstRepo = repositories.getFirst();
-        assertThat(firstRepo.getId()).isNotNull();
-        assertThat(firstRepo.getName()).isNotNull();
-        assertThat(firstRepo.getFullName()).isNotNull();
-        assertThat(firstRepo.getOwner()).isNotNull();
+        assertThat(firstRepo.getId()).isEqualTo(1006911L);
+        assertThat(firstRepo.getName()).isEqualTo("bash-utils");
+        assertThat(firstRepo.getFullName()).isEqualTo("rahulsom/bash-utils");
+        assertThat(firstRepo.getOwner().getLogin()).isEqualTo("rahulsom");
     }
 
     @Test
@@ -184,14 +181,11 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
                 .hasSize(5); // We requested max 5 per page
         
         Event firstEvent = events.getFirst();
-        assertThat(firstEvent.getId()).isNotNull();
-        assertThat(firstEvent.getType()).isNotNull();
-        assertThat(firstEvent.getActor()).isNotNull();
-        assertThat(firstEvent.getRepo()).isNotNull();
-        assertThat(firstEvent.getCreatedAt()).isNotNull();
-        
-        // Verify this is related to the specified user
+        assertThat(firstEvent.getId()).isEqualTo("50486444578");
+        assertThat(firstEvent.getType()).isEqualTo("PushEvent");
         assertThat(firstEvent.getActor().getLogin()).isEqualTo("rahulsom");
+        assertThat(firstEvent.getRepo().getName()).isEqualTo("pulpogato/pulpogato");
+        assertThat(firstEvent.getCreatedAt()).isNotNull();
     }
 
 }
