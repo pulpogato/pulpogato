@@ -267,7 +267,9 @@ private fun buildFancyObject(
             .classBuilder(className)
             .addJavadoc(schemaJavadoc(entry))
             .addAnnotation(generated(0, context.withSchemaStack(fancyObjectType)))
-            .addAnnotation(lombok("Data"))
+            .addAnnotation(lombok("Getter"))
+            .addAnnotation(lombok("Setter"))
+            .addAnnotation(lombok("EqualsAndHashCode"))
             .addModifiers(Modifier.PUBLIC)
 
     val fields = ArrayList<Pair<TypeName, String>>()
@@ -283,6 +285,32 @@ private fun buildFancyObject(
             processSubSchema(context.withSchemaStack(fancyObjectType, "$index"), entry, newKey, subSchema, classRef, theType, fields)
         }
 
+    // Generate manual getters, setters, toString, and constructors for the fields
+    val builtType = theType.build()
+
+    // Add toString method
+    if (builtType.fieldSpecs().isNotEmpty()) {
+        val toStringStatement =
+            CodeBlock
+                .builder()
+                .add($$"return \"/* $L */ \" + new $T(this, $T.JSON_STYLE)", className, Types.TO_STRING_BUILDER, Types.TO_STRING_STYLE)
+
+        builtType.fieldSpecs().forEach { field ->
+            toStringStatement.add("\n    .append(\$S, \$N)", field.name(), field.name())
+        }
+
+        toStringStatement.add("\n    .toString()")
+
+        theType.addMethod(
+            MethodSpec
+                .methodBuilder("toString")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override::class.java)
+                .returns(String::class.java)
+                .addStatement(toStringStatement.build())
+                .build(),
+        )
+    }
     val settableFields = getSettableFields(fields, className)
     val gettableFields = getGettableFields(fields, className)
     val deserializer = buildDeserializer(className, fancyObjectType, settableFields)
@@ -440,7 +468,9 @@ private fun buildSimpleObject(
             .classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0, context))
-            .addAnnotation(lombok("Data"))
+            .addAnnotation(lombok("Getter"))
+            .addAnnotation(lombok("Setter"))
+            .addAnnotation(lombok("EqualsAndHashCode"))
             .addAnnotation(superBuilder())
             .addAnnotation(lombok("NoArgsConstructor"))
             .addAnnotation(lombok("AllArgsConstructor"))
@@ -448,6 +478,31 @@ private fun buildSimpleObject(
 
     addProperties(context, entry, nameRef, builder)
 
+    // Generate manual getters, setters, and toString for the properties
+    val builtClass = builder.build()
+    // Add toString method
+    if (builtClass.fieldSpecs().isNotEmpty()) {
+        val toStringStatement =
+            CodeBlock
+                .builder()
+                .add($$"return \"/* $L */ \" + new $T(this, $T.JSON_STYLE)", name, Types.TO_STRING_BUILDER, Types.TO_STRING_STYLE)
+
+        builtClass.fieldSpecs().forEach { field ->
+            toStringStatement.add($$"\n    .append($S, $N)", field.name(), field.name())
+        }
+
+        toStringStatement.add("\n    .toString()")
+
+        builder.addMethod(
+            MethodSpec
+                .methodBuilder("toString")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override::class.java)
+                .returns(String::class.java)
+                .addStatement(toStringStatement.build())
+                .build(),
+        )
+    }
     return builder.build()
 }
 

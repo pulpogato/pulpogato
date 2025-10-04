@@ -59,6 +59,8 @@ object Types {
     // Utility types
     val LIST: ClassName = ClassName.get(List::class.java)
     val MAP: ClassName = ClassName.get(Map::class.java)
+    val TO_STRING_BUILDER: ClassName = ClassName.get("org.apache.commons.lang3.builder", "ToStringBuilder")
+    val TO_STRING_STYLE: ClassName = ClassName.get("org.apache.commons.lang3.builder", "ToStringStyle")
 
     // Common Parameterized Types
     val MAP_STRING_OBJECT: ParameterizedTypeName = ParameterizedTypeName.get(MAP, STRING, OBJECT)
