@@ -48,6 +48,18 @@ subprojects {
         isPreserveFileTimestamps = false
         isReproducibleFileOrder = true
     }
+    plugins.withId("nebula.maven-publish") {
+        configure<PublishingExtension> {
+            publications {
+                withType<MavenPublication> {
+                    pom.withXml {
+                        val logoNode = asNode().appendNode("logo")
+                        logoNode.setValue("https://raw.githubusercontent.com/pulpogato/pulpogato/refs/heads/main/images/Pulpogato.png")
+                    }
+                }
+            }
+        }
+    }
 }
 
 waena {
