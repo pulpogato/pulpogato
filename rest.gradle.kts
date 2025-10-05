@@ -15,6 +15,7 @@ dependencies {
     compileOnly(libs.springWeb)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+    implementation(libs.commonsLang3)
 
     api(project(":${rootProject.name}-common"))
 
