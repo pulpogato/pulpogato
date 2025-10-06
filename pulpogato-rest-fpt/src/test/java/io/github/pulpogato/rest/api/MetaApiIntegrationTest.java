@@ -6,9 +6,6 @@ import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MetaApiIntegrationTest extends BaseIntegrationTest {

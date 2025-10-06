@@ -7,8 +7,6 @@ import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SearchApiIntegrationTest extends BaseIntegrationTest {
