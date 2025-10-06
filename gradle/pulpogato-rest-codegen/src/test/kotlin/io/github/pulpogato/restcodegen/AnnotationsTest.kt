@@ -21,7 +21,7 @@ class AnnotationsTest {
         val result = Annotations.superBuilder()
 
         assertThat(result.type().toString()).isEqualTo("lombok.experimental.SuperBuilder")
-        assertThat(result.members().get("toBuilder").toString()).contains("true")
+        assertThat(result.members()["toBuilder"].toString()).contains("true")
     }
 
     @Test
@@ -36,7 +36,7 @@ class AnnotationsTest {
         val result = Annotations.jsonProperty("testProperty")
 
         assertThat(result.type().toString()).contains("JsonProperty")
-        assertThat(result.members().get("value").toString()).contains("\"testProperty\"")
+        assertThat(result.members()["value"].toString()).contains("\"testProperty\"")
     }
 
     @Test
@@ -44,7 +44,7 @@ class AnnotationsTest {
         val result = Annotations.serializerAnnotation("TestClass", mockTypeSpec)
 
         assertThat(result.type().toString()).contains("JsonSerialize")
-        assertThat(result.members().get("using").toString()).contains("TestClass.MockType.class")
+        assertThat(result.members()["using"].toString()).contains("TestClass.MockType.class")
     }
 
     @Test
@@ -52,7 +52,7 @@ class AnnotationsTest {
         val result = Annotations.deserializerAnnotation("TestClass", mockTypeSpec)
 
         assertThat(result.type().toString()).contains("JsonDeserialize")
-        assertThat(result.members().get("using").toString()).contains("TestClass.MockType.class")
+        assertThat(result.members()["using"].toString()).contains("TestClass.MockType.class")
     }
 
     @Test
@@ -60,7 +60,7 @@ class AnnotationsTest {
         val result = Annotations.jsonFormat(JsonFormat.Shape.STRING)
 
         assertThat(result.type().toString()).contains("JsonFormat")
-        assertThat(result.members().get("shape").toString()).contains("JsonFormat.Shape.STRING")
+        assertThat(result.members()["shape"].toString()).contains("JsonFormat.Shape.STRING")
     }
 
     @Test
@@ -68,8 +68,8 @@ class AnnotationsTest {
         val result = Annotations.jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd")
 
         assertThat(result.type().toString()).contains("JsonFormat")
-        assertThat(result.members().get("shape").toString()).contains("JsonFormat.Shape.STRING")
-        assertThat(result.members().get("pattern").toString()).contains("\"yyyy-MM-dd\"")
+        assertThat(result.members()["shape"].toString()).contains("JsonFormat.Shape.STRING")
+        assertThat(result.members()["pattern"].toString()).contains("\"yyyy-MM-dd\"")
     }
 
     @Test
@@ -77,7 +77,7 @@ class AnnotationsTest {
         val result = Annotations.singleValueAsArray()
 
         assertThat(result.type().toString()).contains("JsonFormat")
-        assertThat(result.members().get("with").toString()).contains("ACCEPT_SINGLE_VALUE_AS_ARRAY")
+        assertThat(result.members()["with"].toString()).contains("ACCEPT_SINGLE_VALUE_AS_ARRAY")
     }
 
     @Test
@@ -85,7 +85,7 @@ class AnnotationsTest {
         val result = Annotations.jsonIncludeNonNull()
 
         assertThat(result.type().toString()).contains("JsonInclude")
-        assertThat(result.members().get("value").toString()).contains("JsonInclude.Include.NON_NULL")
+        assertThat(result.members()["value"].toString()).contains("JsonInclude.Include.NON_NULL")
     }
 
     @Test
@@ -93,7 +93,7 @@ class AnnotationsTest {
         val result = Annotations.typeGenerated()
 
         assertThat(result.type().toString()).contains("TypeGenerated")
-        assertThat(result.members().get("codeRef").toString()).contains("AnnotationsTest.kt:")
+        assertThat(result.members()["codeRef"].toString()).contains("AnnotationsTest.kt:")
     }
 
     @Test
