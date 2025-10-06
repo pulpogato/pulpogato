@@ -421,7 +421,7 @@ class WebhooksBuilder {
                             if (example != null) {
                                 tests.add(
                                     TestBuilder.buildTest(
-                                        context1.withSchemaStack("requestBody", "content", firstEntry.key, "examples"),
+                                        context1.withSchemaStack("requestBody", "content", firstEntry.key, "examples", key),
                                         key,
                                         example.value.value,
                                         bodyType!!,
@@ -430,20 +430,21 @@ class WebhooksBuilder {
                             }
                         }
                     }
+
+                    if (tests.isNotEmpty()) {
+                        unitTestBuilder.addType(
+                            TypeSpec
+                                .classBuilder(name.pascalCase())
+                                .addMethods(tests)
+                                .addAnnotation(generated(0, context1.withSchemaStack("requestBody", "content", firstEntry.key, "schema")))
+                                .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
+                                .build(),
+                        )
+                    }
                 } else {
                     throw RuntimeException("Unknown type for ${firstEntry.value.schema}")
                 }
             }
-
-        if (tests.isNotEmpty()) {
-            unitTestBuilder.addType(
-                TypeSpec
-                    .classBuilder(name.pascalCase())
-                    .addMethods(tests)
-                    .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
-                    .build(),
-            )
-        }
 
         val methodSpec =
             methodSpecBuilder

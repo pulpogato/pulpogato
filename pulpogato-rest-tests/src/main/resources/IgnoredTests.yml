@@ -105,7 +105,7 @@
   versions:
     - ghec
     - fpt
-- example: "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples"
+- example: "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/5430"
   versions:
     - ghes-3.14
@@ -114,7 +114,7 @@
     - ghes-3.17
     - ghec
     - fpt
-- example: "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples"
+- example: "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/5430"
   versions:
     - ghes-3.14
@@ -123,7 +123,7 @@
     - ghes-3.17
     - ghec
     - fpt
-- example: "#/webhooks/check-run-requested-action/post/requestBody/content/application~1json/examples"
+- example: "#/webhooks/check-run-requested-action/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/5034"
   versions:
     - ghes-3.14
@@ -132,7 +132,7 @@
     - ghes-3.17
     - ghec
     - fpt
-- example: "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples"
+- example: "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/4593"
   versions:
     - ghes-3.14
@@ -141,7 +141,7 @@
     - ghes-3.17
     - ghec
     - fpt
-- example: "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples"
+- example: "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/4472"
   versions:
     - ghes-3.14
