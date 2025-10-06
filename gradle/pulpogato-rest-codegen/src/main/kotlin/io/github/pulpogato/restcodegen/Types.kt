@@ -43,7 +43,7 @@ object Types {
             .annotated(
                 AnnotationSpec
                     .builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
-                    .addMember("using", "\$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
+                    .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
                     .build(),
             )
 

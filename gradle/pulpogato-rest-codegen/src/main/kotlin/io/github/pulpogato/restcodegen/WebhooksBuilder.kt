@@ -125,7 +125,7 @@ class WebhooksBuilder {
                 .addAnnotation(
                     AnnotationSpec
                         .builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
-                        .addMember("headers", "\$S", "X-Github-Event=${k.replace("-", "_")}")
+                        .addMember("headers", $$"$S", "X-Github-Event=${k.replace("-", "_")}")
                         .build(),
                 ).returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), TypeVariableName.get("T")))
                 .addException(Types.EXCEPTION)
@@ -194,7 +194,7 @@ class WebhooksBuilder {
             printWriter.print("    case \"$cleanedAction\" -> $methodName(${headerNames.joinToString(", ") { it.camelCase() }},")
             printWriter.println(" getObjectMapper().treeToValue(requestBody, ${type.simpleName()}.class));")
         }
-        printWriter.println("    default -> ${"$"}T.badRequest().build();")
+        printWriter.println($$"    default -> $T.badRequest().build();")
         printWriter.println("};")
         val router = routerBuilder.toString()
         return router
@@ -210,9 +210,9 @@ class WebhooksBuilder {
         val parameterAnnotation =
             AnnotationSpec
                 .builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
-                .addMember("value", "\$S", string)
+                .addMember("value", $$"$S", string)
         if (!required) {
-            parameterAnnotation.addMember("required", "\$L", false)
+            parameterAnnotation.addMember("required", $$"$L", false)
         }
         return parameterAnnotation
     }
@@ -240,7 +240,7 @@ class WebhooksBuilder {
                             ClassName.get("org.junit.jupiter.params.provider", "Arguments"),
                         ),
                     ).addStatement(
-                        "return \$T.getArguments(\"\$L\")",
+                        $$"return $T.getArguments(\"$L\")",
                         ClassName.get("io.github.pulpogato.test", "WebhookHelper"),
                         context.version,
                     ).build(),
@@ -253,10 +253,10 @@ class WebhooksBuilder {
                     .addAnnotation(
                         AnnotationSpec
                             .builder(ClassName.get("org.junit.jupiter.params.provider", "MethodSource"))
-                            .addMember("value", "\$S", "files")
+                            .addMember("value", $$"$S", "files")
                             .build(),
                     ).addException(Types.EXCEPTION)
-                    .addStatement("\$T.testWebhook(hookname, filename, mvc)", ClassName.get("io.github.pulpogato.test", "WebhookHelper"))
+                    .addStatement($$"$T.testWebhook(hookname, filename, mvc)", ClassName.get("io.github.pulpogato.test", "WebhookHelper"))
                     .build(),
             ).addType(testConfig)
 
@@ -272,12 +272,12 @@ class WebhooksBuilder {
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.context.annotation", "Bean")).build())
                     .returns(ClassName.get(ObjectMapper::class.java))
                     .addStatement(
-                        """
-                        return new ${"$"}T()
-                        .setSerializationInclusion(${"$"}T.Include.NON_NULL)
-                        .registerModule(new ${"$"}T())
-                        .disable(${"$"}T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-                        .configure(${"$"}T.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        $$"""
+                        return new $T()
+                        .setSerializationInclusion($T.Include.NON_NULL)
+                        .registerModule(new $T())
+                        .disable($T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                        .configure($T.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         """.trimIndent(),
                         ClassName.get(ObjectMapper::class.java),
                         ClassName.get(JsonInclude::class.java),
@@ -307,7 +307,7 @@ class WebhooksBuilder {
             .addAnnotation(
                 AnnotationSpec
                     .builder(ClassName.get("org.springframework.web.bind.annotation", "RequestMapping"))
-                    .addMember("value", "\$S", "/webhooks")
+                    .addMember("value", $$"$S", "/webhooks")
                     .build(),
             ).addModifiers(Modifier.STATIC)
 
@@ -345,7 +345,7 @@ class WebhooksBuilder {
                 .addAnnotation(
                     AnnotationSpec
                         .builder(ClassName.get("org.springframework.web.bind.annotation", "PostMapping"))
-                        .addMember("headers", "\$S", "X-Github-Event=$name")
+                        .addMember("headers", $$"$S", "X-Github-Event=$name")
                         .build(),
                 ).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(
@@ -386,9 +386,9 @@ class WebhooksBuilder {
                         val parameterAnnotation =
                             AnnotationSpec
                                 .builder(ClassName.get("org.springframework.web.bind.annotation", "RequestHeader"))
-                                .addMember("value", "\$S", it.name)
+                                .addMember("value", $$"$S", it.name)
                         if (!required) {
-                            parameterAnnotation.addMember("required", "\$L", false)
+                            parameterAnnotation.addMember("required", $$"$L", false)
                         }
                         val context2 = context1.withSchemaStack("parameters", idx.toString())
                         methodSpecBuilder
@@ -482,10 +482,10 @@ class WebhooksBuilder {
                 ),
             ).addModifiers(Modifier.PUBLIC)
             .addStatement(
-                """
-                return ${"$"}T.ok(
-                    ${"$"}T.builder()
-                        .webhookName("${"$"}L")
+                $$"""
+                return $T.ok(
+                    $T.builder()
+                        .webhookName("$L")
                         .body(objectMapper.writeValueAsString(requestBody))
                         .build()
                     )

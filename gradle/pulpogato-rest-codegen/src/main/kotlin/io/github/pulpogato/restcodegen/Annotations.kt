@@ -31,7 +31,7 @@ object Annotations {
     fun jsonProperty(property: String): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get(JsonProperty::class.java))
-            .addMember("value", "\$S", property)
+            .addMember("value", $$"$S", property)
             .build()
 
     fun serializerAnnotation(
@@ -59,9 +59,9 @@ object Annotations {
         val spec =
             AnnotationSpec
                 .builder(ClassName.get(JsonFormat::class.java))
-                .addMember("shape", "\$T.\$L", JsonFormat.Shape::class.java, shape)
+                .addMember("shape", $$"$T.$L", JsonFormat.Shape::class.java, shape)
         if (pattern != null) {
-            spec.addMember("pattern", "\$S", pattern)
+            spec.addMember("pattern", $$"$S", pattern)
         }
         return spec.build()
     }
@@ -69,13 +69,13 @@ object Annotations {
     fun singleValueAsArray(): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get(JsonFormat::class.java))
-            .addMember("with", "\$T.\$L", ClassName.get(JsonFormat.Feature::class.java), JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+            .addMember("with", $$"$T.$L", ClassName.get(JsonFormat.Feature::class.java), JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .build()
 
     fun jsonIncludeNonNull(): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get(JsonInclude::class.java))
-            .addMember("value", "\$T.\$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.NON_NULL)
+            .addMember("value", $$"$T.$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.NON_NULL)
             .build()
 
     /*
@@ -88,22 +88,22 @@ object Annotations {
         val builder =
             AnnotationSpec
                 .builder(ClassName.get("io.github.pulpogato.common", "Generated"))
-                .addMember("ghVersion", "\$S", context.version)
+                .addMember("ghVersion", $$"$S", context.version)
         val schemaRef = context.getSchemaStackRef()
         if (schemaRef.isNotEmpty()) {
-            builder.addMember("schemaRef", "\$S", schemaRef)
+            builder.addMember("schemaRef", $$"$S", schemaRef)
         } else {
             throw IllegalArgumentException("SchemaRef is empty")
         }
         return builder
-            .addMember("codeRef", "\$S", codeRef(offset))
+            .addMember("codeRef", $$"$S", codeRef(offset))
             .build()
     }
 
     fun typeGenerated(): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get("io.github.pulpogato.common", "TypeGenerated"))
-            .addMember("codeRef", "\$S", codeRef(0))
+            .addMember("codeRef", $$"$S", codeRef(0))
             .build()
 
     private fun codeRef(offset: Int): String {

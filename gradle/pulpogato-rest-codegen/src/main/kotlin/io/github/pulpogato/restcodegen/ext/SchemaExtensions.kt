@@ -296,7 +296,7 @@ private fun buildFancyObject(
                 .add($$"return \"/* $L */ \" + new $T(this, $T.JSON_STYLE)", className, Types.TO_STRING_BUILDER, Types.TO_STRING_STYLE)
 
         builtType.fieldSpecs().forEach { field ->
-            toStringStatement.add("\n    .append(\$S, \$N)", field.name(), field.name())
+            toStringStatement.add($$"\n    .append($S, $N)", field.name(), field.name())
         }
 
         toStringStatement.add("\n    .toString()")
@@ -380,7 +380,7 @@ private fun getGettableFields(
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
-            "new \$T<>(\$T.class, \$T::get$name)",
+            $$"new $T<>($T.class, $T::get$$name)",
             pulpogatoClass("FancySerializer", "GettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
@@ -398,7 +398,7 @@ private fun getSettableFields(
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
-            "new \$T<>(\$T.class, \$T::set$name)",
+            $$"new $T<>($T.class, $T::set$$name)",
             pulpogatoClass("FancyDeserializer", "SettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
@@ -419,8 +419,8 @@ private fun buildSerializer(
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
-                    """super(${"$"}T.class, ${"$"}T.${fancyObjectType.trainCase()}, ${"$"}T.of(
-                        |    ${"$"}L
+                    $$"""super($T.class, $T.$${fancyObjectType.trainCase()}, $T.of(
+                        |    $L
                         |))
                     """.trimMargin(),
                     ClassName.get("", className),
@@ -444,8 +444,8 @@ private fun buildDeserializer(
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
-                    """super(${"$"}T.class, ${"$"}T::new, ${"$"}T.${fancyObjectType.trainCase()}, ${"$"}T.of(
-                        |    ${"$"}L
+                    $$"""super($T.class, $T::new, $T.$${fancyObjectType.trainCase()}, $T.of(
+                        |    $L
                         |))
                     """.trimMargin(),
                     ClassName.get("", className),
@@ -554,7 +554,7 @@ private fun buildEnum(
                 FieldSpec
                     .builder(String::class.java, "value", Modifier.PRIVATE, Modifier.FINAL)
                     .addAnnotation(jsonValue())
-                    .addJavadoc("\$S", "The value of the enum")
+                    .addJavadoc($$"$S", "The value of the enum")
                     .build(),
             )
     entry.value.enum
@@ -562,7 +562,7 @@ private fun buildEnum(
         .forEach {
             val enumValue = it?.unkeywordize()?.trainCase() ?: "NULL"
             val enumName = it ?: "null"
-            builder.addEnumConstant(enumValue, TypeSpec.anonymousClassBuilder("\$S", enumName).build())
+            builder.addEnumConstant(enumValue, TypeSpec.anonymousClassBuilder($$"$S", enumName).build())
         }
     return builder.build()
 }
@@ -576,5 +576,5 @@ private fun schemaJavadoc(entry: Map.Entry<String, Schema<*>>): String {
         } else {
             MarkdownHelper.mdToHtml("**$title**\n\n$description")
         }
-    return javadoc.replace(Regex("\\$\\{(.+)}"), "\$1")
+    return javadoc.replace(Regex("\\$\\{(.+)}"), $$"$1")
 }

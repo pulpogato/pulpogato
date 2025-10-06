@@ -31,7 +31,7 @@ class JsonRefValidatorTest {
     private lateinit var file4: File
 
     companion object {
-        private const val REF = "\$ref"
+        private const val REF = $$"$ref"
     }
 
     @BeforeEach

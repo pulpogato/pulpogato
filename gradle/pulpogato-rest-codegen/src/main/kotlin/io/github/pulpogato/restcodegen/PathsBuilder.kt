@@ -203,8 +203,8 @@ class PathsBuilder {
                 AnnotationSpec
                     .builder(
                         ClassName.get("org.springframework.web.service.annotation", exchangeAnnotation),
-                    ).addMember("value", "\$S", atomicMethod.path)
-                    .addMember("accept", "\$S", contentType)
+                    ).addMember("value", $$"$S", atomicMethod.path)
+                    .addMember("accept", $$"$S", contentType)
                     .build(),
             ).addAnnotation(generated(0, context))
             .addParameters(parameterSpecs)
@@ -235,7 +235,7 @@ class PathsBuilder {
                                 .lowercase()
                                 .pascalCase() + "Exchange",
                         ),
-                    ).addMember("value", "\$S", atomicMethod.path)
+                    ).addMember("value", $$"$S", atomicMethod.path)
                     .build(),
             ).addAnnotation(generated(0, context))
             .addParameters(parameters.map { it.second })
@@ -310,15 +310,15 @@ class PathsBuilder {
                     "query" ->
                         AnnotationSpec
                             .builder(webBind("RequestParam"))
-                            .addMember("value", "\$S", theParameter.name)
-                            .addMember("required", "\$L", theParameter.required)
+                            .addMember("value", $$"$S", theParameter.name)
+                            .addMember("required", $$"$L", theParameter.required)
                             .build()
 
                     "body" -> AnnotationSpec.builder(webBind("RequestBody")).build()
                     "path" ->
                         AnnotationSpec
                             .builder(webBind("PathVariable"))
-                            .addMember("value", "\$S", theParameter.name)
+                            .addMember("value", $$"$S", theParameter.name)
                             .build()
 
                     "header" -> AnnotationSpec.builder(webBind("RequestHeader")).build()
