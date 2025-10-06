@@ -1,6 +1,7 @@
 package io.github.pulpogato.test;
 
 import io.github.pulpogato.common.Generated;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -11,7 +12,8 @@ import java.util.Optional;
 
 public class IgnoredTestContext implements ExecutionCondition {
     @Override
-    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    @NotNull
+    public ConditionEvaluationResult evaluateExecutionCondition(@NotNull ExtensionContext context) {
         AnnotatedElement element = context.getElement().orElse(null);
         return findAnnotation(element, Generated.class)
                 .map(this::toResult)
