@@ -18,5 +18,4 @@ ij_wrap_on_typing = false
 
 [*.yml]
 indent_size = 2
-indent_style = space
 
