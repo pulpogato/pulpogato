@@ -12,7 +12,7 @@ import org.assertj.core.api.SoftAssertions;
 
 import javax.json.*;
 import java.io.StringReader;
-import java.text.MessageFormat;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,9 +60,9 @@ public class TestUtils {
             } else if (source instanceof JsonArray && target instanceof JsonArray) {
                 assertOnDiff(softly, Json.createDiff(source.asJsonArray(), target.asJsonArray()), source);
             } else if (source == null) {
-                softly.fail("Invalid source: " + null);
+                softly.fail("Invalid source: null");
             } else if (target == null) {
-                softly.fail("Invalid target: " + null);
+                softly.fail("Invalid target: null");
             } else {
                 softly.fail("Invalid inputs:: Source:" + source.getValueType() + " Target:" + target.getValueType());
             }
@@ -81,12 +81,12 @@ public class TestUtils {
                         final var pathSteps = Arrays.stream(path.split("/")).dropWhile(String::isEmpty).toList();
                         final JsonValue oldValue = traverse(source, pathSteps);
                         if (oldValue == null) {
-                            softly.fail(MessageFormat.format("Changes found: {0} {1} <missing> -> {2}", op, path, newValue));
+                            softly.fail("Changes found: %s %s <missing> -> %s", op, path, newValue);
                         } else {
                             compareOldAndNew(softly, oldValue, newValue, op, path);
                         }
                     } else if (op.equals("remove") && newValue != null) {
-                        softly.fail(MessageFormat.format("Changes found: {0} {1} {2}", op, path, newValue));
+                        softly.fail("Changes found: %s %s %s", op, path, newValue);
                     }
                 });
     }
@@ -105,8 +105,8 @@ public class TestUtils {
         }
 
         if (!oldValue.toString().equals(newValue.toString())) {
-            softly.fail(MessageFormat.format("Changes found: {0} {1} {2}({3}) -> {4}({5})",
-                    op, path, oldValue, oldValue.getValueType(), newValue, newValue.getValueType()));
+            softly.fail("Changes found: %s %s %s(%s) -> %s(%s)",
+                    op, path, oldValue, oldValue.getValueType(), newValue, newValue.getValueType());
         }
     }
 
