@@ -39,10 +39,10 @@ object TestBuilder {
                     .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                     .addAnnotation(Annotations.generated(1, context))
                     .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
-                    .addStatement("\$T input = /* language=JSON */ \$L", String::class.java, formatted.blockQuote())
-                    .addStatement("var softly = new \$T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
+                    .addStatement($$"$T input = /* language=JSON */ $L", String::class.java, formatted.blockQuote())
+                    .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                     .addStatement(
-                        "var processed = \$T.parseAndCompare(new \$T<\$T>() {}, input, softly)",
+                        $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                         testUtilsClass,
                         ClassName.get("com.fasterxml.jackson.core.type", "TypeReference"),
                         className.withoutAnnotations(),
@@ -83,10 +83,10 @@ object TestBuilder {
         context: Context,
         input: Map<*, *>,
     ): Any {
-        if (input.size == 1 && input.containsKey("\$ref")) {
+        if (input.size == 1 && input.containsKey($$"$ref")) {
             return normalize(
                 context,
-                context.openAPI.components.examples[input["\$ref"].toString().replace("#/components/examples/", "")]
+                context.openAPI.components.examples[input[$$"$ref"].toString().replace("#/components/examples/", "")]
                     ?.value,
             )!!
         }
