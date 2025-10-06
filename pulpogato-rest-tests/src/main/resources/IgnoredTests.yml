@@ -106,7 +106,7 @@
     - ghec
     - fpt
 - example: "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples"
-  reason: "https://github.com/github/rest-api-description/issues/5031"
+  reason: "https://github.com/github/rest-api-description/issues/5430"
   versions:
     - ghes-3.14
     - ghes-3.15
@@ -115,7 +115,7 @@
     - ghec
     - fpt
 - example: "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples"
-  reason: "https://github.com/github/rest-api-description/issues/5031"
+  reason: "https://github.com/github/rest-api-description/issues/5430"
   versions:
     - ghes-3.14
     - ghes-3.15
