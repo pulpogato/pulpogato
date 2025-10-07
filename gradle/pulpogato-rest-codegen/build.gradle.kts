@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     implementation(libs.swaggerParser)
+    implementation(libs.bundles.jackson)
     implementation(libs.bundles.commonmark)
     implementation(libs.commonsText)
     implementation(libs.javapoet)
@@ -41,6 +42,10 @@ gradlePlugin {
     val restCodegen by plugins.creating {
         id = "io.github.pulpogato.rest-codegen"
         implementationClass = "io.github.pulpogato.restcodegen.RestCodegenPlugin"
+    }
+    val issueStatuses by plugins.creating {
+        id = "io.github.pulpogato.issue-statuses"
+        implementationClass = "io.github.pulpogato.issues.IssueStatusesPlugin"
     }
 }
 
