@@ -12,11 +12,13 @@
 
 Pulpogato is a java client for GitHub.
 
-image::images/Pulpogato.png[alt=Pulpogato logo. An octocat in the style of Pablo Picasso.,width=300]
+image:images/Pulpogato.png[alt=Pulpogato logo. An octocat in the style of Pablo Picasso.,width=300]
 
-image:https://img.shields.io/coverallsCoverage/github/pulpogato/pulpogato?branch=main&style=for-the-badge[Coveralls, link="https://coveralls.io/github/pulpogato/pulpogato"]
 &nbsp;
+
 image:https://img.shields.io/github/commits-since/pulpogato/pulpogato/latest?style=for-the-badge[GitHub commits since latest release, link="https://github.com/pulpogato/pulpogato/releases/new"]
+&nbsp;
+image:https://img.shields.io/github/actions/workflow/status/pulpogato/pulpogato/check-issues-statuses.yml?style=for-the-badge&label=Issues%20Statuses[Issues Statuses, link="https://github.com/pulpogato/pulpogato/actions/workflows/check-issues-statuses.yml"]
 
 == Usage
 
