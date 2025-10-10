@@ -32,6 +32,14 @@ class JsonRefValidatorTest {
 
     companion object {
         private const val REF = $$"$ref"
+
+        private fun getJavaFiles(vararg dirs: File): List<File> =
+            dirs.flatMap { dir ->
+                dir
+                    .walkTopDown()
+                    .filter { it.isFile && it.name.endsWith(".java") }
+                    .toList()
+            }
     }
 
     @BeforeEach
@@ -195,19 +203,19 @@ class JsonRefValidatorTest {
 
     @Test
     fun `validate with valid json references - File1`() {
-        JsonRefValidator().validate(json, listOf(root1))
+        JsonRefValidator().validate(json, getJavaFiles(root1))
     }
 
     @Test
     fun `validate with valid json references - File2`() {
-        JsonRefValidator().validate(json, listOf(root2))
+        JsonRefValidator().validate(json, getJavaFiles(root2))
     }
 
     @Test
     fun `validate with invalid json references`() {
         val exception =
             assertThrows<IllegalStateException> {
-                JsonRefValidator().validate(json, listOf(root2, root3))
+                JsonRefValidator().validate(json, getJavaFiles(root2, root3))
             }
         Assertions.assertThat(exception).hasMessage("Found 2 errors in 4 JSON references")
     }
@@ -215,12 +223,12 @@ class JsonRefValidatorTest {
     @Test
     fun `validate with threshold allows some errors`() {
         // Should not throw with threshold of 2
-        JsonRefValidator(2).validate(json, listOf(root2, root3))
+        JsonRefValidator(2).validate(json, getJavaFiles(root2, root3))
 
         // Should throw with threshold of 1
         val exception =
             assertThrows<IllegalStateException> {
-                JsonRefValidator(1).validate(json, listOf(root2, root3))
+                JsonRefValidator(1).validate(json, getJavaFiles(root2, root3))
             }
         Assertions.assertThat(exception).hasMessage("Found 2 errors in 4 JSON references")
     }
@@ -244,7 +252,7 @@ class JsonRefValidatorTest {
         }
 
         try {
-            JsonRefValidator().validate(json, listOf(tempDir))
+            JsonRefValidator().validate(json, getJavaFiles(tempDir))
         } finally {
             tempDir.deleteRecursively()
         }
@@ -270,7 +278,7 @@ class JsonRefValidatorTest {
         try {
             val exception =
                 assertThrows<IllegalStateException> {
-                    JsonRefValidator(0).validate(json, listOf(tempDir))
+                    JsonRefValidator(0).validate(json, getJavaFiles(tempDir))
                 }
             Assertions.assertThat(exception).hasMessage("Found 1 errors in 1 JSON references")
         } finally {
@@ -281,12 +289,12 @@ class JsonRefValidatorTest {
     @Test
     fun `validate with multiple roots`() {
         // Should validate all valid references across multiple roots
-        JsonRefValidator().validate(json, listOf(root1, root2))
+        JsonRefValidator().validate(json, getJavaFiles(root1, root2))
 
         // Should count errors across all roots
         val exception =
             assertThrows<IllegalStateException> {
-                JsonRefValidator(0).validate(json, listOf(root1, root3, root4))
+                JsonRefValidator(0).validate(json, getJavaFiles(root1, root3, root4))
             }
         Assertions.assertThat(exception).hasMessage("Found 3 errors in 9 JSON references")
     }
