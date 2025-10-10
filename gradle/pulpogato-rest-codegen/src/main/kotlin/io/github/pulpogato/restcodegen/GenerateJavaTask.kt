@@ -65,7 +65,7 @@ open class GenerateJavaTask : DefaultTask() {
         val javaFiles = getJavaFiles(main)
         val testJavaFiles = getJavaFiles(test)
         val formatter = PalantirJavaFormatFormatterFunc("PALANTIR", true)
-        (javaFiles + testJavaFiles).forEach { f ->
+        (javaFiles + testJavaFiles).parallelStream().forEach { f ->
             val formatted = formatter.apply(f.readText())
             f.writeText(formatted)
         }
