@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,13 +29,12 @@ class PaginateTest {
         var paginate = new Paginate();
         when(fetchPage.apply(1L)).thenReturn(new Response(List.of("1", "2", "3"), 1));
 
-        var result = paginate.from(
-                10,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        ).toList();
+        var result = paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages);
         assertThat(result).containsExactly("1", "2", "3");
+    }
+
+    private static Stream<String> getStream(Response response) {
+        return response.items().stream();
     }
 
     @Test
@@ -45,12 +45,7 @@ class PaginateTest {
         when(fetchPage.apply(2L)).thenReturn(new Response(List.of("4", "5", "6"), 3));
         when(fetchPage.apply(3L)).thenReturn(new Response(List.of("7", "8", "9"), 3));
 
-        var result = paginate.from(
-                10,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        ).toList();
+        var result = paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages);
         assertThat(result).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
     }
 
@@ -60,12 +55,7 @@ class PaginateTest {
         var paginate = new Paginate();
         when(fetchPage.apply(1L)).thenReturn(new Response(List.of(), 0));
 
-        var result = paginate.from(
-                10,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        ).toList();
+        var result = paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages);
         assertThat(result).isEmpty();
     }
 
@@ -77,12 +67,7 @@ class PaginateTest {
         when(fetchPage.apply(2L)).thenReturn(new Response(List.of("4", "5", "6"), 5));
         when(fetchPage.apply(3L)).thenReturn(new Response(List.of("7", "8", "9"), 5));
 
-        var result = paginate.from(
-                3,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        ).toList();
+        var result = paginate.from(3, fetchPage, PaginateTest::getStream, Response::totalPages);
         assertThat(result).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
     }
 
@@ -92,12 +77,9 @@ class PaginateTest {
         var paginate = new Paginate();
         when(fetchPage.apply(1L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
-        assertThatThrownBy(() -> paginate.from(
-                10,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        ).toList()).isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
+        assertThatThrownBy(() -> paginate
+                .from(10, fetchPage, PaginateTest::getStream, Response::totalPages).toList())
+                .isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
 
     }
 
@@ -108,12 +90,9 @@ class PaginateTest {
         when(fetchPage.apply(1L)).thenReturn(new Response(List.of("1", "2", "3"), 3));
         when(fetchPage.apply(2L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
-        assertThatThrownBy(() -> paginate.from(
-                10,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        ).toList()).isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
+        assertThatThrownBy(() -> paginate
+                .from(10, fetchPage, PaginateTest::getStream, Response::totalPages).toList())
+                .isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
     }
 
     @Test
@@ -123,12 +102,7 @@ class PaginateTest {
         when(fetchPage.apply(1L)).thenReturn(new Response(List.of("1", "2", "3"), 5));
         when(fetchPage.apply(2L)).thenReturn(new Response(List.of("4", "5", "6"), 5));
 
-        var result = paginate.from(
-                3,
-                fetchPage,
-                response -> response.items().stream(),
-                Response::totalPages
-        );
+        var result = paginate.from(3, fetchPage, PaginateTest::getStream, Response::totalPages);
 
         final var first = result.filter("5"::equals).findFirst();
 
