@@ -18,6 +18,8 @@ object MarkdownHelper {
             .extensions(listOf(TablesExtension.create()))
             .build()
 
+    private val newParagraphRegex = Regex("</p>\\s*<p>")
+
     /**
      * Converts a markdown string to an HTML string.
      *
@@ -32,7 +34,7 @@ object MarkdownHelper {
         return renderer
             .render(document)
             .replace("*/", "*&#47;")
-            .replace(Regex("</p>\\s*<p>"), "\n<br/>\n")
+            .replace(newParagraphRegex, "\n<br/>\n")
             .replace("<p>", "")
             .replace("</p>", "")
             .replace(" <a href=", "\n<a href=")
