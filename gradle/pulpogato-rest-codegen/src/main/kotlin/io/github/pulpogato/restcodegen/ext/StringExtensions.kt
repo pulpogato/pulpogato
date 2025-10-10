@@ -1,17 +1,22 @@
 package io.github.pulpogato.restcodegen.ext
 
+private var pascalCaseCache = mutableMapOf<String, String>()
+private var trainCaseCache = mutableMapOf<String, String>()
+
 /**
  * Converts a string to PascalCase.
  */
 fun String.pascalCase() =
-    this
-        .replace(".", "-")
-        .replace("_", "-")
-        .replace(" ", "-")
-        .replace(":", "-")
-        .replace("/", "-")
-        .split('-')
-        .joinToString("") { it.replaceFirstChar { x -> x.uppercaseChar() } }
+    pascalCaseCache.getOrPut(this) {
+        this
+            .replace(".", "-")
+            .replace("_", "-")
+            .replace(" ", "-")
+            .replace(":", "-")
+            .replace("/", "-")
+            .split('-')
+            .joinToString("") { it.replaceFirstChar { x -> x.uppercaseChar() } }
+    }
 
 /**
  * Converts a string to camelCase.
@@ -25,19 +30,21 @@ private val multipleHyphens = Regex("-+")
  * Converts a string to TRAIN_CASE.
  */
 fun String.trainCase() =
-    this
-        .split(trainRegex)
-        .joinToString("-")
-        .replace(".", "-")
-        .replace("_", "-")
-        .replace("'", "-")
-        .replace(" ", "-")
-        .replace(":", "-")
-        .replace("/", "-")
-        .replace(multipleHyphens, "-")
-        .split('-')
-        .joinToString("_") { it.uppercase() }
-        .let { if (it[0].isDigit()) "_$it" else it }
+    trainCaseCache.getOrPut(this) {
+        this
+            .split(trainRegex)
+            .joinToString("-")
+            .replace(".", "-")
+            .replace("_", "-")
+            .replace("'", "-")
+            .replace(" ", "-")
+            .replace(":", "-")
+            .replace("/", "-")
+            .replace(multipleHyphens, "-")
+            .split('-')
+            .joinToString("_") { it.uppercase() }
+            .let { if (it[0].isDigit()) "_$it" else it }
+    }
 
 /**
  * Turns known challenging enums and field names to ones that play well with java.
