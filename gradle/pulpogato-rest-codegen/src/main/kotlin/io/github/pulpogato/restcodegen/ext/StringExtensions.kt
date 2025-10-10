@@ -18,12 +18,15 @@ fun String.pascalCase() =
  */
 fun String.camelCase() = this.pascalCase().replaceFirstChar { it.lowercaseChar() }
 
+private val trainRegex = Regex("(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")
+private val multipleHyphens = Regex("-+")
+
 /**
  * Converts a string to TRAIN_CASE.
  */
 fun String.trainCase() =
     this
-        .split(Regex("(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"))
+        .split(trainRegex)
         .joinToString("-")
         .replace(".", "-")
         .replace("_", "-")
@@ -31,7 +34,7 @@ fun String.trainCase() =
         .replace(" ", "-")
         .replace(":", "-")
         .replace("/", "-")
-        .replace(Regex("-+"), "-")
+        .replace(multipleHyphens, "-")
         .split('-')
         .joinToString("_") { it.uppercase() }
         .let { if (it[0].isDigit()) "_$it" else it }

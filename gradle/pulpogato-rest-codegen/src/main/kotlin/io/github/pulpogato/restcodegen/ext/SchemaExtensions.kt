@@ -567,6 +567,8 @@ private fun buildEnum(
     return builder.build()
 }
 
+private val javadocExpressionRegex = Regex("\\$\\{(.+)}")
+
 private fun schemaJavadoc(entry: Map.Entry<String, Schema<*>>): String {
     val title = entry.value.title ?: ""
     val description = entry.value.description ?: ""
@@ -576,5 +578,5 @@ private fun schemaJavadoc(entry: Map.Entry<String, Schema<*>>): String {
         } else {
             MarkdownHelper.mdToHtml("**$title**\n\n$description")
         }
-    return javadoc.replace(Regex("\\$\\{(.+)}"), $$"$1")
+    return javadoc.replace(javadocExpressionRegex, $$"$1")
 }
