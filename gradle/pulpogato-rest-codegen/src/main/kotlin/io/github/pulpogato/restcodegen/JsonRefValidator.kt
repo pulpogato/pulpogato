@@ -9,38 +9,45 @@ class JsonRefValidator(
     private val schemaRefRegex = Regex("\\s+schemaRef\\s=\\s*\"(.+?)\"")
 
     /**
-     * Validates the JSON references in given `roots` based on `json`.
+     * Validates the JSON references in given `javaFiles` based on `json`.
      *
      * @param json The JSON to validate against.
-     * @param roots The roots to search for Java files.
+     * @param javaFiles List of Java files to validate.
      */
     fun validate(
         json: JsonNode,
-        roots: List<File>,
+        javaFiles: List<File>,
     ) {
+        // Process files in parallel to find schema refs
+        val allMatches =
+            javaFiles
+                .parallelStream()
+                .flatMap { f -> findSchemaRefMatches(f).stream() }
+                .toList()
+                .sortedWith(compareBy { it.toString() })
+
+        // Validate refs in parallel and collect errors
         val schemaRefs =
-            roots.flatMap { dir ->
-                dir
-                    .walkTopDown()
-                    .filter { it.name.endsWith(".java") }
-                    .flatMap { f -> findSchemaRefMatches(f) }
-                    .toSortedSet { o1, o2 -> o1.toString().compareTo(o2.toString()) }
-                    .map {
-                        val (file, lineNumber, line) = it
-                        hasError(json, it).also { l ->
-                            if (l != null) {
+            allMatches
+                .parallelStream()
+                .map { triple ->
+                    val (file, lineNumber, line) = triple
+                    hasError(json, triple).also { error ->
+                        if (error != null) {
+                            synchronized(this) {
                                 println(
                                     """
                                     |${file.absolutePath}:${lineNumber + 1}
                                     |    Bad Ref   : "$line"
-                                    |    Last Found: "$l"
+                                    |    Last Found: "$error"
                                     |
                                     """.trimMargin(),
                                 )
                             }
                         }
                     }
-            }
+                }.toList()
+
         val errors = schemaRefs.count { it != null }
         val total = schemaRefs.size
         check(errors <= threshold) { "Found $errors errors in $total JSON references" }
