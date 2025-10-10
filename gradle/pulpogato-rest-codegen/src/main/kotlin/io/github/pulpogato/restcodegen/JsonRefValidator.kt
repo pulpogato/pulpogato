@@ -77,26 +77,28 @@ class JsonRefValidator(
             return null
         }
         val parts = location.third.split("/").drop(1)
-        var lastVerified = "#"
+        val lastVerified = StringBuilder("#")
         var current: JsonNode? = json
         parts.forEach { t ->
             if (current == null) {
-                return lastVerified
+                return lastVerified.toString()
             } else {
                 val name = t.replace("~1", "/")
-                val index = if (name.matches("\\d+".toRegex())) name.toIntOrNull() else null
+                // Check if it's a non-negative integer (array index)
+                // Must be all digits to qualify as an index
+                val index = if (name.all { it.isDigit() }) name.toIntOrNull() else null
                 current =
                     when {
                         index != null && index < 200 -> (current as JsonNode)[index]
                         else -> (current as JsonNode)[name]
                     }
                 if (current != null) {
-                    lastVerified += "/$t"
+                    lastVerified.append('/').append(t)
                 }
             }
         }
         if (current == null) {
-            return lastVerified
+            return lastVerified.toString()
         }
         return null
     }

@@ -7,6 +7,11 @@ data class Context(
     val version: String,
     val schemaStack: List<String>,
 ) {
+    // Cached schema stack reference to avoid repeated string operations
+    private val cachedSchemaStackRef: String by lazy {
+        schemaStack.joinToString("/") { it.replace("/", "~1") }
+    }
+
     fun withSchemaStack(vararg elements: String): Context {
         val newStack = schemaStack.toMutableList()
         if (elements.isNotEmpty() && elements.first() == "#") {
@@ -16,5 +21,5 @@ data class Context(
         return copy(schemaStack = newStack)
     }
 
-    fun getSchemaStackRef() = schemaStack.joinToString("/") { it.replace("/", "~1") }
+    fun getSchemaStackRef() = cachedSchemaStackRef
 }
