@@ -121,8 +121,6 @@ fun referenceAndDefinition(
             }
 
         types.toSet() == setOf("string", "integer") -> Pair(Types.STRING_OR_INTEGER, null)
-        types.toSet() == setOf("string", "object") -> Pair(Types.STRING_OR_OBJECT, null)
-        types.toSet() == setOf("string", "object", "integer") -> Pair(Types.STRING_OBJECT_OR_INTEGER, null)
         else -> Pair(Types.TODO, null)
     }
 }
