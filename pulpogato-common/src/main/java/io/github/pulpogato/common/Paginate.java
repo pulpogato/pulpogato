@@ -14,6 +14,13 @@ import java.util.stream.Stream;
  */
 public class Paginate {
     /**
+     * Creates a new instance of the Paginate utility.
+     */
+    public Paginate() {
+        // Empty Default Constructor
+    }
+
+    /**
      * Creates a stream of items from paginated API responses.
      *
      * @param <T>          the type of items to be extracted from each page
