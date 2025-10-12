@@ -65,12 +65,12 @@ tasks.register("updateRestSchemaVersion") {
         val json = ObjectMapper().readTree(branches)
         val sha = json.get("commit").get("sha").asText().take(7)
         val oldProps = project.file("gradle.properties").readText()
-        val newProps = oldProps.replace(Regex("github.api.version=.*"), "github.api.version=$sha")
+        val newProps = oldProps.replace(Regex("gh.api.version=.*"), "gh.api.version=$sha")
         project.file("gradle.properties").writeText(newProps)
-        if (project.ext.get("github.api.version") != sha) {
-            println("Updated github.api.version from ${project.ext.get("github.api.version")} to $sha")
+        if (project.ext.get("gh.api.version") != sha) {
+            println("Updated gh.api.version from ${project.ext.get("gh.api.version")} to $sha")
         } else {
-            println("github.api.version is already up to date")
+            println("gh.api.version is already up to date")
         }
     }
 }

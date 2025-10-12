@@ -16,11 +16,11 @@ else
     git checkout main
 fi
 
-OLD_SHA=$(grep github.api.version gradle.properties | cut -d'=' -f2)
+OLD_SHA=$(grep gh.api.version gradle.properties | cut -d'=' -f2)
 export OLD_SHA
 
 ./gradlew updateRestSchemaVersion
-NEW_SHA=$(grep github.api.version gradle.properties | cut -d'=' -f2)
+NEW_SHA=$(grep gh.api.version gradle.properties | cut -d'=' -f2)
 export NEW_SHA
 
 BRANCH_NAME=update-schema-version
