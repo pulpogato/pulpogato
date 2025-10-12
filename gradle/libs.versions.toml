@@ -1,7 +1,7 @@
 [versions]
 annotations = "26.0.2-1"
 assertj = "3.27.6"
-commonmark = "0.26.0"
+commonmark = "0.27.0"
 commons-lang3 = "3.19.0"
 commons-text = "1.14.0"
 dgs = "8.1.1"
