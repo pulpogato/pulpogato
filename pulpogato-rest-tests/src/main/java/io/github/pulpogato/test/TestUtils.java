@@ -34,9 +34,8 @@ public class TestUtils {
      * @param input         The input
      * @param <T>           The type
      * @return The parsed object
-     * @throws JsonProcessingException If there is an error parsing the JSON
      */
-    public static <T> T parseAndCompare(final TypeReference<T> typeReference, final String input, final SoftAssertions softly) throws JsonProcessingException {
+    public static <T> T parseAndCompare(final TypeReference<T> typeReference, final String input, final SoftAssertions softly) {
         try {
             final T parsed = OBJECT_MAPPER.readValue(input, typeReference);
             final String generated = OBJECT_MAPPER.writeValueAsString(parsed);
