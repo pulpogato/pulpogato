@@ -274,10 +274,10 @@ class WebhooksBuilder {
                     .addStatement(
                         $$"""
                         return new $T()
-                        .setSerializationInclusion($T.Include.NON_NULL)
-                        .registerModule(new $T())
-                        .disable($T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-                        .configure($T.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                                .setDefaultPropertyInclusion($T.Include.NON_NULL)
+                                .registerModule(new $T())
+                                .disable($T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                                .configure($T.FAIL_ON_UNKNOWN_PROPERTIES, false)
                         """.trimIndent(),
                         ClassName.get(ObjectMapper::class.java),
                         ClassName.get(JsonInclude::class.java),
