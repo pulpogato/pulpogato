@@ -27,7 +27,7 @@ dependencies {
 
 fun getUrl(projectVariant: String): String {
     val path = if (projectVariant == "fpt") "api.github.com" else projectVariant
-    val ref = project.ext.get("github.api.version")
+    val ref = project.ext.get("gh.api.version")
     return "https://github.com/github/rest-api-description/raw/$ref/descriptions-next/$path/$path.json"
 }
 
@@ -37,7 +37,7 @@ description = "REST types for $projectVariant"
 
 val downloadSchema = tasks.register("downloadSchema") {
     val schemaLocation = file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
-    inputs.property("github.api.version", project.ext.get("github.api.version"))
+    inputs.property("gh.api.version", project.ext.get("gh.api.version"))
     outputs.file(schemaLocation)
 
     doLast {
@@ -171,7 +171,7 @@ publishing {
                     val propertiesNode = root.get("properties") as groovy.util.NodeList
                     if (propertiesNode.isNotEmpty()) {
                         val propNode = propertiesNode.first() as groovy.util.Node
-                        propNode.appendNode("github.api.version", project.ext.get("github.api.version").toString())
+                        propNode.appendNode("gh.api.version", project.ext.get("gh.api.version").toString())
                         propNode.appendNode("github.api.sha256", project.ext.get("github.api.sha256").toString())
                     }
                 }

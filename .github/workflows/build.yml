@@ -52,7 +52,7 @@ jobs:
 
     - name: Extract GitHub API Version
       id: api-version
-      run: echo "version=$(grep 'github.api.version' gradle.properties | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+      run: echo "version=$(grep 'gh.api.version' gradle.properties | cut -d'=' -f2)" >> $GITHUB_OUTPUT
 
     - name: Cache Downloaded Schemas
       id: schema-cache
