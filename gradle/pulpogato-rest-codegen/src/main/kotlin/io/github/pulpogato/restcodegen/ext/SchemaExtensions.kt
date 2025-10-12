@@ -72,6 +72,13 @@ fun referenceAndDefinition(
                 "string",
             ) -> Pair(ParameterizedTypeName.get(Types.SINGULAR_OR_PLURAL, Types.STRING).annotated(typeGenerated(), singleValueAsArray()), null)
 
+        oneOf != null &&
+            typesAre(
+                oneOf,
+                "string",
+                "integer",
+            ) && oneOf.any { it.format == "date-time" } -> Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
+
         oneOf != null && typesAre(oneOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         anyOf != null && typesAre(anyOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         anyOf != null ->
