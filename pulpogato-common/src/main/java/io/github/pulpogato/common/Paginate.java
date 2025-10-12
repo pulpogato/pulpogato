@@ -1,7 +1,6 @@
 package io.github.pulpogato.common;
 
 import lombok.NonNull;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
@@ -24,7 +23,6 @@ public class Paginate {
      * @param totalPages   function that takes an API response and returns the total number of pages available
      * @return a stream containing all items from the fetched pages
      */
-    @ApiStatus.Experimental
     public <T, R> Stream<T> from(
             final long maxPages,
             @NonNull @NotNull final Function<Long, @NonNull @NotNull R> fetchPage,
