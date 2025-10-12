@@ -61,7 +61,7 @@ class JsonRefValidator(
         schemaRefRegex.findAll(fileContent).forEach { matchResult ->
             val match = matchResult.groupValues[1] // Extract the captured group
             val startIndex = matchResult.range.first
-            val precedingText = fileContent.substring(0, startIndex)
+            val precedingText = fileContent.take(startIndex)
             val lineNumber = precedingText.count { it == '\n' } + 1 // Calculate line number
             matches.add(Triple(file, lineNumber, match))
         }
