@@ -293,29 +293,8 @@ private fun buildFancyObject(
     // Generate manual getters, setters, toString, and constructors for the fields
     val builtType = theType.build()
 
-    // Add toString method
-    if (builtType.fieldSpecs().isNotEmpty()) {
-        val toStringStatement =
-            CodeBlock
-                .builder()
-                .add($$"return \"/* $L */ \" + new $T(this, $T.JSON_STYLE)", className, Types.TO_STRING_BUILDER, Types.TO_STRING_STYLE)
+    addToStringMethod(builtType, className, theType)
 
-        builtType.fieldSpecs().forEach { field ->
-            toStringStatement.add($$"\n    .append($S, $N)", field.name(), field.name())
-        }
-
-        toStringStatement.add("\n    .toString()")
-
-        theType.addMethod(
-            MethodSpec
-                .methodBuilder("toString")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Override::class.java)
-                .returns(String::class.java)
-                .addStatement(toStringStatement.build())
-                .build(),
-        )
-    }
     val settableFields = getSettableFields(fields, className)
     val gettableFields = getGettableFields(fields, className)
     val deserializer = buildDeserializer(className, fancyObjectType, settableFields)
@@ -485,7 +464,15 @@ private fun buildSimpleObject(
 
     // Generate manual getters, setters, and toString for the properties
     val builtClass = builder.build()
-    // Add toString method
+    addToStringMethod(builtClass, name, builder)
+    return builder.build()
+}
+
+private fun addToStringMethod(
+    builtClass: TypeSpec,
+    name: String,
+    builder: TypeSpec.Builder,
+) {
     if (builtClass.fieldSpecs().isNotEmpty()) {
         val toStringStatement =
             CodeBlock
@@ -508,7 +495,6 @@ private fun buildSimpleObject(
                 .build(),
         )
     }
-    return builder.build()
 }
 
 private fun addProperties(
