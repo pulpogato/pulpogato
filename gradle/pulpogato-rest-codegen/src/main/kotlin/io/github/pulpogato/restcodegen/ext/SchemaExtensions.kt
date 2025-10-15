@@ -238,6 +238,9 @@ private fun buildReferenceAndDefinitionFromRef(
         context.openAPI.components.schemas
             .filter { (k, _) -> k == schemaName }
             .entries
+    if (entries.isEmpty()) {
+        throw RuntimeException("Could not find schema for ref \"${entry.value.`$ref`}\", stack: \"${context.getSchemaStackRef()}\"")
+    }
     val schema = entries.first()
     return referenceAndDefinition(context.withSchemaStack("#", "components", "schemas", schemaName), schema, "", null)!!.copy(second = null)
 }
