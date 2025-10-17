@@ -1,6 +1,6 @@
 [versions]
-annotations = "26.0.2-1"
 assertj = "3.27.6"
+jspecify = "1.0.0"
 commonmark = "0.27.0"
 commons-lang3 = "3.19.0"
 commons-text = "1.14.0"
@@ -30,7 +30,6 @@ testLogger = "4.0.0"
 waena = "0.19.0"
 
 [libraries]
-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
 commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmark" }
@@ -43,6 +42,7 @@ jacksonTime = { group = "com.fasterxml.jackson.datatype", name = "jackson-dataty
 jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
 jakartaAnnotations = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta" }
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
+jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }
 jsonApi = { group = "javax.json", name = "javax.json-api", version.ref = "jsonApi" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncher" }

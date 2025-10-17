@@ -11,7 +11,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly(libs.annotations)
+    compileOnly(libs.jspecify)
     compileOnly(libs.springWeb)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
