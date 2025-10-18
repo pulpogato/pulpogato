@@ -9,6 +9,8 @@ import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.Annotations.nonNull
+import io.github.pulpogato.restcodegen.Annotations.nullable
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.pascalCase
@@ -207,6 +209,7 @@ class PathsBuilder {
                     .addMember("accept", $$"$S", contentType)
                     .build(),
             ).addAnnotation(generated(0, context))
+            .addAnnotation(nonNull())
             .addParameters(parameterSpecs)
             .returns(
                 ParameterizedTypeName.get(
@@ -305,23 +308,38 @@ class PathsBuilder {
 
         return ParameterSpec
             .builder(ref, paramName)
-            .addAnnotation(
+            .addAnnotations(
                 when (theParameter.`in`) {
                     "query" ->
-                        AnnotationSpec
-                            .builder(webBind("RequestParam"))
-                            .addMember("value", $$"$S", theParameter.name)
-                            .addMember("required", $$"$L", theParameter.required)
-                            .build()
+                        mutableListOf(
+                            AnnotationSpec
+                                .builder(webBind("RequestParam"))
+                                .addMember("value", $$"$S", theParameter.name)
+                                .addMember("required", $$"$L", theParameter.required)
+                                .build(),
+                            if (theParameter.required) nonNull() else nullable(),
+                        )
 
-                    "body" -> AnnotationSpec.builder(webBind("RequestBody")).build()
+                    "body" ->
+                        mutableListOf(
+                            AnnotationSpec.builder(webBind("RequestBody")).build(),
+                            nonNull(),
+                        )
+
                     "path" ->
-                        AnnotationSpec
-                            .builder(webBind("PathVariable"))
-                            .addMember("value", $$"$S", theParameter.name)
-                            .build()
+                        mutableListOf(
+                            AnnotationSpec
+                                .builder(webBind("PathVariable"))
+                                .addMember("value", $$"$S", theParameter.name)
+                                .build(),
+                            nonNull(),
+                        )
 
-                    "header" -> AnnotationSpec.builder(webBind("RequestHeader")).build()
+                    "header" ->
+                        mutableListOf(
+                            AnnotationSpec.builder(webBind("RequestHeader")).build(),
+                            nonNull(),
+                        )
 
                     else -> throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
                 },

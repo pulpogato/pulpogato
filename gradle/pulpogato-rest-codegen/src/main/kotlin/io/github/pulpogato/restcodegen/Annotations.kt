@@ -120,4 +120,17 @@ object Annotations {
         AnnotationSpec
             .builder(ClassName.get("io.github.pulpogato.test", "CompositeTestExtension"))
             .build()
+
+    /*
+      JSpecify Annotations
+     */
+    fun nonNull(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get("org.jspecify.annotations", "NonNull"))
+            .build()
+
+    fun nullable(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get("org.jspecify.annotations", "Nullable"))
+            .build()
 }
