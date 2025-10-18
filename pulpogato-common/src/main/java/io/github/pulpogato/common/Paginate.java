@@ -1,7 +1,6 @@
 package io.github.pulpogato.common;
 
-import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -32,9 +31,9 @@ public class Paginate {
      */
     public <T, R> Stream<T> from(
             final long maxPages,
-            @NonNull @NotNull final Function<Long, @NonNull @NotNull R> fetchPage,
-            @NonNull @NotNull final Function<R, @NonNull @NotNull Stream<T>> extractItems,
-            @NonNull @NotNull final Function<R, @NonNull @NotNull Integer> totalPages
+            final Function<Long, @NonNull R> fetchPage,
+            final Function<R, @NonNull Stream<T>> extractItems,
+            final Function<R, @NonNull Integer> totalPages
     ) {
         var response = fetchPage.apply(1L);
         var pages = Math.min(maxPages, totalPages.apply(response));

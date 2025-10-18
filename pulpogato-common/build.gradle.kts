@@ -6,7 +6,7 @@ plugins {
 val mockitoAgent = configurations.create("mockitoAgent")
 
 dependencies {
-    compileOnly(libs.annotations)
+    compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     implementation(libs.slf4j)
