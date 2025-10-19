@@ -1,10 +1,10 @@
 - example: "#/paths/~1enterprises~1{enterprise}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/4644"
   versions:
-    - ghes-3.17
-    - ghes-3.16
-    - ghec
     - fpt
+    - ghec
+    - ghes-3.16
+    - ghes-3.17
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:
@@ -16,61 +16,61 @@
 - example: "#/paths/~1markdown~1raw/post/requestBody/content/text~1plain/examples/default/value"
   reason: "TODO: Diagnose this"
   versions:
+    - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5045"
   versions:
+    - fpt
+    - ghec
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/paths/~1orgs~1{org}~1organization-roles/post/responses/201/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5054"
   versions:
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
 - example: "#/paths/~1orgs~1{org}~1organization-roles~1{role_id}/patch/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5054"
   versions:
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repositories_parameter/value"
   reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repository_lists/value"
   reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repository_owners/value"
   reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1import/patch/requestBody/content/application~1json/examples/example-2/value"
   reason: "https://github.com/github/rest-api-description/issues/5053"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1pulls~1{pull_number}~1codespaces/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5047"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/4590"
   versions:
@@ -81,16 +81,16 @@
 - example: "#/paths/~1repos~1{owner}~1{repo}~1security-advisories~1{ghsa_id}/patch/requestBody/content/application~1json/examples/update_vvrs/value"
   reason: "https://github.com/github/rest-api-description/issues/5056"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1scim~1v2~1enterprises~1{enterprise}~1Groups~1{scim_group_id}/patch/requestBody/content/application~1json/examples/addMembers/value"
   reason: "https://github.com/github/rest-api-description/issues/4470"
   versions:
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
 - example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/patch/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5055"
   versions:
@@ -98,58 +98,58 @@
 - example: "#/paths/~1user~1codespaces~1{codespace_name}~1publish/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5046"
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/paths/~1versions/get/responses/200/content/application~1json/examples/default/value"
   reason: "The API returns a List of LocalDate that cannot be serialized and compared."
   versions:
-    - ghec
     - fpt
+    - ghec
 - example: "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/5430"
   versions:
+    - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/5430"
   versions:
+    - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/webhooks/check-run-requested-action/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/5034"
   versions:
+    - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/4593"
   versions:
+    - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples/default"
   reason: "https://github.com/github/rest-api-description/issues/4472"
   versions:
+    - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-    - ghec
-    - fpt
 - example: "#/paths/~1enterprises~1{enterprise}~1apps~1organizations~1{org}~1installations~1{installation_id}~1repositories~1remove/patch/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5057"
   versions:
@@ -169,8 +169,8 @@
 - example: "#/paths/~1repos~1{owner}~1{repo}~1issues~1{issue_number}/patch/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5234"
   versions:
-    - ghec
     - fpt
+    - ghec
     - ghes-3.14
     - ghes-3.15
     - ghes-3.16
