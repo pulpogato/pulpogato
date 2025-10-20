@@ -107,7 +107,7 @@ fun referenceAndDefinition(
 
         types == null -> Pair(Types.OBJECT.annotated(typeGenerated()), null)
 
-        types.isEmpty() -> null
+        types.isEmpty() -> Pair(Types.OBJECT.annotated(typeGenerated()), null)
 
         types.size == 1 ->
             when (types.first()) {
