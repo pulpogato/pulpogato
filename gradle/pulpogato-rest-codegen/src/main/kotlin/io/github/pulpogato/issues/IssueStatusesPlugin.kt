@@ -11,5 +11,9 @@ class IssueStatusesPlugin : Plugin<Project> {
             group = "verification"
             description = "Checks the status of ignored tests issues."
         }
+        target.tasks.register("createIssues", CreateIssuesTask::class.java) {
+            group = "verification"
+            description = "Creates issues for ignored tests."
+        }
     }
 }
