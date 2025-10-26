@@ -32,11 +32,11 @@ allprojects {
     group = "io.github.pulpogato"
 
     extensions.findByType<ContactsExtension>()?.apply {
-        addPerson("rahulsom@noreply.github.com", delegateClosureOf<Contact> {
+        with(addPerson("rahulsom@noreply.github.com")) {
             moniker("Rahul Somasunderam")
             roles("owner")
             github("https://github.com/rahulsom")
-        })
+        }
     }
 }
 
