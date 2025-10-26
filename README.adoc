@@ -49,10 +49,11 @@ The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
 ====
 [source,kotlin]
 ----
+// These properties can also be set in gradle.properties
 ext {
     set("netflixDgsVersion", "9.1.2")
     set("ghesVersion", "fpt")
-    set("pulpogatoVersion", "0.2.0")
+    set("pulpogatoVersion", "0.21.0")
 }
 
 dependencies {
@@ -152,16 +153,14 @@ To contribute a test for the REST API:
 +
 [source, bash]
 ----
-GITHUB_TOKEN=$(gh auth token)\
+GITHUB_TOKEN=$(gh auth token) \
     ./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest
 ----
 Or if you're using GHES:
 +
 [source, bash]
 ----
-GITHUB_TOKEN=$(gh auth token) \
-    GITHUB_HOST=ghes.example.com \
-    GITHUB_PORT=8443\
+GITHUB_TOKEN=$(gh auth token) GITHUB_HOST=ghes.example.com GITHUB_PORT=8443 \
     ./gradlew :pulpogato-rest-ghes-3.17:test --tests AppsApiIntegrationTest
 ----
 5. That generates a yaml file in `src/test/resources`. If it needs cleaning up for sensitive data, do so.
