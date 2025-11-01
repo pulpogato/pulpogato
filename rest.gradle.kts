@@ -1,5 +1,4 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
-import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.javaLibrary)
@@ -25,51 +24,20 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
 }
 
-fun getUrl(projectVariant: String): String {
-    val path = if (projectVariant == "fpt") "api.github.com" else projectVariant
-    val ref = project.ext.get("gh.api.version")
-    return "https://github.com/github/rest-api-description/raw/$ref/descriptions-next/$path/$path.json"
-}
+val variant = project.name.replace("${rootProject.name}-rest-", "")
 
-val projectVariant = project.name.replace("${rootProject.name}-rest-", "")
-
-description = "REST types for $projectVariant"
-
-val downloadSchema = tasks.register("downloadSchema") {
-    val schemaLocation = file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json")
-    inputs.property("gh.api.version", project.ext.get("gh.api.version"))
-    outputs.file(schemaLocation)
-
-    doLast {
-        schemaLocation.parentFile.mkdirs()
-        val schemaBytes = uri(getUrl(projectVariant)).toURL().readBytes()
-        schemaLocation.writeBytes(schemaBytes)
-        
-        // Calculate SHA256 checksum
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(schemaBytes)
-        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
-        project.ext.set("github.api.sha256", sha256)
-
-        if (!schemaLocation.exists()) {
-            throw GradleException("Failed to download schema from ${getUrl(projectVariant)}")
-        }
-
-    }
-}
-
-val generateJava = tasks.named("generateJava")
-
-generateJava.configure {
-    dependsOn(downloadSchema)
-}
+description = "REST types for $variant"
 
 codegen {
-    schema.set(file("${project.layout.buildDirectory.get()}/generated/resources/main/schema.json"))
     packageName.set("io.github.pulpogato")
     mainDir.set(file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen"))
     testDir.set(file("${project.layout.buildDirectory.get()}/generated/sources/test"))
+    apiVersion.set(project.ext.get("gh.api.version").toString())
+    projectVariant.set(variant)
 }
+
+val downloadSchema = tasks.named("downloadSchema")
+val generateJava = tasks.named("generateJava")
 
 tasks.compileJava {
     dependsOn(generateJava)
