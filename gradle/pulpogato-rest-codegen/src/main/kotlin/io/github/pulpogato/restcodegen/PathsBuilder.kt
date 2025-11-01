@@ -2,13 +2,16 @@ package io.github.pulpogato.restcodegen
 
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.ParameterSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
+import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.Annotations.lombok
 import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.nullable
 import io.github.pulpogato.restcodegen.Annotations.testExtension
@@ -42,12 +45,59 @@ class PathsBuilder {
         val apiDir = File(mainDir, packageName.replace(".", "/"))
         apiDir.mkdirs()
         val openAPI = context.openAPI
+
+        val restClients =
+            TypeSpec
+                .classBuilder("RestClients")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
+                .addAnnotation(lombok("RequiredArgsConstructor"))
+                .addJavadoc("Client to access all REST APIs.")
+                .addField(
+                    FieldSpec
+                        .builder(
+                            ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
+                            "restClient",
+                            Modifier.PRIVATE,
+                            Modifier.FINAL,
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .methodBuilder("computeApi")
+                        .addModifiers(Modifier.PRIVATE)
+                        .addTypeVariable(TypeVariableName.get("T"))
+                        .addParameter(
+                            ParameterSpec
+                                .builder(
+                                    ParameterizedTypeName.get(
+                                        ClassName.get(Class::class.java),
+                                        TypeVariableName.get("T"),
+                                    ),
+                                    "clazz",
+                                ).build(),
+                        ).returns(TypeVariableName.get("T"))
+                        .addStatement(
+                            $$"""
+                        return $T.builderFor(
+                                $T.create(
+                                        $T.requireNonNull(restClient)))
+                                .build()
+                                .createClient(clazz)
+                            """.trimIndent(),
+                            ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
+                            ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
+                            ClassName.get("java.util", "Objects"),
+                        ).build(),
+                )
+
         openAPI.paths
             .flatMap { (path, pathItem) ->
                 pathItem.readOperationsMap().map { (method, operation) ->
                     AtomicMethod(path, method, operation.operationId, operation)
                 }
             }.groupBy { it.operationId.split('/')[0] }
+            .toSortedMap()
             .forEach { (groupName, atomicMethods) ->
                 val docTag = atomicMethods[0].operation.tags[0]
                 val apiDescription = openAPI.tags.find { it.name == docTag }!!.description
@@ -83,7 +133,21 @@ class PathsBuilder {
                 if (typeClassBuilt.methodSpecs().isNotEmpty() || typeClassBuilt.typeSpecs().isNotEmpty()) {
                     JavaFile.builder(packageName, typeClassBuilt).build().writeTo(testDir)
                 }
+
+                val apiField =
+                    FieldSpec
+                        .builder(typeRef, interfaceName.camelCase(), Modifier.PRIVATE, Modifier.FINAL)
+                        .initializer($$"computeApi($T.class)", typeRef)
+                        .addJavadoc(apiDescription ?: "")
+                        .addAnnotation(
+                            AnnotationSpec
+                                .builder(ClassName.get("lombok", "Getter"))
+                                .addMember("lazy", "true")
+                                .build(),
+                        ).build()
+                restClients.addField(apiField)
             }
+        JavaFile.builder(packageName, restClients.build()).build().writeTo(mainDir)
     }
 
     private fun buildMethod(
