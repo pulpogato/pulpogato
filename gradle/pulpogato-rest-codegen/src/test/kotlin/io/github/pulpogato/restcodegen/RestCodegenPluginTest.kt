@@ -40,22 +40,32 @@ class RestCodegenPluginTest {
     @Test
     fun `generateJava task has correct properties`() {
         val task = project.tasks.findByName("generateJava") as GenerateJavaTask
-        val schemaFile = File(tempDir.toFile(), "schema.json")
-        schemaFile.createNewFile()
         val mainDir = File(tempDir.toFile(), "main")
         mainDir.mkdirs()
         val testDir = File(tempDir.toFile(), "test")
         testDir.mkdirs()
         val packageName = "com.example.test"
         val extension = project.extensions.findByType(RestCodegenExtension::class.java)!!
-        extension.schema.set(schemaFile)
         extension.mainDir.set(mainDir)
         extension.testDir.set(testDir)
         extension.packageName.set(packageName)
 
-        assertThat(schemaFile).isEqualTo(task.schema.get())
         assertThat(mainDir).isEqualTo(task.mainDir.get())
         assertThat(testDir).isEqualTo(task.testDir.get())
         assertThat(packageName).isEqualTo(task.packageName.get())
+    }
+
+    @Test
+    fun `downloadSchema task is created`() {
+        val task = project.tasks.findByName("downloadSchema")
+        assertThat(task).isNotNull().isInstanceOf(DownloadSchemaTask::class.java)
+    }
+
+    @Test
+    fun `generateJava task depends on downloadSchema`() {
+        val generateJava = project.tasks.findByName("generateJava")
+        val downloadSchema = project.tasks.findByName("downloadSchema")
+        assertThat(generateJava?.taskDependencies?.getDependencies(generateJava))
+            .contains(downloadSchema)
     }
 }

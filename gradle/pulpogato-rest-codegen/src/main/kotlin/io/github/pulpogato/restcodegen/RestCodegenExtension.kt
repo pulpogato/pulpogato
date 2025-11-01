@@ -11,4 +11,6 @@ open class RestCodegenExtension(
     var packageName: Property<String> = project.objects.property(String::class.java)
     var mainDir: RegularFileProperty = project.objects.fileProperty()
     var testDir: RegularFileProperty = project.objects.fileProperty()
+    var apiVersion: Property<String> = project.objects.property(String::class.java)
+    var projectVariant: Property<String> = project.objects.property(String::class.java)
 }
