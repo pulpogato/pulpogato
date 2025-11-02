@@ -420,14 +420,13 @@ class WebhooksBuilder {
                                 openAPI.components.examples.entries
                                     .firstOrNull { it.key == ref1.replace("#/components/examples/", "") }
                             if (example != null) {
-                                tests.add(
-                                    TestBuilder.buildTest(
+                                TestBuilder
+                                    .buildTest(
                                         context1.withSchemaStack("requestBody", "content", firstEntry.key, "examples", key),
                                         key,
                                         example.value.value,
                                         bodyType!!,
-                                    ),
-                                )
+                                    )?.let { tests.add(it) }
                             }
                         }
                     }

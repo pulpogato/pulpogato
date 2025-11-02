@@ -187,3 +187,225 @@
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
+- example: "#/components/examples/global-advisory-items/value"
+  reason: "https://github.com/github/rest-api-description/issues/5479"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/integration/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/integration/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/installation-token/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/classroom-assignment/value"
+  reason: "https://github.com/github/rest-api-description/issues/5480"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/classroom-accepted-assignment/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/simple-classroom/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/classroom/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/simple-classroom-assignment/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/server-statistics/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/actions-hosted-runner-paginated/value"
+  reason: "https://github.com/github/rest-api-description/issues/5481"
+  versions:
+    - ghec
+- example: "#/components/examples/actions-hosted-runner/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/actions-hosted-runner-curated-image/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/actions-hosted-runner-machine-spec/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/audit-log/value"
+  reason: "https://github.com/github/rest-api-description/issues/5482"
+  versions:
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/enterprise-code-security-configuration-list/value"
+  reason: "https://github.com/github/rest-api-description/issues/5483"
+  versions:
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/code-security-default-configurations/value"
+  reason: "https://github.com/github/rest-api-description/issues/5484"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/get-consumed-licenses/value"
+  reason: "https://github.com/github/rest-api-description/issues/5485"
+  versions:
+    - ghec
+- example: "#/components/examples/dependabot-alerts-for-organization/value"
+  reason: "https://github.com/github/rest-api-description/issues/5487"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/enterprise-ruleset/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/enterprise-ruleset/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/enterprise-ruleset/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/enterprise-ruleset-version-with-state/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/organization-secret-scanning-alert-list/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+- example: "#/components/examples/enterprise-teams-items/value"
+  reason: "https://github.com/github/rest-api-description/issues/5491"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/enterprise-teams-items/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/enterprise-teams-items/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - fpt
+    - ghec
+- example: "#/components/examples/public-events-items/value"
+  reason: "https://github.com/github/rest-api-description/issues/5492"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+- example: "#/components/examples/repository-paginated-2/value"
+  reason: "https://github.com/github/rest-api-description/issues/5497"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+- example: "#/components/examples/issue-with-repo-items/value"
+  reason: "https://github.com/github/rest-api-description/issues/5515"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+- example: "#/components/examples/ghes-get-ssh/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+- example: "#/components/examples/ghes-license-info/value"
+  reason: "https://github.com/github/rest-api-description/issues/5516"
+  versions:
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+- example: "#/components/examples/actions-hosted-runner-custom-image-versions/value"
+  reason: "https://github.com/github/rest-api-description/issues/5539"
+  versions:
+    - ghec
+- example: "#/components/examples/enterprise-role-list/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/enterprise-role/value"
+  reason: "TODO: Diagnose this"
+  versions:
+    - ghec
+- example: "#/components/examples/organization-custom-properties/value"
+  reason: "https://github.com/github/rest-api-description/issues/5540"
+  versions:
+    - ghec
+- example: "#/components/examples/organization-custom-properties/value"
+  reason: "https://github.com/github/rest-api-description/issues/5540"
+  versions:
+    - ghec
+- example: "#/components/examples/organization-secret-scanning-alert-list/value"
+  reason: "https://github.com/github/rest-api-description/issues/5541"
+  versions:
+    - ghes-3.18
