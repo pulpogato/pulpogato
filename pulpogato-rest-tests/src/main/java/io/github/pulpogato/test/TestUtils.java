@@ -95,11 +95,36 @@ public class TestUtils {
 
         if (oldValue.getValueType() == JsonValue.ValueType.STRING
                 && newValue.getValueType() == JsonValue.ValueType.STRING) {
-            if (oldValue.toString().equals(newValue.toString().replace("Z", "+00:00"))) {
+            var oldStr = ((JsonString) oldValue).getString();
+            var newStr = ((JsonString) newValue).getString();
+
+            if (oldStr.equals(newStr.replace("Z", "+00:00"))) {
                 return;
             }
-            if (oldValue.toString().equals(newValue.toString().replace("Z", ".000Z"))) {
+            if (oldStr.equals(newStr.replace("Z", ".000Z"))) {
                 return;
+            }
+            // Handle .000+00:00 vs Z normalization
+            if (oldStr.replace(".000+00:00", "Z").equals(newStr)) {
+                return;
+            }
+        }
+
+        // Handle Unix timestamp (NUMBER) to ISO string (STRING) conversion
+        if (oldValue.getValueType() == JsonValue.ValueType.NUMBER
+                && newValue.getValueType() == JsonValue.ValueType.STRING) {
+            try {
+                var timestamp = ((JsonNumber) oldValue).longValue();
+                var isoString = ((JsonString) newValue).getString();
+                // Convert timestamp to ISO string and compare
+                var timestampAsIso = java.time.Instant.ofEpochSecond(timestamp)
+                        .atOffset(java.time.ZoneOffset.UTC)
+                        .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                if (timestampAsIso.equals(isoString)) {
+                    return;
+                }
+            } catch (Exception e) {
+                // If conversion fails, fall through to regular comparison
             }
         }
 
