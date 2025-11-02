@@ -91,8 +91,7 @@ public class TestUtils {
             final JsonValue newValue1,
             final String op,
             final String path) {
-        final JsonValue newValue2 = flattenNewArray(oldValue, newValue1);
-        final JsonValue newValue = normalizeNonStringTypes(newValue2, oldValue);
+        final JsonValue newValue = normalizeNonStringTypes(newValue1, oldValue);
 
         if (oldValue.getValueType() == JsonValue.ValueType.STRING
                 && newValue.getValueType() == JsonValue.ValueType.STRING) {
@@ -140,15 +139,6 @@ public class TestUtils {
             default:
                 return valueSource;
         }
-    }
-
-    private static JsonValue flattenNewArray(final JsonValue oldValue, final JsonValue newValue) {
-        if (oldValue.getValueType() == JsonValue.ValueType.STRING
-                && newValue.getValueType() == JsonValue.ValueType.ARRAY
-                && newValue.asJsonArray().size() == 1) {
-            return newValue.asJsonArray().getFirst();
-        }
-        return newValue;
     }
 
     private static JsonValue traverse(final JsonValue value, final List<String> pathSteps) {
