@@ -1,14 +1,14 @@
 package io.github.pulpogato.test;
 
+import static org.junit.platform.commons.support.AnnotationSupport.findAnnotation;
+
 import io.github.pulpogato.common.Generated;
+import java.lang.reflect.AnnotatedElement;
+import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import static org.junit.platform.commons.support.AnnotationSupport.findAnnotation;
-
-import java.lang.reflect.AnnotatedElement;
-import java.util.Optional;
 
 public class IgnoredTestContext implements ExecutionCondition {
     @Override
@@ -21,11 +21,9 @@ public class IgnoredTestContext implements ExecutionCondition {
     }
 
     private ConditionEvaluationResult toResult(Generated annotation) {
-        Optional<String> reason = Optional.ofNullable(IgnoredTests.getCauses()
-                        .get(annotation.ghVersion()))
+        Optional<String> reason = Optional.ofNullable(IgnoredTests.getCauses().get(annotation.ghVersion()))
                 .map(it -> it.get(annotation.schemaRef()));
 
-        return reason.map(ConditionEvaluationResult::disabled)
-                .orElseGet(() -> ConditionEvaluationResult.enabled(null));
+        return reason.map(ConditionEvaluationResult::disabled).orElseGet(() -> ConditionEvaluationResult.enabled(null));
     }
 }

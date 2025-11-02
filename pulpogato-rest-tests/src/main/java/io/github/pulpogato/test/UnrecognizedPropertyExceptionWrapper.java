@@ -1,7 +1,6 @@
 package io.github.pulpogato.test;
 
 import com.fasterxml.jackson.core.JacksonException;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 

@@ -2,11 +2,10 @@ package io.github.pulpogato.common;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.List;
 
 /**
  * A class that can be a String or an Integer.
@@ -29,19 +28,24 @@ public class StringOrInteger {
 
     static class CustomDeserializer extends FancyDeserializer<StringOrInteger> {
         public CustomDeserializer() {
-            super(StringOrInteger.class, StringOrInteger::new, Mode.ONE_OF, List.of(
-                    new SettableField<>(Long.class, StringOrInteger::setIntegerValue),
-                    new SettableField<>(String.class, StringOrInteger::setStringValue)
-            ));
+            super(
+                    StringOrInteger.class,
+                    StringOrInteger::new,
+                    Mode.ONE_OF,
+                    List.of(
+                            new SettableField<>(Long.class, StringOrInteger::setIntegerValue),
+                            new SettableField<>(String.class, StringOrInteger::setStringValue)));
         }
     }
 
     static class CustomSerializer extends FancySerializer<StringOrInteger> {
         public CustomSerializer() {
-            super(StringOrInteger.class, Mode.ONE_OF, List.of(
-                    new GettableField<>(Long.class, StringOrInteger::getIntegerValue),
-                    new GettableField<>(String.class, StringOrInteger::getStringValue)
-            ));
+            super(
+                    StringOrInteger.class,
+                    Mode.ONE_OF,
+                    List.of(
+                            new GettableField<>(Long.class, StringOrInteger::getIntegerValue),
+                            new GettableField<>(String.class, StringOrInteger::getStringValue)));
         }
     }
 }

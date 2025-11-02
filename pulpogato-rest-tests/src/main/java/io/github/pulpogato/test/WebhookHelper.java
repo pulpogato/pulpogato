@@ -1,6 +1,19 @@
 package io.github.pulpogato.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,31 +23,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 public class WebhookHelper {
     private WebhookHelper() {
         // Empty Default Private Constructor. This should not be instantiated.
     }
+
     private static Set<String> getWebhookNames() {
         return new Reflections("webhooks", Scanners.Resources).getResources(Pattern.compile(".+\\.http"));
     }
 
     public static Stream<Arguments> getArguments(String version) {
-        return WebhookHelper.getWebhookNames()
-                .stream()
+        return WebhookHelper.getWebhookNames().stream()
                 .filter(it -> {
                     final InputStream resourceAsStream = WebhookHelper.class.getResourceAsStream("/" + it);
                     assertThat(resourceAsStream).isNotNull();
@@ -42,10 +41,14 @@ public class WebhookHelper {
                     final var lines = reader.lines().toList();
                     final var include = lines.stream()
                             .filter(l -> l.toLowerCase().startsWith("X-Pulpogato-Include:".toLowerCase()))
-                            .findFirst().map(l -> l.split(":",2)[1].trim()).orElse("*");
+                            .findFirst()
+                            .map(l -> l.split(":", 2)[1].trim())
+                            .orElse("*");
                     final var exclude = lines.stream()
                             .filter(l -> l.toLowerCase().startsWith("X-Pulpogato-Exclude:".toLowerCase()))
-                            .findFirst().map(l -> l.split(":",2)[1].trim()).orElse("");
+                            .findFirst()
+                            .map(l -> l.split(":", 2)[1].trim())
+                            .orElse("");
 
                     return testVersion(version, include, exclude);
                 })
@@ -54,17 +57,18 @@ public class WebhookHelper {
                                 .replaceAll("^webhooks-", "")
                                 .replaceAll("\\.http$", "")
                                 .replaceAll("-default$", "")
-                                .replace("_", "-")
-                        ,
-                        it
-                ));
+                                .replace("_", "-"),
+                        it));
     }
 
     private static boolean testVersion(String version, String include, String exclude) {
         if (include.equals("*")) {
             return !exclude.contains(version);
         }
-        if (Arrays.stream(include.split(",")).map(String::trim).collect(Collectors.toSet()).contains(version)) {
+        if (Arrays.stream(include.split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet())
+                .contains(version)) {
             return !exclude.contains(version);
         }
         return false;
@@ -76,8 +80,8 @@ public class WebhookHelper {
                 .andExpect(jsonPath("$.webhookName").value(hookname))
                 .andReturn();
 
-        final TestWebhookResponse response = new ObjectMapper().readValue(
-                mvcResult.getResponse().getContentAsString(), TestWebhookResponse.class);
+        final TestWebhookResponse response =
+                new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), TestWebhookResponse.class);
 
         final var softly = new SoftAssertions();
         TestUtils.diffJson(mvcResult.getRequest().getContentAsString(), response.getBody(), softly);
@@ -91,11 +95,9 @@ public class WebhookHelper {
         final var reader = new BufferedReader(new InputStreamReader(resourceAsStream));
 
         final String firstLine = reader.readLine();
-        assertThat(firstLine)
-                .startsWith("POST /webhooks")
-                .endsWith(" HTTP/1.1");
+        assertThat(firstLine).startsWith("POST /webhooks").endsWith(" HTTP/1.1");
         final MockHttpServletRequestBuilder requestBuilder = post("/webhooks");
-        while(true) {
+        while (true) {
             final String line = reader.readLine();
             if (line.isEmpty()) {
                 break;
@@ -104,7 +106,7 @@ public class WebhookHelper {
             requestBuilder.header(split[0], split[1].trim());
         }
         final var body = new StringBuilder();
-        while(true) {
+        while (true) {
             final String line = reader.readLine();
             if (line == null) {
                 break;
@@ -116,5 +118,4 @@ public class WebhookHelper {
 
         return requestBuilder;
     }
-
 }

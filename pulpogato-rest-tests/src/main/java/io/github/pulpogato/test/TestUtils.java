@@ -2,19 +2,16 @@ package io.github.pulpogato.test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.assertj.core.api.SoftAssertions;
-
-import javax.json.*;
 import java.io.StringReader;
-
 import java.util.Arrays;
 import java.util.List;
+import javax.json.*;
+import org.assertj.core.api.SoftAssertions;
 
 public class TestUtils {
     private TestUtils() {
@@ -35,7 +32,8 @@ public class TestUtils {
      * @param <T>           The type
      * @return The parsed object
      */
-    public static <T> T parseAndCompare(final TypeReference<T> typeReference, final String input, final SoftAssertions softly) {
+    public static <T> T parseAndCompare(
+            final TypeReference<T> typeReference, final String input, final SoftAssertions softly) {
         try {
             final T parsed = OBJECT_MAPPER.readValue(input, typeReference);
             final String generated = OBJECT_MAPPER.writeValueAsString(parsed);
@@ -47,10 +45,8 @@ public class TestUtils {
     }
 
     public static void diffJson(final String input, final String output, final SoftAssertions softly) {
-        try (
-                final var sourceReader = Json.createReader(new StringReader(input));
-                final var targetReader = Json.createReader(new StringReader(output))
-        ) {
+        try (final var sourceReader = Json.createReader(new StringReader(input));
+                final var targetReader = Json.createReader(new StringReader(output))) {
             final JsonValue source = sourceReader.readValue();
             final JsonValue target = targetReader.readValue();
 
@@ -69,32 +65,37 @@ public class TestUtils {
     }
 
     private static void assertOnDiff(final SoftAssertions softly, final JsonPatch diff, final JsonValue source) {
-        diff.toJsonArray()
-                .stream()
-                .map(JsonValue::asJsonObject)
-                .forEach(it -> {
-                    final String op = it.getString("op");
-                    final String path = it.getString("path");
-                    final JsonValue newValue = it.get("value");
-                    if (op.equals("replace")) {
-                        final var pathSteps = Arrays.stream(path.split("/")).dropWhile(String::isEmpty).toList();
-                        final JsonValue oldValue = traverse(source, pathSteps);
-                        if (oldValue == null) {
-                            softly.fail("Changes found: %s %s <missing> -> %s", op, path, newValue);
-                        } else {
-                            compareOldAndNew(softly, oldValue, newValue, op, path);
-                        }
-                    } else if (op.equals("remove") && newValue != null) {
-                        softly.fail("Changes found: %s %s %s", op, path, newValue);
-                    }
-                });
+        diff.toJsonArray().stream().map(JsonValue::asJsonObject).forEach(it -> {
+            final String op = it.getString("op");
+            final String path = it.getString("path");
+            final JsonValue newValue = it.get("value");
+            if (op.equals("replace")) {
+                final var pathSteps = Arrays.stream(path.split("/"))
+                        .dropWhile(String::isEmpty)
+                        .toList();
+                final JsonValue oldValue = traverse(source, pathSteps);
+                if (oldValue == null) {
+                    softly.fail("Changes found: %s %s <missing> -> %s", op, path, newValue);
+                } else {
+                    compareOldAndNew(softly, oldValue, newValue, op, path);
+                }
+            } else if (op.equals("remove") && newValue != null) {
+                softly.fail("Changes found: %s %s %s", op, path, newValue);
+            }
+        });
     }
 
-    private static void compareOldAndNew(final SoftAssertions softly, final JsonValue oldValue, final JsonValue newValue1, final String op, final String path) {
+    private static void compareOldAndNew(
+            final SoftAssertions softly,
+            final JsonValue oldValue,
+            final JsonValue newValue1,
+            final String op,
+            final String path) {
         final JsonValue newValue2 = flattenNewArray(oldValue, newValue1);
         final JsonValue newValue = normalizeNonStringTypes(newValue2, oldValue);
 
-        if (oldValue.getValueType() == JsonValue.ValueType.STRING && newValue.getValueType() == JsonValue.ValueType.STRING) {
+        if (oldValue.getValueType() == JsonValue.ValueType.STRING
+                && newValue.getValueType() == JsonValue.ValueType.STRING) {
             if (oldValue.toString().equals(newValue.toString().replace("Z", "+00:00"))) {
                 return;
             }
@@ -104,19 +105,21 @@ public class TestUtils {
         }
 
         if (!oldValue.toString().equals(newValue.toString())) {
-            softly.fail("Changes found: %s %s %s(%s) -> %s(%s)",
+            softly.fail(
+                    "Changes found: %s %s %s(%s) -> %s(%s)",
                     op, path, oldValue, oldValue.getValueType(), newValue, newValue.getValueType());
         }
     }
 
     private static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
 
-        String stringValue = switch(valueSource.getValueType()) {
-            case NUMBER -> ((JsonNumber) valueSource).numberValue().toString();
-            case TRUE, FALSE -> Boolean.toString(valueSource == JsonValue.TRUE);
-            case STRING -> ((JsonString) valueSource).getString();
-            default ->  valueSource.toString();
-        };
+        String stringValue =
+                switch (valueSource.getValueType()) {
+                    case NUMBER -> ((JsonNumber) valueSource).numberValue().toString();
+                    case TRUE, FALSE -> Boolean.toString(valueSource == JsonValue.TRUE);
+                    case STRING -> ((JsonString) valueSource).getString();
+                    default -> valueSource.toString();
+                };
 
         switch (typeSource.getValueType()) {
             case NUMBER:
@@ -140,7 +143,9 @@ public class TestUtils {
     }
 
     private static JsonValue flattenNewArray(final JsonValue oldValue, final JsonValue newValue) {
-        if (oldValue.getValueType() == JsonValue.ValueType.STRING && newValue.getValueType() == JsonValue.ValueType.ARRAY && newValue.asJsonArray().size() == 1) {
+        if (oldValue.getValueType() == JsonValue.ValueType.STRING
+                && newValue.getValueType() == JsonValue.ValueType.ARRAY
+                && newValue.asJsonArray().size() == 1) {
             return newValue.asJsonArray().getFirst();
         }
         return newValue;
@@ -155,7 +160,8 @@ public class TestUtils {
         }
         final var pathStep = pathSteps.getFirst();
         if (pathStep.matches("\\d+")) {
-            return traverse(value.asJsonArray().get(Integer.parseInt(pathStep)), pathSteps.subList(1, pathSteps.size()));
+            return traverse(
+                    value.asJsonArray().get(Integer.parseInt(pathStep)), pathSteps.subList(1, pathSteps.size()));
         } else {
             return traverse(value.asJsonObject().get(pathStep), pathSteps.subList(1, pathSteps.size()));
         }

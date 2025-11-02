@@ -1,9 +1,8 @@
 package io.github.pulpogato.common;
 
-import org.jspecify.annotations.NonNull;
-
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Utility class for paginating through API responses and collecting all items into a single stream.
@@ -33,8 +32,7 @@ public class Paginate {
             final long maxPages,
             final Function<Long, @NonNull R> fetchPage,
             final Function<R, @NonNull Stream<T>> extractItems,
-            final Function<R, @NonNull Integer> totalPages
-    ) {
+            final Function<R, @NonNull Integer> totalPages) {
         var response = fetchPage.apply(1L);
         var pages = Math.min(maxPages, totalPages.apply(response));
         if (pages <= 1) {
@@ -44,7 +42,6 @@ public class Paginate {
                 extractItems.apply(response),
                 Stream.iterate(2L, page -> page + 1)
                         .limit(pages - 1)
-                        .flatMap(page -> extractItems.apply(fetchPage.apply(page)))
-        );
+                        .flatMap(page -> extractItems.apply(fetchPage.apply(page))));
     }
 }

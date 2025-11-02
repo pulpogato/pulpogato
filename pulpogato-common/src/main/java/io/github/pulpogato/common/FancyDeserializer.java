@@ -6,13 +6,12 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A deserializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
@@ -30,8 +29,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
      * @param <T>    The type of the object
      * @param <X>    The type of the field
      */
-    public record SettableField<T, X>(Class<X> type, BiConsumer<T, X> setter) {
-    }
+    public record SettableField<T, X>(Class<X> type, BiConsumer<T, X> setter) {}
 
     private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -114,5 +112,4 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
             return false;
         }
     }
-
 }
