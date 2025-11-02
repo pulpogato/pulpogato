@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.javaLibrary)
     id("io.github.pulpogato.issue-statuses")
+    alias(libs.plugins.spotless)
 }
 
 dependencies {
@@ -33,4 +34,10 @@ java {
 
 tasks.withType<JavaCompile> {
     options.setIncremental(true)
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+    }
 }
