@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
+    alias(libs.plugins.spotless)
 }
 
 val mockitoAgent = configurations.create("mockitoAgent")
@@ -36,4 +37,10 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+    }
 }
