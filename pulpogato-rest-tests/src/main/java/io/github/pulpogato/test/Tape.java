@@ -4,12 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.platform.commons.util.ToStringBuilder;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
@@ -18,13 +12,20 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.platform.commons.util.ToStringBuilder;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Tape implements Closeable {
 
     private final String fileName;
-    @Getter private final List<Exchange> exchanges;
+
+    @Getter
+    private final List<Exchange> exchanges;
 
     public static Tape getTape(String tapeName) {
         var resourceName = "tapes/" + tapeName + ".yml";
@@ -35,8 +36,7 @@ public class Tape implements Closeable {
 
         try (var stream = Tape.class.getResourceAsStream("/" + resourceName)) {
             if (stream != null) {
-                exchanges = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<>() {
-                });
+                exchanges = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<>() {});
                 log.info("Loaded {} exchanges from tape: {}", exchanges.size(), resourceName);
             } else {
                 log.warn("No tape found: {}", resourceName);

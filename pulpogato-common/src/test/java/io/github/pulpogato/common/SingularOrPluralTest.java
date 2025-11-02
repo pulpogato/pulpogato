@@ -1,16 +1,15 @@
 package io.github.pulpogato.common;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class SingularOrPluralTest {
 
@@ -83,14 +82,16 @@ class SingularOrPluralTest {
 
     @ParameterizedTest
     @MethodSource("serializationTestCases")
-    void testSerialization(String description, SingularOrPlural<String> input, String expectedJson) throws JsonProcessingException {
+    void testSerialization(String description, SingularOrPlural<String> input, String expectedJson)
+            throws JsonProcessingException {
         var json = objectMapper.writeValueAsString(input);
         assertThat(json).isEqualTo(expectedJson);
     }
 
     @ParameterizedTest
     @MethodSource("singularSerializationTestCases")
-    void testSingularSerializationRoundTrip(String description, SingularOrPlural<String> input, String expectedJson) throws JsonProcessingException {
+    void testSingularSerializationRoundTrip(String description, SingularOrPlural<String> input, String expectedJson)
+            throws JsonProcessingException {
         var json = objectMapper.writeValueAsString(input);
         assertThat(json).isEqualTo(expectedJson);
 
@@ -101,47 +102,26 @@ class SingularOrPluralTest {
 
     static Stream<Arguments> serializationTestCases() {
         return Stream.of(
-                Arguments.of(
-                        "singular string",
-                        SingularOrPlural.singular("hello"),
-                        "\"hello\""
-                ),
+                Arguments.of("singular string", SingularOrPlural.singular("hello"), "\"hello\""),
                 Arguments.of(
                         "singular with special characters",
                         SingularOrPlural.singular("hello \"world\""),
-                        "\"hello \\\"world\\\"\""
-                ),
-                Arguments.of(
-                        "plural with single item",
-                        SingularOrPlural.plural(List.of("single")),
-                        "[\"single\"]"
-                ),
+                        "\"hello \\\"world\\\"\""),
+                Arguments.of("plural with single item", SingularOrPlural.plural(List.of("single")), "[\"single\"]"),
                 Arguments.of(
                         "plural with multiple items",
                         SingularOrPlural.plural(List.of("first", "second", "third")),
-                        "[\"first\",\"second\",\"third\"]"
-                ),
-                Arguments.of(
-                        "empty plural",
-                        SingularOrPlural.plural(List.of()),
-                        "[]"
-                )
-        );
+                        "[\"first\",\"second\",\"third\"]"),
+                Arguments.of("empty plural", SingularOrPlural.plural(List.of()), "[]"));
     }
 
     static Stream<Arguments> singularSerializationTestCases() {
         return Stream.of(
-                Arguments.of(
-                        "singular string",
-                        SingularOrPlural.singular("hello"),
-                        "\"hello\""
-                ),
+                Arguments.of("singular string", SingularOrPlural.singular("hello"), "\"hello\""),
                 Arguments.of(
                         "singular with special characters",
                         SingularOrPlural.singular("hello \"world\""),
-                        "\"hello \\\"world\\\"\""
-                )
-        );
+                        "\"hello \\\"world\\\"\""));
     }
 
     @Test
@@ -185,9 +165,7 @@ class SingularOrPluralTest {
 
     @Test
     void testBuilderPattern() {
-        var result = new SingularOrPlural<String>()
-                .setSingular("test")
-                .setPlural(null);
+        var result = new SingularOrPlural<String>().setSingular("test").setPlural(null);
 
         assertThat(result.getSingular()).isEqualTo("test");
         assertThat(result.getPlural()).isNull();
@@ -195,9 +173,7 @@ class SingularOrPluralTest {
 
     @Test
     void testFluentSetters() {
-        var result = new SingularOrPlural<String>()
-                .setSingular("value1")
-                .setSingular("value2");
+        var result = new SingularOrPlural<String>().setSingular("value1").setSingular("value2");
 
         assertThat(result.getSingular()).isEqualTo("value2");
     }
@@ -224,8 +200,7 @@ class SingularOrPluralTest {
 
     @Test
     void testComplexObjectSerialization() throws JsonProcessingException {
-        record TestObject(String name, int value) {
-        }
+        record TestObject(String name, int value) {}
 
         var obj1 = new TestObject("first", 1);
         var obj2 = new TestObject("second", 2);
@@ -242,7 +217,8 @@ class SingularOrPluralTest {
 
     @ParameterizedTest
     @MethodSource("stringDeserializationTestCases")
-    void testStringDeserializationFormats(String description, String json, Object expectedValue) throws JsonProcessingException {
+    void testStringDeserializationFormats(String description, String json, Object expectedValue)
+            throws JsonProcessingException {
         var result = objectMapper.readValue(json, SingularOrPlural.class);
 
         assertThat(result.getSingular()).isEqualTo(expectedValue);
@@ -262,8 +238,7 @@ class SingularOrPluralTest {
         return Stream.of(
                 Arguments.of("string value", "\"test\"", "test"),
                 Arguments.of("integer value as string", "42", "42"),
-                Arguments.of("boolean value as string", "true", "true")
-        );
+                Arguments.of("boolean value as string", "true", "true"));
     }
 
     static Stream<Arguments> arrayDeserializationTestCases() {
@@ -272,7 +247,6 @@ class SingularOrPluralTest {
                 Arguments.of("array of integers", "[1,2,3]"),
                 Arguments.of("array of booleans", "[true,false]"),
                 Arguments.of("mixed array", "[\"text\",123,true]"),
-                Arguments.of("single item array", "[\"only\"]")
-        );
+                Arguments.of("single item array", "[\"only\"]"));
     }
 }

@@ -2,13 +2,12 @@ package io.github.pulpogato.common;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.List;
 
 /**
  * A class that can represent either a single value or a list of values of the same type.
@@ -56,19 +55,24 @@ public class SingularOrPlural<T> {
 
     static class CustomDeserializer extends FancyDeserializer<SingularOrPlural> {
         public CustomDeserializer() {
-            super(SingularOrPlural.class, SingularOrPlural::new, Mode.ONE_OF, List.of(
-                    new SettableField<>(List.class, SingularOrPlural::setPlural),
-                    new SettableField<>(Object.class, SingularOrPlural::setSingular)
-            ));
+            super(
+                    SingularOrPlural.class,
+                    SingularOrPlural::new,
+                    Mode.ONE_OF,
+                    List.of(
+                            new SettableField<>(List.class, SingularOrPlural::setPlural),
+                            new SettableField<>(Object.class, SingularOrPlural::setSingular)));
         }
     }
 
     static class CustomSerializer extends FancySerializer<SingularOrPlural> {
         public CustomSerializer() {
-            super(SingularOrPlural.class, Mode.ONE_OF, List.of(
-                    new GettableField<>(List.class, SingularOrPlural::getPlural),
-                    new GettableField<>(Object.class, SingularOrPlural::getSingular)
-            ));
+            super(
+                    SingularOrPlural.class,
+                    Mode.ONE_OF,
+                    List.of(
+                            new GettableField<>(List.class, SingularOrPlural::getPlural),
+                            new GettableField<>(Object.class, SingularOrPlural::getSingular)));
         }
     }
 }

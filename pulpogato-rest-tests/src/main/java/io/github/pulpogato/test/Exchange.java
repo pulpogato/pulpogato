@@ -1,8 +1,7 @@
 package io.github.pulpogato.test;
 
-import lombok.*;
-
 import java.util.Map;
+import lombok.*;
 
 @Builder
 @Getter
@@ -23,6 +22,7 @@ public class Exchange {
         private Map<String, String> headers;
         private String body;
     }
+
     private Request request;
 
     @Builder
@@ -35,5 +35,6 @@ public class Exchange {
         private Map<String, String> headers;
         private String body;
     }
+
     private Response response;
 }

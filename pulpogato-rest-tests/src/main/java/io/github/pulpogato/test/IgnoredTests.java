@@ -3,13 +3,12 @@ package io.github.pulpogato.test;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import lombok.Data;
-import lombok.Getter;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.Data;
+import lombok.Getter;
 
 /**
  * JUnit extension to ignore tests based on the version of the API and the schemaRef of the test.
@@ -23,27 +22,22 @@ class IgnoredTests {
         var tests = readTests();
         return tests.stream()
                 .flatMap(ignoredTest -> ignoredTest.getVersions().stream()
-                        .map(version -> Map.entry(version, Map.entry(ignoredTest.getExample(), ignoredTest.getReason()))))
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> Map.of(e.getValue().getKey(), e.getValue().getValue()),
-                                (existing, replacement) -> {
-                                    Map<String, String> merged = new java.util.HashMap<>(existing);
-                                    merged.putAll(replacement);
-                                    return merged;
-                                }
-                        )
-                );
+                        .map(version ->
+                                Map.entry(version, Map.entry(ignoredTest.getExample(), ignoredTest.getReason()))))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> Map.of(e.getValue().getKey(), e.getValue().getValue()),
+                        (existing, replacement) -> {
+                            Map<String, String> merged = new java.util.HashMap<>(existing);
+                            merged.putAll(replacement);
+                            return merged;
+                        }));
     }
 
     private static List<IgnoredTest> readTests() {
         try {
             return new ObjectMapper(new YAMLFactory())
-                    .readValue(
-                            IgnoredTests.class.getResourceAsStream("/IgnoredTests.yml"), new TypeReference<>() {
-                            }
-                    );
+                    .readValue(IgnoredTests.class.getResourceAsStream("/IgnoredTests.yml"), new TypeReference<>() {});
         } catch (IOException e) {
             return List.of();
         }
@@ -55,7 +49,6 @@ class IgnoredTests {
         private String reason;
         private List<String> versions;
     }
-
 
     /**
      * This maps the schemaRef of the test to the reason why the test is ignored.

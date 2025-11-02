@@ -2,6 +2,15 @@ package io.github.pulpogato.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.http.HttpEntity;
@@ -15,16 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 @RestController
 @Slf4j
 public class ProxyController {
@@ -32,7 +31,7 @@ public class ProxyController {
     private static final int DEFAULT_PORT = 443;
 
     private final RestTemplate restTemplate;
-    
+
     public ProxyController() {
         // Configure RestTemplate with Apache HttpClient to support PATCH method
         var httpClient = HttpClients.createDefault();
@@ -42,18 +41,21 @@ public class ProxyController {
 
     @RequestMapping("/**")
     @SuppressWarnings("unused")
-    public ResponseEntity<String> mirrorRest(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request) throws URISyntaxException, IOException {
+    public ResponseEntity<String> mirrorRest(
+            @RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request)
+            throws URISyntaxException, IOException {
         try (Tape tape = Tape.getTape(request.getHeader("TapeName"))) {
             Exchange.Request exchangeRequest = toExchangeRequest(body, request);
 
-            var matchingExchanges = tape.getExchanges().stream().filter(it -> it.getRequest().equals(exchangeRequest)).findFirst();
+            var matchingExchanges = tape.getExchanges().stream()
+                    .filter(it -> it.getRequest().equals(exchangeRequest))
+                    .findFirst();
             if (matchingExchanges.isPresent()) {
                 log.info("Found exchange in tape: {}", tape);
                 var exchange = matchingExchanges.get();
                 var headers = new HttpHeaders();
                 exchange.getResponse().getHeaders().forEach(headers::add);
-                return ResponseEntity
-                        .status(exchange.getResponse().getStatusCode())
+                return ResponseEntity.status(exchange.getResponse().getStatusCode())
                         .headers(headers)
                         .body(exchange.getResponse().getBody());
             }
@@ -69,7 +71,11 @@ public class ProxyController {
                     .headers(singleValueMap)
                     .body(prettifyBody(exchange.getBody()));
 
-            tape.getExchanges().add(Exchange.builder().request(exchangeRequest).response(response.build()).build());
+            tape.getExchanges()
+                    .add(Exchange.builder()
+                            .request(exchangeRequest)
+                            .response(response.build())
+                            .build());
             return exchange;
         }
     }
@@ -77,20 +83,27 @@ public class ProxyController {
     private static URI buildUri(HttpServletRequest request) throws URISyntaxException {
         String githubToken = System.getenv("GITHUB_TOKEN");
         String githubHost = Optional.ofNullable(System.getenv("GITHUB_HOST")).orElse(DEFAULT_SERVER);
-        int githubPort = Integer.parseInt(Optional.ofNullable(System.getenv("GITHUB_PORT")).orElse(String.valueOf(DEFAULT_PORT)));
+        int githubPort = Integer.parseInt(
+                Optional.ofNullable(System.getenv("GITHUB_PORT")).orElse(String.valueOf(DEFAULT_PORT)));
         if (githubToken == null) {
             throw new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found.");
         }
         var prefix = githubHost.equals(DEFAULT_SERVER) ? "" : "/api/v3";
-        return new URI("https", null, githubHost, githubPort, prefix + request.getRequestURI(), request.getQueryString(), null);
+        return new URI(
+                "https",
+                null,
+                githubHost,
+                githubPort,
+                prefix + request.getRequestURI(),
+                request.getQueryString(),
+                null);
     }
 
     private ResponseEntity<String> getLiveResponse(HttpMethod method, URI uri, HttpEntity<String> entity) {
         try {
             return restTemplate.exchange(uri, method, entity, String.class);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity
-                    .status(e.getStatusCode())
+            return ResponseEntity.status(e.getStatusCode())
                     .headers(e.getResponseHeaders())
                     .body(e.getResponseBodyAsString());
         }
@@ -98,13 +111,12 @@ public class ProxyController {
 
     private static HttpHeaders buildRequestHeaders(HttpServletRequest request) {
         var headers = new HttpHeaders();
-        request.getHeaderNames().asIterator()
-                .forEachRemaining(k -> {
-                    String v = request.getHeader(k);
-                    if (!k.equalsIgnoreCase("user-agent") && !k.equalsIgnoreCase("host")) {
-                        headers.add(k, v);
-                    }
-                });
+        request.getHeaderNames().asIterator().forEachRemaining(k -> {
+            String v = request.getHeader(k);
+            if (!k.equalsIgnoreCase("user-agent") && !k.equalsIgnoreCase("host")) {
+                headers.add(k, v);
+            }
+        });
 
         String githubToken = Optional.ofNullable(System.getenv("GITHUB_TOKEN"))
                 .orElseThrow(() -> new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found."));
@@ -116,7 +128,8 @@ public class ProxyController {
         var requestHeadersMap = new HashMap<String, String>();
 
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            if (Set.of("user-agent", "host", "TapeName", "Content-Length").stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
+            if (Set.of("user-agent", "host", "TapeName", "Content-Length").stream()
+                    .noneMatch(it -> it.equalsIgnoreCase(headerName))) {
                 requestHeadersMap.put(headerName, request.getHeader(headerName));
             }
         });
@@ -158,8 +171,7 @@ public class ProxyController {
                 "Set-Cookie",
                 "Strict-Transport-Security",
                 "Vary",
-                "X-.+"
-        );
+                "X-.+");
         new HashSet<>(singleValueMap.keySet()).forEach(key -> {
             if (removeHeaders.stream().anyMatch(regex -> key.toLowerCase().matches(regex.toLowerCase()))) {
                 singleValueMap.remove(key);
@@ -167,5 +179,4 @@ public class ProxyController {
         });
         return singleValueMap;
     }
-
 }
