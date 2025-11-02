@@ -3,7 +3,6 @@ package io.github.pulpogato.common;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,8 +17,7 @@ public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
     private static final List<DateTimeFormatter> formatters = List.of(
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX"),
-            DateTimeFormatter.ISO_INSTANT
-    );
+            DateTimeFormatter.ISO_INSTANT);
 
     /**
      * Default constructor for {@code OffsetDateTimeDeserializer}.
@@ -37,7 +35,8 @@ public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
      * @throws IOException if an I/O error occurs
      */
     @Override
-    public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
+            throws IOException {
         final var text = jsonParser.getText();
         if (text == null) {
             return null;

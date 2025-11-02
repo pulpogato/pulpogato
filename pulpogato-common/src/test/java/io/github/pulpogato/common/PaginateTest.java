@@ -1,24 +1,22 @@
 package io.github.pulpogato.common;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class PaginateTest {
 
-    record Response(List<String> items, int totalPages) {
-    }
+    record Response(List<String> items, int totalPages) {}
 
     @Mock
     private Function<Long, Response> fetchPage;
@@ -77,10 +75,10 @@ class PaginateTest {
         var paginate = new Paginate();
         when(fetchPage.apply(1L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
-        assertThatThrownBy(() -> paginate
-                .from(10, fetchPage, PaginateTest::getStream, Response::totalPages).toList())
-                .isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
-
+        assertThatThrownBy(() -> paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages)
+                        .toList())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Failed to fetch page");
     }
 
     @Test
@@ -90,9 +88,10 @@ class PaginateTest {
         when(fetchPage.apply(1L)).thenReturn(new Response(List.of("1", "2", "3"), 3));
         when(fetchPage.apply(2L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
-        assertThatThrownBy(() -> paginate
-                .from(10, fetchPage, PaginateTest::getStream, Response::totalPages).toList())
-                .isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
+        assertThatThrownBy(() -> paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages)
+                        .toList())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Failed to fetch page");
     }
 
     @Test
@@ -108,5 +107,4 @@ class PaginateTest {
 
         assertThat(first).isPresent();
     }
-
 }

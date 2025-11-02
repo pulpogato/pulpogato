@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -31,8 +30,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
      * @param <T>    The type of the object
      * @param <X>    The type of the field
      */
-    public record GettableField<T, X>(Class<X> type, Function<T, X> getter) {
-    }
+    public record GettableField<T, X>(Class<X> type, Function<T, X> getter) {}
 
     private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
 
