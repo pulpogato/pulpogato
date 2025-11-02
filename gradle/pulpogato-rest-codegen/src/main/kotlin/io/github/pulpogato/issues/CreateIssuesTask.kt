@@ -94,8 +94,7 @@ $versions""".trimEnd(),
 - example: "$exampleRef"
   reason: "$reason"
   versions:
-${versionsPlain.joinToString("\n") { "    - $it" }}
-"""
+${versionsPlain.joinToString("\n") { "    - $it" }}"""
                     println(yaml)
                     project.file("src/main/resources/IgnoredTests.yml").appendText(yaml)
                 }
