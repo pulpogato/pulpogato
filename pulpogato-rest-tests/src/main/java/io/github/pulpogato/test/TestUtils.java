@@ -10,7 +10,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonPatch;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import org.assertj.core.api.SoftAssertions;
 
 public class TestUtils {
@@ -145,24 +151,24 @@ public class TestUtils {
                     default -> valueSource.toString();
                 };
 
-        switch (typeSource.getValueType()) {
-            case NUMBER:
-                try {
-                    if (stringValue.contains(".")) {
-                        return Json.createValue(Double.parseDouble(stringValue));
-                    } else {
-                        return Json.createValue(Long.parseLong(stringValue));
-                    }
-                } catch (NumberFormatException e) {
-                    return valueSource;
-                }
-            case TRUE, FALSE:
-                boolean boolValue = Boolean.parseBoolean(stringValue);
-                return boolValue ? JsonValue.TRUE : JsonValue.FALSE;
-            case STRING:
-                return Json.createValue(stringValue);
-            default:
-                return valueSource;
+        return switch (typeSource.getValueType()) {
+            case NUMBER -> getNumericValue(valueSource, stringValue);
+            case TRUE -> JsonValue.TRUE;
+            case FALSE -> JsonValue.FALSE;
+            case STRING -> Json.createValue(stringValue);
+            default -> valueSource;
+        };
+    }
+
+    private static JsonValue getNumericValue(JsonValue valueSource, String stringValue) {
+        try {
+            if (stringValue.contains(".")) {
+                return Json.createValue(Double.parseDouble(stringValue));
+            } else {
+                return Json.createValue(Long.parseLong(stringValue));
+            }
+        } catch (NumberFormatException e) {
+            return valueSource;
         }
     }
 
