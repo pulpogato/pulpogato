@@ -70,6 +70,7 @@ springBoot = ["springBootTest", "springBootWeb", "springBootWebflux"]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
 download = { id = "de.undercouch.download", version.ref = "download" }
 javaLibrary = { id = "java-library" }
+kotlinDsl = { id = "kotlin-dsl" }
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitestPlugin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }

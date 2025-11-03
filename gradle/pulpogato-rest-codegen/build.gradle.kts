@@ -8,7 +8,7 @@ buildscript {
 }
 
 plugins {
-    `kotlin-dsl`
+    alias(libs.plugins.kotlinDsl)
     alias(libs.plugins.spotless)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
