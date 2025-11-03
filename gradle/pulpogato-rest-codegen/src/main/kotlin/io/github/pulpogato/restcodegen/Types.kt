@@ -39,7 +39,7 @@ object Types {
     val OFFSET_DATE_TIME: TypeName =
         ClassName
             .get(OffsetDateTime::class.java)
-            .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd'T'HH:mm:ssXXX"))
+            .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
             .annotated(
                 AnnotationSpec
                     .builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
