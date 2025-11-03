@@ -1,7 +1,10 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
+
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.testLogger)
 }
 
 val mockitoAgent = configurations.create("mockitoAgent")
@@ -43,4 +46,13 @@ spotless {
     java {
         palantirJavaFormat()
     }
+}
+
+testlogger {
+    theme = if (System.getProperty("idea.active") == "true") ThemeType.PLAIN_PARALLEL else ThemeType.MOCHA_PARALLEL
+    slowThreshold = 5000
+
+    showPassed = false
+    showSkipped = true
+    showFailed = true
 }
