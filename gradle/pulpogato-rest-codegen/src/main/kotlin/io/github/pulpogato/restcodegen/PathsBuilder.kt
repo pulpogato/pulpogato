@@ -52,7 +52,7 @@ class PathsBuilder {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
                 .addAnnotation(lombok("RequiredArgsConstructor"))
-                .addJavadoc("Client to access all REST APIs.")
+                .addJavadoc($$"$L", "Client to access all REST APIs.")
                 .addField(
                     FieldSpec
                         .builder(
@@ -109,7 +109,7 @@ class PathsBuilder {
                         .interfaceBuilder(interfaceName)
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
-                        .addJavadoc(apiDescription ?: "")
+                        .addJavadoc($$"$L", apiDescription ?: "")
 
                 val testClass =
                     TypeSpec
@@ -138,7 +138,7 @@ class PathsBuilder {
                     FieldSpec
                         .builder(typeRef, interfaceName.camelCase(), Modifier.PRIVATE, Modifier.FINAL)
                         .initializer($$"computeApi($T.class)", typeRef)
-                        .addJavadoc(apiDescription ?: "")
+                        .addJavadoc($$"$L", apiDescription ?: "")
                         .addAnnotation(
                             AnnotationSpec
                                 .builder(ClassName.get("lombok", "Getter"))
@@ -209,7 +209,7 @@ class PathsBuilder {
                                 .addAnnotation(generated(0, context))
                                 .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
                                 .addMethods(testMethods)
-                                .addJavadoc("Tests {@link $typeRef#$methodName}")
+                                .addJavadoc($$"$L", "Tests {@link $typeRef#$methodName}")
                                 .build(),
                         )
                     }
@@ -264,7 +264,7 @@ class PathsBuilder {
         return MethodSpec
             .methodBuilder(methodName)
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-            .addJavadoc(javadoc)
+            .addJavadoc($$"$L", javadoc)
             .addAnnotation(
                 AnnotationSpec
                     .builder(
@@ -292,7 +292,7 @@ class PathsBuilder {
         MethodSpec
             .methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-            .addJavadoc(javadoc)
+            .addJavadoc($$"$L", javadoc)
             .addAnnotation(
                 AnnotationSpec
                     .builder(
@@ -446,7 +446,7 @@ class PathsBuilder {
             testClass.addType(
                 TypeSpec
                     .classBuilder("${operationName}RequestBody".pascalCase())
-                    .addJavadoc("Tests {@link $typeRef#${atomicMethod.operationId.split('/')[1].camelCase()}}")
+                    .addJavadoc($$"$L", "Tests {@link $typeRef#${atomicMethod.operationId.split('/')[1].camelCase()}}")
                     .addAnnotation(generated(0, context))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
                     .addMethods(testMethods)

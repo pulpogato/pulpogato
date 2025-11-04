@@ -410,7 +410,7 @@ class WebhooksBuilder {
                             .build(),
                     )
 
-                    methodSpecBuilder.addJavadoc(javadoc.joinToString("\n"))
+                    methodSpecBuilder.addJavadoc($$"$L", javadoc.joinToString("\n"))
 
                     val examples = firstEntry.value.examples
                     if (firstEntry.key.contains("json")) {
