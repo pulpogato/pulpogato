@@ -273,12 +273,17 @@ private fun buildFancyObject(
     val theType =
         TypeSpec
             .classBuilder(className)
-            .addJavadoc(schemaJavadoc(entry))
             .addAnnotation(generated(0, context.withSchemaStack(fancyObjectType)))
             .addAnnotation(lombok("Getter"))
             .addAnnotation(lombok("Setter"))
             .addAnnotation(lombok("EqualsAndHashCode"))
             .addModifiers(Modifier.PUBLIC)
+
+    schemaJavadoc(entry).let {
+        if (it.isNotBlank()) {
+            theType.addJavadoc($$"$L", it)
+        }
+    }
 
     val fields = ArrayList<Pair<TypeName, String>>()
 
@@ -356,7 +361,7 @@ private fun buildFieldSpec(
             referenceAndDefinition(context, keyValuePair, "", classRef)!!.first,
             keyValuePair.key.unkeywordize().camelCase(),
             Modifier.PRIVATE,
-        ).addJavadoc(schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
+        ).addJavadoc($$"$L", schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
         .addAnnotation(generated(0, context))
         .addAnnotation(jsonProperty(keyValuePair.key))
         .build()
@@ -463,6 +468,12 @@ private fun buildSimpleObject(
             .addAnnotation(lombok("AllArgsConstructor"))
             .addAnnotation(jsonIncludeNonNull())
 
+    schemaJavadoc(entry).let {
+        if (it.isNotBlank()) {
+            builder.addJavadoc($$"$L", it)
+        }
+    }
+
     addProperties(context, entry, nameRef, builder)
 
     // Generate manual getters, setters, and toString for the properties
@@ -518,13 +529,19 @@ private fun addProperties(
                 }
             }
             if (!knownFields.contains(p.key.unkeywordize().camelCase())) {
-                classBuilder.addField(
+                val builder =
                     FieldSpec
                         .builder(d, p.key.unkeywordize().camelCase(), Modifier.PRIVATE)
                         .addAnnotation(jsonProperty(p.key))
                         .addAnnotation(generated(0, context.withSchemaStack("properties", p.key)))
-                        .build(),
-                )
+
+                schemaJavadoc(p).let {
+                    if (it.isNotBlank()) {
+                        builder.addJavadoc($$"$L", it)
+                    }
+                }
+
+                classBuilder.addField(builder.build())
             }
         }
     }
@@ -539,7 +556,6 @@ private fun buildEnum(
         TypeSpec
             .enumBuilder(className.simpleName())
             .addModifiers(Modifier.PUBLIC)
-            .addJavadoc(schemaJavadoc(entry))
             .addAnnotation(generated(0, context))
             .addAnnotation(lombok("Getter"))
             .addAnnotation(lombok("RequiredArgsConstructor"))
@@ -548,9 +564,16 @@ private fun buildEnum(
                 FieldSpec
                     .builder(String::class.java, "value", Modifier.PRIVATE, Modifier.FINAL)
                     .addAnnotation(jsonValue())
-                    .addJavadoc($$"$S", "The value of the enum")
+                    .addJavadoc($$"$L", "The value of the enum")
                     .build(),
             )
+
+    schemaJavadoc(entry).let {
+        if (it.isNotBlank()) {
+            builder.addJavadoc($$"$L", it)
+        }
+    }
+
     entry.value.enum
         .map { it?.toString() }
         .forEach {
