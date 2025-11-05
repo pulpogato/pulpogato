@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /orgs/corp/installations
+    uri: /orgs/corp/installations?per_page=100&page=1
     protocol: HTTP/1.1
     headers:
       Accept: application/json

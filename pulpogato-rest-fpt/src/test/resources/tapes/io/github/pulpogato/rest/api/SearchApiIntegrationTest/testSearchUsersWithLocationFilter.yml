@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /search/users
+    uri: /search/users?q=location%3Acalifornia&per_page=5
     protocol: HTTP/1.1
     headers:
       Accept: application/json

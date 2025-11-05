@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /repos/pulpogato/pulpogato/commits
+    uri: /repos/pulpogato/pulpogato/commits?per_page=10&page=1
     protocol: HTTP/1.1
     headers:
       Accept: application/json

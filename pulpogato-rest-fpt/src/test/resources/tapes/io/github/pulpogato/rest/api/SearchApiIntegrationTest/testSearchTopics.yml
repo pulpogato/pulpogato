@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /search/topics
+    uri: /search/topics?q=java
     protocol: HTTP/1.1
     headers:
       Accept: application/json
