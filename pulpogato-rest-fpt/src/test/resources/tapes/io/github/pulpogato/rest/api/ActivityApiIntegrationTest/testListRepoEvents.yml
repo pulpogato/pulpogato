@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /repos/octocat/Hello-World/events
+    uri: /repos/octocat/Hello-World/events?per_page=5&page=1
     protocol: HTTP/1.1
     headers:
       Accept: application/json

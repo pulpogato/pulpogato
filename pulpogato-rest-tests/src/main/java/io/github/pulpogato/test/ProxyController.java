@@ -136,7 +136,7 @@ public class ProxyController {
 
         return Exchange.Request.builder()
                 .method(request.getMethod())
-                .uri(request.getRequestURI())
+                .uri(request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""))
                 .protocol(request.getProtocol())
                 .headers(requestHeadersMap)
                 .body(prettifyBody(body))

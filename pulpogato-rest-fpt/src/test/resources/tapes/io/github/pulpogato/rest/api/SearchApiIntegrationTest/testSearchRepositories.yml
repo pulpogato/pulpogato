@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /search/repositories
+    uri: /search/repositories?q=pulpogato
     protocol: HTTP/1.1
     headers:
       Accept: application/json

@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /orgs/github/events
+    uri: /orgs/github/events?per_page=5&page=1
     protocol: HTTP/1.1
     headers:
       Accept: application/json

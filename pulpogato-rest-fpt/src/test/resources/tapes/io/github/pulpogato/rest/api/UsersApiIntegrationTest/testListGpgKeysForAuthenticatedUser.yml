@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /user/gpg_keys
+    uri: /user/gpg_keys?per_page=5&page=0
     protocol: HTTP/1.1
     headers:
       Accept: application/json

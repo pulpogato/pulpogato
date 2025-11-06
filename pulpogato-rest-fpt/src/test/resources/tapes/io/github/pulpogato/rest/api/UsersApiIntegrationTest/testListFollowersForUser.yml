@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /users/sghill/followers
+    uri: /users/sghill/followers?per_page=5&page=0
     protocol: HTTP/1.1
     headers:
       Accept: application/json

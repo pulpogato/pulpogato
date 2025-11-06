@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /users/rahulsom/events/public
+    uri: /users/rahulsom/events/public?per_page=5&page=1
     protocol: HTTP/1.1
     headers:
       Accept: application/json

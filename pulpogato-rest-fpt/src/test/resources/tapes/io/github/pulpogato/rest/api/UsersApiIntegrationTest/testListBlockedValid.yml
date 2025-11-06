@@ -1,6 +1,6 @@
 - request:
     method: GET
-    uri: /user/blocks
+    uri: /user/blocks?per_page=5&page=0
     protocol: HTTP/1.1
     headers:
       Accept: application/json
