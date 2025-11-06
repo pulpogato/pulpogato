@@ -11,7 +11,7 @@ class RateLimitApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGet() {
-        RateLimitApi api = factory.createClient(RateLimitApi.class);
+        RateLimitApi api = new RestClients(webClient).getRateLimitApi();
         ResponseEntity<RateLimitOverview> response = api.get();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

@@ -13,7 +13,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testSearchRepositories() {
-        SearchApi api = factory.createClient(SearchApi.class);
+        SearchApi api = new RestClients(webClient).getSearchApi();
         ResponseEntity<SearchApi.Repos200> response = api.repos("pulpogato", null, null, null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -36,7 +36,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testSearchRepositoriesWithLanguageFilter() {
-        SearchApi api = factory.createClient(SearchApi.class);
+        SearchApi api = new RestClients(webClient).getSearchApi();
         ResponseEntity<SearchApi.Repos200> response = api.repos("language:java", null, null, 10L, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -51,7 +51,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testSearchUsers() {
-        SearchApi api = factory.createClient(SearchApi.class);
+        SearchApi api = new RestClients(webClient).getSearchApi();
         ResponseEntity<SearchApi.Users200> response = api.users("rahulsom", null, null, null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -73,7 +73,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testSearchUsersWithLocationFilter() {
-        SearchApi api = factory.createClient(SearchApi.class);
+        SearchApi api = new RestClients(webClient).getSearchApi();
         ResponseEntity<SearchApi.Users200> response = api.users("location:california", null, null, 5L, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -91,7 +91,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testSearchTopics() {
-        SearchApi api = factory.createClient(SearchApi.class);
+        SearchApi api = new RestClients(webClient).getSearchApi();
         ResponseEntity<SearchApi.Topics200> response = api.topics("java", null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -113,7 +113,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testSearchTopicsPopular() {
-        SearchApi api = factory.createClient(SearchApi.class);
+        SearchApi api = new RestClients(webClient).getSearchApi();
         ResponseEntity<SearchApi.Topics200> response = api.topics("machine-learning", 10L, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

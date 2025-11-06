@@ -10,8 +10,6 @@ import org.springframework.test.web.servlet.client.MockMvcHttpConnector;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.support.WebClientAdapter;
-import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @SpringBootTest(
         classes = {ProxyController.class},
@@ -28,7 +26,7 @@ public class BaseIntegrationTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    protected HttpServiceProxyFactory factory;
+    protected WebClient webClient;
 
     @BeforeEach
     void setUp(TestInfo testInfo) {
@@ -40,13 +38,9 @@ public class BaseIntegrationTest {
 
         var mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        final var webClient = WebClient.builder()
+        webClient = WebClient.builder()
                 .clientConnector(new MockMvcHttpConnector(mockMvc))
                 .defaultHeader("TapeName", classPart + "/" + methodPart)
-                .build();
-
-        factory = HttpServiceProxyFactory.builder()
-                .exchangeAdapter(WebClientAdapter.create(webClient))
                 .build();
 
         log.info("");

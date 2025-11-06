@@ -12,7 +12,7 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testRoot() {
-        MetaApi api = factory.createClient(MetaApi.class);
+        MetaApi api = new RestClients(webClient).getMetaApi();
         ResponseEntity<Root> response = api.root();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -31,7 +31,7 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGet() {
-        MetaApi api = factory.createClient(MetaApi.class);
+        MetaApi api = new RestClients(webClient).getMetaApi();
         ResponseEntity<ApiOverview> response = api.get();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

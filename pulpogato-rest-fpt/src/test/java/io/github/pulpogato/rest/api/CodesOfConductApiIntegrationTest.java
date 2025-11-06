@@ -13,7 +13,7 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAllCodesOfConduct() {
-        CodesOfConductApi api = factory.createClient(CodesOfConductApi.class);
+        CodesOfConductApi api = new RestClients(webClient).getCodesOfConductApi();
         ResponseEntity<List<CodeOfConduct>> response = api.getAllCodesOfConduct();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -44,7 +44,7 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetContributorCovenantCodeOfConduct() {
-        CodesOfConductApi api = factory.createClient(CodesOfConductApi.class);
+        CodesOfConductApi api = new RestClients(webClient).getCodesOfConductApi();
         ResponseEntity<CodeOfConduct> response = api.getConductCode("contributor_covenant");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -64,7 +64,7 @@ class CodesOfConductApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetCitizenCodeOfConduct() {
-        CodesOfConductApi api = factory.createClient(CodesOfConductApi.class);
+        CodesOfConductApi api = new RestClients(webClient).getCodesOfConductApi();
         ResponseEntity<CodeOfConduct> response = api.getConductCode("citizen_code_of_conduct");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

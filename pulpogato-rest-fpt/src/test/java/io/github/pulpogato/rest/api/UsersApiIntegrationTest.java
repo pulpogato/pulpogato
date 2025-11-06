@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testGetAuthenticatedPublic() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         ResponseEntity<UsersApi.GetAuthenticated200> authenticated = api.getAuthenticated();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody())
@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testGetAuthenticatedPrivate() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         ResponseEntity<UsersApi.GetAuthenticated200> authenticated = api.getAuthenticated();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody())
@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
     @Test
     @Disabled("PATCH is currently broken")
     void testUpdateAuthenticated() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var update = UsersApi.UpdateAuthenticatedRequestBody.builder()
                 .location("San Francisco Bay Area")
                 .build();
@@ -69,7 +69,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListBlockedEmpty() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody())
@@ -83,7 +83,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListBlockedValid() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody())
@@ -102,7 +102,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testCheckBlocked() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var blocked = api.checkBlocked("some-blocked-user");
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody())
@@ -111,7 +111,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testCheckNotBlocked() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         WebClientResponseException exception = catchThrowableOfType(WebClientResponseException.class, () -> api.checkBlocked("gooduser"));
 
         assertThat(exception).isNotNull();
@@ -121,7 +121,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testBlockUserFailed() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         WebClientResponseException exception = catchThrowableOfType(WebClientResponseException.class, () -> api.block("some-blocked-user"));
 
         assertThat(exception).isNotNull();
@@ -131,7 +131,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testBlockUserSuccess() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var blocked = api.block("gooduser");
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
@@ -141,7 +141,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testUnblockUserSuccess() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var blocked = api.block("gooduser");
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
@@ -151,7 +151,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListFollowers() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var followers = api.listFollowersForAuthenticatedUser( 5L, 0L);
         assertThat(followers.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(followers.getBody())
@@ -170,7 +170,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListGpgKeysForAuthenticatedUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var gpgKeys = api.listGpgKeysForAuthenticatedUser(5L, 0L);
         assertThat(gpgKeys.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(gpgKeys.getBody())
@@ -189,7 +189,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testGetGpgKeyForAuthenticatedUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var gpgKey = api.getGpgKeyForAuthenticatedUser(175109L);
         assertThat(gpgKey.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(gpgKey.getBody())
@@ -203,7 +203,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListPublicEmailsForAuthenticatedUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var response = api.listPublicEmailsForAuthenticatedUser(5L, 0L);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -227,7 +227,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListEmailsForAuthenticatedUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
         var response = api.listEmailsForAuthenticatedUser(5L, 0L);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -258,7 +258,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListSocialAccountsForAuthenticatedUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
 
         var response = api.listSocialAccountsForAuthenticatedUser(5L, 0L);
 
@@ -277,7 +277,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testGetById() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
 
         var response = api.getById(230004L);
 
@@ -305,7 +305,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testGetByUsername() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
 
         var response = api.getByUsername("sghill");
 
@@ -333,7 +333,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListFollowersForUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
 
         var response = api.listFollowersForUser("sghill", 5L, 0L);
 
@@ -354,7 +354,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testListFollowingForUser() {
-        UsersApi api = factory.createClient(UsersApi.class);
+        UsersApi api = new RestClients(webClient).getUsersApi();
 
         var response = api.listFollowingForUser("sghill", 5L, 0L);
 
