@@ -4,6 +4,7 @@ import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
@@ -581,7 +582,40 @@ private fun buildEnum(
             val enumName = it ?: "null"
             builder.addEnumConstant(enumValue, TypeSpec.anonymousClassBuilder($$"$S", enumName).build())
         }
+
+    // Add the converter as a nested static class
+    val converterClass = buildEnumConverter(className)
+    builder.addType(converterClass)
+
     return builder.build()
+}
+
+private fun buildEnumConverter(enumClassName: ClassName): TypeSpec {
+    val enumSimpleName = enumClassName.simpleName()
+    return TypeSpec
+        .classBuilder("${enumSimpleName}Converter")
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+        .addSuperinterface(
+            ParameterizedTypeName.get(
+                ClassName.get("org.springframework.core.convert.converter", "Converter"),
+                enumClassName,
+                ClassName.get(String::class.java),
+            ),
+        ).addMethod(
+            MethodSpec
+                .methodBuilder("convert")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override::class.java)
+                .addAnnotation(ClassName.get("org.jspecify.annotations", "NonNull"))
+                .addParameter(
+                    ParameterSpec
+                        .builder(enumClassName, "source")
+                        .addAnnotation(ClassName.get("org.jspecify.annotations", "NonNull"))
+                        .build(),
+                ).returns(ClassName.get(String::class.java))
+                .addStatement("return source.getValue()")
+                .build(),
+        ).build()
 }
 
 private val javadocExpressionRegex = Regex("\\$\\{(.+)}")

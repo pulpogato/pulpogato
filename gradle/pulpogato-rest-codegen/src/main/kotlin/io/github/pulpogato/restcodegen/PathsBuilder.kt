@@ -41,6 +41,7 @@ class PathsBuilder {
         mainDir: File,
         testDir: File,
         packageName: String,
+        enumConverters: MutableSet<ClassName>,
     ) {
         val apiDir = File(mainDir, packageName.replace(".", "/"))
         apiDir.mkdirs()
@@ -79,9 +80,20 @@ class PathsBuilder {
                         ).returns(TypeVariableName.get("T"))
                         .addStatement(
                             $$"""
+                        var fcs = new $T()
+                            """.trimIndent(),
+                            ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
+                        ).addStatement(
+                            $$"""
+                        new $T().getConverters().forEach(fcs::addConverter)
+                            """.trimIndent(),
+                            ClassName.get(packageName, "EnumConverters"),
+                        ).addStatement(
+                            $$"""
                         return $T.builderFor(
                                 $T.create(
                                         $T.requireNonNull(restClient)))
+                                .conversionService(fcs)
                                 .build()
                                 .createClient(clazz)
                             """.trimIndent(),
@@ -125,6 +137,7 @@ class PathsBuilder {
                         pathInterface,
                         typeRef,
                         testClass,
+                        enumConverters,
                     )
                 }
 
@@ -157,8 +170,9 @@ class PathsBuilder {
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
+        enumConverters: MutableSet<ClassName>,
     ) {
-        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef, testClass)
+        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef, testClass, enumConverters)
 
         val successResponses =
             atomicMethod.operation.responses
@@ -356,6 +370,7 @@ class PathsBuilder {
         atomicMethod: AtomicMethod,
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
+        enumConverters: MutableSet<ClassName>,
     ): ParameterSpec {
         val operationName = atomicMethod.operationId.split('/')[1]
         val (ref, def) =
@@ -364,7 +379,14 @@ class PathsBuilder {
         if (def != null) {
             val matchingType = typeDef.build().typeSpecs().find { k -> k.name() == def.name() }
             if (matchingType == null) {
-                typeDef.addType(def.toBuilder().addModifiers(Modifier.STATIC, Modifier.PUBLIC).build())
+                val builtDef = def.toBuilder().addModifiers(Modifier.STATIC, Modifier.PUBLIC).build()
+                typeDef.addType(builtDef)
+
+                // If this is an enum, add its converter to the set
+                if (builtDef.enumConstants().isNotEmpty() && ref is ClassName) {
+                    val converterClassName = ref.nestedClass("${ref.simpleName()}Converter")
+                    enumConverters.add(converterClassName)
+                }
             }
         }
 
@@ -462,6 +484,7 @@ class PathsBuilder {
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
+        enumConverters: MutableSet<ClassName>,
     ): List<Pair<Parameter, ParameterSpec>> {
         val parameters =
             atomicMethod.operation.parameters
@@ -475,6 +498,7 @@ class PathsBuilder {
                                 atomicMethod,
                                 typeDef,
                                 typeRef,
+                                enumConverters,
                             ),
                         )
                     } else {
@@ -488,6 +512,7 @@ class PathsBuilder {
                                 atomicMethod,
                                 typeDef,
                                 typeRef,
+                                enumConverters,
                             ),
                         )
                     }
@@ -520,7 +545,14 @@ class PathsBuilder {
             parameters.add(
                 Pair(
                     bodyParameter,
-                    buildParameter(context.withSchemaStack("requestBody", "content", firstEntry.key, "schema"), bodyParameter, atomicMethod, typeDef, typeRef),
+                    buildParameter(
+                        context.withSchemaStack("requestBody", "content", firstEntry.key, "schema"),
+                        bodyParameter,
+                        atomicMethod,
+                        typeDef,
+                        typeRef,
+                        enumConverters,
+                    ),
                 ),
             )
         }
