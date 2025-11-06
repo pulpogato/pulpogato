@@ -12,7 +12,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetActionsCacheUsage() {
-        ActionsApi api = factory.createClient(ActionsApi.class);
+        ActionsApi api = new RestClients(webClient).getActionsApi();
         ResponseEntity<ActionsCacheUsageByRepository> response = api.getActionsCacheUsage("pulpogato", "pulpogato");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -28,7 +28,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetActionsCacheList() {
-        ActionsApi api = factory.createClient(ActionsApi.class);
+        ActionsApi api = new RestClients(webClient).getActionsApi();
         ResponseEntity<ActionsCacheList> response = api.getActionsCacheList("pulpogato", "pulpogato", null, null, null, null, null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -43,7 +43,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetActionsCacheListWithPagination() {
-        ActionsApi api = factory.createClient(ActionsApi.class);
+        ActionsApi api = new RestClients(webClient).getActionsApi();
         ResponseEntity<ActionsCacheList> response = api.getActionsCacheList("pulpogato", "pulpogato", 10L, 0L, null, null, null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

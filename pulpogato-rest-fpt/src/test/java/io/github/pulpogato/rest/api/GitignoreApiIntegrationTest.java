@@ -13,7 +13,7 @@ class GitignoreApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAllTemplates() {
-        GitignoreApi api = factory.createClient(GitignoreApi.class);
+        GitignoreApi api = new RestClients(webClient).getGitignoreApi();
         ResponseEntity<List<String>> response = api.getAllTemplates();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -29,7 +29,7 @@ class GitignoreApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetJavaTemplate() {
-        GitignoreApi api = factory.createClient(GitignoreApi.class);
+        GitignoreApi api = new RestClients(webClient).getGitignoreApi();
         ResponseEntity<GitignoreTemplate> response = api.getTemplate("Java");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -47,7 +47,7 @@ class GitignoreApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetPythonTemplate() {
-        GitignoreApi api = factory.createClient(GitignoreApi.class);
+        GitignoreApi api = new RestClients(webClient).getGitignoreApi();
         ResponseEntity<GitignoreTemplate> response = api.getTemplate("Python");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

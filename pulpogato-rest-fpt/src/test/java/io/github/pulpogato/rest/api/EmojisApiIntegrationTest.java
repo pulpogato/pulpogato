@@ -12,7 +12,7 @@ class EmojisApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGet() {
-        EmojisApi api = factory.createClient(EmojisApi.class);
+        EmojisApi api = new RestClients(webClient).getEmojisApi();
         ResponseEntity<Map<String, String>> response = api.get();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

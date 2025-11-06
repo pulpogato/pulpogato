@@ -16,7 +16,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListPublicEvents() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         ResponseEntity<List<Event>> response = api.listPublicEvents(10L, 1L);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -39,7 +39,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetFeeds() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         ResponseEntity<Feed> response = api.getFeeds();
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -66,7 +66,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListPublicOrgEvents() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         // Using GitHub's own organization as an example
         ResponseEntity<List<Event>> response = api.listPublicOrgEvents("github", 5L, 1L);
         
@@ -94,7 +94,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListRepoEvents() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         // Using a popular repository as an example
         ResponseEntity<List<Event>> response = api.listRepoEvents("octocat", "Hello-World", 5L, 1L);
         
@@ -118,7 +118,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListReposStarredByAuthenticatedUser() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         ResponseEntity<List<Repository>> response = api.listReposStarredByAuthenticatedUser(
                 null, null, 10L, 1L);
         
@@ -143,7 +143,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListWatchedReposForAuthenticatedUser() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         ResponseEntity<List<MinimalRepository>> response = api.listWatchedReposForAuthenticatedUser(10L, 1L);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -166,7 +166,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListPublicEventsForUser() {
-        ActivityApi api = factory.createClient(ActivityApi.class);
+        ActivityApi api = new RestClients(webClient).getActivityApi();
         // Using octocat as a well-known GitHub user
         ResponseEntity<List<Event>> response = api.listPublicEventsForUser("rahulsom", 5L, 1L);
         

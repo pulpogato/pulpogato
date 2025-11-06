@@ -14,7 +14,7 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAllCommonlyUsed() {
-        LicensesApi api = factory.createClient(LicensesApi.class);
+        LicensesApi api = new RestClients(webClient).getLicensesApi();
         ResponseEntity<List<LicenseSimple>> response = api.getAllCommonlyUsed(null, null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -45,7 +45,7 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetMitLicense() {
-        LicensesApi api = factory.createClient(LicensesApi.class);
+        LicensesApi api = new RestClients(webClient).getLicensesApi();
         ResponseEntity<License> response = api.get("mit");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -73,7 +73,7 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetApacheLicense() {
-        LicensesApi api = factory.createClient(LicensesApi.class);
+        LicensesApi api = new RestClients(webClient).getLicensesApi();
         ResponseEntity<License> response = api.get("apache-2.0");
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -92,7 +92,7 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetFeaturedLicenses() {
-        LicensesApi api = factory.createClient(LicensesApi.class);
+        LicensesApi api = new RestClients(webClient).getLicensesApi();
         ResponseEntity<List<LicenseSimple>> response = api.getAllCommonlyUsed(true, null, null);
         
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
