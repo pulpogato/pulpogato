@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import javax.json.Json;
@@ -123,9 +126,30 @@ public class TestUtils {
             if (oldStr.equals(newStr.replace("Z", ".000Z"))) {
                 return;
             }
+            // Handle .000Z vs Z normalization (both directions)
+            if (oldStr.replace("Z", ".000Z").equals(newStr)) {
+                return;
+            }
             // Handle .000+00:00 vs Z normalization
             if (oldStr.replace(".000+00:00", "Z").equals(newStr)) {
                 return;
+            }
+            // Handle milliseconds added to timestamps with timezone offsets (e.g., +12:00, -07:00)
+            // Pattern: YYYY-MM-DDTHH:MM:SS+/-HH:MM -> YYYY-MM-DDTHH:MM:SS.000+/-HH:MM
+            if (oldStr.matches(".*T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}")
+                    && newStr.matches(".*T\\d{2}:\\d{2}:\\d{2}\\.000[+-]\\d{2}:\\d{2}")) {
+                var oldWithMillis = oldStr.replaceFirst("(T\\d{2}:\\d{2}:\\d{2})([+-]\\d{2}:\\d{2})", "$1.000$2");
+                if (oldWithMillis.equals(newStr)) {
+                    return;
+                }
+            }
+            // Handle +00:00 to .000Z conversion
+            // Pattern: YYYY-MM-DDTHH:MM:SS+00:00 -> YYYY-MM-DDTHH:MM:SS.000Z
+            if (oldStr.matches(".*T\\d{2}:\\d{2}:\\d{2}\\+00:00") && newStr.matches(".*T\\d{2}:\\d{2}:\\d{2}\\.000Z")) {
+                var oldNormalized = oldStr.replace("+00:00", ".000Z");
+                if (oldNormalized.equals(newStr)) {
+                    return;
+                }
             }
         }
 
@@ -136,10 +160,14 @@ public class TestUtils {
                 var timestamp = ((JsonNumber) oldValue).longValue();
                 var isoString = ((JsonString) newValue).getString();
                 // Convert timestamp to ISO string and compare
-                var timestampAsIso = java.time.Instant.ofEpochSecond(timestamp)
-                        .atOffset(java.time.ZoneOffset.UTC)
-                        .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                final var timestampAtUtc = Instant.ofEpochSecond(timestamp).atOffset(ZoneOffset.UTC);
+                var timestampAsIso = timestampAtUtc.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 if (timestampAsIso.equals(isoString)) {
+                    return;
+                }
+                var timestampAsIso2 =
+                        timestampAtUtc.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+                if (timestampAsIso2.equals(isoString)) {
                     return;
                 }
             } catch (Exception e) {
