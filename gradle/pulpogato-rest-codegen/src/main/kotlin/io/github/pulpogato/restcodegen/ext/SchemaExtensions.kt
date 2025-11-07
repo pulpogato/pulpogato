@@ -276,8 +276,10 @@ private fun buildFancyObject(
             .addAnnotation(generated(0, context.withSchemaStack(fancyObjectType)))
             .addAnnotation(lombok("Getter"))
             .addAnnotation(lombok("Setter"))
+            .addAnnotation(lombok("ToString"))
             .addAnnotation(lombok("EqualsAndHashCode"))
             .addModifiers(Modifier.PUBLIC)
+            .addSuperinterface(ClassName.get("io.github.pulpogato.common", "PulpogatoType"))
 
     schemaJavadoc(entry).let {
         if (it.isNotBlank()) {
@@ -301,7 +303,7 @@ private fun buildFancyObject(
     // Generate manual getters, setters, toString, and constructors for the fields
     val builtType = theType.build()
 
-    addToStringMethod(builtType, className, theType)
+    addToCodeMethod(builtType, theType, classRef)
 
     val settableFields = getSettableFields(fields, className)
     val gettableFields = getGettableFields(fields, className)
@@ -333,12 +335,62 @@ private fun processSubSchema(
     val rad = referenceAndDefinition(context, keyValuePair, "", classRef)!!
     rad.let {
         if (rad.second != null) {
-            val builder = rad.second!!.toBuilder()
+            val original = rad.second!!
+            // Create a fresh builder copying only fields, types, annotations, methods, etc
+            val builder = TypeSpec.classBuilder(original.name())
+            original.annotations().forEach { builder.addAnnotation(it) }
+            original.modifiers().forEach { builder.addModifiers(it) }
+            original.superinterfaces().forEach { builder.addSuperinterface(it) }
+            original.fieldSpecs().forEach { builder.addField(it) }
+            original.typeSpecs().forEach { builder.addType(it) }
+            original.methodSpecs().forEach { builder.addMethod(it) }
+            if (!original.javadoc().isEmpty) {
+                builder.addJavadoc(original.javadoc())
+            }
+
             if (rad.first is ClassName) {
                 val parentStack = context.schemaStack.dropLast(2).toTypedArray()
-                addProperties(context.withSchemaStack(*parentStack), entry, rad.first as ClassName, builder)
+                // First add properties from the parent schema (if it has any)
+                if (entry.value.properties != null && entry.value.properties.isNotEmpty()) {
+                    addProperties(context.withSchemaStack(*parentStack), entry, rad.first as ClassName, builder)
+                }
+                // Then add properties from the sub-schema
+                addProperties(context.withSchemaStack(*parentStack), keyValuePair, rad.first as ClassName, builder)
+                // Add toString and toCode methods after all properties have been added (only if they need to be regenerated)
+                val builtWithAllProperties = builder.addModifiers(Modifier.STATIC).build()
+                // Only add methods if they need to include additional properties that were just added
+                // Check if the original had the methods - if so, we need to replace them with updated versions
+                if (original.methodSpecs().any { it.name() == "toCode" } && builtWithAllProperties.fieldSpecs().size > original.fieldSpecs().size) {
+                    // Methods exist but need to be updated with new fields - remove old methods first
+                    val builderWithoutMethods = TypeSpec.classBuilder(original.name())
+                    builtWithAllProperties.annotations().forEach { builderWithoutMethods.addAnnotation(it) }
+                    builtWithAllProperties.modifiers().forEach { builderWithoutMethods.addModifiers(it) }
+                    builtWithAllProperties.superinterfaces().forEach { builderWithoutMethods.addSuperinterface(it) }
+                    builtWithAllProperties.fieldSpecs().forEach { builderWithoutMethods.addField(it) }
+                    builtWithAllProperties.typeSpecs().forEach { builderWithoutMethods.addType(it) }
+                    builtWithAllProperties.methodSpecs().filterNot { it.name() == "toString" || it.name() == "toCode" }.forEach {
+                        builderWithoutMethods
+                            .addMethod(
+                                it,
+                            )
+                    }
+                    if (!builtWithAllProperties.javadoc().isEmpty) {
+                        builderWithoutMethods.addJavadoc(builtWithAllProperties.javadoc())
+                    }
+                    val rebuilt = builderWithoutMethods.build()
+                    addToCodeMethod(rebuilt, builderWithoutMethods, rad.first as ClassName)
+                    theType.addType(builderWithoutMethods.build())
+                } else if (original.methodSpecs().none { it.name() == "toCode" }) {
+                    // No methods exist, add them
+                    addToCodeMethod(builtWithAllProperties, builder, rad.first as ClassName)
+                    theType.addType(builder.build())
+                } else {
+                    // Methods exist and are complete, just use as-is
+                    theType.addType(builtWithAllProperties)
+                }
+            } else {
+                theType.addType(builder.addModifiers(Modifier.STATIC).build())
             }
-            theType.addType(builder.addModifiers(Modifier.STATIC).build())
         }
         val fieldSpec = buildFieldSpec(context, keyValuePair, classRef)
         theType.addField(fieldSpec)
@@ -466,7 +518,9 @@ private fun buildSimpleObject(
             .addAnnotation(superBuilder())
             .addAnnotation(lombok("NoArgsConstructor"))
             .addAnnotation(lombok("AllArgsConstructor"))
+            .addAnnotation(lombok("ToString"))
             .addAnnotation(jsonIncludeNonNull())
+            .addSuperinterface(ClassName.get("io.github.pulpogato.common", "PulpogatoType"))
 
     schemaJavadoc(entry).let {
         if (it.isNotBlank()) {
@@ -476,38 +530,39 @@ private fun buildSimpleObject(
 
     addProperties(context, entry, nameRef, builder)
 
-    // Generate manual getters, setters, and toString for the properties
+    // Add toString and toCode methods
     val builtClass = builder.build()
-    addToStringMethod(builtClass, name, builder)
+    addToCodeMethod(builtClass, builder, nameRef)
+
     return builder.build()
 }
 
-private fun addToStringMethod(
+private fun addToCodeMethod(
     builtClass: TypeSpec,
-    name: String,
     builder: TypeSpec.Builder,
+    nameRef: ClassName,
 ) {
     if (builtClass.fieldSpecs().isNotEmpty()) {
-        val toStringStatement =
+        val toCodeStatement =
             CodeBlock
                 .builder()
-                .add($$"return \"/* $L */ \" + new $T(this, $T.JSON_STYLE)", name, Types.TO_STRING_BUILDER, Types.TO_STRING_STYLE)
+                .add($$"return new $T($S)", Types.CODE_BUILDER, nameRef.canonicalName())
 
         builtClass.fieldSpecs().forEach { field ->
-            toStringStatement.add($$"\n    .append($S, $N)", field.name(), field.name())
+            toCodeStatement.add($$"\n    .addProperty($S, $N)", field.name(), field.name())
         }
 
-        toStringStatement.add("\n    .toString()")
+        toCodeStatement.add("\n    .build()")
 
-        builder.addMethod(
-            MethodSpec
-                .methodBuilder("toString")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Override::class.java)
-                .returns(String::class.java)
-                .addStatement(toStringStatement.build())
-                .build(),
-        )
+        builder
+            .addMethod(
+                MethodSpec
+                    .methodBuilder("toCode")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(String::class.java)
+                    .addStatement(toCodeStatement.build())
+                    .build(),
+            )
     }
 }
 
@@ -523,9 +578,16 @@ private fun addProperties(
     entry.value.properties?.forEach { p ->
         referenceAndDefinition(context.withSchemaStack("properties", p.key), p, "", nameRef)?.let { (d, s) ->
 
-            s?.let {
-                if (!knownSubTypes.contains(it.name())) {
-                    classBuilder.addType(it.toBuilder().addModifiers(Modifier.STATIC).build())
+            s?.let { nestedType ->
+                if (!knownSubTypes.contains(nestedType.name())) {
+                    // Add toString and toCode methods if the nested type doesn't have them
+                    if (nestedType.methodSpecs().none { it.name() == "toCode" } && d is ClassName) {
+                        val builder = nestedType.toBuilder()
+                        addToCodeMethod(nestedType, builder, d)
+                        classBuilder.addType(builder.addModifiers(Modifier.STATIC).build())
+                    } else {
+                        classBuilder.addType(nestedType.toBuilder().addModifiers(Modifier.STATIC).build())
+                    }
                 }
             }
             if (!knownFields.contains(p.key.unkeywordize().camelCase())) {

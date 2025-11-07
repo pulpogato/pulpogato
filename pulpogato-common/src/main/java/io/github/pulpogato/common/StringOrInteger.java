@@ -3,9 +3,11 @@ package io.github.pulpogato.common;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
  * A class that can be a String or an Integer.
@@ -14,16 +16,19 @@ import lombok.experimental.Accessors;
 @JsonSerialize(using = StringOrInteger.CustomSerializer.class)
 @Getter
 @Setter
-@Accessors(chain = true, fluent = false)
-public class StringOrInteger {
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class StringOrInteger implements PulpogatoType {
     private String stringValue;
     private Long integerValue;
 
-    /**
-     * Creates an instance that can be a String, or an Integer.
-     */
-    public StringOrInteger() {
-        // Empty Default Constructor
+    @Override
+    public String toCode() {
+        return new CodeBuilder(this.getClass().getName())
+                .addProperty("stringValue", stringValue)
+                .addProperty("integerValue", integerValue)
+                .build();
     }
 
     static class CustomDeserializer extends FancyDeserializer<StringOrInteger> {

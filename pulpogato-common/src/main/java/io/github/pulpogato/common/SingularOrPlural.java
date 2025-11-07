@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A class that can represent either a single value or a list of values of the same type.
@@ -20,8 +22,11 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true, fluent = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SingularOrPlural<T> {
+public class SingularOrPlural<T> implements PulpogatoType {
+    @Nullable
     private T singular;
+
+    @Nullable
     private List<T> plural;
 
     /**
@@ -38,7 +43,7 @@ public class SingularOrPlural<T> {
      * @param singular the single value to wrap
      * @return a new SingularOrPlural instance containing the single value
      */
-    public static <T> SingularOrPlural<T> singular(T singular) {
+    public static <T> SingularOrPlural<T> singular(@NonNull T singular) {
         return new SingularOrPlural<>(singular, null);
     }
 
@@ -49,8 +54,16 @@ public class SingularOrPlural<T> {
      * @param plural the list of values to wrap
      * @return a new SingularOrPlural instance containing the list of values
      */
-    public static <T> SingularOrPlural<T> plural(List<T> plural) {
+    public static <T> SingularOrPlural<T> plural(@NonNull List<T> plural) {
         return new SingularOrPlural<>(null, plural);
+    }
+
+    @Override
+    public String toCode() {
+        return "io.github.pulpogato.common.SingularOrPlural."
+                + ((singular == null)
+                        ? ("plural(" + CodeBuilder.render(plural) + ")")
+                        : ("singular(" + CodeBuilder.render(singular) + ")"));
     }
 
     static class CustomDeserializer extends FancyDeserializer<SingularOrPlural> {

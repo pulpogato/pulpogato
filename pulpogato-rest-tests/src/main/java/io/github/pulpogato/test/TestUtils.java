@@ -1,5 +1,7 @@
 package io.github.pulpogato.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,6 +9,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +21,8 @@ import javax.json.JsonPatch;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import org.assertj.core.api.SoftAssertions;
+import org.springframework.scripting.groovy.GroovyScriptEvaluator;
+import org.springframework.scripting.support.StaticScriptSource;
 
 public class TestUtils {
     private TestUtils() {
@@ -44,6 +49,14 @@ public class TestUtils {
             final T parsed = OBJECT_MAPPER.readValue(input, typeReference);
             final String generated = OBJECT_MAPPER.writeValueAsString(parsed);
             diffJson(input, generated, softly);
+
+            if (parsed instanceof PulpogatoType p) {
+                final var code = p.toCode();
+                GroovyScriptEvaluator evaluator = new GroovyScriptEvaluator();
+                final var evaluation = evaluator.evaluate(new StaticScriptSource(code));
+                assertThat(evaluation).isNotNull().usingRecursiveComparison().isEqualTo(p);
+            }
+
             return parsed;
         } catch (JacksonException e) {
             throw new UnrecognizedPropertyExceptionWrapper(e, input);
