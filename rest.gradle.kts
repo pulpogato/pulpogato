@@ -15,12 +15,12 @@ dependencies {
     compileOnly(libs.springBootWebflux)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
-    implementation(libs.commonsLang3)
 
     api(project(":${rootProject.name}-common"))
 
     testImplementation(project(":${rootProject.name}-rest-tests"))
     testImplementation(libs.bundles.springBoot)
+    testRuntimeOnly(libs.groovy)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
 }

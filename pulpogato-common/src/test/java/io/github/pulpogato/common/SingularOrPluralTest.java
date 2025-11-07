@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -248,5 +249,51 @@ class SingularOrPluralTest {
                 Arguments.of("array of booleans", "[true,false]"),
                 Arguments.of("mixed array", "[\"text\",123,true]"),
                 Arguments.of("single item array", "[\"only\"]"));
+    }
+
+    @Nested
+    class ToCodeTests {
+        @Test
+        void testSingularToCode() {
+            var singularOrPlural = SingularOrPlural.singular("example");
+
+            var code = singularOrPlural.toCode();
+
+            var expectedCode =
+                    """
+                    io.github.pulpogato.common.SingularOrPlural.singular("example")""";
+            assertThat(code).isEqualTo(expectedCode);
+        }
+
+        @Test
+        void testPluralToCode() {
+            var singularOrPlural = SingularOrPlural.plural(List.of("one", "two", "three"));
+
+            var code = singularOrPlural.toCode();
+
+            var expectedCode =
+                    """
+                    io.github.pulpogato.common.SingularOrPlural.plural(List.of(
+                            "one",
+                            "two",
+                            "three"
+                        ))""";
+            assertThat(code).isEqualTo(expectedCode);
+        }
+
+        @Test
+        void testSingularWithStringOrInteger() {
+            var singularOrPlural = SingularOrPlural.singular(
+                    StringOrInteger.builder().stringValue("test").build());
+
+            var code = singularOrPlural.toCode();
+
+            var expectedCode =
+                    """
+                    io.github.pulpogato.common.SingularOrPlural.singular(io.github.pulpogato.common.StringOrInteger.builder()
+                          .stringValue("test")
+                          .build())""";
+            assertThat(code).isEqualTo(expectedCode);
+        }
     }
 }

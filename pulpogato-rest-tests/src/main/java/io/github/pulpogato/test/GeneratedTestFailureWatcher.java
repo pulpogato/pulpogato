@@ -83,12 +83,14 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(reportPath))) {
             for (GeneratedTestFailure failure : failures) {
+                var message = failure.getFieldMessage();
+                var snippet = failure.getSnippet();
                 var data = Map.ofEntries(
-                        Map.entry("ghVersion", failure.ghVersion),
-                        Map.entry("exampleRef", failure.exampleRef()),
-                        Map.entry("schemaRef", failure.getSchemaRef()),
-                        Map.entry("message", failure.getFieldMessage()),
-                        Map.entry("snippet", failure.getSnippet()));
+                        Map.entry("ghVersion", failure.ghVersion != null ? failure.ghVersion : "unknown"),
+                        Map.entry("exampleRef", failure.exampleRef() != null ? failure.exampleRef() : "unknown"),
+                        Map.entry("schemaRef", failure.getSchemaRef() != null ? failure.getSchemaRef() : "unknown"),
+                        Map.entry("message", message != null ? message : "No message available"),
+                        Map.entry("snippet", snippet != null ? snippet : "No snippet available"));
                 writer.println(new ObjectMapper().writeValueAsString(data));
             }
 
