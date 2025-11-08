@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiPredicate;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
@@ -28,6 +29,14 @@ import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
 
 public class TestUtils {
+
+    public static final List<BiPredicate<String, String>> DATE_COMPARE_FUNCTIONS = List.of(
+            compareDates("Z", "+00:00"),
+            compareDates("Z", ".000+00:00"),
+            compareDates(".000", ""),
+            compareDates("+00:00", ".000Z"),
+            compareDates("+00:00", ".000+00:00"));
+
     private TestUtils() {
         // Empty Default Private Constructor. This should not be instantiated.
     }
@@ -107,6 +116,10 @@ public class TestUtils {
         });
     }
 
+    private static BiPredicate<String, String> compareDates(String target, String replacement) {
+        return (oldStr, newStr) -> oldStr.equals(newStr.replace(target, replacement));
+    }
+
     private static void compareOldAndNew(
             final SoftAssertions softly,
             final JsonValue oldValue,
@@ -120,18 +133,9 @@ public class TestUtils {
             var oldStr = ((JsonString) oldValue).getString();
             var newStr = ((JsonString) newValue).getString();
 
-            if (oldStr.equals(newStr.replace("Z", "+00:00"))) {
-                return;
-            }
-            if (oldStr.equals(newStr.replace("Z", ".000Z"))) {
-                return;
-            }
-            // Handle .000Z vs Z normalization (both directions)
-            if (oldStr.replace("Z", ".000Z").equals(newStr)) {
-                return;
-            }
-            // Handle .000+00:00 vs Z normalization
-            if (oldStr.replace(".000+00:00", "Z").equals(newStr)) {
+            var areDatesSame =
+                    DATE_COMPARE_FUNCTIONS.stream().anyMatch(c -> c.test(oldStr, newStr) || c.test(newStr, oldStr));
+            if (areDatesSame) {
                 return;
             }
             // Handle milliseconds added to timestamps with timezone offsets (e.g., +12:00, -07:00)
