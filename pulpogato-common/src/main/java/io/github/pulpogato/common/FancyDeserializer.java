@@ -73,17 +73,23 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
             setAllFields(mapAsString, returnValue);
         } catch (JacksonException e) {
             try {
-                final var map = ctxt.readValue(p, String.class);
-                final var mapAsString = om.writeValueAsString(map);
-                setAllFields(mapAsString, returnValue);
+                final var list = ctxt.readValue(p, List.class);
+                final var listAsString = om.writeValueAsString(list);
+                setAllFields(listAsString, returnValue);
             } catch (JacksonException e1) {
                 try {
-                    final var map = ctxt.readValue(p, Number.class);
+                    final var map = ctxt.readValue(p, String.class);
                     final var mapAsString = om.writeValueAsString(map);
                     setAllFields(mapAsString, returnValue);
                 } catch (JacksonException e2) {
-                    log.debug("Failed to parse", e2);
-                    return null;
+                    try {
+                        final var map = ctxt.readValue(p, Number.class);
+                        final var mapAsString = om.writeValueAsString(map);
+                        setAllFields(mapAsString, returnValue);
+                    } catch (JacksonException e3) {
+                        log.debug("Failed to parse", e3);
+                        return null;
+                    }
                 }
             }
         }

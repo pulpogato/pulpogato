@@ -80,6 +80,13 @@ public class FancySerializer<T> extends StdSerializer<T> {
             return;
         }
 
+        // For ANY_OF mode, serialize the first non-null value directly
+        // This handles cases where multiple fields may be set due to type erasure
+        if (mode == Mode.ANY_OF && !serialized.isEmpty()) {
+            gen.writeObject(serialized.getFirst());
+            return;
+        }
+
         var superMap = serialized.stream()
                 .map(x -> {
                     try {
