@@ -67,8 +67,8 @@ class SingularOrPluralTest {
 
         var result = objectMapper.readValue(json, SingularOrPlural.class);
 
-        // Arrays return null due to FancyDeserializer limitations
-        assertThat(result).isNull();
+        assertThat(result.getPlural()).isEqualTo(List.of("item1", "item2", "item3"));
+        assertThat(result.getSingular()).isNull();
     }
 
     @Test
@@ -77,8 +77,8 @@ class SingularOrPluralTest {
 
         var result = objectMapper.readValue(json, SingularOrPlural.class);
 
-        // Arrays return null due to FancyDeserializer limitations
-        assertThat(result).isNull();
+        assertThat(result.getPlural()).isEmpty();
+        assertThat(result.getSingular()).isNull();
     }
 
     @ParameterizedTest
@@ -141,8 +141,9 @@ class SingularOrPluralTest {
 
         // Numbers are deserialized as strings due to FancyDeserializer behavior
         assertThat(deserializedSingular.getSingular()).isEqualTo("42");
-        // Arrays return null due to FancyDeserializer limitations
-        assertThat(deserializedPlural).isNull();
+        // Arrays are now properly deserialized
+        assertThat(deserializedPlural.getPlural()).isEqualTo(List.of(1, 2, 3));
+        assertThat(deserializedPlural.getSingular()).isNull();
     }
 
     @Test
@@ -228,11 +229,13 @@ class SingularOrPluralTest {
 
     @ParameterizedTest
     @MethodSource("arrayDeserializationTestCases")
-    void testArrayDeserializationFormats(String description, String json) throws JsonProcessingException {
+    void testArrayDeserializationFormats(String description, String json, List<?> expectedList)
+            throws JsonProcessingException {
         var result = objectMapper.readValue(json, SingularOrPlural.class);
 
-        // Arrays return null due to FancyDeserializer limitations
-        assertThat(result).isNull();
+        // Arrays are now properly deserialized
+        assertThat(result.getPlural()).isEqualTo(expectedList);
+        assertThat(result.getSingular()).isNull();
     }
 
     static Stream<Arguments> stringDeserializationTestCases() {
@@ -244,11 +247,11 @@ class SingularOrPluralTest {
 
     static Stream<Arguments> arrayDeserializationTestCases() {
         return Stream.of(
-                Arguments.of("array of strings", "[\"a\",\"b\"]"),
-                Arguments.of("array of integers", "[1,2,3]"),
-                Arguments.of("array of booleans", "[true,false]"),
-                Arguments.of("mixed array", "[\"text\",123,true]"),
-                Arguments.of("single item array", "[\"only\"]"));
+                Arguments.of("array of strings", "[\"a\",\"b\"]", List.of("a", "b")),
+                Arguments.of("array of integers", "[1,2,3]", List.of(1, 2, 3)),
+                Arguments.of("array of booleans", "[true,false]", List.of(true, false)),
+                Arguments.of("mixed array", "[\"text\",123,true]", List.of("text", 123, true)),
+                Arguments.of("single item array", "[\"only\"]", List.of("only")));
     }
 
     @Nested
