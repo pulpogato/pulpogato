@@ -1,5 +1,6 @@
 package io.github.pulpogato.common;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -69,6 +70,7 @@ public class CodeBuilder {
             case Boolean b -> b + "";
             case Double n -> n + "D";
             case Float n -> n + "F";
+            case BigDecimal bd -> "new java.math.BigDecimal(\"" + bd + "\")";
             case PulpogatoType pt -> pt.toCode().indent(2).trim();
             case Enum<?> e -> e.getClass().getName() + "." + e.name();
             case URI u -> "URI.create(\"" + u + "\")";
