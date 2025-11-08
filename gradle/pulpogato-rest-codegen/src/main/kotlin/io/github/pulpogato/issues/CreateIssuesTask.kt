@@ -36,7 +36,7 @@ abstract class CreateIssuesTask : DefaultTask() {
                 .entries
         println("There are ${entries.size} unique schemaRefs with issues")
         entries
-            .take(10)
+            .take(25)
             .forEach { (schemaRef, schemaRefIssues) ->
                 println("Creating issue for schemaRef: $schemaRef with ${schemaRefIssues.size} entries")
                 val versionsPlain = schemaRefIssues.map { it!!["ghVersion"] }.distinct()
@@ -94,8 +94,7 @@ $versions""".trimEnd(),
 - example: "$exampleRef"
   reason: "$reason"
   versions:
-${versionsPlain.joinToString("\n") { "    - $it" }}
-"""
+${versionsPlain.joinToString("\n") { "    - $it" }}"""
                     println(yaml)
                     project.file("src/main/resources/IgnoredTests.yml").appendText(yaml)
                 }

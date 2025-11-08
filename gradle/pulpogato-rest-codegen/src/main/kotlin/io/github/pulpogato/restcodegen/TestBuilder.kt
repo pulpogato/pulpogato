@@ -9,12 +9,14 @@ import java.util.TreeMap
 import kotlin.collections.get
 
 object TestBuilder {
+    private const val MAX_STRING_LENGTH = 60_000
+
     fun buildTest(
         context: Context,
         key: String,
         example: Any,
         className: TypeName,
-    ): MethodSpec {
+    ): MethodSpec? {
         val om = ObjectMapper()
 
         val formatted: String =
@@ -29,6 +31,14 @@ object TestBuilder {
                     example.toString()
                 }
             }
+
+        // Skip generating test if the string constant would be too large
+        if (formatted.length > MAX_STRING_LENGTH) {
+            System.err.println(
+                "Warning: Skipping test generation for '${context.getSchemaStackRef()}' due to large example size (${formatted.length} characters).",
+            )
+            return null
+        }
 
         val testUtilsClass = ClassName.get("io.github.pulpogato.test", "TestUtils")
 
@@ -56,7 +66,7 @@ object TestBuilder {
                 Failed to build test for ${context.getSchemaStackRef()}.
                 ValueType: ${example.javaClass}
                 Formatted: $formatted
-                Value: $example                
+                Value: $example
                 """.trimIndent(),
                 e,
             )

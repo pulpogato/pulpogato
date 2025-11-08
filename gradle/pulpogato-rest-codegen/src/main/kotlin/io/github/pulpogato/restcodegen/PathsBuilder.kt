@@ -250,14 +250,38 @@ class PathsBuilder {
                 else -> emptyMap()
             }
         return examples
-            .filter { (_, v) -> v.value != null }
-            .map { (k, v) ->
-                TestBuilder.buildTest(
-                    context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples", k, "value"),
-                    "${successResponse.key}$k",
-                    v.value,
-                    respRef,
-                )
+            .mapNotNull { (k, v) ->
+                // Resolve example value and build proper schema ref, handling $ref if present
+                val (exampleValue, schemaRefPath) =
+                    when {
+                        v.value != null ->
+                            Pair(
+                                v.value,
+                                context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples", k, "value"),
+                            )
+                        v.`$ref` != null -> {
+                            val refName = v.`$ref`.replace("#/components/examples/", "")
+                            val resolvedExample =
+                                context.openAPI.components.examples
+                                    ?.get(refName)
+                            Pair(
+                                resolvedExample?.value,
+                                context.withSchemaStack("#", "components", "examples", refName, "value"),
+                            )
+                        }
+                        else -> Pair(null, context)
+                    }
+
+                if (exampleValue != null) {
+                    TestBuilder.buildTest(
+                        schemaRefPath,
+                        "${successResponse.key}$k",
+                        exampleValue,
+                        respRef,
+                    )
+                } else {
+                    null
+                }
             }
     }
 
@@ -447,7 +471,7 @@ class PathsBuilder {
         val testMethods =
             (theParameter.examples ?: emptyMap())
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
-                .map { (k, v) ->
+                .mapNotNull { (k, v) ->
                     TestBuilder.buildTest(
                         context.withSchemaStack(
                             "requestBody",
