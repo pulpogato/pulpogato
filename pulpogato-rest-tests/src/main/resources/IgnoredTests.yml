@@ -187,3 +187,8 @@
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
+- example: "#/paths/~1organizations~1{org}~1settings~1billing~1budgets~1{budget_id}/patch/responses/200/content/application~1json/examples/update-budget/value"
+  reason: "https://github.com/github/rest-api-description/issues/5587"
+  versions:
+    - fpt
+    - ghec
