@@ -472,22 +472,26 @@ class PathsBuilder {
             (theParameter.examples ?: emptyMap())
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
                 .mapNotNull { (k, v) ->
-                    TestBuilder.buildTest(
-                        context.withSchemaStack(
-                            "requestBody",
-                            "content",
-                            atomicMethod.operation.requestBody.content
-                                .firstEntry()
-                                .key,
-                            "examples",
-                            k,
-                            "value",
-                        ),
-                        "${paramName}_$k",
-                        v.value,
-                        ref,
-                    )
-                }
+                    atomicMethod.operation.requestBody.content
+                        .filterKeys { contentType -> contentType.lowercase().contains("json") }
+                        .map { (_, _) ->
+                            TestBuilder.buildTest(
+                                context.withSchemaStack(
+                                    "requestBody",
+                                    "content",
+                                    atomicMethod.operation.requestBody.content
+                                        .firstEntry()
+                                        .key,
+                                    "examples",
+                                    k,
+                                    "value",
+                                ),
+                                "${paramName}_$k",
+                                v.value,
+                                ref,
+                            )
+                        }
+                }.flatten()
         if (testMethods.isNotEmpty()) {
             testClass.addType(
                 TypeSpec
