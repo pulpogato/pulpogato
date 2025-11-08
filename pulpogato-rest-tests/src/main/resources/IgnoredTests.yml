@@ -14,16 +14,6 @@
   reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:
     - ghec
-- example: "#/paths/~1markdown~1raw/post/requestBody/content/text~1plain/examples/default/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5045"
   versions:
