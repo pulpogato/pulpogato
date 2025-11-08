@@ -3,6 +3,7 @@ package io.github.pulpogato.common;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,9 @@ public class CodeBuilder {
             case PulpogatoType pt -> pt.toCode().indent(2).trim();
             case Enum<?> e -> e.getClass().getName() + "." + e.name();
             case URI u -> "URI.create(\"" + u + "\")";
-            case OffsetDateTime odt -> "OffsetDateTime.parse(\"" + odt + "\")";
+            case OffsetDateTime odt ->
+                "OffsetDateTime.parse(\"" + odt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
+                        + "\")";
             case LocalDate ld -> "LocalDate.parse(\"" + ld + "\")";
             case Map<?, ?> map -> {
                 StringBuilder sb = new StringBuilder();
