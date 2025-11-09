@@ -227,11 +227,7 @@ class PathsBuilder {
                                 .build(),
                         )
                     }
-                    val suitableAnnotations =
-                        respRef.annotations().filter {
-                            (it.type() as ClassName).simpleName() != "JsonFormat"
-                        }
-                    typeDef.addMethod(buildNonVoidMethod(context, methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef, suitableAnnotations))
+                    typeDef.addMethod(buildNonVoidMethod(context, methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef))
                 }
             }
         }
@@ -293,8 +289,11 @@ class PathsBuilder {
         contentType: String,
         parameterSpecs: List<ParameterSpec>,
         respRef: TypeName,
-        suitableAnnotations: List<AnnotationSpec>,
     ): MethodSpec {
+        val suitableAnnotations =
+            respRef.annotations().filter {
+                (it.type() as ClassName).simpleName() != "JsonFormat"
+            }
         val exchangeAnnotation =
             atomicMethod.method.name
                 .lowercase()
@@ -461,13 +460,13 @@ class PathsBuilder {
     private fun buildBodyTestCode(
         context: Context,
         theParameter: Parameter,
-        paramName: String,
         ref: TypeName,
         atomicMethod: AtomicMethod,
         testClass: TypeSpec.Builder,
         operationName: String,
         typeRef: ClassName,
     ) {
+        val paramName = theParameter.name.unkeywordize().camelCase()
         val testMethods =
             (theParameter.examples ?: emptyMap())
                 .filter { (_, v) -> v.value != null && !v.value.toString().startsWith("@") }
@@ -601,9 +600,8 @@ class PathsBuilder {
         parameters.forEach { (parameter, _) ->
             if (parameter.`in` == "body") {
                 val operationName = atomicMethod.operationId.split('/')[1]
-                val paramName = parameter.name.unkeywordize().camelCase()
                 val (ref, _) = referenceAndDefinition(context, mapOf(parameter.name to parameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
-                buildBodyTestCode(context, parameter, paramName, ref, atomicMethod, testClass, operationName, typeRef)
+                buildBodyTestCode(context, parameter, ref, atomicMethod, testClass, operationName, typeRef)
             }
         }
     }
