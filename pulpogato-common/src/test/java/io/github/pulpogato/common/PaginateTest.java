@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.LongFunction;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ class PaginateTest {
     record Response(List<String> items, int totalPages) {}
 
     @Mock
-    private Function<Long, Response> fetchPage;
+    private LongFunction<Response> fetchPage;
 
     @Test
     @DisplayName("Should return all items from a single page")

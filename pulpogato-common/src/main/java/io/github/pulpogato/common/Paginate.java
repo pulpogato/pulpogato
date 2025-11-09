@@ -1,6 +1,8 @@
 package io.github.pulpogato.common;
 
 import java.util.function.Function;
+import java.util.function.LongFunction;
+import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NonNull;
 
@@ -30,11 +32,11 @@ public class Paginate {
      */
     public <T, R> Stream<T> from(
             final long maxPages,
-            final Function<Long, @NonNull R> fetchPage,
+            final LongFunction<@NonNull R> fetchPage,
             final Function<R, @NonNull Stream<T>> extractItems,
-            final Function<R, @NonNull Integer> totalPages) {
+            final ToIntFunction<R> totalPages) {
         var response = fetchPage.apply(1L);
-        var pages = Math.min(maxPages, totalPages.apply(response));
+        var pages = Math.min(maxPages, totalPages.applyAsInt(response));
         if (pages <= 1) {
             return extractItems.apply(response);
         }
