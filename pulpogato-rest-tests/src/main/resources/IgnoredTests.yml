@@ -979,7 +979,7 @@
     - ghes-3.17
     - ghes-3.18
 - example: "#/components/examples/repository-ruleset-version-with-state/value"
-  reason: "TODO: Assertion failure"
+  reason: "State is 'Map<String, Object>' and the types in it are unknown"
   versions:
     - fpt
     - ghec
