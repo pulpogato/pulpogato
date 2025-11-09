@@ -128,43 +128,20 @@ public class TestUtils {
             final String path) {
         final JsonValue newValue = normalizeNonStringTypes(newValue1, oldValue);
 
-        if (oldValue.getValueType() == JsonValue.ValueType.STRING
-                && newValue.getValueType() == JsonValue.ValueType.STRING) {
-            var oldStr = ((JsonString) oldValue).getString();
-            var newStr = ((JsonString) newValue).getString();
-
-            var areDatesSame =
-                    DATE_COMPARE_FUNCTIONS.stream().anyMatch(c -> c.test(oldStr, newStr) || c.test(newStr, oldStr));
+        if (oldValue instanceof JsonString o && newValue instanceof JsonString n) {
+            var areDatesSame = DATE_COMPARE_FUNCTIONS.stream()
+                    .anyMatch(c -> c.test(o.getString(), n.getString()) || c.test(n.getString(), o.getString()));
             if (areDatesSame) {
                 return;
-            }
-            // Handle milliseconds added to timestamps with timezone offsets (e.g., +12:00, -07:00)
-            // Pattern: YYYY-MM-DDTHH:MM:SS+/-HH:MM -> YYYY-MM-DDTHH:MM:SS.000+/-HH:MM
-            if (oldStr.matches(".*T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}")
-                    && newStr.matches(".*T\\d{2}:\\d{2}:\\d{2}\\.000[+-]\\d{2}:\\d{2}")) {
-                var oldWithMillis = oldStr.replaceFirst("(T\\d{2}:\\d{2}:\\d{2})([+-]\\d{2}:\\d{2})", "$1.000$2");
-                if (oldWithMillis.equals(newStr)) {
-                    return;
-                }
-            }
-            // Handle +00:00 to .000Z conversion
-            // Pattern: YYYY-MM-DDTHH:MM:SS+00:00 -> YYYY-MM-DDTHH:MM:SS.000Z
-            if (oldStr.matches(".*T\\d{2}:\\d{2}:\\d{2}\\+00:00") && newStr.matches(".*T\\d{2}:\\d{2}:\\d{2}\\.000Z")) {
-                var oldNormalized = oldStr.replace("+00:00", ".000Z");
-                if (oldNormalized.equals(newStr)) {
-                    return;
-                }
             }
         }
 
         // Handle Unix timestamp (NUMBER) to ISO string (STRING) conversion
-        if (oldValue.getValueType() == JsonValue.ValueType.NUMBER
-                && newValue.getValueType() == JsonValue.ValueType.STRING) {
+        if (oldValue instanceof JsonNumber o && newValue instanceof JsonString n) {
             try {
-                var timestamp = ((JsonNumber) oldValue).longValue();
-                var isoString = ((JsonString) newValue).getString();
+                var isoString = n.getString();
                 // Convert timestamp to ISO string and compare
-                final var timestampAtUtc = Instant.ofEpochSecond(timestamp).atOffset(ZoneOffset.UTC);
+                final var timestampAtUtc = Instant.ofEpochSecond(o.longValue()).atOffset(ZoneOffset.UTC);
                 var timestampAsIso = timestampAtUtc.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 if (timestampAsIso.equals(isoString)) {
                     return;
