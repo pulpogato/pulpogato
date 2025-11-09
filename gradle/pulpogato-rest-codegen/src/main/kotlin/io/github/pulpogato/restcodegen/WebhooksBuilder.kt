@@ -77,7 +77,13 @@ class WebhooksBuilder {
                 }
 
                 if (v.size > 1) {
-                    buildSyntheticMethod(context, k, v, requestBodyTypes, interfaceBuilder)
+                    buildSyntheticMethod(
+                        context,
+                        k,
+                        requestBodyTypes,
+                        interfaceBuilder,
+                        v.first().value,
+                    )
                 }
 
                 val interfaceSpec = interfaceBuilder.build()
@@ -114,9 +120,9 @@ class WebhooksBuilder {
     private fun buildSyntheticMethod(
         context: Context,
         k: String,
-        v: List<MutableMap.MutableEntry<String, PathItem>>,
-        requestBodyTypes: MutableMap<String, Pair<String, ClassName>>,
+        requestBodyTypes: Map<String, Pair<String, ClassName>>,
         interfaceBuilder: TypeSpec.Builder,
+        pathItem: PathItem,
     ) {
         val methodBuilder =
             MethodSpec
@@ -131,8 +137,7 @@ class WebhooksBuilder {
                 .addException(Types.EXCEPTION)
                 .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
         val headerNames =
-            v[0]
-                .value
+            pathItem
                 .readOperationsMap()
                 .entries
                 .first()
