@@ -497,7 +497,7 @@
     - fpt
     - ghec
 - example: "#/components/examples/code-security-configuration-list/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5659"
   versions:
     - fpt
     - ghec
