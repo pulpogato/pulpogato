@@ -92,7 +92,7 @@ testlogger {
     slowThreshold = 5000
 
     showPassed = false
-    showSkipped = true
+    showSkipped = false
     showFailed = true
 }
 
