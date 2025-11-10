@@ -193,26 +193,6 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
-- example: "#/components/examples/integration/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/installation-token/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/classroom-assignment/value"
   reason: "https://github.com/github/rest-api-description/issues/5480"
   versions:
@@ -1142,6 +1122,36 @@
     - ghes-3.18
 - example: "#/components/examples/repository-items-default-response/value"
   reason: "https://github.com/github/rest-api-description/issues/5658"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/integration/value"
+  reason: "https://github.com/github/rest-api-description/issues/5660"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/integration/value"
+  reason: "https://github.com/github/rest-api-description/issues/5661"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+- example: "#/components/examples/installation-token/value"
+  reason: "https://github.com/github/rest-api-description/issues/5662"
   versions:
     - fpt
     - ghec
