@@ -35,6 +35,17 @@ class WebhooksBuilder {
         val testControllerBuilder: TypeSpec.Builder,
     )
 
+    data class ProcessingContext(
+        val openAPI: OpenAPI,
+        val restPackage: String,
+        val operation: Operation,
+        val methodSpecBuilder: MethodSpec.Builder,
+        val context: Context,
+        val tests: MutableList<MethodSpec>,
+        val builders: WebhookBuilderParams,
+        val name: String,
+    )
+
     fun buildWebhooks(
         context: Context,
         mainDir: File,
@@ -356,7 +367,8 @@ class WebhooksBuilder {
                 )
 
         val requestBody = operation.requestBody
-        val bodyType = processRequestBody(requestBody, openAPI, restPackage, operation, methodSpecBuilder, context1, tests, builders, name)
+        val processingContext = ProcessingContext(openAPI, restPackage, operation, methodSpecBuilder, context1, tests, builders, name)
+        val bodyType = processRequestBody(requestBody, processingContext)
 
         val javadoc = buildJavadoc(operation)
         val methodSpec =
@@ -436,32 +448,14 @@ class WebhooksBuilder {
 
     private fun processRequestBody(
         requestBody: io.swagger.v3.oas.models.parameters.RequestBody,
-        openAPI: OpenAPI,
-        restPackage: String,
-        operation: Operation,
-        methodSpecBuilder: MethodSpec.Builder,
-        context1: Context,
-        tests: MutableList<MethodSpec>,
-        builders: WebhookBuilderParams,
-        name: String,
+        ctx: ProcessingContext,
     ): ClassName {
         var bodyType: ClassName? = null
         requestBody.content
             .filter { entry -> entry.key.contains("json") }
             .forEach { firstEntry ->
                 if (firstEntry.value.schema.`$ref` != null) {
-                    bodyType =
-                        processJsonRequestBody(
-                            firstEntry,
-                            openAPI,
-                            restPackage,
-                            operation,
-                            methodSpecBuilder,
-                            context1,
-                            tests,
-                            builders,
-                            name,
-                        )
+                    bodyType = processJsonRequestBody(firstEntry, ctx)
                 } else {
                     throw RuntimeException("Unknown type for ${firstEntry.value.schema}")
                 }
@@ -471,42 +465,35 @@ class WebhooksBuilder {
 
     private fun processJsonRequestBody(
         firstEntry: Map.Entry<String, io.swagger.v3.oas.models.media.MediaType>,
-        openAPI: OpenAPI,
-        restPackage: String,
-        operation: Operation,
-        methodSpecBuilder: MethodSpec.Builder,
-        context1: Context,
-        tests: MutableList<MethodSpec>,
-        builders: WebhookBuilderParams,
-        name: String,
+        ctx: ProcessingContext,
     ): ClassName {
         val ref =
             firstEntry.value.schema.`$ref`
                 .replace("#/components/schemas/", "")
         val schema =
-            openAPI.components.schemas.entries
+            ctx.openAPI.components.schemas.entries
                 .first { it.key == ref }
         val type = schema.className()
 
-        addHeaderParameters(operation, methodSpecBuilder, context1)
+        addHeaderParameters(ctx.operation, ctx.methodSpecBuilder, ctx.context)
 
-        val bodyType = ClassName.get("$restPackage.schemas", type)
-        methodSpecBuilder.addParameter(
+        val bodyType = ClassName.get("${ctx.restPackage}.schemas", type)
+        ctx.methodSpecBuilder.addParameter(
             ParameterSpec
                 .builder(bodyType, "requestBody")
                 .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestBody")).build())
-                .addAnnotation(generated(0, context1.withSchemaStack("requestBody")))
+                .addAnnotation(generated(0, ctx.context.withSchemaStack("requestBody")))
                 .build(),
         )
 
-        processExamples(firstEntry, openAPI, context1, tests, bodyType)
+        processExamples(firstEntry, ctx.openAPI, ctx.context, ctx.tests, bodyType)
 
-        if (tests.isNotEmpty()) {
-            builders.unitTestBuilder.addType(
+        if (ctx.tests.isNotEmpty()) {
+            ctx.builders.unitTestBuilder.addType(
                 TypeSpec
-                    .classBuilder(name.pascalCase())
-                    .addMethods(tests)
-                    .addAnnotation(generated(0, context1.withSchemaStack("requestBody", "content", firstEntry.key, "schema")))
+                    .classBuilder(ctx.name.pascalCase())
+                    .addMethods(ctx.tests)
+                    .addAnnotation(generated(0, ctx.context.withSchemaStack("requestBody", "content", firstEntry.key, "schema")))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
                     .build(),
             )
