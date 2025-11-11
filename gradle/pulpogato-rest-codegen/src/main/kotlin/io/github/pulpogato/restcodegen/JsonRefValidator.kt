@@ -3,19 +3,27 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 
+data class Quad<A, B, C, D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+)
+
 class JsonRefValidator(
     private val threshold: Int = 0,
 ) {
     private val schemaRefRegex = Regex("\\s+schemaRef\\s=\\s*\"(.+?)\"")
+    private val sourceFileRegex = Regex("\\s+sourceFile\\s=\\s*\"(.+?)\"")
 
     /**
-     * Validates the JSON references in given `javaFiles` based on `json`.
+     * Validates the JSON references in given `javaFiles` based on `schemas`.
      *
-     * @param json The JSON to validate against.
+     * @param schemas Map of schema source files to their JSON representations.
      * @param javaFiles List of Java files to validate.
      */
     fun validate(
-        json: JsonNode,
+        schemas: Map<String, JsonNode>,
         javaFiles: List<File>,
     ) {
         // Process files in parallel to find schema refs
@@ -30,19 +38,39 @@ class JsonRefValidator(
         val schemaRefs =
             allMatches
                 .parallelStream()
-                .map { triple ->
-                    val (file, lineNumber, line) = triple
-                    hasError(json, triple).also { error ->
-                        if (error != null) {
-                            synchronized(this) {
-                                println(
-                                    """
-                                    |${file.absolutePath}:${lineNumber + 1}
-                                    |    Bad Ref   : "$line"
-                                    |    Last Found: "$error"
-                                    |
-                                    """.trimMargin(),
-                                )
+                .map { quad ->
+                    val (file, lineNumber, line, sourceFile) = quad
+
+                    // Lookup the appropriate schema
+                    val schema = schemas[sourceFile]
+
+                    if (schema == null) {
+                        // Error: referenced a source file that wasn't provided
+                        synchronized(this) {
+                            println(
+                                """
+                                |${file.absolutePath}:${lineNumber + 1}
+                                |    Missing Schema: No schema provided for "$sourceFile"
+                                |    Ref: "$line"
+                                |
+                                """.trimMargin(),
+                            )
+                        }
+                        "Missing schema for $sourceFile"
+                    } else {
+                        hasError(schema, Triple(file, lineNumber, line)).also { error ->
+                            if (error != null) {
+                                synchronized(this) {
+                                    println(
+                                        """
+                                        |${file.absolutePath}:${lineNumber + 1}
+                                        |    Source File: "$sourceFile"
+                                        |    Bad Ref    : "$line"
+                                        |    Last Found : "$error"
+                                        |
+                                        """.trimMargin(),
+                                    )
+                                }
                             }
                         }
                     }
@@ -54,8 +82,8 @@ class JsonRefValidator(
         println("Found $errors errors in $total JSON references")
     }
 
-    fun findSchemaRefMatches(file: File): List<Triple<File, Int, String>> {
-        val matches = mutableListOf<Triple<File, Int, String>>()
+    fun findSchemaRefMatches(file: File): List<Quad<File, Int, String, String>> {
+        val matches = mutableListOf<Quad<File, Int, String, String>>()
         val fileContent = file.readText()
 
         schemaRefRegex.findAll(fileContent).forEach { matchResult ->
@@ -63,7 +91,19 @@ class JsonRefValidator(
             val startIndex = matchResult.range.first
             val precedingText = fileContent.take(startIndex)
             val lineNumber = precedingText.count { it == '\n' } + 1 // Calculate line number
-            matches.add(Triple(file, lineNumber, match))
+
+            // Find sourceFile on the same or following lines within the same annotation
+            val remainingText = fileContent.substring(matchResult.range.last)
+            val annotationEnd = remainingText.indexOf(')')
+            val sourceFileMatch =
+                if (annotationEnd != -1) {
+                    sourceFileRegex.find(remainingText.take(annotationEnd))
+                } else {
+                    null
+                }
+            val sourceFile = sourceFileMatch?.groupValues?.get(1) ?: "schema.json"
+
+            matches.add(Quad(file, lineNumber, match, sourceFile))
         }
 
         return matches
@@ -89,8 +129,8 @@ class JsonRefValidator(
                 val index = if (name.all { it.isDigit() }) name.toIntOrNull() else null
                 current =
                     when {
-                        index != null && index < 200 -> (current as JsonNode)[index]
-                        else -> (current as JsonNode)[name]
+                        index != null && index < 200 -> current[index]
+                        else -> current[name]
                     }
                 if (current != null) {
                     lastVerified.append('/').append(t)

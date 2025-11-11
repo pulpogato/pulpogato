@@ -24,4 +24,9 @@ public @interface Generated {
      * @return The file and line that generated the type
      */
     String codeRef();
+    /**
+     * The source file from which this element was generated
+     * @return The source file name (e.g., "schema.json" or "additions.schema.json")
+     */
+    String sourceFile() default "schema.json";
 }

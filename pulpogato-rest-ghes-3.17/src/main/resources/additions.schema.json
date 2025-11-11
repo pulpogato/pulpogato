@@ -1,0 +1,36 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Additions Schema",
+        "version": "1.0.0"
+    },
+    "components": {
+        "schemas": {
+            "public-user": {
+                "properties": {
+                    "suspended_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time",
+                        "description": "https://github.com/github/rest-api-description/issues/5667"
+                    }
+                }
+            },
+            "private-user": {
+                "properties": {
+                    "suspended_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time",
+                        "description": "https://github.com/github/rest-api-description/issues/5667"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {}
+}

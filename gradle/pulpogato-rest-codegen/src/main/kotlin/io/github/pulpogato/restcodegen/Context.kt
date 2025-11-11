@@ -6,6 +6,7 @@ data class Context(
     val openAPI: OpenAPI,
     val version: String,
     val schemaStack: List<String>,
+    val addedProperties: Map<String, Set<String>> = emptyMap(),
 ) {
     // Cached schema stack reference to avoid repeated string operations
     private val cachedSchemaStackRef: String by lazy {
@@ -22,4 +23,9 @@ data class Context(
     }
 
     fun getSchemaStackRef() = cachedSchemaStackRef
+
+    fun isAddedProperty(
+        schemaName: String,
+        propertyName: String,
+    ): Boolean = addedProperties[schemaName]?.contains(propertyName) == true
 }

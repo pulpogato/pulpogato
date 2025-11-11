@@ -675,11 +675,29 @@ private fun addFieldIfNew(
 ) {
     val fieldName = p.key.unkeywordize().camelCase()
     if (!knownFields.contains(fieldName)) {
+        // Check if this property was added from additions.schema.json
+        val schemaName =
+            if (context.schemaStack.size >= 4 &&
+                context.schemaStack[0] == "#" &&
+                context.schemaStack[1] == "components" &&
+                context.schemaStack[2] == "schemas"
+            ) {
+                context.schemaStack[3]
+            } else {
+                null
+            }
+        val sourceFile =
+            if (schemaName != null && context.isAddedProperty(schemaName, p.key)) {
+                "additions.schema.json"
+            } else {
+                "schema.json"
+            }
+
         val builder =
             FieldSpec
                 .builder(typeName, fieldName, Modifier.PRIVATE)
                 .addAnnotation(jsonProperty(p.key))
-                .addAnnotation(generated(0, context.withSchemaStack("properties", p.key)))
+                .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
 
         schemaJavadoc(p).let {
             if (it.isNotBlank()) {

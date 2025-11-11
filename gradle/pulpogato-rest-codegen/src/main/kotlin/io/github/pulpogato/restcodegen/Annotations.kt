@@ -84,6 +84,7 @@ object Annotations {
     fun generated(
         offset: Int,
         context: Context,
+        sourceFile: String = "schema.json",
     ): AnnotationSpec {
         val builder =
             AnnotationSpec
@@ -95,9 +96,11 @@ object Annotations {
         } else {
             throw IllegalArgumentException("SchemaRef is empty")
         }
-        return builder
-            .addMember("codeRef", $$"$S", codeRef(offset))
-            .build()
+        builder.addMember("codeRef", $$"$S", codeRef(offset))
+        if (sourceFile != "schema.json") {
+            builder.addMember("sourceFile", $$"$S", sourceFile)
+        }
+        return builder.build()
     }
 
     fun typeGenerated(): AnnotationSpec =
