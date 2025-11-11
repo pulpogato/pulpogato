@@ -2,6 +2,7 @@ package io.github.pulpogato.restcodegen
 
 import com.diffplug.spotless.glue.pjf.PalantirJavaFormatFormatterFunc
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
@@ -50,13 +51,24 @@ open class GenerateJavaTask : DefaultTask() {
 
         val swaggerSpec = schemaFile.readText()
 
+        // Check for additions.schema.json in the module's resources directory
+        val resourcesDir = project.projectDir.resolve("src/main/resources")
+        val schemaAddsFile = resourcesDir.resolve("additions.schema.json")
+        val addedProperties = mutableMapOf<String, Set<String>>()
+        val mergedSpec =
+            if (schemaAddsFile.exists()) {
+                mergeSchemaAdditions(swaggerSpec, schemaAddsFile.readText(), addedProperties)
+            } else {
+                swaggerSpec
+            }
+
         val parseOptions = ParseOptions()
-        val result = OpenAPIParser().readContents(swaggerSpec, listOf(), parseOptions)
+        val result = OpenAPIParser().readContents(mergedSpec, listOf(), parseOptions)
 
         val openAPI = result.openAPI
         val version = projectName.get().replace("pulpogato-rest-", "")
 
-        val context = Context(openAPI, version, emptyList())
+        val context = Context(openAPI, version, emptyList(), addedProperties)
         val enumConverters = mutableSetOf<com.palantir.javapoet.ClassName>()
         PathsBuilder().buildApis(context, main, test, "$packageNamePrefix.rest.api", enumConverters)
         WebhooksBuilder().buildWebhooks(context, main, test, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks")
@@ -73,8 +85,16 @@ open class GenerateJavaTask : DefaultTask() {
         }
 
         // Validate JSON references
-        val json = ObjectMapper().readTree(swaggerSpec)
-        JsonRefValidator(0).validate(json, javaFiles + testJavaFiles)
+        val mapper = ObjectMapper()
+        val schemas = mutableMapOf("schema.json" to mapper.readTree(swaggerSpec))
+
+        // Add additions schema if it exists
+        if (schemaAddsFile.exists()) {
+            val additionsJson = mapper.readTree(schemaAddsFile.readText())
+            schemas["additions.schema.json"] = additionsJson
+        }
+
+        JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
     }
 
     private fun getJavaFiles(dir: File): List<File> =
@@ -83,4 +103,41 @@ open class GenerateJavaTask : DefaultTask() {
             .filter { it.isFile }
             .filter { it.toPath().extension == "java" }
             .toList()
+
+    private fun mergeSchemaAdditions(
+        swaggerSpec: String,
+        schemaAddsJson: String,
+        addedProperties: MutableMap<String, Set<String>>,
+    ): String {
+        val objectMapper = ObjectMapper()
+        val schema = objectMapper.readTree(swaggerSpec) as ObjectNode
+        val schemaAdds = objectMapper.readTree(schemaAddsJson)
+
+        val additions = schemaAdds.get("components")?.get("schemas")
+        if (additions != null && additions.isObject) {
+            additions.properties().forEach { (schemaName, schemaAddition) ->
+                val properties = schemaAddition.get("properties")
+                if (properties != null && properties.isObject) {
+                    val targetSchema = schema.at("/components/schemas/$schemaName")
+                    if (targetSchema.isMissingNode) {
+                        project.logger.warn("Schema '$schemaName' not found in OpenAPI spec, skipping additions")
+                    } else {
+                        val targetProperties =
+                            (targetSchema as ObjectNode)
+                                .with("properties") as ObjectNode
+
+                        val propertyNames = mutableSetOf<String>()
+                        properties.properties().forEach { (propertyName, propertySpec) ->
+                            targetProperties.put(propertyName, propertySpec)
+                            propertyNames.add(propertyName)
+                            project.logger.info("Added property '$propertyName' to schema '$schemaName'")
+                        }
+                        addedProperties[schemaName] = propertyNames
+                    }
+                }
+            }
+        }
+
+        return objectMapper.writeValueAsString(schema)
+    }
 }

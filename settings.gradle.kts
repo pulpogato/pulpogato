@@ -38,4 +38,6 @@ allVersions.forEach { ghVersion ->
     createProject("rest", ghVersion)
 }
 
+include("${rootProject.name}-rest-ghestest")
+
 includeBuild("gradle/pulpogato-rest-codegen")
