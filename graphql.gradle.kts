@@ -40,15 +40,8 @@ val downloadSchema = tasks.register<Download>("downloadSchema") {
 
     inputs.property("url", getUrl(projectVariant))
     outputs.file(originalSchemaLocation)
-    
-    doLast {
-        // Calculate SHA256 checksum of downloaded schema
-        val schemaBytes = originalSchemaLocation.readBytes()
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(schemaBytes)
-        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
-        project.ext.set("github.schema.sha256", sha256)
 
+    doLast {
         if (!originalSchemaLocation.exists()) {
             throw GradleException("Failed to download schema from ${getUrl(projectVariant)}")
         }
@@ -75,6 +68,22 @@ val transformSchema = tasks.register<Sync>("transformSchema") {
             .replace("<= ", "&lt;= ")
             .replace(">= ", "&gt;= ")
             .replace("Query implements Node", "Query")
+    }
+}
+
+val checksumFile = project.layout.buildDirectory.file("schema.sha256")
+
+val calculateSchemaChecksum = tasks.register("calculateSchemaChecksum") {
+    dependsOn(downloadSchema)
+    inputs.file(originalSchemaLocation)
+    outputs.file(checksumFile)
+
+    doLast {
+        val schemaBytes = originalSchemaLocation.readBytes()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(schemaBytes)
+        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+        checksumFile.get().asFile.writeText(sha256)
     }
 }
 
@@ -107,7 +116,7 @@ tasks.named<GenerateJavaTask>("generateJava") {
     )
 
     doLast {
-        delete(fileTree("${project.layout.buildDirectory.get()}/generated/sources/dgs-codegen") {
+        delete(fileTree(layout.buildDirectory.dir("generated/sources/dgs-codegen")) {
             include("**/DgsConstants.java")
         })
     }
@@ -141,7 +150,7 @@ publishing {
                     val propertiesNode = root.get("properties") as groovy.util.NodeList
                     if (propertiesNode.isNotEmpty()) {
                         val propNode = propertiesNode.first() as groovy.util.Node
-                        propNode.appendNode("github.schema.sha256", project.ext.get("github.schema.sha256").toString())
+                        propNode.appendNode("github.schema.sha256", checksumFile.get().asFile.readText())
                     }
                 }
             }
@@ -150,5 +159,6 @@ publishing {
 }
 
 tasks.withType<GenerateMavenPom>().configureEach {
+    dependsOn(calculateSchemaChecksum)
     dependsOn(downloadSchema)
 }
