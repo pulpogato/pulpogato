@@ -152,3 +152,7 @@ publishing {
         }
     }
 }
+
+tasks.named("pitest").configure {
+    dependsOn(":pulpogato-rest-tests:jar", ":pulpogato-common:jar")
+}
