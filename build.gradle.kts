@@ -13,8 +13,8 @@ buildscript {
     configurations {
         classpath {
             resolutionStrategy {
-                force("org.commonmark:commonmark:0.27.0")
-                force("org.commonmark:commonmark-ext-autolink:0.27.0")
+                force(libs.commonmark)
+                force(libs.commonmarkExtAutolink)
             }
         }
     }
