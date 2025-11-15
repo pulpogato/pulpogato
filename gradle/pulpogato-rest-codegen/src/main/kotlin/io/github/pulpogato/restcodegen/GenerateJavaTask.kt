@@ -41,6 +41,10 @@ open class GenerateJavaTask : DefaultTask() {
         projectName.set(project.name)
     }
 
+    @get:OutputDirectory
+    val testResourcesDir: Provider<File>
+        get() = testDir.map { File(it.parentFile, "resources") }
+
     @TaskAction
     fun generate() {
         mainDir.get().mkdirs()

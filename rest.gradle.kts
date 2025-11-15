@@ -52,6 +52,9 @@ tasks.named("javadocJar") {
 tasks.processResources {
     dependsOn(downloadSchema)
 }
+tasks.processTestResources {
+    dependsOn(generateJava)
+}
 
 sourceSets {
     named("main") {

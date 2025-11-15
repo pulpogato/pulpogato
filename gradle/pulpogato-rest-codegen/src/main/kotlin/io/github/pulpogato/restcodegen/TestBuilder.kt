@@ -57,10 +57,6 @@ object TestBuilder {
                     // Write the formatted JSON to the file
                     jsonFile.writeText(formatted)
 
-                    System.err.println(
-                        "Info: Created JSON file for large example '${context.getSchemaStackRef()}' (${formatted.length} characters) at $fileName",
-                    )
-
                     // Generate test that reads from the JSON file
                     MethodSpec
                         .methodBuilder("test${key.pascalCase()}")

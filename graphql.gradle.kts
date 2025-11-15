@@ -75,6 +75,7 @@ val checksumFile = project.layout.buildDirectory.file("schema.sha256")
 
 val calculateSchemaChecksum = tasks.register("calculateSchemaChecksum") {
     dependsOn(downloadSchema)
+    dependsOn(tasks.processResources)
     inputs.file(originalSchemaLocation)
     outputs.file(checksumFile)
 
