@@ -65,7 +65,7 @@ class EnumConvertersBuilder {
                             $$"    $L\n",
                             com.palantir.javapoet.CodeBlock
                                 .join(converterInstances, ",\n    "),
-                        ).add($$")")
+                        ).add(")")
                         .build(),
                 ).build()
 
