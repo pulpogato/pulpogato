@@ -60,6 +60,7 @@ sourceSets {
     }
     named("test") {
         java.srcDir("${project.layout.buildDirectory.get()}/generated/sources/test")
+        resources.srcDir("${project.layout.buildDirectory.get()}/generated/sources/resources")
     }
 }
 

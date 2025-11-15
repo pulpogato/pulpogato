@@ -43,6 +43,8 @@ class PathsBuilder {
         packageName: String,
         enumConverters: MutableSet<ClassName>,
     ) {
+        // Create test resources directory for large JSON examples
+        val testResourcesDir = File(testDir.parentFile, "resources")
         val apiDir = File(mainDir, packageName.replace(".", "/"))
         apiDir.mkdirs()
         val openAPI = context.openAPI
@@ -138,6 +140,7 @@ class PathsBuilder {
                         typeRef,
                         testClass,
                         enumConverters,
+                        testResourcesDir,
                     )
                 }
 
@@ -171,8 +174,9 @@ class PathsBuilder {
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
         enumConverters: MutableSet<ClassName>,
+        testResourcesDir: File,
     ) {
-        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef, testClass, enumConverters)
+        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef, testClass, enumConverters, testResourcesDir)
 
         val successResponses =
             atomicMethod.operation.responses
@@ -213,7 +217,7 @@ class PathsBuilder {
                             1 -> atomicMethod.operationId.split('/')[1].camelCase()
                             else -> atomicMethod.operationId.split('/')[1].camelCase() + suffixContentType(contentType)
                         }
-                    val testMethods = getTestMethods(context, successResponse, contentType, details, respRef)
+                    val testMethods = getTestMethods(context, successResponse, contentType, details, respRef, testResourcesDir)
 
                     val parameterSpecs = parameters.map { it.second }
                     if (contentType.contains("json") && testMethods.isNotEmpty()) {
@@ -239,6 +243,7 @@ class PathsBuilder {
         contentType: String,
         details: MediaType,
         respRef: TypeName,
+        testResourcesDir: File,
     ): List<MethodSpec> {
         val examples =
             when {
@@ -274,6 +279,7 @@ class PathsBuilder {
                         "${successResponse.key}$k",
                         exampleValue,
                         respRef,
+                        testResourcesDir,
                     )
                 } else {
                     null
@@ -465,6 +471,7 @@ class PathsBuilder {
         testClass: TypeSpec.Builder,
         operationName: String,
         typeRef: ClassName,
+        testResourcesDir: File,
     ) {
         val paramName = theParameter.name.unkeywordize().camelCase()
         val testMethods =
@@ -488,6 +495,7 @@ class PathsBuilder {
                                 "${paramName}_$k",
                                 v.value,
                                 ref,
+                                testResourcesDir,
                             )
                         }
                 }.flatten()
@@ -512,6 +520,7 @@ class PathsBuilder {
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
         enumConverters: MutableSet<ClassName>,
+        testResourcesDir: File,
     ): List<Pair<Parameter, ParameterSpec>> {
         val parameters =
             atomicMethod.operation.parameters
@@ -585,7 +594,7 @@ class PathsBuilder {
         }
 
         // Generate test code for body parameters separately
-        generateParameterTestCode(context, parameters, atomicMethod, testClass, typeRef)
+        generateParameterTestCode(context, parameters, atomicMethod, testClass, typeRef, testResourcesDir)
 
         return parameters.toList()
     }
@@ -596,12 +605,13 @@ class PathsBuilder {
         atomicMethod: AtomicMethod,
         testClass: TypeSpec.Builder,
         typeRef: ClassName,
+        testResourcesDir: File,
     ) {
         parameters.forEach { (parameter, _) ->
             if (parameter.`in` == "body") {
                 val operationName = atomicMethod.operationId.split('/')[1]
                 val (ref, _) = referenceAndDefinition(context, mapOf(parameter.name to parameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
-                buildBodyTestCode(context, parameter, ref, atomicMethod, testClass, operationName, typeRef)
+                buildBodyTestCode(context, parameter, ref, atomicMethod, testClass, operationName, typeRef, testResourcesDir)
             }
         }
     }

@@ -44,6 +44,7 @@ class WebhooksBuilder {
         val tests: MutableList<MethodSpec>,
         val builders: WebhookBuilderParams,
         val name: String,
+        val testResourcesDir: File,
     )
 
     fun buildWebhooks(
@@ -53,6 +54,8 @@ class WebhooksBuilder {
         restPackage: String,
         webhooksPackage: String,
     ) {
+        // Create test resources directory for large JSON examples
+        val testResourcesDir = File(testDir.parentFile, "resources")
         val testControllerBuilder = buildTestController()
 
         val openAPI = context.openAPI
@@ -81,7 +84,7 @@ class WebhooksBuilder {
                 val builders = WebhookBuilderParams(interfaceBuilder, unitTestBuilder, testControllerBuilder)
                 v.forEach { (name, webhook) ->
                     val requestBody =
-                        createWebhookInterface(context, name, webhook, openAPI, restPackage, builders)
+                        createWebhookInterface(context, name, webhook, openAPI, restPackage, builders, testResourcesDir)
                     val methodName =
                         "process" +
                             webhook
@@ -342,6 +345,7 @@ class WebhooksBuilder {
         openAPI: OpenAPI,
         restPackage: String,
         builders: WebhookBuilderParams,
+        testResourcesDir: File,
     ): ClassName {
         if (webhook.readOperationsMap().size != 1) {
             throw RuntimeException("Webhook $name has more than one operation")
@@ -367,7 +371,7 @@ class WebhooksBuilder {
                 )
 
         val requestBody = operation.requestBody
-        val processingContext = ProcessingContext(openAPI, restPackage, operation, methodSpecBuilder, context1, tests, builders, name)
+        val processingContext = ProcessingContext(openAPI, restPackage, operation, methodSpecBuilder, context1, tests, builders, name, testResourcesDir)
         val bodyType = processRequestBody(requestBody, processingContext)
 
         val javadoc = buildJavadoc(operation)
@@ -486,7 +490,7 @@ class WebhooksBuilder {
                 .build(),
         )
 
-        processExamples(firstEntry, ctx.openAPI, ctx.context, ctx.tests, bodyType)
+        processExamples(firstEntry, ctx.openAPI, ctx.context, ctx.tests, bodyType, ctx.testResourcesDir)
 
         if (ctx.tests.isNotEmpty()) {
             ctx.builders.unitTestBuilder.addType(
@@ -538,6 +542,7 @@ class WebhooksBuilder {
         context1: Context,
         tests: MutableList<MethodSpec>,
         bodyType: ClassName,
+        testResourcesDir: File,
     ) {
         val examples = firstEntry.value.examples
         if (firstEntry.key.contains("json")) {
@@ -553,6 +558,7 @@ class WebhooksBuilder {
                             key,
                             example.value.value,
                             bodyType,
+                            testResourcesDir,
                         )?.let { tests.add(it) }
                 }
             }
