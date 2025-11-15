@@ -83,14 +83,7 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(reportPath))) {
             for (GeneratedTestFailure failure : failures) {
-                var message = failure.getFieldMessage();
-                var snippet = failure.getSnippet();
-                var data = Map.ofEntries(
-                        Map.entry("ghVersion", failure.ghVersion != null ? failure.ghVersion : "unknown"),
-                        Map.entry("exampleRef", failure.exampleRef() != null ? failure.exampleRef() : "unknown"),
-                        Map.entry("schemaRef", failure.getSchemaRef() != null ? failure.getSchemaRef() : "unknown"),
-                        Map.entry("message", message != null ? message : "No message available"),
-                        Map.entry("snippet", snippet != null ? snippet : "No snippet available"));
+                var data = getFailureObject(failure);
                 writer.println(new ObjectMapper().writeValueAsString(data));
             }
 
@@ -99,6 +92,17 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
         }
 
         System.out.println("Generated test failure report written to: " + reportPath);
+    }
+
+    private static Map<String, String> getFailureObject(GeneratedTestFailure failure) {
+        var message = failure.getFieldMessage();
+        var snippet = failure.getSnippet();
+        return Map.ofEntries(
+                Map.entry("ghVersion", failure.ghVersion != null ? failure.ghVersion : "unknown"),
+                Map.entry("exampleRef", failure.exampleRef() != null ? failure.exampleRef() : "unknown"),
+                Map.entry("schemaRef", failure.getSchemaRef() != null ? failure.getSchemaRef() : "unknown"),
+                Map.entry("message", message != null ? message : "No message available"),
+                Map.entry("snippet", snippet != null ? snippet : "No snippet available"));
     }
 
     private record GeneratedTestFailure(
