@@ -87,7 +87,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         assertThat(firstEvent.getRepo().getName()).isEqualTo("github/docs");
         assertThat(firstEvent.getCreatedAt()).isNotNull();
         
-        // Verify this is related to the github org
+        // Verify this is related to the GitHub org
         assertThat(firstEvent.getOrg()).isNotNull();
         assertThat(firstEvent.getOrg().getLogin()).isEqualTo("github");
     }
