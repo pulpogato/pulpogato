@@ -52,7 +52,8 @@ class IgnoredTests {
 
     /**
      * This maps the schemaRef of the test to the reason why the test is ignored.
-     * Ideally, this should be a link to an issue on [github/rest-api-description](https://github.com/github/rest-api-description/issues).
+     * Ideally, this should be a link to an issue on
+     * <a href="https://github.com/github/rest-api-description/issues">GitHub/rest-api-description</a>.
      */
     @Getter
     private static final Map<String, Map<String, String>> causes = compute();
