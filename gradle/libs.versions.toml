@@ -32,6 +32,7 @@ waena = "0.20.0"
 [libraries]
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
+commonmarkExtAutolink = { group = "org.commonmark", name = "commonmark-ext-autolink", version.ref = "commonmark" }
 commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonsText = { group = "org.apache.commons", name = "commons-text", version.ref = "commons-text" }
 glassfishJson = { group = "org.glassfish", name = "javax.json", version.ref = "glassfishJson" }
