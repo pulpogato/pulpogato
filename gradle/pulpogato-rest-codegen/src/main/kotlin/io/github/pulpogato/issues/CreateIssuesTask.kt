@@ -31,18 +31,20 @@ abstract class CreateIssuesTask : DefaultTask() {
         println("Creating issues from ${issues.size} entries")
         val entries =
             issues
-                .groupBy { it!!["schemaRef"] }
+                .groupBy { (it!!["exampleRef"] ?: "<no-example>") to (it["message"] ?: "<no-message>") }
                 .toSortedMap(compareBy(String.CASE_INSENSITIVE_ORDER) { it.toString() })
                 .entries
-        println("There are ${entries.size} unique schemaRefs with issues")
+        println("There are ${entries.size} unique (exampleRef, message) combinations with issues")
         entries
             .take(25)
-            .forEach { (schemaRef, schemaRefIssues) ->
-                println("Creating issue for schemaRef: $schemaRef with ${schemaRefIssues.size} entries")
-                val versionsPlain = schemaRefIssues.map { it!!["ghVersion"] }.distinct()
-                val versions = schemaRefIssues.map { "  - " + it!!["ghVersion"] }.distinct().joinToString("\n")
-                val exampleRefsPlain = schemaRefIssues.mapNotNull { it!!["exampleRef"] }.distinct()
-                val exampleRefs = exampleRefsPlain.joinToString("\n\n", "```\n", "\n```")
+            .forEach { (exampleRefAndMessage, groupedIssues) ->
+                val (exampleRef, message) = exampleRefAndMessage
+                println("Creating issue for exampleRef: $exampleRef with ${groupedIssues.size} entries")
+                val versionsPlain = groupedIssues.map { it!!["ghVersion"] }.distinct()
+                val versions = groupedIssues.map { "  - " + it!!["ghVersion"] }.distinct().joinToString("\n")
+                val schemaRefsPlain = groupedIssues.mapNotNull { it!!["schemaRef"] }.distinct()
+                val schemaRefs = schemaRefsPlain.joinToString("\n", "```\n", "\n```")
+                val schemaRef = groupedIssues.first()!!["schemaRef"]
                 val command =
                     mutableListOf(
                         "gh",
@@ -57,24 +59,31 @@ abstract class CreateIssuesTask : DefaultTask() {
                         """
 # Schema Inaccuracy
 
-This is the json ref for the example 
+This is the json ref for the example
 
-$exampleRefs
+```
+$exampleRef
+```
 
-${schemaRefIssues[0]!!["message"]}
+$message
 
 Here's a snippet
 
 ```
-${schemaRefIssues[0]!!["snippet"]}
+${groupedIssues[0]!!["snippet"]}
 ```
+
+## Affected Schema Refs
+
+$schemaRefs
+
 ## Expected
 
 The schema and example are in sync
 
 ## Reproduction Steps
 
-I could reproduce this in 
+I could reproduce this in
 
 $versions""".trimEnd(),
                     )
@@ -89,15 +98,13 @@ $versions""".trimEnd(),
                     } else {
                         "TODO: Diagnose this"
                     }
-                exampleRefsPlain.forEach { exampleRef ->
-                    val yaml = """
+                val yaml = """
 - example: "$exampleRef"
   reason: "$reason"
   versions:
 ${versionsPlain.joinToString("\n") { "    - $it" }}"""
-                    println(yaml)
-                    project.file("src/main/resources/IgnoredTests.yml").appendText(yaml)
-                }
+                println(yaml)
+                project.file("src/main/resources/IgnoredTests.yml").appendText(yaml)
             }
     }
 
