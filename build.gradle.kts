@@ -1,6 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rahulsom.waena.WaenaExtension
-import nebula.plugin.contacts.Contact
 import nebula.plugin.contacts.ContactsExtension
 import java.net.HttpURLConnection
 
@@ -9,8 +8,8 @@ buildscript {
         gradlePluginPortal()
         mavenCentral()
     }
-    // waena 0.12.0 -> jreleaser 1.19.0 -> commonmark 0.21.0 messes with the codegen module.
-    // This forces the version of commonmark to 0.25.0 which is compatible with the codegen module.
+    // waena -> jreleaser -> commonmark can mess with the codegen module.
+    // This forces the version of commonmark to one compatible with the codegen module.
     configurations {
         classpath {
             resolutionStrategy {
