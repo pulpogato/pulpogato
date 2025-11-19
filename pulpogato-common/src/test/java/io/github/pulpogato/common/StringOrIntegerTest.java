@@ -9,9 +9,7 @@ class StringOrIntegerTest {
     @Test
     void testToCodeWithInteger() {
         StringOrInteger value = StringOrInteger.builder().integerValue(3L).build();
-        assertThat(value.toCode())
-                .isEqualTo(
-                        """
+        assertThat(value.toCode()).isEqualTo("""
                         io.github.pulpogato.common.StringOrInteger.builder()
                             .integerValue(3L)
                             .build()""");
@@ -20,9 +18,7 @@ class StringOrIntegerTest {
     @Test
     void testToCodeWithString() {
         StringOrInteger value = StringOrInteger.builder().stringValue("example").build();
-        assertThat(value.toCode())
-                .isEqualTo(
-                        """
+        assertThat(value.toCode()).isEqualTo("""
                         io.github.pulpogato.common.StringOrInteger.builder()
                             .stringValue("example")
                             .build()""");
