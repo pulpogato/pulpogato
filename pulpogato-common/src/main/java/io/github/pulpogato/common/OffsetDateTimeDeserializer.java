@@ -19,6 +19,7 @@ import java.util.Objects;
  */
 public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> {
     private static final List<DateTimeFormatter> formatters = List.of(
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSXXX"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"),
             DateTimeFormatter.ISO_INSTANT);
