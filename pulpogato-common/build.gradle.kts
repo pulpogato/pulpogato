@@ -16,7 +16,10 @@ dependencies {
     implementation(libs.slf4j)
 
     api(libs.bundles.jackson)
-    
+
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
     testImplementation(libs.junit)
     testImplementation(libs.assertj)
     testImplementation(libs.mockito)
