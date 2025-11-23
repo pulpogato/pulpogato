@@ -3,13 +3,6 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 
-data class Quad<A, B, C, D>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D,
-)
-
 class JsonRefValidator(
     private val threshold: Int = 0,
 ) {
@@ -38,8 +31,8 @@ class JsonRefValidator(
         val schemaRefs =
             allMatches
                 .parallelStream()
-                .map { quad ->
-                    val (file, lineNumber, line, sourceFile) = quad
+                .map { match ->
+                    val (file, lineNumber, schemaRef, sourceFile) = match
 
                     // Lookup the appropriate schema
                     val schema = schemas[sourceFile]
@@ -51,21 +44,21 @@ class JsonRefValidator(
                                 """
                                 |${file.absolutePath}:${lineNumber + 1}
                                 |    Missing Schema: No schema provided for "$sourceFile"
-                                |    Ref: "$line"
+                                |    Ref: "$schemaRef"
                                 |
                                 """.trimMargin(),
                             )
                         }
                         "Missing schema for $sourceFile"
                     } else {
-                        hasError(schema, Triple(file, lineNumber, line)).also { error ->
+                        hasError(schema, Triple(file, lineNumber, schemaRef)).also { error ->
                             if (error != null) {
                                 synchronized(this) {
                                     println(
                                         """
                                         |${file.absolutePath}:${lineNumber + 1}
                                         |    Source File: "$sourceFile"
-                                        |    Bad Ref    : "$line"
+                                        |    Bad Ref    : "$schemaRef"
                                         |    Last Found : "$error"
                                         |
                                         """.trimMargin(),
@@ -82,12 +75,12 @@ class JsonRefValidator(
         println("Found $errors errors in $total JSON references")
     }
 
-    fun findSchemaRefMatches(file: File): List<Quad<File, Int, String, String>> {
-        val matches = mutableListOf<Quad<File, Int, String, String>>()
+    fun findSchemaRefMatches(file: File): List<SchemaRefMatch> {
+        val matches = mutableListOf<SchemaRefMatch>()
         val fileContent = file.readText()
 
         schemaRefRegex.findAll(fileContent).forEach { matchResult ->
-            val match = matchResult.groupValues[1] // Extract the captured group
+            val schemaRef = matchResult.groupValues[1] // Extract the captured group
             val startIndex = matchResult.range.first
             val precedingText = fileContent.take(startIndex)
             val lineNumber = precedingText.count { it == '\n' } + 1 // Calculate line number
@@ -103,7 +96,7 @@ class JsonRefValidator(
                 }
             val sourceFile = sourceFileMatch?.groupValues?.get(1) ?: "schema.json"
 
-            matches.add(Quad(file, lineNumber, match, sourceFile))
+            matches.add(SchemaRefMatch(file, lineNumber, schemaRef, sourceFile))
         }
 
         return matches
