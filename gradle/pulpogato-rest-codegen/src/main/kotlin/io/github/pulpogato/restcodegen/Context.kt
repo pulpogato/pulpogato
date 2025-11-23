@@ -2,6 +2,21 @@ package io.github.pulpogato.restcodegen
 
 import io.swagger.v3.oas.models.OpenAPI
 
+/**
+ * Context for REST code generation operations.
+ *
+ * This class holds the necessary information for code generation including
+ * the OpenAPI specification, version information, schema stack for tracking
+ * nested schema references, and a map of added properties to avoid duplicates.
+ *
+ * @property openAPI The OpenAPI specification being processed
+ * @property version The version of the OpenAPI specification
+ * @property schemaStack A list representing the current path in the schema hierarchy,
+ *                      used for generating unique identifiers and references
+ * @property addedProperties A map of schema names to their property names that have
+ *                          already been added from external schema additions (e.g., additions.schema.json)
+ *                          to prevent duplication during code generation
+ */
 data class Context(
     val openAPI: OpenAPI,
     val version: String,
@@ -13,6 +28,15 @@ data class Context(
         schemaStack.joinToString("/") { it.replace("/", "~1") }
     }
 
+    /**
+     * Creates a new context with an updated schema stack.
+     *
+     * If the first element is "#", the schema stack is cleared before adding the new elements.
+     * Otherwise, the new elements are appended to the existing stack.
+     *
+     * @param elements The elements to add to the schema stack
+     * @return A new [Context] instance with the updated schema stack
+     */
     fun withSchemaStack(vararg elements: String): Context {
         val newStack = schemaStack.toMutableList()
         if (elements.isNotEmpty() && elements.first() == "#") {
@@ -22,8 +46,28 @@ data class Context(
         return copy(schemaStack = newStack)
     }
 
+    /**
+     * Gets the schema stack reference as a string with proper escaping.
+     *
+     * The elements are joined with "/" and any "/" characters within the elements
+     * are escaped as "~1" according to JSON Pointer specification.
+     *
+     * @return The schema stack reference as a properly formatted string
+     */
     fun getSchemaStackRef() = cachedSchemaStackRef
 
+    /**
+     * Checks if a property has been added to a given schema from external additions.
+     *
+     * This method is used to determine if a property was added from an external schema
+     * additions file (like additions.schema.json) rather than being part of the original
+     * OpenAPI specification. This helps in properly handling and tracking such properties
+     * during code generation.
+     *
+     * @param schemaName The name of the schema to check
+     * @param propertyName The name of the property to check
+     * @return `true` if the property has been added to the schema from external additions, `false` otherwise
+     */
     fun isAddedProperty(
         schemaName: String,
         propertyName: String,
