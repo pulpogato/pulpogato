@@ -10,11 +10,29 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
+/**
+ * Gradle task to check the status of GitHub issues related to ignored tests.
+ * This task reads an input file containing GitHub issue URLs, fetches their current status
+ * from GitHub, and verifies that all issues are still in OPEN state.
+ *
+ * If any issues are found to be closed or not open, the task will throw a GradleException.
+ */
 abstract class CheckIssueStatusesTask : DefaultTask() {
+    /**
+     * The input file containing GitHub issue URLs to check.
+     * This file should contain lines with GitHub issue URLs that need to be checked for status.
+     */
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputFile: RegularFileProperty
 
+    /**
+     * Executes the task to check GitHub issues statuses.
+     * Reads the input file, fetches issue statuses from GitHub, and verifies that all issues are still open.
+     * If any issues are not open, this method will throw a GradleException.
+     *
+     * @throws GradleException if any of the checked issues are not in OPEN state
+     */
     @TaskAction
     fun checkStatuses() {
         val file = inputFile.get().asFile
@@ -31,6 +49,14 @@ abstract class CheckIssueStatusesTask : DefaultTask() {
         }
     }
 
+    /**
+     * Fetches issue statuses from GitHub for the issue URLs found in the input file.
+     * Extracts GitHub issue URLs from the input file using a regex pattern, then uses
+     * the GitHub CLI to fetch the status of each issue.
+     *
+     * @param file The input file containing GitHub issue URLs
+     * @return A list of IssueStatus objects representing the current status of each issue
+     */
     private fun getIssueStatuses(file: File): List<IssueStatus> {
         val regex = ".+\"(https://github.com/github/rest-api-description/issues/\\d+)\"".toRegex()
         val objectMapper = ObjectMapper()
@@ -50,9 +76,18 @@ abstract class CheckIssueStatusesTask : DefaultTask() {
             .toList()
     }
 
+    /**
+     * Represents the status of a GitHub issue.
+     * This class holds information about a GitHub issue's state, number, and URL.
+     */
     internal class IssueStatus {
+        /** The issue number on GitHub */
         var number: Int? = null
+
+        /** The current state of the issue (e.g., OPEN, CLOSED) */
         var state: String? = null
+
+        /** The URL of the GitHub issue */
         var url: String? = null
 
         override fun toString(): String = "IssueStatus(number=$number, state=$state, url=$url)"
