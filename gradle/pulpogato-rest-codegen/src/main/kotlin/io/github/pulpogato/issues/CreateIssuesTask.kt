@@ -6,10 +6,22 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * Gradle task to create GitHub issues for ignored tests.
+ * This task scans all subprojects for generated test failure reports and creates GitHub issues
+ * for schema inaccuracy problems, grouping similar issues by example reference and message.
+ */
 abstract class CreateIssuesTask : DefaultTask() {
+    /** ObjectMapper instance for parsing JSON strings */
     @Internal
     val objectMapper = ObjectMapper()
 
+    /**
+     * Executes the task to create GitHub issues for ignored tests.
+     * This method scans all subprojects for generated test failure reports, groups similar
+     * issues by example reference and message, and creates GitHub issues for schema inaccuracy
+     * problems. The method prompts for confirmation before creating each issue.
+     */
     @TaskAction
     fun createIssues() {
         val issues =
@@ -108,5 +120,11 @@ ${versionsPlain.joinToString("\n") { "    - $it" }}"""
             }
     }
 
+    /**
+     * Parses a JSON string into a map of string to string.
+     *
+     * @param string The JSON string to parse
+     * @return A map representation of the JSON string, or null if parsing fails
+     */
     private fun parse(string: String): Map<String, String>? = objectMapper.readValue(string, object : TypeReference<Map<String, String>>() {})
 }
