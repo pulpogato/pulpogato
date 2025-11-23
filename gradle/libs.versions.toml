@@ -7,6 +7,7 @@ dgs = "8.2.1"
 download = "5.6.0"
 groovy = "5.0.2"
 jackson = "2.20.1"
+jackson3 = "3.0.2"
 jakarta = "3.0.0"
 javapoet = "0.8.0"
 glassfishJson = "1.1.4"
@@ -24,7 +25,7 @@ reflections = "0.10.2"
 slf4j = "2.0.17"
 spotless = "8.1.0"
 spring = "7.0.1"
-springBoot = "3.5.8"
+springBoot = "4.0.0"
 swaggerParser = "2.1.35"
 testLogger = "4.0.0"
 waena = "0.20.0"
@@ -38,7 +39,7 @@ commonsText = { group = "org.apache.commons", name = "commons-text", version.ref
 glassfishJson = { group = "org.glassfish", name = "javax.json", version.ref = "glassfishJson" }
 groovy = { group = "org.apache.groovy", name = "groovy-all", version.ref = "groovy" }
 httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "httpclient5" }
-jacksonCore = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jacksonCore = { group = "tools.jackson.core", name = "jackson-databind", version.ref = "jackson3" }
 jacksonTime = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
 jakartaAnnotations = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta" }
@@ -58,6 +59,7 @@ slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 spotless = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 springBootTest = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springBoot" }
 springBootWeb = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "springBoot" }
+springBootWebTest = { group = "org.springframework.boot", name = "spring-boot-starter-webmvc-test", version.ref = "springBoot" }
 springBootWebflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "springBoot" }
 springWeb = { group = "org.springframework", name = "spring-web", version.ref = "spring" }
 swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", version.ref = "swaggerParser" }
@@ -65,7 +67,7 @@ swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", versi
 [bundles]
 commonmark = ["commonmark", "commonmarkTables"]
 jackson = ["jacksonCore", "jacksonTime"]
-springBoot = ["springBootTest", "springBootWeb", "springBootWebflux"]
+springBoot = ["springBootTest", "springBootWeb", "springBootWebflux", "springBootWebTest"]
 
 [plugins]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }

@@ -1,8 +1,6 @@
 package io.github.pulpogato.restcodegen
 
 import com.diffplug.spotless.glue.pjf.PalantirJavaFormatFormatterFunc
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
@@ -15,6 +13,8 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.node.ObjectNode
 import java.io.File
 import kotlin.io.path.extension
 import kotlin.io.readText
@@ -128,11 +128,11 @@ open class GenerateJavaTask : DefaultTask() {
                     } else {
                         val targetProperties =
                             (targetSchema as ObjectNode)
-                                .with("properties") as ObjectNode
+                                .get("properties") as ObjectNode
 
                         val propertyNames = mutableSetOf<String>()
                         properties.properties().forEach { (propertyName, propertySpec) ->
-                            targetProperties.put(propertyName, propertySpec)
+                            targetProperties.putIfAbsent(propertyName, propertySpec)
                             propertyNames.add(propertyName)
                             project.logger.info("Added property '$propertyName' to schema '$schemaName'")
                         }

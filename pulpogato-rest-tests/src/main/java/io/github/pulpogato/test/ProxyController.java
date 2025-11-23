@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,7 +42,7 @@ public class ProxyController {
 
     @RequestMapping("/**")
     @SuppressWarnings("unused")
-    public ResponseEntity<String> mirrorRest(
+    public ResponseEntity<@NonNull String> mirrorRest(
             @RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request)
             throws URISyntaxException, IOException {
         try (Tape tape = Tape.getTape(request.getHeader("TapeName"))) {
@@ -51,33 +52,43 @@ public class ProxyController {
                     .filter(it -> it.getRequest().equals(exchangeRequest))
                     .findFirst();
             if (matchingExchanges.isPresent()) {
-                log.info("Found exchange in tape: {}", tape);
-                var exchange = matchingExchanges.get();
-                var headers = new HttpHeaders();
-                exchange.getResponse().getHeaders().forEach(headers::add);
-                return ResponseEntity.status(exchange.getResponse().getStatusCode())
-                        .headers(headers)
-                        .body(exchange.getResponse().getBody());
+                return getCachedResponse(tape, matchingExchanges.get());
+            } else {
+                log.info("Request: {}", Tape.OBJECT_MAPPER.writeValueAsString(exchangeRequest));
+                return getLiveResponse(body, method, request, tape, exchangeRequest);
             }
-
-            log.info("Fetching live data from server: {}", request.getRequestURI());
-
-            HttpEntity<String> entity = new HttpEntity<>(body, buildRequestHeaders(request));
-            ResponseEntity<String> exchange = getLiveResponse(method, buildUri(request), entity);
-            Map<String, String> singleValueMap = getInterestingResponseHeaders(exchange);
-
-            var response = Exchange.Response.builder()
-                    .statusCode(exchange.getStatusCode().value())
-                    .headers(singleValueMap)
-                    .body(prettifyBody(exchange.getBody()));
-
-            tape.getExchanges()
-                    .add(Exchange.builder()
-                            .request(exchangeRequest)
-                            .response(response.build())
-                            .build());
-            return exchange;
         }
+    }
+
+    private ResponseEntity<@NonNull String> getLiveResponse(
+            String body, HttpMethod method, HttpServletRequest request, Tape tape, Exchange.Request exchangeRequest)
+            throws URISyntaxException {
+        log.info("Fetching live data from server: {}", request.getRequestURI());
+
+        HttpEntity<@NonNull String> entity = new HttpEntity<>(body, buildRequestHeaders(request));
+        ResponseEntity<@NonNull String> exchange = getLiveResponse(method, buildUri(request), entity);
+        Map<String, String> singleValueMap = getInterestingResponseHeaders(exchange);
+
+        var response = Exchange.Response.builder()
+                .statusCode(exchange.getStatusCode().value())
+                .headers(singleValueMap)
+                .body(prettifyBody(exchange.getBody()));
+
+        tape.getExchanges()
+                .add(Exchange.builder()
+                        .request(exchangeRequest)
+                        .response(response.build())
+                        .build());
+        return exchange;
+    }
+
+    private static ResponseEntity<@NonNull String> getCachedResponse(Tape tape, Exchange exchange) {
+        log.info("Found exchange in tape: {}", tape);
+        var headers = new HttpHeaders();
+        exchange.getResponse().getHeaders().forEach(headers::add);
+        return ResponseEntity.status(exchange.getResponse().getStatusCode())
+                .headers(headers)
+                .body(exchange.getResponse().getBody());
     }
 
     private static URI buildUri(HttpServletRequest request) throws URISyntaxException {
@@ -99,7 +110,8 @@ public class ProxyController {
                 null);
     }
 
-    private ResponseEntity<String> getLiveResponse(HttpMethod method, URI uri, HttpEntity<String> entity) {
+    private ResponseEntity<@NonNull String> getLiveResponse(
+            HttpMethod method, URI uri, HttpEntity<@NonNull String> entity) {
         try {
             return restTemplate.exchange(uri, method, entity, String.class);
         } catch (HttpClientErrorException e) {
@@ -156,7 +168,7 @@ public class ProxyController {
         return null;
     }
 
-    private static Map<String, String> getInterestingResponseHeaders(ResponseEntity<String> exchange) {
+    private static Map<String, String> getInterestingResponseHeaders(ResponseEntity<@NonNull String> exchange) {
         Map<String, String> singleValueMap = new HashMap<>(exchange.getHeaders().toSingleValueMap());
         var removeHeaders = List.of(
                 "Access-Control-.+",
