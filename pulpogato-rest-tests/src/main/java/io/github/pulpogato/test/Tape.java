@@ -8,7 +8,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +21,9 @@ import org.junit.platform.commons.util.ToStringBuilder;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Tape implements Closeable {
 
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
+            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
+            .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES));
     private final String fileName;
 
     @Getter
@@ -66,13 +68,9 @@ public class Tape implements Closeable {
             return;
         }
         log.info("Saving {} exchanges to tape: {}", exchanges.size(), fileName);
-        YAMLFactory yamlFactory = new YAMLFactory()
-                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-                .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
-        var sw = new StringWriter();
-        new ObjectMapper(yamlFactory).writeValue(sw, exchanges);
+        var string = OBJECT_MAPPER.writeValueAsString(exchanges);
         try (FileWriter writer = new FileWriter(fileName)) {
-            writer.write(sw.toString());
+            writer.write(string);
         }
     }
 

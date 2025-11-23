@@ -2,8 +2,6 @@ package io.github.pulpogato.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.ObjectMapper;
 
 class SingularOrPluralTest {
 
@@ -34,7 +33,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testSingularSerialization() throws JsonProcessingException {
+    void testSingularSerialization() {
         var singularOrPlural = SingularOrPlural.singular("test-value");
 
         var json = objectMapper.writeValueAsString(singularOrPlural);
@@ -43,7 +42,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testPluralSerialization() throws JsonProcessingException {
+    void testPluralSerialization() {
         var singularOrPlural = SingularOrPlural.plural(List.of("item1", "item2"));
 
         var json = objectMapper.writeValueAsString(singularOrPlural);
@@ -52,7 +51,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testSingularDeserialization() throws JsonProcessingException {
+    void testSingularDeserialization() {
         var json = "\"single-item\"";
 
         var result = objectMapper.readValue(json, SingularOrPlural.class);
@@ -62,7 +61,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testPluralDeserialization() throws JsonProcessingException {
+    void testPluralDeserialization() {
         var json = "[\"item1\",\"item2\",\"item3\"]";
 
         var result = objectMapper.readValue(json, SingularOrPlural.class);
@@ -72,7 +71,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testEmptyArrayDeserialization() throws JsonProcessingException {
+    void testEmptyArrayDeserialization() {
         var json = "[]";
 
         var result = objectMapper.readValue(json, SingularOrPlural.class);
@@ -83,16 +82,14 @@ class SingularOrPluralTest {
 
     @ParameterizedTest
     @MethodSource("serializationTestCases")
-    void testSerialization(String description, SingularOrPlural<String> input, String expectedJson)
-            throws JsonProcessingException {
+    void testSerialization(String description, SingularOrPlural<String> input, String expectedJson) {
         var json = objectMapper.writeValueAsString(input);
         assertThat(json).isEqualTo(expectedJson);
     }
 
     @ParameterizedTest
     @MethodSource("singularSerializationTestCases")
-    void testSingularSerializationRoundTrip(String description, SingularOrPlural<String> input, String expectedJson)
-            throws JsonProcessingException {
+    void testSingularSerializationRoundTrip(String description, SingularOrPlural<String> input, String expectedJson) {
         var json = objectMapper.writeValueAsString(input);
         assertThat(json).isEqualTo(expectedJson);
 
@@ -126,7 +123,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testIntegerSingularOrPlural() throws JsonProcessingException {
+    void testIntegerSingularOrPlural() {
         var singularInt = SingularOrPlural.singular(42);
         var pluralInt = SingularOrPlural.plural(List.of(1, 2, 3));
 
@@ -147,7 +144,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testNullSingularSerialization() throws JsonProcessingException {
+    void testNullSingularSerialization() {
         var singularOrPlural = SingularOrPlural.singular(null);
 
         var json = objectMapper.writeValueAsString(singularOrPlural);
@@ -156,7 +153,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testNullDeserialization() throws JsonProcessingException {
+    void testNullDeserialization() {
         var json = "null";
 
         var result = objectMapper.readValue(json, SingularOrPlural.class);
@@ -201,7 +198,7 @@ class SingularOrPluralTest {
     }
 
     @Test
-    void testComplexObjectSerialization() throws JsonProcessingException {
+    void testComplexObjectSerialization() {
         record TestObject(String name, int value) {}
 
         var obj1 = new TestObject("first", 1);
@@ -219,8 +216,7 @@ class SingularOrPluralTest {
 
     @ParameterizedTest
     @MethodSource("stringDeserializationTestCases")
-    void testStringDeserializationFormats(String description, String json, Object expectedValue)
-            throws JsonProcessingException {
+    void testStringDeserializationFormats(String description, String json, Object expectedValue) {
         var result = objectMapper.readValue(json, SingularOrPlural.class);
 
         assertThat(result.getSingular()).isEqualTo(expectedValue);
@@ -229,8 +225,7 @@ class SingularOrPluralTest {
 
     @ParameterizedTest
     @MethodSource("arrayDeserializationTestCases")
-    void testArrayDeserializationFormats(String description, String json, List<?> expectedList)
-            throws JsonProcessingException {
+    void testArrayDeserializationFormats(String description, String json, List<?> expectedList) {
         var result = objectMapper.readValue(json, SingularOrPlural.class);
 
         // Arrays are now properly deserialized

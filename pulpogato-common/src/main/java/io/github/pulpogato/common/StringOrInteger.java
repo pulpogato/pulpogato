@@ -1,13 +1,21 @@
 package io.github.pulpogato.common;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.IOException;
-import java.util.List;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 /**
  * A class that can be a {@link String} or a {@link Long} Integer.
@@ -33,13 +41,14 @@ public class StringOrInteger implements PulpogatoType {
                 .build();
     }
 
-    static class CustomDeserializer extends JsonDeserializer<StringOrInteger> {
+    static class CustomDeserializer extends ValueDeserializer<StringOrInteger> {
+
         @Override
-        public StringOrInteger deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        public StringOrInteger deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
             StringOrInteger result = new StringOrInteger();
 
             // Check the current token type to determine how to deserialize
-            switch (p.getCurrentToken()) {
+            switch (p.currentToken()) {
                 case VALUE_NUMBER_INT -> result.setIntegerValue(p.getLongValue());
                 case VALUE_STRING -> result.setStringValue(p.getValueAsString());
                 default -> parseByContent(p, result);
@@ -48,7 +57,7 @@ public class StringOrInteger implements PulpogatoType {
             return result;
         }
 
-        private void parseByContent(JsonParser p, StringOrInteger result) throws IOException {
+        private void parseByContent(JsonParser p, StringOrInteger result) {
             String value = p.getValueAsString();
             if (value != null) {
                 try {
@@ -61,14 +70,20 @@ public class StringOrInteger implements PulpogatoType {
         }
     }
 
-    static class CustomSerializer extends FancySerializer<StringOrInteger> {
+    static class CustomSerializer extends StdSerializer<StringOrInteger> {
         public CustomSerializer() {
-            super(
-                    StringOrInteger.class,
-                    Mode.ONE_OF,
-                    List.of(
-                            new GettableField<>(Long.class, StringOrInteger::getIntegerValue),
-                            new GettableField<>(String.class, StringOrInteger::getStringValue)));
+            super(StringOrInteger.class);
+        }
+
+        @Override
+        public void serialize(StringOrInteger value, JsonGenerator gen, SerializationContext provider) {
+            if (value.getStringValue() != null) {
+                gen.writeString(value.getStringValue());
+            } else if (value.getIntegerValue() != null) {
+                gen.writeNumber(value.getIntegerValue());
+            } else {
+                gen.writeNull();
+            }
         }
     }
 }
