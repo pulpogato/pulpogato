@@ -3,12 +3,6 @@ package io.github.pulpogato.test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
 import java.time.Instant;
@@ -27,6 +21,12 @@ import javax.json.JsonValue;
 import org.assertj.core.api.SoftAssertions;
 import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 public class TestUtils {
 
@@ -41,11 +41,11 @@ public class TestUtils {
         // Empty Default Private Constructor. This should not be instantiated.
     }
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
             .enable(SerializationFeature.INDENT_OUTPUT)
-            .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-            .registerModule(new JavaTimeModule())
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+            .changeDefaultPropertyInclusion(value -> value.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .disable(DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+            .build();
 
     /**
      * Parses the input and compares it to the generated JSON.

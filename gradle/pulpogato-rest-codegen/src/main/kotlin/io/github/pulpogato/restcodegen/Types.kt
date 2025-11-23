@@ -42,7 +42,7 @@ object Types {
             .annotated(jsonFormat(JsonFormat.Shape.STRING, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
             .annotated(
                 AnnotationSpec
-                    .builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
+                    .builder(ClassName.get("tools.jackson.databind.annotation", "JsonDeserialize"))
                     .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
                     .build(),
             )

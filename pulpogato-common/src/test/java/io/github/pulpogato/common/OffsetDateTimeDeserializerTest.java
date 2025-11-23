@@ -3,13 +3,13 @@ package io.github.pulpogato.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.time.OffsetDateTime;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 class OffsetDateTimeDeserializerTest {
     static class Sample {
@@ -30,7 +30,7 @@ class OffsetDateTimeDeserializerTest {
 
     @ParameterizedTest
     @MethodSource("params")
-    void deserializeShouldParseValidDateTimeStrings(String input, long expected) throws Exception {
+    void deserializeShouldParseValidDateTimeStrings(String input, long expected) {
         var mapper = new ObjectMapper();
         String quotedInput = "\"" + input + "\"";
         var json = "{\"dateTime\": %s}".formatted(input.contains("-") ? quotedInput : input);
