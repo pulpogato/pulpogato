@@ -19,21 +19,55 @@ import java.io.File
 import kotlin.io.path.extension
 import kotlin.io.readText
 
+/**
+ * Gradle task to generate Java classes from OpenAPI schema.
+ *
+ * This task reads an OpenAPI schema file, processes it to generate Java classes
+ * for APIs, webhooks, and schemas. It supports schema additions through an optional
+ * additions.schema.json file and formats the generated code using Palantir Java Format.
+ * It also validates JSON references in the generated code.
+ */
 @CacheableTask
 open class GenerateJavaTask : DefaultTask() {
+    /**
+     * The OpenAPI schema file to generate Java classes from.
+     *
+     * This should be a JSON or YAML file containing the OpenAPI specification.
+     */
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var schema: Provider<File>
 
+    /**
+     * The base package name for the generated Java classes.
+     *
+     * Generated classes will be placed in sub-packages under this base package.
+     */
     @Input
     lateinit var packageName: Provider<String>
 
+    /**
+     * The main source directory where generated Java files will be placed.
+     *
+     * This is typically the 'src/main/java' directory of the project.
+     */
     @OutputDirectory
     lateinit var mainDir: Provider<File>
 
+    /**
+     * The test source directory where generated test Java files will be placed.
+     *
+     * This is typically the 'src/test/java' directory of the project.
+     */
     @OutputDirectory
     lateinit var testDir: Provider<File>
 
+    /**
+     * The name of the project for version determination.
+     *
+     * This is automatically set to the project name and used to determine
+     * the version string for the generated code.
+     */
     @Input
     val projectName: Property<String> = project.objects.property(String::class.java)
 
@@ -41,10 +75,17 @@ open class GenerateJavaTask : DefaultTask() {
         projectName.set(project.name)
     }
 
-    @get:OutputDirectory
-    val testResourcesDir: Provider<File>
-        get() = testDir.map { File(it.parentFile, "resources") }
-
+    /**
+     * Executes the generation of Java classes from the OpenAPI schema.
+     *
+     * This method performs the following steps:
+     * 1. Reads and parses the OpenAPI schema
+     * 2. Checks for and merges optional schema additions
+     * 3. Generates API classes, webhook classes, and schema classes
+     * 4. Creates an enum converters registry
+     * 5. Formats the generated Java code
+     * 6. Validates JSON references in the generated code
+     */
     @TaskAction
     fun generate() {
         mainDir.get().mkdirs()
@@ -101,6 +142,12 @@ open class GenerateJavaTask : DefaultTask() {
         JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
     }
 
+    /**
+     * Retrieves all Java files in the specified directory and its subdirectories.
+     *
+     * @param dir The directory to search for Java files
+     * @return A list of all Java files found in the directory and its subdirectories
+     */
     private fun getJavaFiles(dir: File): List<File> =
         dir
             .walk()
@@ -108,6 +155,19 @@ open class GenerateJavaTask : DefaultTask() {
             .filter { it.toPath().extension == "java" }
             .toList()
 
+    /**
+     * Merges schema additions from an additions.schema.json file into the main schema.
+     *
+     * This method looks for additional schema definitions in the additions file
+     * and merges them into the main OpenAPI specification. It also tracks which
+     * additional properties were added so they can be properly handled during
+     * code generation.
+     *
+     * @param swaggerSpec The original OpenAPI specification as a JSON string
+     * @param schemaAddsJson The additions schema as a JSON string
+     * @param addedProperties A mutable map to store information about which properties were added from the additions
+     * @return The merged OpenAPI specification as a JSON string
+     */
     private fun mergeSchemaAdditions(
         swaggerSpec: String,
         schemaAddsJson: String,

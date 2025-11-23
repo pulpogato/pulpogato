@@ -11,17 +11,50 @@ import org.gradle.api.tasks.TaskAction
 import java.net.URI
 import java.security.MessageDigest
 
+/**
+ * A Gradle task to download OpenAPI schema files from a remote source.
+ *
+ * This task downloads schema files from the GitHub REST API description repository
+ * based on the specified API version and project variant. It also calculates and
+ * stores the SHA-256 hash of the downloaded schema for verification purposes.
+ */
 @CacheableTask
 abstract class DownloadSchemaTask : DefaultTask() {
+    /**
+     * The API version to download schema for.
+     *
+     * This property specifies which version of the API schema to retrieve.
+     */
     @get:Input
     abstract val apiVersion: Property<String>
 
+    /**
+     * The project variant to download schema for.
+     *
+     * This property determines which specific variant of the API to use,
+     * with special handling for the "fpt" (free, pro, team) variant.
+     */
     @get:Input
     abstract val projectVariant: Property<String>
 
+    /**
+     * The output file where the downloaded schema will be saved.
+     *
+     * This property specifies the destination file for the downloaded schema.
+     */
     @get:OutputFile
     abstract val schemaFile: RegularFileProperty
 
+    /**
+     * Downloads the schema file from the remote URL.
+     *
+     * This is the main action method that performs the schema download.
+     * It builds the appropriate URL based on the variant and version,
+     * downloads the schema, saves it to the output file, calculates
+     * the SHA-256 hash, and stores it as a project property.
+     *
+     * @throws GradleException if the download fails or the output file doesn't exist after download
+     */
     @TaskAction
     fun download() {
         val variant = projectVariant.get()
@@ -45,6 +78,16 @@ abstract class DownloadSchemaTask : DefaultTask() {
         }
     }
 
+    /**
+     * Builds the schema URL based on the given variant and version.
+     *
+     * For the "fpt" variant, the path is set to "api.github.com",
+     * otherwise the variant itself is used as the path.
+     *
+     * @param variant The project variant (e.g., "fpt", or other variant names)
+     * @param version The API version to download
+     * @return The complete URL for downloading the schema
+     */
     private fun buildSchemaUrl(
         variant: String,
         version: String,
@@ -53,6 +96,15 @@ abstract class DownloadSchemaTask : DefaultTask() {
         return "https://github.com/github/rest-api-description/raw/$version/descriptions-next/$path/$path.json"
     }
 
+    /**
+     * Calculates the SHA-256 hash of the given byte array.
+     *
+     * This method is used to generate a hash of the downloaded schema
+     * file for verification and tracking purposes.
+     *
+     * @param bytes The byte array to calculate hash for
+     * @return The SHA-256 hash as a hexadecimal string
+     */
     private fun calculateSha256(bytes: ByteArray): String {
         val digest = MessageDigest.getInstance("SHA-256")
         val hashBytes = digest.digest(bytes)

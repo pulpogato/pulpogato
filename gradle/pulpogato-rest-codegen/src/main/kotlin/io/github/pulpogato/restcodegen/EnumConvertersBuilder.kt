@@ -10,7 +10,31 @@ import io.github.pulpogato.restcodegen.Annotations.lombok
 import java.io.File
 import javax.lang.model.element.Modifier
 
+/**
+ * Builder class for generating an EnumConverters registry class.
+ *
+ * This class is responsible for creating a Java class that serves as a registry
+ * containing all enum converters for Spring Boot configuration. It generates
+ * a class with a list of converter instances that can be used for type conversion
+ * in Spring applications.
+ */
 class EnumConvertersBuilder {
+    /**
+     * Builds the EnumConverters class containing all enum converter instances.
+     *
+     * This method creates a Java class named "EnumConverters" that contains a
+     * list of all enum converters provided. The generated class is annotated
+     * with Lombok annotations for getter methods and required argument constructor.
+     * It also includes a generated annotation for tracking the source.
+     *
+     * If the enumConverters set is empty, this method returns early without
+     * generating any class.
+     *
+     * @param context The context containing OpenAPI specification and schema information
+     * @param mainDir The directory where the generated Java file will be written
+     * @param apiPackageName The package name for the generated class
+     * @param enumConverters A set of [ClassName] objects representing the enum converter classes to include
+     */
     fun buildEnumConverters(
         context: Context,
         mainDir: File,
