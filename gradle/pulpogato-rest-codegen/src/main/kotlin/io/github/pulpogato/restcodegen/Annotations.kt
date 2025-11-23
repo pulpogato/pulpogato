@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.TypeSpec
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 import java.util.stream.Stream
 
 object Annotations {
@@ -125,7 +125,7 @@ object Annotations {
             .build()
 
     /*
-      JSpecify Annotations
+     JSpecify Annotations
      */
     fun nonNull(): AnnotationSpec =
         AnnotationSpec

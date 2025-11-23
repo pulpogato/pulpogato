@@ -1,8 +1,8 @@
 package io.github.pulpogato.test;
 
-import com.fasterxml.jackson.core.JacksonException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import tools.jackson.core.JacksonException;
 
 class UnrecognizedPropertyExceptionWrapper extends RuntimeException {
     private final JacksonException originalException;

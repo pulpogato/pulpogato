@@ -1,10 +1,10 @@
 package io.github.pulpogato.restcodegen
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.TypeName
 import io.github.pulpogato.restcodegen.ext.pascalCase
+import tools.jackson.databind.ObjectMapper
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -74,7 +74,7 @@ object TestBuilder {
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
-                            ClassName.get("com.fasterxml.jackson.core.type", "TypeReference"),
+                            ClassName.get("tools.jackson.core.type", "TypeReference"),
                             className.withoutAnnotations(),
                         ).addStatement("softly.assertThat(processed).isNotNull()")
                         .addStatement("softly.assertAll()")
@@ -91,7 +91,7 @@ object TestBuilder {
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
-                            ClassName.get("com.fasterxml.jackson.core.type", "TypeReference"),
+                            ClassName.get("tools.jackson.core.type", "TypeReference"),
                             className.withoutAnnotations(),
                         ).addStatement("softly.assertThat(processed).isNotNull()")
                         .addStatement("softly.assertAll()")

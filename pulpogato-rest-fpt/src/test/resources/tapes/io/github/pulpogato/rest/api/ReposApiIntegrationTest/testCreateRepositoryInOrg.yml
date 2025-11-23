@@ -7,9 +7,9 @@
       Content-Type: application/json
     body: |-
       {
-        "name" : "create-demo",
         "description" : "create demo",
-        "homepage" : "https://github.com/pulpogato/create-demo"
+        "homepage" : "https://github.com/pulpogato/create-demo",
+        "name" : "create-demo"
       }
   response:
     statusCode: 201

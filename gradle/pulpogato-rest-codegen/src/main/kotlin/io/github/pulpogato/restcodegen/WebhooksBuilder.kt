@@ -1,10 +1,6 @@
 package io.github.pulpogato.restcodegen
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.FieldSpec
@@ -22,11 +18,15 @@ import io.github.pulpogato.restcodegen.ext.pascalCase
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
 import javax.lang.model.element.Modifier
-import kotlin.collections.get
 
 class WebhooksBuilder {
     data class WebhookBuilderParams(
@@ -250,8 +250,8 @@ class WebhooksBuilder {
     ): TypeSpec.Builder =
         TypeSpec
             .classBuilder("WebhooksIntegrationTest")
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "WebMvcTest")).build())
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.autoconfigure.web.servlet", "AutoConfigureMockMvc")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.webmvc.test.autoconfigure", "WebMvcTest")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.webmvc.test.autoconfigure", "AutoConfigureMockMvc")).build())
             .addField(
                 FieldSpec
                     .builder(ClassName.get("org.springframework.test.web.servlet", "MockMvc"), "mvc")
@@ -300,16 +300,15 @@ class WebhooksBuilder {
                     .returns(ClassName.get(ObjectMapper::class.java))
                     .addStatement(
                         $$"""
-                        return new $T()
-                                .setDefaultPropertyInclusion($T.Include.NON_NULL)
-                                .registerModule(new $T())
+                        return $T.builder()
+                                .changeDefaultPropertyInclusion(value -> value.withValueInclusion($T.Include.NON_NULL))
                                 .disable($T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
                                 .configure($T.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                                .build()
                         """.trimIndent(),
-                        ClassName.get(ObjectMapper::class.java),
+                        ClassName.get(JsonMapper::class.java),
                         ClassName.get(JsonInclude::class.java),
-                        ClassName.get(JavaTimeModule::class.java),
-                        ClassName.get(DeserializationFeature::class.java),
+                        ClassName.get(DateTimeFeature::class.java),
                         ClassName.get(DeserializationFeature::class.java),
                     ).build(),
             ).addType(testController)

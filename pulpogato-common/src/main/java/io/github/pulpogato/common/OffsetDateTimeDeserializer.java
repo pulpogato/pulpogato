@@ -1,16 +1,15 @@
 package io.github.pulpogato.common;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * Custom deserializer for {@link OffsetDateTime} objects.
@@ -37,12 +36,10 @@ public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
      * @param jsonParser the JSON parser
      * @param deserializationContext the deserialization context
      * @return the deserialized {@code OffsetDateTime} object, or {@code null} if the input is {@code null} or cannot be parsed
-     * @throws IOException if an I/O error occurs
      */
     @Override
-    public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-            throws IOException {
-        var currentToken = jsonParser.getCurrentToken();
+    public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
+        var currentToken = jsonParser.currentToken();
 
         // Handle numeric Unix timestamps
         if (currentToken == JsonToken.VALUE_NUMBER_INT) {
@@ -51,7 +48,7 @@ public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
         }
 
         // Handle string date-time values
-        final var text = jsonParser.getText();
+        final var text = jsonParser.getString();
         if (text == null) {
             return null;
         }

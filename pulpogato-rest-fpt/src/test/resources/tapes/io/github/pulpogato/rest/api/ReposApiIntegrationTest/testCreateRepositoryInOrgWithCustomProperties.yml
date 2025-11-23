@@ -7,11 +7,11 @@
       Content-Type: application/json
     body: |-
       {
-        "name" : "rsomasunderam-custom-props-demo",
-        "description" : "create demo",
         "custom_properties" : {
           "custom_boolean_prop" : "false"
-        }
+        },
+        "description" : "create demo",
+        "name" : "rsomasunderam-custom-props-demo"
       }
   response:
     statusCode: 201

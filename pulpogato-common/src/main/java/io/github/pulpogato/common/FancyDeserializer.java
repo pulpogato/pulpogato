@@ -1,17 +1,15 @@
 package io.github.pulpogato.common;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * A deserializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
@@ -31,7 +29,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
      */
     public record SettableField<T, X>(Class<X> type, BiConsumer<T, X> setter) {}
 
-    private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
+    private static final ObjectMapper om = new ObjectMapper();
 
     /**
      * Constructs a deserializer
@@ -64,7 +62,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
     private final transient List<SettableField<T, ?>> fields;
 
     @Override
-    public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public T deserialize(JsonParser p, DeserializationContext ctxt) {
         final var returnValue = initializer.get();
 
         try {
