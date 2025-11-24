@@ -28,7 +28,24 @@ import io.swagger.v3.oas.models.responses.ApiResponse
 import java.io.File
 import javax.lang.model.element.Modifier
 
+/**
+ * A builder class that generates REST API client code based on OpenAPI specifications.
+ *
+ * This class processes OpenAPI definitions to create:
+ * - API interfaces with Spring Web Service annotations
+ * - A RestClients class that serves as a central access point
+ * - Test classes with example-based tests
+ * - Enum converters for type safety
+ */
 class PathsBuilder {
+    /**
+     * Represents a single HTTP operation (method + path) from an OpenAPI specification.
+     *
+     * @property path The API endpoint path (e.g., "/users/{id}")
+     * @property method The HTTP method (GET, POST, PUT, DELETE, etc.)
+     * @property operationId The unique identifier for this operation
+     * @property operation The complete OpenAPI Operation object containing all operation details
+     */
     class AtomicMethod(
         val path: String,
         val method: HttpMethod,
@@ -36,6 +53,24 @@ class PathsBuilder {
         val operation: Operation,
     )
 
+    /**
+     * Generates REST API client code based on the provided OpenAPI context.
+     *
+     * This method creates:
+     * - API interface files for each group of operations
+     * - A RestClients class containing fields for each API
+     * - Test classes with example-based tests for each API
+     * - Enum converters for type safety
+     *
+     * The method processes all paths in the OpenAPI specification, groups them by operation ID,
+     * and generates appropriate Java interfaces with Spring Web Service annotations.
+     *
+     * @param context The generation context containing the OpenAPI specification and other configuration
+     * @param mainDir The directory where generated source files will be written
+     * @param testDir The directory where generated test files will be written
+     * @param packageName The target Java package name for generated classes
+     * @param enumConverters A mutable set to collect enum converter class names for later processing
+     */
     fun buildApis(
         context: Context,
         mainDir: File,
@@ -158,11 +193,32 @@ class PathsBuilder {
         JavaFile.builder(packageName, restClients.build()).build().writeTo(mainDir)
     }
 
+    /**
+     * Creates a test class builder for the given interface name.
+     *
+     * The generated test class is annotated with the test extension annotation
+     * to provide necessary test utilities and integrations.
+     *
+     * @param interfaceName The name of the API interface for which to create a test class
+     * @return A TypeSpec.Builder configured for the test class
+     */
     private fun getTestClass(interfaceName: String): TypeSpec.Builder =
         TypeSpec
             .classBuilder(interfaceName + "Test")
             .addAnnotation(testExtension())
 
+    /**
+     * Creates an API interface builder with appropriate annotations and documentation.
+     *
+     * The generated interface is annotated as generated code and includes the API description
+     * from the OpenAPI specification as Javadoc. It uses the tag index to track the schema location.
+     *
+     * @param interfaceName The name for the API interface
+     * @param context The generation context for tracking schema locations
+     * @param tagIndex The index of the tag in the OpenAPI specification
+     * @param apiDescription The description of the API from the OpenAPI specification
+     * @return A TypeSpec.Builder configured for the API interface
+     */
     private fun getPathInterface(
         interfaceName: String,
         context: Context,
@@ -175,6 +231,23 @@ class PathsBuilder {
             .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
             .addJavadoc($$"$L", apiDescription ?: "")
 
+    /**
+     * Builds a method specification for a REST API operation.
+     *
+     * This method processes an atomic method from the OpenAPI specification and generates
+     * the appropriate method in the API interface, including parameters, return types,
+     * and Javadoc documentation. It also creates corresponding test methods if examples
+     * are provided in the OpenAPI specification.
+     *
+     * @param context The generation context containing schema information
+     * @param atomicMethod The atomic method representing the API operation
+     * @param openAPI The complete OpenAPI specification
+     * @param typeDef The type specification builder for the API interface
+     * @param typeRef The class name reference for the API interface
+     * @param testClass The test class builder to which test methods will be added
+     * @param enumConverters A mutable set to collect enum converter class names
+     * @param testResourcesDir The directory where test resource files will be stored
+     */
     private fun buildMethod(
         context: Context,
         atomicMethod: AtomicMethod,
@@ -246,6 +319,21 @@ class PathsBuilder {
         }
     }
 
+    /**
+     * Generates test methods based on examples provided in the OpenAPI specification.
+     *
+     * This method creates test methods for response examples, handling both inline examples
+     * and references to components examples. The generated tests validate that example data
+     * matches the expected response type.
+     *
+     * @param context The generation context containing schema information
+     * @param successResponse The success response entry from the operation
+     * @param contentType The content type of the response
+     * @param details The media type details containing the response schema and examples
+     * @param respRef The type name reference for the response type
+     * @param testResourcesDir The directory where test resource files will be stored
+     * @return A list of MethodSpec objects representing the generated test methods
+     */
     private fun getTestMethods(
         context: Context,
         successResponse: MutableMap.MutableEntry<String, ApiResponse>,
@@ -296,6 +384,22 @@ class PathsBuilder {
             }
     }
 
+    /**
+     * Builds a method specification for operations that return a response body.
+     *
+     * This method creates Spring Web Service annotations with the appropriate HTTP method
+     * and content type. The generated method returns a ResponseEntity containing the
+     * response type, with proper nullability annotations.
+     *
+     * @param context The generation context for tracking schema locations
+     * @param methodName The name of the method to be generated
+     * @param javadoc The Javadoc documentation for the method
+     * @param atomicMethod The atomic method representing the API operation
+     * @param contentType The content type of the response
+     * @param parameterSpecs The list of parameter specifications for the method
+     * @param respRef The type name reference for the response type
+     * @return A MethodSpec object representing the generated method
+     */
     private fun buildNonVoidMethod(
         context: Context,
         methodName: String,
@@ -335,6 +439,19 @@ class PathsBuilder {
             ).build()
     }
 
+    /**
+     * Builds a method specification for operations that don't return a response body.
+     *
+     * This method creates Spring Web Service annotations for void operations, typically
+     * for operations that return a 204 No Content response. The method returns a
+     * ResponseEntity of Void type.
+     *
+     * @param context The generation context for tracking schema locations
+     * @param atomicMethod The atomic method representing the API operation
+     * @param javadoc The Javadoc documentation for the method
+     * @param parameters The list of parameter pairs (OpenAPI Parameter and ParameterSpec)
+     * @return A MethodSpec object representing the generated void method
+     */
     private fun buildVoidMethod(
         context: Context,
         atomicMethod: AtomicMethod,
@@ -361,6 +478,18 @@ class PathsBuilder {
             .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
             .build()
 
+    /**
+     * Maps content types to appropriate suffixes for method names.
+     *
+     * This method provides a way to distinguish between different content types
+     * by adding appropriate suffixes to method names when multiple content types
+     * are available for the same operation. Standard JSON gets no suffix,
+     * while other specific content types get descriptive suffixes.
+     *
+     * @param key The content type string to map to a suffix
+     * @return A suffix string to append to method names, or empty string for standard JSON
+     * @throws IllegalArgumentException if an unknown content type is provided
+     */
     private fun suffixContentType(key: String) =
         when (key) {
             "application/json" -> ""
@@ -370,6 +499,17 @@ class PathsBuilder {
             else -> throw IllegalArgumentException("Unknown content type: $key")
         }
 
+    /**
+     * Builds Javadoc documentation for a method based on the OpenAPI operation.
+     *
+     * This method combines the operation's summary and description, adds parameter
+     * documentation for each method parameter, and includes links to external documentation
+     * if provided in the OpenAPI specification.
+     *
+     * @param atomicMethod The atomic method representing the API operation
+     * @param parameters The list of parameters for the method
+     * @return A formatted Javadoc string containing the documentation
+     */
     private fun buildMethodJavadoc(
         atomicMethod: AtomicMethod,
         parameters: List<Parameter>,
@@ -402,6 +542,21 @@ class PathsBuilder {
         return javadoc.toString()
     }
 
+    /**
+     * Builds a parameter specification for a method based on an OpenAPI parameter.
+     *
+     * This method processes OpenAPI parameter definitions and creates appropriate Java
+     * parameter specifications with Spring Web annotations (RequestParam, RequestBody,
+     * PathVariable, RequestHeader). It also handles schema definitions and enum converters.
+     *
+     * @param context The generation context for tracking schema locations
+     * @param theParameter The OpenAPI Parameter object to convert
+     * @param atomicMethod The atomic method representing the API operation
+     * @param typeDef The type specification builder for the API interface
+     * @param typeRef The class name reference for the API interface
+     * @param enumConverters A mutable set to collect enum converter class names
+     * @return A ParameterSpec object representing the generated parameter
+     */
     private fun buildParameter(
         context: Context,
         theParameter: Parameter,
@@ -470,8 +625,34 @@ class PathsBuilder {
             ).build()
     }
 
+    /**
+     * Creates a ClassName for Spring Web binding annotations.
+     *
+     * This utility method provides a convenient way to reference Spring's web binding
+     * annotations like RequestParam, RequestBody, PathVariable, and RequestHeader
+     * by constructing the appropriate ClassName object.
+     *
+     * @param simpleName The simple name of the Spring web binding annotation
+     * @return A ClassName object representing the fully qualified annotation
+     */
     private fun webBind(simpleName: String): ClassName = ClassName.get("org.springframework.web.bind.annotation", simpleName)
 
+    /**
+     * Builds test methods for request body parameters based on examples.
+     *
+     * This method generates test methods that validate request body examples against
+     * the expected parameter type. It creates nested test classes containing tests
+     * for each example provided in the OpenAPI specification.
+     *
+     * @param context The generation context for tracking schema locations
+     * @param theParameter The OpenAPI Parameter object for the request body
+     * @param ref The type name reference for the parameter type
+     * @param atomicMethod The atomic method representing the API operation
+     * @param testClass The test class builder to which test methods will be added
+     * @param operationName The name of the operation
+     * @param typeRef The class name reference for the API interface
+     * @param testResourcesDir The directory where test resource files will be stored
+     */
     private fun buildBodyTestCode(
         context: Context,
         theParameter: Parameter,
@@ -521,6 +702,24 @@ class PathsBuilder {
         }
     }
 
+    /**
+     * Extracts and processes all parameters for an API operation.
+     *
+     * This method handles both regular parameters and request body parameters from the
+     * OpenAPI specification. It resolves references to component parameters and creates
+     * appropriate parameter specifications with type definitions and enum converters.
+     * It also generates test code for body parameters.
+     *
+     * @param context The generation context for tracking schema locations
+     * @param atomicMethod The atomic method representing the API operation
+     * @param openAPI The complete OpenAPI specification
+     * @param typeDef The type specification builder for the API interface
+     * @param typeRef The class name reference for the API interface
+     * @param testClass The test class builder to which test methods will be added
+     * @param enumConverters A mutable set to collect enum converter class names
+     * @param testResourcesDir The directory where test resource files will be stored
+     * @return A list of parameter pairs containing the OpenAPI Parameter and generated ParameterSpec
+     */
     private fun getParameters(
         context: Context,
         atomicMethod: AtomicMethod,
@@ -608,6 +807,20 @@ class PathsBuilder {
         return parameters.toList()
     }
 
+    /**
+     * Generates test code for body parameters in API operations.
+     *
+     * This method iterates through the parameters and specifically handles body parameters
+     * by generating test methods based on examples provided in the OpenAPI specification.
+     * These tests validate that example request bodies match the expected parameter types.
+     *
+     * @param context The generation context for tracking schema locations
+     * @param parameters The list of parameter pairs to process
+     * @param atomicMethod The atomic method representing the API operation
+     * @param testClass The test class builder to which test methods will be added
+     * @param typeRef The class name reference for the API interface
+     * @param testResourcesDir The directory where test resource files will be stored
+     */
     private fun generateParameterTestCode(
         context: Context,
         parameters: List<Pair<Parameter, ParameterSpec>>,
