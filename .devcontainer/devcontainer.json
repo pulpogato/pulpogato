@@ -1,0 +1,34 @@
+{
+    "name": "Java",
+    "image": "mcr.microsoft.com/devcontainers/java:1-21-bullseye",
+
+    "hostRequirements": {
+        "cpus": 16
+    },
+
+    "features": {
+        "ghcr.io/devcontainers/features/java:1": {
+            "version": "none",
+            "installMaven": "false",
+            "installGradle": "false"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {
+            "installDirectlyFromGitHubRelease": true,
+            "version": "latest"
+        }
+    },
+
+    "forwardPorts": [],
+
+    "postCreateCommand": "./gradlew",
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "asciidoctor.asciidoctor-vscode",
+                "vscjava.vscode-java-pack",
+                "mathiasfrohlich.Kotlin"
+            ]
+        }
+    }
+}
