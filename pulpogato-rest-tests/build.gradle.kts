@@ -21,7 +21,7 @@ dependencies {
     implementation(libs.bundles.springBoot)
     implementation(libs.jacksonYaml)
 
-    implementation(libs.bundles.jackson)
+    implementation(libs.jacksonCore)
 
     implementation(libs.httpclient5)
 }

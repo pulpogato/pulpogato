@@ -1,5 +1,6 @@
 package io.github.pulpogato.test;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Map;
 import lombok.*;
 
@@ -15,6 +16,7 @@ public class Exchange {
     @NoArgsConstructor
     @Setter
     @AllArgsConstructor
+    @JsonPropertyOrder({"method", "uri", "protocol", "headers", "body"})
     public static class Request {
         private String method;
         private String uri;
@@ -30,6 +32,7 @@ public class Exchange {
     @NoArgsConstructor
     @Setter
     @AllArgsConstructor
+    @JsonPropertyOrder({"statusCode", "headers", "body"})
     public static class Response {
         private int statusCode;
         private Map<String, String> headers;

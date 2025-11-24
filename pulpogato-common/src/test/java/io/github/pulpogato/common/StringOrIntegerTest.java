@@ -2,8 +2,13 @@ package io.github.pulpogato.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
@@ -39,7 +44,7 @@ class StringOrIntegerTest {
     }
 
     @Test
-    void shouldSerializeFixtureWithStringInStringValue() throws JsonProcessingException {
+    void shouldSerializeFixtureWithStringInStringValue() {
         var fixture = Fixture.builder()
                 .value(StringOrInteger.builder().stringValue("example").build())
                 .build();
@@ -56,7 +61,7 @@ class StringOrIntegerTest {
     }
 
     @Test
-    void shouldSerializeFixtureWithIntegerInStringValue() throws JsonProcessingException {
+    void shouldSerializeFixtureWithIntegerInStringValue() {
         var fixture = Fixture.builder()
                 .value(StringOrInteger.builder().stringValue("4").build())
                 .build();
@@ -73,7 +78,7 @@ class StringOrIntegerTest {
     }
 
     @Test
-    void shouldSerializeFixtureWithIntegerInIntegerValue() throws JsonProcessingException {
+    void shouldSerializeFixtureWithIntegerInIntegerValue() {
         var fixture = Fixture.builder()
                 .value(StringOrInteger.builder().integerValue(42L).build())
                 .build();

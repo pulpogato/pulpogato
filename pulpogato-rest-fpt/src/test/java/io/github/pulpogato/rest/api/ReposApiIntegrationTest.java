@@ -1,9 +1,7 @@
 package io.github.pulpogato.rest.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import io.github.pulpogato.common.SingularOrPlural;
 import io.github.pulpogato.rest.schemas.ContentFile;
 import io.github.pulpogato.rest.schemas.CustomPropertyValue;
@@ -216,7 +214,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    void testCreateRepositoryInOrgWithExtendedCustomProperties() throws JsonProcessingException {
+    void testCreateRepositoryInOrgWithExtendedCustomProperties() {
         ReposApi api = new RestClients(webClient).getReposApi();
         var response = api.createInOrg("example", ExtendedCreateInOrgRequestBody.builder()
                 .name("rsomasunderam-custom-props-demo")
@@ -230,7 +228,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
                 .isNotNull()
                 .isInstanceOf(FullRepository.class);
 
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper objectMapper = new ObjectMapper();
         ExtendedFullRepository body = objectMapper.readValue(objectMapper.writeValueAsString(response.getBody()),
                 ExtendedFullRepository.class);
 

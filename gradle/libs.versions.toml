@@ -40,8 +40,7 @@ glassfishJson = { group = "org.glassfish", name = "javax.json", version.ref = "g
 groovy = { group = "org.apache.groovy", name = "groovy-all", version.ref = "groovy" }
 httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "httpclient5" }
 jacksonCore = { group = "tools.jackson.core", name = "jackson-databind", version.ref = "jackson3" }
-jacksonTime = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
-jacksonYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
+jacksonYaml = { group = "tools.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson3" }
 jakartaAnnotations = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta" }
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
 jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }
@@ -66,7 +65,6 @@ swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", versi
 
 [bundles]
 commonmark = ["commonmark", "commonmarkTables"]
-jackson = ["jacksonCore", "jacksonTime"]
 springBoot = ["springBootTest", "springBootWeb", "springBootWebflux", "springBootWebTest"]
 
 [plugins]

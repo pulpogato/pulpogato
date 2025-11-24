@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     implementation(libs.swaggerParser)
-    implementation(libs.bundles.jackson)
+    implementation(libs.jacksonCore)
     implementation(libs.bundles.commonmark)
     implementation(libs.commonsText)
     implementation(libs.javapoet)
