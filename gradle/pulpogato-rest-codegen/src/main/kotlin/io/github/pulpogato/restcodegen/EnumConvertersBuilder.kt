@@ -1,6 +1,7 @@
 package io.github.pulpogato.restcodegen
 
 import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.ParameterizedTypeName
@@ -74,21 +75,19 @@ class EnumConvertersBuilder {
 
         val converterInstances =
             converters.map { converter ->
-                com.palantir.javapoet.CodeBlock
-                    .of($$"new $T()", converter)
+                CodeBlock.of($$"new $T()", converter)
             }
 
         val convertersField =
             FieldSpec
                 .builder(listType, "converters", Modifier.PRIVATE, Modifier.FINAL)
                 .initializer(
-                    com.palantir.javapoet.CodeBlock
+                    CodeBlock
                         .builder()
                         .add($$"$T.of(\n", ClassName.get("java.util", "List"))
                         .add(
                             $$"    $L\n",
-                            com.palantir.javapoet.CodeBlock
-                                .join(converterInstances, ",\n    "),
+                            CodeBlock.join(converterInstances, ",\n    "),
                         ).add(")")
                         .build(),
                 ).build()

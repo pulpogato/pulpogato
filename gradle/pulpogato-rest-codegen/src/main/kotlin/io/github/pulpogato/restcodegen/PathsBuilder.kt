@@ -118,17 +118,9 @@ class PathsBuilder {
                 val interfaceName = groupName.pascalCase() + "Api"
 
                 val tagIndex = openAPI.tags!!.indexOfFirst { docTag == it.name }.toString()
-                val pathInterface =
-                    TypeSpec
-                        .interfaceBuilder(interfaceName)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
-                        .addJavadoc($$"$L", apiDescription ?: "")
+                val pathInterface = getPathInterface(interfaceName, context, tagIndex, apiDescription)
 
-                val testClass =
-                    TypeSpec
-                        .classBuilder(interfaceName + "Test")
-                        .addAnnotation(testExtension())
+                val testClass = getTestClass(interfaceName)
                 val typeRef = ClassName.get(packageName, interfaceName)
 
                 atomicMethods.forEach { atomicMethod ->
@@ -165,6 +157,23 @@ class PathsBuilder {
             }
         JavaFile.builder(packageName, restClients.build()).build().writeTo(mainDir)
     }
+
+    private fun getTestClass(interfaceName: String): TypeSpec.Builder =
+        TypeSpec
+            .classBuilder(interfaceName + "Test")
+            .addAnnotation(testExtension())
+
+    private fun getPathInterface(
+        interfaceName: String,
+        context: Context,
+        tagIndex: String,
+        apiDescription: String?,
+    ): TypeSpec.Builder =
+        TypeSpec
+            .interfaceBuilder(interfaceName)
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
+            .addJavadoc($$"$L", apiDescription ?: "")
 
     private fun buildMethod(
         context: Context,

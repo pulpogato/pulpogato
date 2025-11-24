@@ -67,12 +67,20 @@ abstract class CheckIssueStatusesTask : DefaultTask() {
             .mapNotNull { regex.matchEntire(it)?.groupValues?.get(1) }
             .distinct()
             .map { ProcessBuilder("gh", "issue", "view", it, "--json", "state,url,number").start() }
-            .onEach {
-                if (it.waitFor() != 0) {
-                    println("STDOUT: ${it.inputReader().readText()}")
-                    println("STDERR: ${it.errorReader().readText()}")
-                }
-            }.mapNotNull { objectMapper.readValue(it.inputReader(), IssueStatus::class.java) }
+            .onEach { printOutput(it) }
+            .mapNotNull { objectMapper.readValue(it.inputReader(), IssueStatus::class.java) }
             .toList()
+    }
+
+    /**
+     * Log STDOUT and STDERR from the process
+     *
+     * @param process The process to read output from
+     */
+    private fun printOutput(process: Process) {
+        if (process.waitFor() != 0) {
+            println("STDOUT: ${process.inputReader().readText()}")
+            println("STDERR: ${process.errorReader().readText()}")
+        }
     }
 }
