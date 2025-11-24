@@ -62,7 +62,6 @@ object TestBuilder {
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                         .addAnnotation(Annotations.generated(1, context))
-                        .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
                         .addException(ClassName.get("java.io", "IOException"))
                         .addStatement(
                             $$"$T input = new $T(getClass().getClassLoader().getResourceAsStream($S).readAllBytes(), $T.UTF_8)",
@@ -85,7 +84,6 @@ object TestBuilder {
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                         .addAnnotation(Annotations.generated(1, context))
-                        .addException(ClassName.get("com.fasterxml.jackson.core", "JsonProcessingException"))
                         .addStatement($$"$T input = /* language=JSON */ $L", String::class.java, formatted.blockQuote())
                         .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                         .addStatement(

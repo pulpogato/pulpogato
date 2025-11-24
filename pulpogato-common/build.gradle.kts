@@ -15,7 +15,7 @@ dependencies {
     annotationProcessor(libs.lombok)
     implementation(libs.slf4j)
 
-    api(libs.bundles.jackson)
+    api(libs.jacksonCore)
 
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)

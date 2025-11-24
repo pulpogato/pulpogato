@@ -1,14 +1,13 @@
 package io.github.pulpogato.test;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.Getter;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * JUnit extension to ignore tests based on the version of the API and the schemaRef of the test.
@@ -35,12 +34,8 @@ class IgnoredTests {
     }
 
     private static List<IgnoredTest> readTests() {
-        try {
-            return new ObjectMapper(new YAMLFactory())
-                    .readValue(IgnoredTests.class.getResourceAsStream("/IgnoredTests.yml"), new TypeReference<>() {});
-        } catch (IOException e) {
-            return List.of();
-        }
+        return new ObjectMapper(new YAMLFactory())
+                .readValue(IgnoredTests.class.getResourceAsStream("/IgnoredTests.yml"), new TypeReference<>() {});
     }
 
     @Data

@@ -1,9 +1,5 @@
 package io.github.pulpogato.test;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
@@ -16,14 +12,19 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.commons.util.ToStringBuilder;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Tape implements Closeable {
 
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
-            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-            .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES));
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAMLFactory.builder()
+            .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
+            .enable(YAMLWriteFeature.MINIMIZE_QUOTES)
+            .build());
     private final String fileName;
 
     @Getter

@@ -1,6 +1,5 @@
 package io.github.pulpogato.test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.pulpogato.common.Generated;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestWatcher;
+import tools.jackson.databind.ObjectMapper;
 
 public class GeneratedTestFailureWatcher implements TestWatcher {
 
