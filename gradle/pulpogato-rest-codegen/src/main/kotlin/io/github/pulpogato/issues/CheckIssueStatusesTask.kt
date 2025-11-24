@@ -1,6 +1,5 @@
 package io.github.pulpogato.issues
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
@@ -8,6 +7,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import tools.jackson.databind.ObjectMapper
 import java.io.File
 
 /**
