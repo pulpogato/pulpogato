@@ -51,7 +51,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          */build/generated/resources/main/schema.json
+          */build/generated-src/main/resources/schema.json
           */build/resources/main/schema.graphqls
         key: schema-cache-${{ steps.api-version.outputs.version }}
 
