@@ -42,6 +42,7 @@ object TestBuilder {
 
         try {
             // If the string constant would be too large, write it to a JSON file
+            val typeReferenceClass = ClassName.get("tools.jackson.core.type", "TypeReference")
             val methodSpec =
                 if (formatted.length > MAX_STRING_LENGTH) {
                     // Create the test resources directory if it doesn't exist
@@ -61,22 +62,21 @@ object TestBuilder {
                     }
 
                     // Generate test that reads from the JSON file
+                    val standardCharsetsClass = ClassName.get("java.nio.charset", "StandardCharsets")
+                    val assumptionsClass = ClassName.get("org.assertj.core.api", "Assumptions")
                     MethodSpec
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                         .addAnnotation(Annotations.generated(1, context))
                         .addException(ClassName.get("java.io", "IOException"))
-                        .addStatement(
-                            $$"$T input = new $T(getClass().getClassLoader().getResourceAsStream($S).readAllBytes(), $T.UTF_8)",
-                            String::class.java,
-                            String::class.java,
-                            fileName,
-                            ClassName.get("java.nio.charset", "StandardCharsets"),
-                        ).addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
+                        .addStatement($$"var stream = getClass().getClassLoader().getResourceAsStream($S)", fileName)
+                        .addStatement($$"$T.assumeThat(stream).isNotNull();", assumptionsClass)
+                        .addStatement($$"var input = new $T(stream.readAllBytes(), $T.UTF_8)", String::class.java, standardCharsetsClass)
+                        .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
-                            ClassName.get("tools.jackson.core.type", "TypeReference"),
+                            typeReferenceClass,
                             className.withoutAnnotations(),
                         ).addStatement("softly.assertThat(processed).isNotNull()")
                         .addStatement("softly.assertAll()")
@@ -92,7 +92,7 @@ object TestBuilder {
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
-                            ClassName.get("tools.jackson.core.type", "TypeReference"),
+                            typeReferenceClass,
                             className.withoutAnnotations(),
                         ).addStatement("softly.assertThat(processed).isNotNull()")
                         .addStatement("softly.assertAll()")
