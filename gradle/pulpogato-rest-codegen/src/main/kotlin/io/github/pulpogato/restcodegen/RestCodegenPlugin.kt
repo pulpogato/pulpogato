@@ -13,7 +13,7 @@ class RestCodegenPlugin : Plugin<Project> {
         downloadSchema.configure {
             apiVersion.set(extension.apiVersion)
             projectVariant.set(extension.projectVariant)
-            schemaFile.set(target.layout.buildDirectory.file("generated/resources/main/schema.json"))
+            schemaFile.set(target.layout.buildDirectory.file("generated-src/main/resources/schema.json"))
         }
 
         val generateJava = target.tasks.register("generateJava", GenerateJavaTask::class.java)
