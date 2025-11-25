@@ -31,10 +31,21 @@ description = "REST types for $variant"
 
 codegen {
     packageName.set("io.github.pulpogato")
-    mainDir.set(file("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen"))
-    testDir.set(file("${project.layout.buildDirectory.get()}/generated/sources/test"))
+    mainDir.set(file("${project.layout.buildDirectory.get()}/generated-src/main/java"))
+    testDir.set(file("${project.layout.buildDirectory.get()}/generated-src/test/java"))
     apiVersion.set(project.ext.get("gh.api.version").toString())
     projectVariant.set(variant)
+}
+
+sourceSets {
+    named("main") {
+        java.srcDir("${project.layout.buildDirectory.get()}/generated-src/main/java")
+        resources.srcDir("${project.layout.buildDirectory.get()}/generated-src/main/resources")
+    }
+    named("test") {
+        java.srcDir("${project.layout.buildDirectory.get()}/generated-src/test/java")
+        resources.srcDir("${project.layout.buildDirectory.get()}/generated-src/test/resources")
+    }
 }
 
 val downloadSchema = tasks.named("downloadSchema")
@@ -54,17 +65,6 @@ tasks.processResources {
 }
 tasks.processTestResources {
     dependsOn(generateJava)
-}
-
-sourceSets {
-    named("main") {
-        java.srcDir("${project.layout.buildDirectory.get()}/generated/sources/rest-codegen")
-        resources.srcDir("${project.layout.buildDirectory.get()}/generated/resources/main")
-    }
-    named("test") {
-        java.srcDir("${project.layout.buildDirectory.get()}/generated/sources/test")
-        resources.srcDir("${project.layout.buildDirectory.get()}/generated/sources/resources")
-    }
 }
 
 // Exclude schema.json from the main jar

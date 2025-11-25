@@ -6,6 +6,7 @@ import com.palantir.javapoet.TypeName
 import io.github.pulpogato.restcodegen.ext.pascalCase
 import tools.jackson.databind.ObjectMapper
 import java.io.File
+import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.TreeMap
@@ -55,7 +56,9 @@ object TestBuilder {
                     val jsonFile = File(testResourcesDir, fileName)
 
                     // Write the formatted JSON to the file
-                    jsonFile.writeText(formatted)
+                    FileWriter(jsonFile).use { writer ->
+                        writer.write(formatted)
+                    }
 
                     // Generate test that reads from the JSON file
                     MethodSpec
