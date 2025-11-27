@@ -63,4 +63,12 @@ open class RestCodegenExtension(
      * such as different API versions or feature sets.
      */
     var projectVariant: Property<String> = project.objects.property(String::class.java)
+
+    /**
+     * The GitHub repository path for the REST API description schemas.
+     *
+     * This property specifies the repository path (e.g., "github/rest-api-description")
+     * from which OpenAPI schemas will be downloaded.
+     */
+    var apiRepository: Property<String> = project.objects.property(String::class.java)
 }
