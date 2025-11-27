@@ -38,6 +38,15 @@ abstract class DownloadSchemaTask : DefaultTask() {
     abstract val projectVariant: Property<String>
 
     /**
+     * The GitHub repository path for the REST API description schemas.
+     *
+     * This property specifies the repository path (e.g., "github/rest-api-description")
+     * from which OpenAPI schemas will be downloaded.
+     */
+    @get:Input
+    abstract val apiRepository: Property<String>
+
+    /**
      * The output file where the downloaded schema will be saved.
      *
      * This property specifies the destination file for the downloaded schema.
@@ -93,7 +102,8 @@ abstract class DownloadSchemaTask : DefaultTask() {
         version: String,
     ): String {
         val path = if (variant == "fpt") "api.github.com" else variant
-        return "https://github.com/github/rest-api-description/raw/$version/descriptions-next/$path/$path.json"
+        val repo = apiRepository.get()
+        return "https://github.com/$repo/raw/$version/descriptions-next/$path/$path.json"
     }
 
     /**

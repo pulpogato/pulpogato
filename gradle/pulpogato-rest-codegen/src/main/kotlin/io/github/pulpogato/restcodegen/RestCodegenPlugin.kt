@@ -13,6 +13,7 @@ class RestCodegenPlugin : Plugin<Project> {
         downloadSchema.configure {
             apiVersion.set(extension.apiVersion)
             projectVariant.set(extension.projectVariant)
+            apiRepository.set(extension.apiRepository)
             schemaFile.set(target.layout.buildDirectory.file("generated-src/main/resources/schema.json"))
         }
 

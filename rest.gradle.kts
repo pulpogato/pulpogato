@@ -34,6 +34,7 @@ codegen {
     mainDir.set(file("${project.layout.buildDirectory.get()}/generated-src/main/java"))
     testDir.set(file("${project.layout.buildDirectory.get()}/generated-src/test/java"))
     apiVersion.set(project.ext.get("gh.api.version").toString())
+    apiRepository.set(project.ext.get("gh.api.repo").toString())
     projectVariant.set(variant)
 }
 
@@ -144,6 +145,7 @@ publishing {
                     val propertiesNode = root.get("properties") as groovy.util.NodeList
                     if (propertiesNode.isNotEmpty()) {
                         val propNode = propertiesNode.first() as groovy.util.Node
+                        propNode.appendNode("gh.api.repo", project.ext.get("gh.api.repo").toString())
                         propNode.appendNode("gh.api.version", project.ext.get("gh.api.version").toString())
                         propNode.appendNode("github.api.sha256", project.ext.get("github.api.sha256").toString())
                     }
