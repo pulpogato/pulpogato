@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -13,7 +14,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.params.provider.Arguments;
 import org.reflections.Reflections;
@@ -88,8 +88,7 @@ public class WebhookHelper {
         softly.assertAll();
     }
 
-    @SneakyThrows
-    private static MockHttpServletRequestBuilder buildRequest(String filename) {
+    private static MockHttpServletRequestBuilder buildRequest(String filename) throws IOException {
         final InputStream resourceAsStream = WebhookHelper.class.getResourceAsStream("/" + filename);
         assertThat(resourceAsStream).isNotNull();
         final var reader = new BufferedReader(new InputStreamReader(resourceAsStream));
