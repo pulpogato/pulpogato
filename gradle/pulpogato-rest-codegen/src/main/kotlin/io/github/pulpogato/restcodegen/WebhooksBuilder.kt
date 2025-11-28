@@ -307,7 +307,7 @@ class WebhooksBuilder {
                         return $T.builder()
                                 .changeDefaultPropertyInclusion(value -> value.withValueInclusion($T.Include.NON_NULL))
                                 .disable($T.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-                                .configure($T.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                                .configure($T.FAIL_ON_UNKNOWN_PROPERTIES, true)
                                 .build()
                         """.trimIndent(),
                         ClassName.get(JsonMapper::class.java),
