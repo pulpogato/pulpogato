@@ -84,7 +84,9 @@ public class WebhookHelper {
                 new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), TestWebhookResponse.class);
 
         final var softly = new SoftAssertions();
-        TestUtils.diffJson(mvcResult.getRequest().getContentAsString(), response.getBody(), softly);
+        final var originalRequest = mvcResult.getRequest().getContentAsString();
+        final var echoedRequest = response.getBody();
+        TestUtils.diffJson(originalRequest, echoedRequest, softly);
         softly.assertAll();
     }
 
