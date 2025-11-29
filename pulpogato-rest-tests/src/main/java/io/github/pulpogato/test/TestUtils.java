@@ -19,6 +19,7 @@ import javax.json.JsonPatch;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import org.assertj.core.api.SoftAssertions;
+import org.intellij.lang.annotations.Language;
 import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
 import tools.jackson.core.JacksonException;
@@ -75,7 +76,8 @@ public class TestUtils {
         }
     }
 
-    public static void diffJson(final String input, final String output, final SoftAssertions softly) {
+    public static void diffJson(
+            @Language("json") final String input, @Language("json") final String output, final SoftAssertions softly) {
         try (final var sourceReader = Json.createReader(new StringReader(input));
                 final var targetReader = Json.createReader(new StringReader(output))) {
             final JsonValue source = sourceReader.readValue();
@@ -95,7 +97,7 @@ public class TestUtils {
         }
     }
 
-    private static void assertOnDiff(final SoftAssertions softly, final JsonPatch diff, final JsonValue source) {
+    static void assertOnDiff(final SoftAssertions softly, final JsonPatch diff, final JsonValue source) {
         diff.toJsonArray().stream().map(JsonValue::asJsonObject).forEach(it -> {
             final String op = it.getString("op");
             final String path = it.getString("path");
@@ -116,11 +118,11 @@ public class TestUtils {
         });
     }
 
-    private static BiPredicate<String, String> compareDates(String target, String replacement) {
+    static BiPredicate<String, String> compareDates(String target, String replacement) {
         return (oldStr, newStr) -> oldStr.equals(newStr.replace(target, replacement));
     }
 
-    private static void compareOldAndNew(
+    static void compareOldAndNew(
             final SoftAssertions softly,
             final JsonValue oldValue,
             final JsonValue newValue1,
@@ -163,7 +165,7 @@ public class TestUtils {
         }
     }
 
-    private static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
+    static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
 
         String stringValue =
                 switch (valueSource.getValueType()) {
@@ -194,7 +196,7 @@ public class TestUtils {
         }
     }
 
-    private static JsonValue traverse(final JsonValue value, final List<String> pathSteps) {
+    static JsonValue traverse(final JsonValue value, final List<String> pathSteps) {
         if (value == null) {
             return null;
         }
