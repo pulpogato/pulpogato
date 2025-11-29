@@ -3,7 +3,7 @@ accept: */*
 b3: 679c573afab1e2cadec6edab606381fd-326482794b8655e4-0
 connection: close
 content-type: application/json
-host: githubhookreceiver.prod.netflix.net
+host: githubhookreceiver.prod.example.net
 user-agent: GitHub-Hookshot/6c41911
 x-github-delivery: 47497ad0-df8f-11ef-9216-ee00af88956b
 x-github-enterprise-host: github.example.com
@@ -138,13 +138,13 @@ x-Pulpogato-Exclude: ghes-3.12
     },
     "enterprise": {
         "id": 1,
-        "slug": "netflix",
-        "name": "Netflix",
+        "slug": "example",
+        "name": "Example",
         "node_id": "MDEwOkVudGVycHJpc2Ux",
         "avatar_url": "https://github.example.com/avatars/b/1?",
         "description": "",
         "website_url": "",
-        "html_url": "https://github.example.com/enterprises/netflix",
+        "html_url": "https://github.example.com/enterprises/example",
         "created_at": "2023-10-12T18:17:01Z",
         "updated_at": "2024-12-11T16:47:46Z"
     },
