@@ -3,6 +3,7 @@ package io.github.pulpogato.rest.api;
 import io.github.pulpogato.rest.schemas.BasicError;
 import io.github.pulpogato.rest.schemas.PrivateUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
+import io.github.pulpogato.rest.schemas.ValidationErrorSimple;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -127,8 +128,16 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         WebClientResponseException exception = catchThrowableOfType(WebClientResponseException.class, () -> api.block("some-blocked-user"));
 
         assertThat(exception).isNotNull();
-        assertThat(exception.getStatusCode().is4xxClientError()).isTrue();
+        assertThat(exception.getStatusCode().value()).isEqualTo(422);
         assertThat(exception.getResponseBodyAsString()).isNotNull();
+
+        var objectMapper = new ObjectMapper();
+        var error = objectMapper.readValue(exception.getResponseBodyAsString(), ValidationErrorSimple.class);
+        assertThat(error).isNotNull();
+        assertThat(error.getMessage()).isEqualTo("Blocked user has already been blocked");
+        assertThat(error.getDocumentationUrl()).isEqualTo("https://docs.github.com/rest/users/blocking#block-a-user");
+        System.out.println(error.toCode());
+        System.out.println(exception.getResponseBodyAsString());
     }
 
     @Test
