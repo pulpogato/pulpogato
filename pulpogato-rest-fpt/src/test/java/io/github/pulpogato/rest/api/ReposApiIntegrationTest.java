@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReposApiIntegrationTest extends BaseIntegrationTest {
     @Test
     void testListTags() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.listTags("pulpogato", "pulpogato", 100L, 1L);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -37,7 +37,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListCommits() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.listCommits("pulpogato", "pulpogato",
                 null, null, null, null, null, null, 10L, 1L);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -55,7 +55,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetCommit() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.getCommit("pulpogato", "pulpogato", 1L, 1L, "2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -66,7 +66,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetContentObject() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.getContentObject("pulpogato", "pulpogato", "README.adoc", null);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -84,7 +84,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetContent() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.getContent("pulpogato", "pulpogato", "README.adoc", null);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -102,7 +102,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGet() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.get("pulpogato", "pulpogato");
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -115,7 +115,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetBranch() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.getBranch("pulpogato", "pulpogato", "main");
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -127,7 +127,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetBranchProtection() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.getBranchProtection("pulpogato", "pulpogato", "main");
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
@@ -138,7 +138,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateRepositoryInOrg() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.createInOrg("pulpogato", ReposApi.CreateInOrgRequestBody.builder()
                 .name("create-demo")
                 .description("create demo")
@@ -155,7 +155,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateRepositoryInOrgWithCustomProperties() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.createInOrg("example", ReposApi.CreateInOrgRequestBody.builder()
                 .name("rsomasunderam-custom-props-demo")
                 .description("create demo")
@@ -215,7 +215,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateRepositoryInOrgWithExtendedCustomProperties() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var response = api.createInOrg("example", ExtendedCreateInOrgRequestBody.builder()
                 .name("rsomasunderam-custom-props-demo")
                 .description("create demo")
@@ -228,8 +228,8 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
                 .isNotNull()
                 .isInstanceOf(FullRepository.class);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ExtendedFullRepository body = objectMapper.readValue(objectMapper.writeValueAsString(response.getBody()),
+        var objectMapper = new ObjectMapper();
+        var body = objectMapper.readValue(objectMapper.writeValueAsString(response.getBody()),
                 ExtendedFullRepository.class);
 
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
@@ -240,7 +240,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateOrUpdateCustomPropertiesValues() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
 
         var customPropertyValue = CustomPropertyValue.builder()
                 .propertyName("audit_pci")
@@ -257,7 +257,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateOrUpdateCustomPropertiesValuesWithMultipleProperties() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
 
         var environmentProperty = CustomPropertyValue.builder()
                 .propertyName("some_string")
@@ -279,7 +279,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateOrUpdateCustomPropertiesValuesWithArrayValue() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
 
         var tagsProperty = CustomPropertyValue.builder()
                 .propertyName("plural_value")
@@ -296,7 +296,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testCreateOrUpdateCustomPropertiesValuesEmptyProperties() {
-        ReposApi api = new RestClients(webClient).getReposApi();
+        var api = new RestClients(webClient).getReposApi();
         var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
                 .properties(List.of())
                 .build();

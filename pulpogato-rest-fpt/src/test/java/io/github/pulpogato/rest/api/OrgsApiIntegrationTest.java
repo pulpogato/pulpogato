@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OrgsApiIntegrationTest extends BaseIntegrationTest {
     @Test
     void testListInstallations() {
-        OrgsApi api = new RestClients(webClient).getOrgsApi();
+        var api = new RestClients(webClient).getOrgsApi();
         var response = api.listAppInstallations("corp", 100L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();

@@ -4,7 +4,6 @@ import io.github.pulpogato.rest.schemas.LicenseSimple;
 import io.github.pulpogato.rest.schemas.License;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -14,29 +13,29 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAllCommonlyUsed() {
-        LicensesApi api = new RestClients(webClient).getLicensesApi();
-        ResponseEntity<List<LicenseSimple>> response = api.getAllCommonlyUsed(null, null, null);
-        
+        var api = new RestClients(webClient).getLicensesApi();
+        var response = api.getAllCommonlyUsed(null, null, null);
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(List.class);
-        
-        List<LicenseSimple> licenses = response.getBody();
+
+        var licenses = response.getBody();
         assertThat(licenses)
                 .isNotEmpty()
                 .hasSizeGreaterThan(5);
-        
+
         // Verify common licenses are present
-        List<String> licenseKeys = licenses.stream()
+        var licenseKeys = licenses.stream()
                 .map(LicenseSimple::getKey)
                 .toList();
-        
+
         assertThat(licenseKeys)
                 .contains("mit", "apache-2.0", "gpl-3.0");
-        
+
         // Verify structure of first license
-        LicenseSimple firstLicense = licenses.getFirst();
+        var firstLicense = licenses.getFirst();
         assertThat(firstLicense.getKey()).isEqualTo("agpl-3.0");
         assertThat(firstLicense.getName()).isEqualTo("GNU Affero General Public License v3.0");
         assertThat(firstLicense.getUrl()).isNotNull();
@@ -45,15 +44,15 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetMitLicense() {
-        LicensesApi api = new RestClients(webClient).getLicensesApi();
-        ResponseEntity<License> response = api.get("mit");
-        
+        var api = new RestClients(webClient).getLicensesApi();
+        var response = api.get("mit");
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(License.class);
-        
-        License mitLicense = response.getBody();
+
+        var mitLicense = response.getBody();
         assertThat(mitLicense.getKey()).isEqualTo("mit");
         assertThat(mitLicense.getName()).contains("MIT");
         assertThat(mitLicense.getSpdxId()).isEqualTo("MIT");
@@ -73,15 +72,15 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetApacheLicense() {
-        LicensesApi api = new RestClients(webClient).getLicensesApi();
-        ResponseEntity<License> response = api.get("apache-2.0");
-        
+        var api = new RestClients(webClient).getLicensesApi();
+        var response = api.get("apache-2.0");
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(License.class);
-        
-        License apacheLicense = response.getBody();
+
+        var apacheLicense = response.getBody();
         assertThat(apacheLicense.getKey()).isEqualTo("apache-2.0");
         assertThat(apacheLicense.getName()).contains("Apache");
         assertThat(apacheLicense.getSpdxId()).isEqualTo("Apache-2.0");
@@ -92,21 +91,21 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetFeaturedLicenses() {
-        LicensesApi api = new RestClients(webClient).getLicensesApi();
-        ResponseEntity<List<LicenseSimple>> response = api.getAllCommonlyUsed(true, null, null);
-        
+        var api = new RestClients(webClient).getLicensesApi();
+        var response = api.getAllCommonlyUsed(true, null, null);
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(List.class);
-        
-        List<LicenseSimple> featuredLicenses = response.getBody();
+
+        var featuredLicenses = response.getBody();
         assertThat(featuredLicenses)
                 .isNotEmpty()
                 .hasSize(3); // Featured licenses should be a smaller subset
-        
+
         // Verify the first featured license has specific values
-        LicenseSimple firstFeatured = featuredLicenses.getFirst();
+        var firstFeatured = featuredLicenses.getFirst();
         assertThat(firstFeatured.getKey()).isEqualTo("apache-2.0");
         assertThat(firstFeatured.getName()).isEqualTo("Apache License 2.0");
         assertThat(firstFeatured.getUrl()).isNotNull();
