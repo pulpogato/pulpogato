@@ -1,5 +1,6 @@
 package io.github.pulpogato.rest.api;
 
+import io.github.pulpogato.rest.schemas.BasicError;
 import io.github.pulpogato.rest.schemas.PrivateUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.test.BaseIntegrationTest;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -329,6 +331,27 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         assertThat(user.getPublicGists()).isEqualTo(18);
         assertThat(user.getFollowers()).isEqualTo(50);
         assertThat(user.getFollowing()).isEqualTo(40);
+    }
+
+    @Test
+    void testGetByUsername404() {
+        UsersApi api = new RestClients(webClient).getUsersApi();
+
+        WebClientResponseException exception = catchThrowableOfType(
+                WebClientResponseException.class,
+                () -> api.getByUsername("rahulsom1")
+        );
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getStatusCode().value()).isEqualTo(404);
+        assertThat(exception.getResponseBodyAsString()).isNotNull();
+
+        var objectMapper = new ObjectMapper();
+        var error = objectMapper.readValue(exception.getResponseBodyAsString(), BasicError.class);
+        assertThat(error).isNotNull();
+        assertThat(error.getMessage()).isEqualTo("Not Found");
+        assertThat(error.getStatus()).isEqualTo("404");
+        assertThat(error.getDocumentationUrl()).isEqualTo("https://docs.github.com/rest");
     }
 
     @Test
