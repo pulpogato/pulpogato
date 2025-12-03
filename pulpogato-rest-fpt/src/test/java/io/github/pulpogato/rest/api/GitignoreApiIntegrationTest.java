@@ -3,7 +3,6 @@ package io.github.pulpogato.rest.api;
 import io.github.pulpogato.rest.schemas.GitignoreTemplate;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -13,15 +12,15 @@ class GitignoreApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAllTemplates() {
-        GitignoreApi api = new RestClients(webClient).getGitignoreApi();
-        ResponseEntity<List<String>> response = api.getAllTemplates();
-        
+        var api = new RestClients(webClient).getGitignoreApi();
+        var response = api.getAllTemplates();
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(List.class);
-        
-        List<String> templates = response.getBody();
+
+        var templates = response.getBody();
         assertThat(templates)
                 .isNotEmpty()
                 .contains("Java", "Python", "Node");
@@ -29,15 +28,15 @@ class GitignoreApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetJavaTemplate() {
-        GitignoreApi api = new RestClients(webClient).getGitignoreApi();
-        ResponseEntity<GitignoreTemplate> response = api.getTemplate("Java");
-        
+        var api = new RestClients(webClient).getGitignoreApi();
+        var response = api.getTemplate("Java");
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(GitignoreTemplate.class);
-        
-        GitignoreTemplate template = response.getBody();
+
+        var template = response.getBody();
         assertThat(template.getName()).isEqualTo("Java");
         assertThat(template.getSource())
                 .isNotNull()
@@ -47,15 +46,15 @@ class GitignoreApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetPythonTemplate() {
-        GitignoreApi api = new RestClients(webClient).getGitignoreApi();
-        ResponseEntity<GitignoreTemplate> response = api.getTemplate("Python");
-        
+        var api = new RestClients(webClient).getGitignoreApi();
+        var response = api.getTemplate("Python");
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(GitignoreTemplate.class);
-        
-        GitignoreTemplate template = response.getBody();
+
+        var template = response.getBody();
         assertThat(template.getName()).isEqualTo("Python");
         assertThat(template.getSource())
                 .isNotNull()

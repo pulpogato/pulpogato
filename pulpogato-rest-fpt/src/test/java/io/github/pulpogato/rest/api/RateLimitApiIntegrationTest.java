@@ -3,7 +3,6 @@ package io.github.pulpogato.rest.api;
 import io.github.pulpogato.rest.schemas.RateLimitOverview;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,16 +10,16 @@ class RateLimitApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGet() {
-        RateLimitApi api = new RestClients(webClient).getRateLimitApi();
-        ResponseEntity<RateLimitOverview> response = api.get();
-        
+        var api = new RestClients(webClient).getRateLimitApi();
+        var response = api.get();
+
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody())
                 .isNotNull()
                 .isInstanceOf(RateLimitOverview.class);
-        
-        RateLimitOverview rateLimitOverview = response.getBody();
-        
+
+        var rateLimitOverview = response.getBody();
+
         // Verify resources structure
         var resources = rateLimitOverview.getResources();
         
