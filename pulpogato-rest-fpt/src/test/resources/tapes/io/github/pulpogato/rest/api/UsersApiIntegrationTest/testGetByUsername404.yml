@@ -1,0 +1,18 @@
+- request:
+    method: GET
+    uri: /users/rahulsom1
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+    body: null
+  response:
+    statusCode: 404
+    headers:
+      Transfer-Encoding: chunked
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "message" : "Not Found",
+        "documentation_url" : "https://docs.github.com/rest",
+        "status" : "404"
+      }
