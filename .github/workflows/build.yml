@@ -15,7 +15,7 @@ jobs:
     name: "Build with Gradle"
     runs-on: ubuntu-24.04-arm
     env:
-      MAX_WORKERS: 4
+      MAX_WORKERS: 3
 
     permissions:
       security-events: write
