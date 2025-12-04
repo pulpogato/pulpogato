@@ -3,10 +3,10 @@
 :package-path: io/github/pulpogato
 :package-path-encoded: io%2Fgithub%2Fpulpogato
 :snapshot-prefix: image:https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2F{package-path-encoded}%2F
-:snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=S[alt=Maven Snapshot,height=30,link="https://central.sonatype.com/repository/maven-snapshots/{package-path}/
+:snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=S&filter=0.*[alt=Maven Snapshot,height=30,link="https://central.sonatype.com/repository/maven-snapshots/{package-path}/
 :snapshot-suffix: /maven-metadata.xml"]
 :central-prefix: image:https://img.shields.io/maven-central/v/{package}/
-:central-middle: ?style=for-the-badge&label=R&color=green[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
+:central-middle: ?style=for-the-badge&label=R&color=green&filter=0.*[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
 :central-suffix: /overview"]
 :deprecated-middle: ?style=for-the-badge&label=R&color=lightgrey[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
 
@@ -70,6 +70,9 @@ dependencyManagement {
 ====
 
 == Available versions
+
+This lists the `0.x` versions that work with Jackson 2.x.
+For Jackson 3.x, look at the `1.x` versions on the https://github.com/pulpogato/pulpogato[main] branch.
 
 |===
 |GitHub Version |GraphQL |REST
