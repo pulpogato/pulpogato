@@ -78,6 +78,12 @@ object Annotations {
             .addMember("value", $$"$T.$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.NON_NULL)
             .build()
 
+    fun jsonIncludeAlways(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(JsonInclude::class.java))
+            .addMember("value", $$"$T.$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.ALWAYS)
+            .build()
+
     /*
      GH Annotations
      */
