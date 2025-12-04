@@ -43,6 +43,22 @@ fun typesAre(
     vararg types: String,
 ) = types.toSet() == oneOf.flatMap { it.types ?: listOf() }.toSet()
 
+fun isAnyOfOnlyForValidation(
+    anyOf: List<Schema<Any>>,
+    parentSchema: Schema<*>,
+): Boolean {
+    if (parentSchema.properties == null || parentSchema.properties.isEmpty()) {
+        return false
+    }
+
+    return anyOf.all { subSchema ->
+        (subSchema.properties == null || subSchema.properties.isEmpty()) &&
+            subSchema.`$ref` == null &&
+            (subSchema.types == null || subSchema.types.isEmpty()) &&
+            (subSchema.required != null || subSchema.additionalProperties == null)
+    }
+}
+
 fun referenceAndDefinition(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
@@ -84,6 +100,8 @@ fun referenceAndDefinition(
 
         oneOf != null && typesAre(oneOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         anyOf != null && typesAre(anyOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
+        anyOf != null && isAnyOfOnlyForValidation(anyOf, entry.value) ->
+            buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
         anyOf != null ->
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, anyOf, "anyOf", it)

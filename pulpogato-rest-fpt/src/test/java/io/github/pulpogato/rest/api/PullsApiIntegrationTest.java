@@ -30,4 +30,22 @@ class PullsApiIntegrationTest extends BaseIntegrationTest {
         assertThat(pr.getNumber()).isEqualTo(170);
     }
 
+    @Test
+    void testRequestReviewers() {
+        var api = new RestClients(webClient).getPullsApi();
+        var response = api.requestReviewers(
+                "corp", "cisys-jenkins-bom", 168L,
+                PullsApi.RequestReviewersRequestBody.builder()
+                        .reviewers(List.of("sghill", "egoh"))
+                        .teamReviewers(List.of("team-ascii"))
+                        .build());
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+
+        var pr = response.getBody();
+        assertThat(pr.getNumber()).isEqualTo(168);
+    }
+
 }
