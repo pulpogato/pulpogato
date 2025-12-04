@@ -1,0 +1,40 @@
+- request:
+    method: POST
+    uri: /repos/pulpogato/create-demo/git/trees
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: |-
+      {
+        "base_tree" : "c16df50e4252a304c1b00418b3f86e94ceec62a6",
+        "tree" : [ {
+          "mode" : "100644",
+          "path" : "docs/README.md",
+          "sha" : "e0190bf9ca1fa03808d7c0cc4a04e3203d78f94e",
+          "type" : "blob"
+        }, {
+          "mode" : "100644",
+          "path" : "README.md",
+          "sha" : null,
+          "type" : "blob"
+        } ]
+      }
+  response:
+    statusCode: 201
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Location: https://api.github.com/repos/pulpogato/create-demo/git/trees/26b634dcd654c8f16a245a4129943a57277f990f
+    body: |-
+      {
+        "sha" : "26b634dcd654c8f16a245a4129943a57277f990f",
+        "url" : "https://api.github.com/repos/pulpogato/create-demo/git/trees/26b634dcd654c8f16a245a4129943a57277f990f",
+        "tree" : [ {
+          "path" : "docs",
+          "mode" : "040000",
+          "type" : "tree",
+          "sha" : "c16df50e4252a304c1b00418b3f86e94ceec62a6",
+          "url" : "https://api.github.com/repos/pulpogato/create-demo/git/trees/c16df50e4252a304c1b00418b3f86e94ceec62a6"
+        } ],
+        "truncated" : false
+      }

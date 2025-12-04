@@ -10,6 +10,7 @@ import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import io.github.pulpogato.restcodegen.Annotations.deserializerAnnotation
 import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.Annotations.jsonIncludeAlways
 import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonNull
 import io.github.pulpogato.restcodegen.Annotations.jsonProperty
 import io.github.pulpogato.restcodegen.Annotations.jsonValue
@@ -716,6 +717,13 @@ private fun addFieldIfNew(
                 .builder(typeName, fieldName, Modifier.PRIVATE)
                 .addAnnotation(jsonProperty(p.key))
                 .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
+
+        // Check if the schema explicitly allows null (has "null" in its types array)
+        // If so, add @JsonInclude(ALWAYS) to override the class-level NON_NULL setting
+        val types = p.value.types?.filterNotNull() ?: emptyList()
+        if (types.contains("null")) {
+            builder.addAnnotation(jsonIncludeAlways())
+        }
 
         schemaJavadoc(p).let {
             if (it.isNotBlank()) {
