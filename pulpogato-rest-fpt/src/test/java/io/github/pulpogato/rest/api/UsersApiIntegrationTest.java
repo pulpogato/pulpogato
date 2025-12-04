@@ -223,7 +223,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         assertThat(emails).hasSize(2);
 
         var first = emails.getFirst();
-        assertThat(first.getEmail()).isEqualTo("rsomasunderam@netflix.com");
+        assertThat(first.getEmail()).isEqualTo("rsomasunderam@example.com");
         assertThat(first.getPrimary()).isFalse();
         assertThat(first.getVerified()).isTrue();
         assertThat(first.getVisibility()).isNull();
@@ -259,7 +259,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         assertThat(second.getVisibility()).isNull();
 
         var third = emails.get(2);
-        assertThat(third.getEmail()).isEqualTo("rsomasunderam@netflix.com");
+        assertThat(third.getEmail()).isEqualTo("rsomasunderam@example.com");
         assertThat(third.getPrimary()).isFalse();
         assertThat(third.getVerified()).isTrue();
         assertThat(third.getVisibility()).isNull();
@@ -304,7 +304,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
         assertThat(user.getLogin()).isEqualTo("sghill");
         assertThat(user.getName()).isEqualTo("Steve Hill");
-        assertThat(user.getCompany()).isEqualTo("Netflix");
+        assertThat(user.getCompany()).isEqualTo("Example");
         assertThat(user.getLocation()).isEqualTo("SF Bay Area");
         assertThat(user.getEmail()).isEqualTo("sghill.dev@gmail.com");
         assertThat(user.getPublicRepos()).isEqualTo(228);
@@ -332,7 +332,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
         assertThat(user.getLogin()).isEqualTo("sghill");
         assertThat(user.getName()).isEqualTo("Steve Hill");
-        assertThat(user.getCompany()).isEqualTo("Netflix");
+        assertThat(user.getCompany()).isEqualTo("Example");
         assertThat(user.getLocation()).isEqualTo("SF Bay Area");
         assertThat(user.getEmail()).isEqualTo("sghill.dev@gmail.com");
         assertThat(user.getPublicRepos()).isEqualTo(228);
