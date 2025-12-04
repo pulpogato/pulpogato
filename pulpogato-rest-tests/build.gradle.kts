@@ -9,6 +9,7 @@ dependencies {
     api(libs.assertj)
     implementation(libs.junitPlatformLauncher)
     compileOnly(libs.jspecify)
+    compileOnly(libs.jetbrainsAnnotations)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
@@ -24,6 +25,7 @@ dependencies {
     implementation(libs.jacksonCore)
 
     implementation(libs.httpclient5)
+    testCompileOnly(libs.jetbrainsAnnotations)
 }
 
 java {
@@ -34,6 +36,10 @@ java {
 
 tasks.withType<JavaCompile> {
     options.setIncremental(true)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 spotless {
