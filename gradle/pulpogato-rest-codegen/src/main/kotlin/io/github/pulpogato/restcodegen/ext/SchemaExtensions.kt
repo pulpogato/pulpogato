@@ -15,6 +15,7 @@ import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonNull
 import io.github.pulpogato.restcodegen.Annotations.jsonProperty
 import io.github.pulpogato.restcodegen.Annotations.jsonValue
 import io.github.pulpogato.restcodegen.Annotations.lombok
+import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.serializerAnnotation
 import io.github.pulpogato.restcodegen.Annotations.singleValueAsArray
 import io.github.pulpogato.restcodegen.Annotations.superBuilder
@@ -785,8 +786,8 @@ private fun buildEnumConverter(enumClassName: ClassName): TypeSpec {
         .addSuperinterface(
             ParameterizedTypeName.get(
                 ClassName.get("org.springframework.core.convert.converter", "Converter"),
-                enumClassName,
-                ClassName.get(String::class.java),
+                enumClassName.annotated(nonNull()),
+                ClassName.get(String::class.java).annotated(nonNull()),
             ),
         ).addMethod(
             MethodSpec
