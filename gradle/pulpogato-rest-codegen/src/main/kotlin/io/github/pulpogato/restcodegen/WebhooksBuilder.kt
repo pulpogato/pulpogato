@@ -216,7 +216,7 @@ class WebhooksBuilder {
         val printWriter = PrintWriter(routerBuilder)
         printWriter.println(
             //language=java
-            """final var action = (requestBody.isObject() && requestBody.has("action")) ? requestBody.get("action").asText() : "N/A";""",
+            """final var action = (requestBody.isObject() && requestBody.has("action")) ? requestBody.get("action").asString() : "N/A";""",
         )
         printWriter.println("return switch (action) {")
         requestBodyTypes.forEach { (name, methodNameAndType) ->
