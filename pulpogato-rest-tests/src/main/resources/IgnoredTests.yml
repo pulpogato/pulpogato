@@ -1,11 +1,3 @@
-- example: "#/paths/~1enterprises~1{enterprise}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/4644"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:
@@ -14,33 +6,6 @@
   reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:
     - ghec
-- example: "#/paths/~1orgs~1{org}~1code-security~1configurations~1{configuration_id}~1repositories/get/responses/200/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5045"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/paths/~1orgs~1{org}~1organization-roles/post/responses/201/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5054"
-  versions:
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/paths/~1orgs~1{org}~1organization-roles~1{role_id}/patch/responses/200/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5054"
-  versions:
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/paths/~1repos~1{owner}~1{repo}~1code-scanning~1codeql~1variant-analyses/post/responses/201/content/application~1json/examples/repositories_parameter/value"
   reason: "https://github.com/github/rest-api-description/issues/5030"
   versions:
@@ -74,6 +39,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/paths/~1repos~1{owner}~1{repo}~1security-advisories~1{ghsa_id}/patch/requestBody/content/application~1json/examples/update_vvrs/value"
   reason: "https://github.com/github/rest-api-description/issues/5056"
   versions:
@@ -88,6 +54,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/patch/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5055"
   versions:
@@ -102,56 +69,6 @@
   versions:
     - fpt
     - ghec
-- example: "#/webhooks/check-run-completed/post/requestBody/content/application~1json/examples/default"
-  reason: "https://github.com/github/rest-api-description/issues/5430"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/webhooks/check-run-created/post/requestBody/content/application~1json/examples/default"
-  reason: "https://github.com/github/rest-api-description/issues/5430"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/webhooks/check-run-requested-action/post/requestBody/content/application~1json/examples/default"
-  reason: "https://github.com/github/rest-api-description/issues/5034"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/webhooks/check-run-rerequested/post/requestBody/content/application~1json/examples/default"
-  reason: "https://github.com/github/rest-api-description/issues/4593"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/webhooks/secret-scanning-alert-location-created/post/requestBody/content/application~1json/examples/default"
-  reason: "https://github.com/github/rest-api-description/issues/4472"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/paths/~1enterprises~1{enterprise}~1apps~1organizations~1{org}~1installations~1{installation_id}~1repositories~1remove/patch/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5057"
   versions:
@@ -193,6 +110,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/classroom-assignment/value"
   reason: "https://github.com/github/rest-api-description/issues/5480"
   versions:
@@ -238,28 +156,6 @@
   reason: "TODO: Diagnose this"
   versions:
     - ghec
-- example: "#/components/examples/audit-log/value"
-  reason: "https://github.com/github/rest-api-description/issues/5482"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/enterprise-code-security-configuration-list/value"
-  reason: "https://github.com/github/rest-api-description/issues/5483"
-  versions:
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/code-security-default-configurations/value"
-  reason: "https://github.com/github/rest-api-description/issues/5484"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/get-consumed-licenses/value"
   reason: "https://github.com/github/rest-api-description/issues/5485"
   versions:
@@ -272,6 +168,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/enterprise-ruleset/value"
   reason: "TODO: Diagnose this"
   versions:
@@ -288,6 +185,7 @@
   reason: "TODO: Diagnose this"
   versions:
     - ghec
+    - ghes-3.19
 - example: "#/components/examples/organization-secret-scanning-alert-list/value"
   reason: "TODO: Diagnose this"
   versions:
@@ -331,14 +229,6 @@
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-- example: "#/components/examples/ghes-get-ssh/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/ghes-license-info/value"
   reason: "https://github.com/github/rest-api-description/issues/5516"
   versions:
@@ -347,6 +237,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/actions-hosted-runner-custom-image-versions/value"
   reason: "https://github.com/github/rest-api-description/issues/5539"
   versions:
@@ -367,27 +258,11 @@
   reason: "https://github.com/github/rest-api-description/issues/5540"
   versions:
     - ghec
-- example: "#/components/examples/organization-secret-scanning-alert-list/value"
-  reason: "https://github.com/github/rest-api-description/issues/5541"
-  versions:
-    - ghes-3.18
 - example: "#/components/examples/organization-simple/value"
   reason: "https://github.com/github/rest-api-description/issues/5542"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/public-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5543"
-  versions:
-    - ghes-3.18
-- example: "#/components/examples/repository-paginated-2/value"
-  reason: "https://github.com/github/rest-api-description/issues/5544"
-  versions:
-    - ghes-3.18
-- example: "#/components/examples/issue-with-repo-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5545"
-  versions:
-    - ghes-3.18
 - example: "#/components/examples/ghes-license-check/value"
   reason: "https://github.com/github/rest-api-description/issues/5546"
   versions:
@@ -396,6 +271,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/ghes-get-maintenance/value"
   reason: "https://github.com/github/rest-api-description/issues/5547"
   versions:
@@ -404,25 +280,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
-- example: "#/components/examples/public-repo-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5548"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/organization-custom-repository-role-example/value"
-  reason: "https://github.com/github/rest-api-description/issues/5549"
-  versions:
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/actions-hosted-runner-paginated/value"
   reason: "https://github.com/github/rest-api-description/issues/5550"
   versions:
@@ -451,54 +309,15 @@
   reason: "https://github.com/github/rest-api-description/issues/5588"
   versions:
     - ghec
-- example: "#/components/examples/repository-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5589"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/minimal-repository-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5590"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/list-attestations-bulk/value"
   reason: "TODO: Diagnose this"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/code-security-configuration-list/value"
-  reason: "https://github.com/github/rest-api-description/issues/5659"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/code-security-default-configurations/value"
   reason: "https://github.com/github/rest-api-description/issues/5591"
   versions:
     - ghes-3.15
-- example: "#/components/examples/public-org-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5592"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/api-insights-subject-stats/value"
   reason: "https://github.com/github/rest-api-description/issues/5593"
   versions:
@@ -509,51 +328,12 @@
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/migration-with-short-org-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5595"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/migration-with-short-org-2/value"
-  reason: "https://github.com/github/rest-api-description/issues/5596"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/migration-with-short-org/value"
-  reason: "https://github.com/github/rest-api-description/issues/5597"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/organization-role/value"
-  reason: "https://github.com/github/rest-api-description/issues/5598"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/projects-v2/value"
   reason: "https://github.com/github/rest-api-description/issues/5599"
   versions:
     - fpt
     - ghec
+    - ghes-3.19
 - example: "#/components/examples/projects-v2-field-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5600"
   versions:
@@ -569,6 +349,7 @@
   versions:
     - fpt
     - ghec
+    - ghes-3.19
 - example: "#/components/examples/org-ruleset-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5602"
   versions:
@@ -579,219 +360,13 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/org-ruleset-version-with-state/value"
   reason: "TODO: Diagnose this"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/team-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5603"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/rate-limit-overview/value"
-  reason: "https://github.com/github/rest-api-description/issues/5604"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/full-repository-default-response/value"
-  reason: "https://github.com/github/rest-api-description/issues/5605"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/full-repository/value"
-  reason: "https://github.com/github/rest-api-description/issues/5606"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/activity-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5607"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/branch-protection/value"
-  reason: "https://github.com/github/rest-api-description/issues/5608"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/protected-branch-pull-request-review/value"
-  reason: "https://github.com/github/rest-api-description/issues/5609"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/protected-branch-pull-request-review/value"
-  reason: "https://github.com/github/rest-api-description/issues/5610"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/integration-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5611"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/integration-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5612"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/integration-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5613"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/integration-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5614"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-run-example-of-in-progress-conclusion/value"
-  reason: "https://github.com/github/rest-api-description/issues/5615"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-run-example-of-completed-conclusion/value"
-  reason: "https://github.com/github/rest-api-description/issues/5615"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-run/value"
-  reason: "https://github.com/github/rest-api-description/issues/5616"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-run/value"
-  reason: "https://github.com/github/rest-api-description/issues/5617"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-suite/value"
-  reason: "https://github.com/github/rest-api-description/issues/5618"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-suite-preference/value"
-  reason: "https://github.com/github/rest-api-description/issues/5619"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-suite/value"
-  reason: "https://github.com/github/rest-api-description/issues/5620"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-run-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5621"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/code-scanning-alert-instances/value"
-  reason: "https://github.com/github/rest-api-description/issues/5622"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/code-scanning-variant-analysis/value"
   reason: "https://github.com/github/rest-api-description/issues/5623"
   versions:
@@ -807,26 +382,6 @@
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/pull-request-simple-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5626"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/check-suite-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5627"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/dependabot-alerts-for-repository/value"
   reason: "https://github.com/github/rest-api-description/issues/5628"
   versions:
@@ -835,6 +390,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/dependabot-alert-open/value"
   reason: "https://github.com/github/rest-api-description/issues/5628"
   versions:
@@ -845,6 +401,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/environments/value"
   reason: "https://github.com/github/rest-api-description/issues/5629"
   versions:
@@ -853,6 +410,7 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/custom-deployment-protection-rule-apps/value"
   reason: "https://github.com/github/rest-api-description/issues/5630"
   versions:
@@ -863,91 +421,12 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
-- example: "#/components/examples/repo-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5631"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/issue-event/value"
-  reason: "https://github.com/github/rest-api-description/issues/5632"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/deploy-key-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5633"
   versions:
     - ghes-3.14
     - ghes-3.15
-- example: "#/components/examples/pull-request-simple/value"
-  reason: "https://github.com/github/rest-api-description/issues/5634"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/pull-request-review-request/value"
-  reason: "https://github.com/github/rest-api-description/issues/5635"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/release/value"
-  reason: "https://github.com/github/rest-api-description/issues/5636"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/release/value"
-  reason: "https://github.com/github/rest-api-description/issues/5637"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/release/value"
-  reason: "https://github.com/github/rest-api-description/issues/5638"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/release/value"
-  reason: "https://github.com/github/rest-api-description/issues/5639"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/release/value"
-  reason: "https://github.com/github/rest-api-description/issues/5640"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/repository-ruleset-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5641"
   versions:
@@ -958,208 +437,23 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/repository-ruleset-version-with-state/value"
   reason: "State is 'Map<String, Object>' and the types in it are unknown"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/secret-scanning-alert-list/value"
-  reason: "https://github.com/github/rest-api-description/issues/5642"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.18
-- example: "#/components/examples/minimal-repository/value"
-  reason: "https://github.com/github/rest-api-description/issues/5643"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/user-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5644"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/user-org-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5645"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/user-public-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5646"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/user-received-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5647"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/user-received-public-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5648"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/ssh-signing-key-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5649"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
+    - ghes-3.19
 - example: "#/components/examples/codespace-with-full-repository/value"
   reason: "https://github.com/github/rest-api-description/issues/5650"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/migration-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5651"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/migration-2/value"
-  reason: "https://github.com/github/rest-api-description/issues/5652"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/migration/value"
   reason: "https://github.com/github/rest-api-description/issues/5653"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/repository-items-default-response/value"
-  reason: "https://github.com/github/rest-api-description/issues/5654"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/ssh-signing-key-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5655"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/ssh-signing-key/value"
-  reason: "https://github.com/github/rest-api-description/issues/5656"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/ssh-signing-key/value"
-  reason: "https://github.com/github/rest-api-description/issues/5657"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/starred-repository-items-alternative-response-with-star-creation-timestamps/value"
-  reason: "https://github.com/github/rest-api-description/issues/5658"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/repository-items-default-response/value"
-  reason: "https://github.com/github/rest-api-description/issues/5658"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/integration/value"
-  reason: "https://github.com/github/rest-api-description/issues/5660"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/integration/value"
-  reason: "https://github.com/github/rest-api-description/issues/5661"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
-- example: "#/components/examples/installation-token/value"
-  reason: "https://github.com/github/rest-api-description/issues/5662"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
-    - ghes-3.18
 - example: "#/components/examples/artifact-deployment-record-list/value"
   reason: "https://github.com/github/rest-api-description/issues/5683"
   versions:
