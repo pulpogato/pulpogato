@@ -434,7 +434,7 @@ class PathsBuilder {
             .returns(
                 ParameterizedTypeName.get(
                     ClassName.get("org.springframework.http", "ResponseEntity"),
-                    respRef.withoutAnnotations().annotated(suitableAnnotations),
+                    respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
                 ),
             ).build()
     }
@@ -475,8 +475,9 @@ class PathsBuilder {
                     .build(),
             ).addAnnotation(generated(0, context))
             .addParameters(parameters.map { it.second })
-            .returns(ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void")))
-            .build()
+            .returns(
+                ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void").annotated(nonNull())),
+            ).build()
 
     /**
      * Maps content types to appropriate suffixes for method names.
