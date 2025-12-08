@@ -13,17 +13,6 @@ import java.util.stream.Stream
 
 object Annotations {
     /*
-     Lombok Annotations
-     */
-    fun lombok(name: String): AnnotationSpec = AnnotationSpec.builder(ClassName.get("lombok", name)).build()
-
-    fun superBuilder(): AnnotationSpec =
-        AnnotationSpec
-            .builder(ClassName.get("lombok.experimental", "SuperBuilder"))
-            .addMember("toBuilder", "true")
-            .build()
-
-    /*
      Jackson Annotations
      */
     fun jsonValue(): AnnotationSpec = AnnotationSpec.builder(ClassName.get(JsonValue::class.java)).build()
@@ -84,6 +73,24 @@ object Annotations {
             .addMember("value", $$"$T.$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.ALWAYS)
             .build()
 
+    fun jsonIncludeNonEmpty(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(JsonInclude::class.java))
+            .addMember("value", $$"$T.$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.NON_EMPTY)
+            .build()
+
+    fun nullableOptionalSerializer(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(JsonSerialize::class.java))
+            .addMember("using", $$"$T.class", ClassName.get("io.github.pulpogato.common", "NullableOptionalSerializer"))
+            .build()
+
+    fun nullableOptionalDeserializer(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(JsonDeserialize::class.java))
+            .addMember("using", $$"$T.class", ClassName.get("io.github.pulpogato.common", "NullableOptionalDeserializer"))
+            .build()
+
     /*
      GH Annotations
      */
@@ -141,5 +148,12 @@ object Annotations {
     fun nullable(): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get("org.jspecify.annotations", "Nullable"))
+            .build()
+
+    fun deprecated(since: String): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get("java.lang", "Deprecated"))
+            .addMember("forRemoval", "false")
+            .addMember("since", $$"$S", since)
             .build()
 }

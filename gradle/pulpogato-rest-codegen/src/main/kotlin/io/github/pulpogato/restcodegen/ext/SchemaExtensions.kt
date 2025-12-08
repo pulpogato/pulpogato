@@ -8,16 +8,20 @@ import com.palantir.javapoet.ParameterSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
+import com.palantir.javapoet.TypeVariableName
+import com.palantir.javapoet.WildcardTypeName
+import io.github.pulpogato.restcodegen.Annotations
 import io.github.pulpogato.restcodegen.Annotations.deserializerAnnotation
 import io.github.pulpogato.restcodegen.Annotations.generated
 import io.github.pulpogato.restcodegen.Annotations.jsonIncludeAlways
+import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonEmpty
 import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonNull
 import io.github.pulpogato.restcodegen.Annotations.jsonProperty
 import io.github.pulpogato.restcodegen.Annotations.jsonValue
-import io.github.pulpogato.restcodegen.Annotations.lombok
+import io.github.pulpogato.restcodegen.Annotations.nullableOptionalDeserializer
+import io.github.pulpogato.restcodegen.Annotations.nullableOptionalSerializer
 import io.github.pulpogato.restcodegen.Annotations.serializerAnnotation
 import io.github.pulpogato.restcodegen.Annotations.singleValueAsArray
-import io.github.pulpogato.restcodegen.Annotations.superBuilder
 import io.github.pulpogato.restcodegen.Annotations.typeGenerated
 import io.github.pulpogato.restcodegen.Context
 import io.github.pulpogato.restcodegen.MarkdownHelper
@@ -28,6 +32,36 @@ import javax.lang.model.element.Modifier
 private const val PACKAGE_PULPOGATO_COMMON = "io.github.pulpogato.common"
 
 fun Map.Entry<String, Schema<*>>.className() = key.pascalCase()
+
+/**
+ * Checks if the given TypeName represents a simple type (primitive, string, or date/time)
+ * that should NOT be wrapped in NullableOptional.
+ */
+private fun isSimpleType(typeName: TypeName): Boolean {
+    // For annotated types, we need to check the base type
+    // The toString() of an annotated type includes annotations like "java.lang. @Annotation String"
+    // We need to remove both the annotation and any extra spacing/dots
+    val typeString =
+        typeName
+            .toString()
+            .replace(Regex("""\s+@\w+(\.\w+)*\([^)]*\)"""), "") // Remove @package.Annotation(args)
+            .replace(Regex("""\s+@\w+(\.\w+)*"""), "") // Remove @package.Annotation
+            .replace(Regex("""\.\s+"""), ".") // Fix "java.lang. String" -> "java.lang.String"
+            .trim()
+
+    return when {
+        typeString == "java.lang.String" -> true
+        typeString == "java.lang.Boolean" || typeString == "boolean" -> true
+        typeString == "java.lang.Integer" || typeString == "int" -> true
+        typeString == "java.lang.Long" || typeString == "long" -> true
+        typeString == "java.lang.Double" || typeString == "double" -> true
+        typeString == "java.lang.Float" || typeString == "float" -> true
+        typeString == "java.math.BigDecimal" -> true
+        typeString.startsWith("java.time.") -> true
+        typeString.startsWith("java.net.URI") -> true
+        else -> false
+    }
+}
 
 fun isSingleOrArray(
     oneOf: List<Schema<Any>>,
@@ -296,10 +330,6 @@ private fun buildFancyObject(
         TypeSpec
             .classBuilder(className)
             .addAnnotation(generated(0, context.withSchemaStack(fancyObjectType)))
-            .addAnnotation(lombok("Getter"))
-            .addAnnotation(lombok("Setter"))
-            .addAnnotation(lombok("ToString"))
-            .addAnnotation(lombok("EqualsAndHashCode"))
             .addModifiers(Modifier.PUBLIC)
             .addSuperinterface(ClassName.get(PACKAGE_PULPOGATO_COMMON, "PulpogatoType"))
 
@@ -322,11 +352,39 @@ private fun buildFancyObject(
             processSubSchema(context.withSchemaStack(fancyObjectType, "$index"), entry, newKey, subSchema, classRef, theType, fields)
         }
 
-    // Generate manual getters, setters, toString, and constructors for the fields
+    // Get built type to access actual field specs for method generation
     val builtType = theType.build()
+    val fieldSpecs = builtType.fieldSpecs()
 
+    // Generate all methods
+    fieldSpecs.forEach { field ->
+        val javadoc = extractJavadoc(field)
+        theType
+            .addMethod(generateGetter(field, javadoc))
+            .addMethod(generateSetter(field, javadoc))
+    }
+
+    theType
+        .addMethod(generateEquals())
+        .addMethod(generateHashCode())
+        .addMethod(generateToString())
+        .addMethod(generateNoArgsConstructor())
+
+    if (fieldSpecs.isNotEmpty()) {
+        theType.addMethod(generateAllArgsConstructor(classRef, fieldSpecs))
+    }
+
+    // Add builder pattern
+    theType
+        .addType(generateBuilderClass(classRef, fieldSpecs))
+        .addType(generateBuilderImplClass(classRef))
+        .addMethod(generateBuilderFactoryMethod(classRef))
+        .addMethod(generateToBuilderMethod(classRef, fieldSpecs))
+
+    // Add toCode method (existing logic)
     addToCodeMethod(builtType, theType, classRef)
 
+    // Add custom serializers/deserializers (KEEP THIS)
     val settableFields = getSettableFields(fields, className)
     val gettableFields = getGettableFields(fields, className)
     val deserializer = buildDeserializer(className, fancyObjectType, settableFields)
@@ -337,9 +395,6 @@ private fun buildFancyObject(
         .addType(serializer)
         .addAnnotation(deserializerAnnotation(className, deserializer))
         .addAnnotation(serializerAnnotation(className, serializer))
-        .addAnnotation(superBuilder())
-        .addAnnotation(lombok("NoArgsConstructor"))
-        .addAnnotation(lombok("AllArgsConstructor"))
 
     return theType.build()
 }
@@ -424,7 +479,14 @@ private fun handleToCodeMethods(
     when {
         hasToCodeMethod && hasNewFields -> rebuildWithUpdatedMethods(builtWithAllProperties, className, theType)
         !hasToCodeMethod -> addMethodsToNewType(builtWithAllProperties, className, theType)
-        else -> theType.addType(builtWithAllProperties)
+        else -> {
+            // Even if toCode doesn't need updating, the Builder might need regenerating if fields were added
+            if (hasNewFields) {
+                rebuildWithUpdatedMethods(builtWithAllProperties, className, theType)
+            } else {
+                theType.addType(builtWithAllProperties)
+            }
+        }
     }
 }
 
@@ -433,11 +495,68 @@ private fun rebuildWithUpdatedMethods(
     className: ClassName,
     theType: TypeSpec.Builder,
 ) {
-    val builderWithoutMethods =
-        copyTypeSpecToBuilder(builtWithAllProperties) { it.name() != "toString" && it.name() != "toCode" }
-    val rebuilt = builderWithoutMethods.build()
-    addToCodeMethod(rebuilt, builderWithoutMethods, className)
-    theType.addType(builderWithoutMethods.build())
+    // Remove old generated methods and Builder to regenerate them with all fields
+    val builderWithoutGeneratedMethods =
+        copyTypeSpecToBuilder(builtWithAllProperties) { method ->
+            // Keep only methods that are NOT auto-generated (like enum methods, custom logic)
+            // Exclude: constructors, getters, setters, equals, hashCode, toString, toCode, builder methods, canEqual
+            when {
+                method.isConstructor -> false
+                method.name() in setOf("toString", "toCode", "equals", "hashCode", "toBuilder", "builder") -> false
+                method.name().startsWith("get") || method.name().startsWith("set") -> false
+                else -> true
+            }
+        }
+
+    // Remove old Builder nested class
+    val builderWithoutOldBuilder = TypeSpec.classBuilder(builtWithAllProperties.name())
+    builtWithAllProperties.annotations().forEach { builderWithoutOldBuilder.addAnnotation(it) }
+    builtWithAllProperties.modifiers().forEach { builderWithoutOldBuilder.addModifiers(it) }
+    builtWithAllProperties.superinterfaces().forEach { builderWithoutOldBuilder.addSuperinterface(it) }
+    builtWithAllProperties.fieldSpecs().forEach { builderWithoutOldBuilder.addField(it) }
+    // Filter out builder classes (ends with "Builder" or "BuilderImpl")
+    builtWithAllProperties
+        .typeSpecs()
+        .filter {
+            !it.name().endsWith("Builder") && !it.name().endsWith("BuilderImpl")
+        }.forEach { builderWithoutOldBuilder.addType(it) }
+    builderWithoutGeneratedMethods.build().methodSpecs().forEach { builderWithoutOldBuilder.addMethod(it) }
+    if (!builtWithAllProperties.javadoc().isEmpty) {
+        builderWithoutOldBuilder.addJavadoc(builtWithAllProperties.javadoc())
+    }
+
+    // Now regenerate all methods with the complete field list
+    val allFields = builtWithAllProperties.fieldSpecs()
+
+    allFields.forEach { field ->
+        val javadoc = extractJavadoc(field)
+        builderWithoutOldBuilder
+            .addMethod(generateGetter(field, javadoc))
+            .addMethod(generateSetter(field, javadoc))
+    }
+
+    builderWithoutOldBuilder
+        .addMethod(generateEquals())
+        .addMethod(generateHashCode())
+        .addMethod(generateToString())
+        .addMethod(generateNoArgsConstructor())
+
+    if (allFields.isNotEmpty()) {
+        builderWithoutOldBuilder.addMethod(generateAllArgsConstructor(className, allFields))
+    }
+
+    // Add builder pattern
+    builderWithoutOldBuilder
+        .addType(generateBuilderClass(className, allFields))
+        .addType(generateBuilderImplClass(className))
+        .addMethod(generateBuilderFactoryMethod(className))
+        .addMethod(generateToBuilderMethod(className, allFields))
+
+    // Add toCode method
+    val rebuilt = builderWithoutOldBuilder.build()
+    addToCodeMethod(rebuilt, builderWithoutOldBuilder, className)
+
+    theType.addType(builderWithoutOldBuilder.build())
 }
 
 private fun addMethodsToNewType(
@@ -488,7 +607,7 @@ private fun getGettableFields(
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
-            $$"new $T<>($T.class, $T::get$$name)",
+            "new \$T<>(\$T.class, \$T::get$name)",
             pulpogatoClass("FancySerializer", "GettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
@@ -576,13 +695,6 @@ private fun buildSimpleObject(
             .classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0, context))
-            .addAnnotation(lombok("Getter"))
-            .addAnnotation(lombok("Setter"))
-            .addAnnotation(lombok("EqualsAndHashCode"))
-            .addAnnotation(superBuilder())
-            .addAnnotation(lombok("NoArgsConstructor"))
-            .addAnnotation(lombok("AllArgsConstructor"))
-            .addAnnotation(lombok("ToString"))
             .addAnnotation(jsonIncludeNonNull())
             .addSuperinterface(ClassName.get(PACKAGE_PULPOGATO_COMMON, "PulpogatoType"))
 
@@ -594,8 +706,36 @@ private fun buildSimpleObject(
 
     addProperties(context, entry, nameRef, builder)
 
-    // Add toString and toCode methods
+    // Get built class to access fields for method generation
     val builtClass = builder.build()
+    val fields = builtClass.fieldSpecs()
+
+    // Generate all methods
+    fields.forEach { field ->
+        val javadoc = extractJavadoc(field)
+        builder
+            .addMethod(generateGetter(field, javadoc))
+            .addMethod(generateSetter(field, javadoc))
+    }
+
+    builder
+        .addMethod(generateEquals())
+        .addMethod(generateHashCode())
+        .addMethod(generateToString())
+        .addMethod(generateNoArgsConstructor())
+
+    if (fields.isNotEmpty()) {
+        builder.addMethod(generateAllArgsConstructor(nameRef, fields))
+    }
+
+    // Add builder pattern
+    builder
+        .addType(generateBuilderClass(nameRef, fields))
+        .addType(generateBuilderImplClass(nameRef))
+        .addMethod(generateBuilderFactoryMethod(nameRef))
+        .addMethod(generateToBuilderMethod(nameRef, fields))
+
+    // Add toCode method (existing logic)
     addToCodeMethod(builtClass, builder, nameRef)
 
     return builder.build()
@@ -628,6 +768,561 @@ private fun addToCodeMethod(
                     .build(),
             )
     }
+}
+
+/**
+ * Extracts javadoc text from a FieldSpec.
+ * Returns empty string if field has no javadoc.
+ */
+private fun extractJavadoc(field: FieldSpec): String {
+    val javadoc = field.javadoc()
+    return if (!javadoc.isEmpty) {
+        javadoc.toString()
+    } else {
+        ""
+    }
+}
+
+/**
+ * Generates a getter method for a field.
+ * Uses getFieldName() for all field types including booleans.
+ */
+private fun generateGetter(
+    field: FieldSpec,
+    javadoc: String = "",
+): MethodSpec {
+    val fieldName = field.name()
+    val methodName = "get${fieldName.pascalCase()}"
+
+    val builder =
+        MethodSpec
+            .methodBuilder(methodName)
+            .addModifiers(Modifier.PUBLIC)
+            .returns(field.type())
+            .addStatement("return this.\$N", fieldName)
+
+    // Add javadoc if present
+    if (javadoc.isNotBlank()) {
+        builder.addJavadoc(javadoc)
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates a setter method for a field.
+ */
+private fun generateSetter(
+    field: FieldSpec,
+    javadoc: String = "",
+): MethodSpec {
+    val fieldName = field.name()
+    val methodName = "set${fieldName.pascalCase()}"
+    val fieldType = field.type()
+
+    // Check if this is a NullableOptional field by checking the string representation
+    val typeString = fieldType.toString()
+    val isNullableOptional = typeString.startsWith("io.github.pulpogato.common.NullableOptional<")
+
+    val builder =
+        MethodSpec
+            .methodBuilder(methodName)
+            .addModifiers(Modifier.PUBLIC)
+            .returns(TypeName.VOID)
+            .addParameter(
+                ParameterSpec
+                    .builder(fieldType, fieldName)
+                    .apply {
+                        if (isNullableOptional) {
+                            addAnnotation(Annotations.nonNull())
+                        }
+                    }.build(),
+            ).addStatement("this.\$N = \$N", fieldName, fieldName)
+
+    // Add javadoc if present
+    if (javadoc.isNotBlank()) {
+        builder.addJavadoc(javadoc)
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates no-argument constructor.
+ */
+private fun generateNoArgsConstructor(): MethodSpec =
+    MethodSpec
+        .constructorBuilder()
+        .addModifiers(Modifier.PUBLIC)
+        .build()
+
+/**
+ * Generates constructor with all fields as parameters.
+ */
+private fun generateAllArgsConstructor(
+    className: ClassName,
+    fields: List<FieldSpec>,
+): MethodSpec {
+    val builderClassName = className.nestedClass("${className.simpleName()}Builder")
+    val wildcardBuilder =
+        ParameterizedTypeName.get(
+            builderClassName,
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+        )
+
+    val builder =
+        MethodSpec
+            .constructorBuilder()
+            .addModifiers(Modifier.PROTECTED)
+            .addParameter(wildcardBuilder, "b")
+
+    fields.forEach { field ->
+        builder.addStatement("this.\$N = b.\$N", field.name(), field.name())
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates toString() method with Lombok-style formatting.
+ */
+private fun generateToString(): MethodSpec =
+    MethodSpec
+        .methodBuilder("toString")
+        .addModifiers(Modifier.PUBLIC)
+        .returns(String::class.java)
+        .addStatement($$"return $T.reflectionToString(this)", ClassName.get("org.apache.commons.lang3.builder", "ToStringBuilder"))
+        .build()
+
+/**
+ * Generates equals() method with proper null and type checking (Lombok style).
+ */
+private fun generateEquals(): MethodSpec =
+    MethodSpec
+        .methodBuilder("equals")
+        .addModifiers(Modifier.PUBLIC)
+        .returns(TypeName.BOOLEAN)
+        .addParameter(ParameterSpec.builder(Types.OBJECT, "o").build())
+        .addStatement($$"return $T.reflectionEquals(this, o, false)", ClassName.get("org.apache.commons.lang3.builder", "EqualsBuilder"))
+        .build()
+
+/**
+ * Generates hashCode() method using PRIME and result pattern (Lombok style).
+ */
+private fun generateHashCode(): MethodSpec =
+    MethodSpec
+        .methodBuilder("hashCode")
+        .addModifiers(Modifier.PUBLIC)
+        .returns(
+            TypeName.INT,
+        ).addStatement($$"return $T.reflectionHashCode(this, false)", ClassName.get("org.apache.commons.lang3.builder", "HashCodeBuilder"))
+        .build()
+
+/**
+ * Generates fluent setter method for builder.
+ * Returns Builder for method chaining.
+ */
+private fun generateBuilderSetter(
+    builderClassName: ClassName,
+    field: FieldSpec,
+    javadoc: String = "",
+): MethodSpec {
+    val fieldName = field.name()
+
+    val builder =
+        MethodSpec
+            .methodBuilder(fieldName)
+            .addModifiers(Modifier.PUBLIC)
+            .returns(builderClassName)
+            .addParameter(
+                ParameterSpec.builder(field.type(), fieldName).build(),
+            ).addStatement("this.\$N = \$N", fieldName, fieldName)
+            .addStatement("return this")
+
+    // Add javadoc if present
+    if (javadoc.isNotBlank()) {
+        builder.addJavadoc(javadoc)
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates build() method that creates parent class instance.
+ */
+private fun generateBuildMethod(
+    className: ClassName,
+    fields: List<FieldSpec>,
+): MethodSpec {
+    val builder =
+        MethodSpec
+            .methodBuilder("build")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(className)
+
+    if (fields.isEmpty()) {
+        builder.addStatement("return new \$T()", className)
+    } else {
+        // Build: return new ClassName(this.field1, this.field2, ...);
+        val fieldReferences = fields.map { CodeBlock.of("this.\$N", it.name()) }
+        builder.addStatement(
+            "return new \$T(\$L)",
+            className,
+            CodeBlock.join(fieldReferences, ", "),
+        )
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates $fillValuesFrom method for SuperBuilder pattern.
+ */
+private fun generateFillValuesFromMethod(
+    bTypeVar: TypeVariableName,
+    cTypeVar: TypeVariableName,
+): MethodSpec =
+    MethodSpec
+        .methodBuilder("\$fillValuesFrom")
+        .addModifiers(Modifier.PROTECTED)
+        .returns(bTypeVar)
+        .addParameter(cTypeVar, "instance")
+        .addStatement("\$\$fillValuesFromInstanceIntoBuilder(instance, this)")
+        .addStatement("return (\$T)this.self()", bTypeVar)
+        .build()
+
+/**
+ * Generates $fillValuesFromInstanceIntoBuilder static helper method.
+ */
+private fun generateFillValuesFromInstanceIntoBuilderMethod(
+    className: ClassName,
+    builderName: String,
+    fields: List<FieldSpec>,
+): MethodSpec {
+    val wildcardBuilder =
+        ParameterizedTypeName.get(
+            className.nestedClass(builderName),
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+        )
+
+    val builder =
+        MethodSpec
+            .methodBuilder("\$fillValuesFromInstanceIntoBuilder")
+            .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+            .returns(TypeName.VOID)
+            .addParameter(className, "instance")
+            .addParameter(wildcardBuilder, "b")
+
+    fields.forEach { field ->
+        builder.addStatement("b.\$N(instance.\$N)", field.name(), field.name())
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates fluent setter method(s) for abstract builder with @JsonProperty annotation.
+ * For NullableOptional fields, generates two methods:
+ * 1. Main method accepting NullableOptional<T> with @NonNull annotation
+ * 2. Convenience method accepting T with @Nullable annotation
+ * Returns (B)this.self() for type-safe chaining.
+ */
+private fun generateAbstractBuilderSetter(
+    field: FieldSpec,
+    javadoc: String = "",
+    bTypeVar: TypeVariableName,
+): List<MethodSpec> {
+    val fieldName = field.name()
+    val fieldType = field.type()
+
+    // Check if this is a NullableOptional field by checking the string representation
+    val typeString = fieldType.toString()
+    val isNullableOptional = typeString.startsWith("io.github.pulpogato.common.NullableOptional<")
+
+    val methods = mutableListOf<MethodSpec>()
+
+    // Generate main builder method (always)
+    val mainMethodBuilder =
+        MethodSpec
+            .methodBuilder(fieldName)
+            .addModifiers(Modifier.PUBLIC)
+            .returns(bTypeVar)
+            .addParameter(
+                ParameterSpec
+                    .builder(fieldType, fieldName)
+                    .apply {
+                        if (isNullableOptional) {
+                            addAnnotation(Annotations.nonNull())
+                        }
+                    }.build(),
+            ).addStatement("this.\$N = \$N", fieldName, fieldName)
+            .addStatement("return (\$T)this.self()", bTypeVar)
+
+    // Add @JsonProperty annotation
+    val jsonPropertyAnnotation =
+        field.annotations().find {
+            it.type().toString().contains("JsonProperty")
+        }
+    if (jsonPropertyAnnotation != null) {
+        mainMethodBuilder.addAnnotation(jsonPropertyAnnotation)
+    }
+
+    // Add javadoc if present
+    if (javadoc.isNotBlank()) {
+        mainMethodBuilder.addJavadoc(javadoc)
+    }
+
+    methods.add(mainMethodBuilder.build())
+
+    // Generate convenience method for NullableOptional fields
+    if (isNullableOptional && fieldType is ParameterizedTypeName) {
+        // Use reflection to access the private typeArguments field
+        // This is necessary because Palantir's JavaPoet 0.9.0 doesn't expose a public API for this
+        try {
+            val typeArgumentsField = ParameterizedTypeName::class.java.getDeclaredField("typeArguments")
+            typeArgumentsField.isAccessible = true
+            @Suppress("UNCHECKED_CAST")
+            val typeArguments = typeArgumentsField.get(fieldType) as List<TypeName>
+            val unwrappedType = typeArguments[0]
+
+            val convenienceMethodBuilder =
+                MethodSpec
+                    .methodBuilder(fieldName)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(bTypeVar)
+                    .addParameter(
+                        ParameterSpec
+                            .builder(unwrappedType, fieldName)
+                            .addAnnotation(Annotations.nullable())
+                            .build(),
+                    ).addStatement(
+                        $$"return this.$N($T.ofNullable($N))",
+                        fieldName,
+                        Types.NULLABLE_OPTIONAL,
+                        fieldName,
+                    ).addAnnotation(Annotations.deprecated("1.2.0"))
+
+            // Add javadoc for convenience method
+            if (javadoc.isNotBlank()) {
+                convenienceMethodBuilder.addJavadoc(
+                    javadoc + "\n\n<p>Convenience method that wraps the value in NullableOptional automatically.\n" +
+                        "Pass null to explicitly set the field to null in JSON.</p>\n\n" +
+                        "@deprecated Use {@link #$fieldName(NullableOptional)} instead\n",
+                )
+            } else {
+                convenienceMethodBuilder.addJavadoc(
+                    "Convenience method that wraps the value in NullableOptional automatically.\n" +
+                        "Pass null to explicitly set the field to null in JSON.\n\n" +
+                        "@param $fieldName the value to set (null will be converted to NullableOptional.ofNull())\n" +
+                        "@return this builder for method chaining\n" +
+                        "@deprecated Use {@link #$fieldName(NullableOptional)} instead\n",
+                )
+            }
+
+            methods.add(convenienceMethodBuilder.build())
+        } catch (e: Exception) {
+            // If reflection fails, skip generating the convenience method
+            // This is a fallback to ensure code generation doesn't fail completely
+        }
+    }
+
+    return methods
+}
+
+/**
+ * Generates abstract nested static Builder class with generic type parameters (SuperBuilder pattern).
+ */
+private fun generateBuilderClass(
+    className: ClassName,
+    fields: List<FieldSpec>,
+): TypeSpec {
+    val builderName = "${className.simpleName()}Builder"
+    val cTypeVar = TypeVariableName.get("C", className)
+    val bTypeVar = TypeVariableName.get("B")
+
+    // B extends ClassNameBuilder<C, B>
+    val bBound =
+        ParameterizedTypeName.get(
+            className.nestedClass(builderName),
+            cTypeVar,
+            bTypeVar,
+        )
+
+    val builder =
+        TypeSpec
+            .classBuilder(builderName)
+            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.STATIC)
+            .addTypeVariable(cTypeVar)
+            .addTypeVariable(TypeVariableName.get("B", bBound))
+
+    // Add fields to builder (same as parent, but non-final)
+    fields.forEach { field ->
+        val builderField =
+            FieldSpec
+                .builder(field.type(), field.name(), Modifier.PRIVATE)
+                .build()
+        builder.addField(builderField)
+    }
+
+    // Check for fields with @Builder.Default annotation (initializers)
+    val fieldsWithDefaults =
+        fields.filter { field ->
+            field.annotations().any { annotation ->
+                annotation.type().toString().contains("Builder.Default")
+            }
+        }
+
+    // Add constructor if there are default fields
+    if (fieldsWithDefaults.isNotEmpty()) {
+        val constructorBuilder =
+            MethodSpec
+                .constructorBuilder()
+
+        fieldsWithDefaults.forEach { field ->
+            // Try to extract initializer from annotations
+            // For NullableOptional.notSet(), we need to initialize it
+            val fieldType = field.type()
+            if (fieldType.toString().startsWith("io.github.pulpogato.common.NullableOptional")) {
+                constructorBuilder.addStatement(
+                    "this.\$N = \$T.notSet()",
+                    field.name(),
+                    ClassName.get("io.github.pulpogato.common", "NullableOptional"),
+                )
+            }
+        }
+
+        builder.addMethod(constructorBuilder.build())
+    }
+
+    // Add $fillValuesFrom method
+    builder.addMethod(generateFillValuesFromMethod(bTypeVar, cTypeVar))
+
+    // Add $fillValuesFromInstanceIntoBuilder static helper
+    builder.addMethod(generateFillValuesFromInstanceIntoBuilderMethod(className, builderName, fields))
+
+    // Add fluent setter methods with @JsonProperty
+    fields.forEach { field ->
+        val javadoc = extractJavadoc(field)
+        generateAbstractBuilderSetter(field, javadoc, bTypeVar).forEach { method ->
+            builder.addMethod(method)
+        }
+    }
+
+    // Add abstract self() method
+    builder.addMethod(
+        MethodSpec
+            .methodBuilder("self")
+            .addModifiers(Modifier.PROTECTED, Modifier.ABSTRACT)
+            .returns(bTypeVar)
+            .build(),
+    )
+
+    // Add abstract build() method
+    builder.addMethod(
+        MethodSpec
+            .methodBuilder("build")
+            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+            .returns(cTypeVar)
+            .build(),
+    )
+
+    // Add toString() method
+    builder.addMethod(generateToString())
+
+    return builder.build()
+}
+
+/**
+ * Generates private nested implementation class for SuperBuilder pattern.
+ */
+private fun generateBuilderImplClass(className: ClassName): TypeSpec {
+    val builderName = "${className.simpleName()}Builder"
+    val implName = "${className.simpleName()}BuilderImpl"
+    val builderClassName = className.nestedClass(builderName)
+    val implClassName = className.nestedClass(implName)
+
+    // TopicBuilderImpl extends TopicBuilder<Topic, TopicBuilderImpl>
+    val superclass =
+        ParameterizedTypeName.get(
+            builderClassName,
+            className,
+            implClassName,
+        )
+
+    return TypeSpec
+        .classBuilder(implName)
+        .addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+        .superclass(superclass)
+        .addMethod(
+            MethodSpec
+                .methodBuilder("self")
+                .addModifiers(Modifier.PROTECTED)
+                .returns(implClassName)
+                .addStatement("return this")
+                .build(),
+        ).addMethod(
+            MethodSpec
+                .methodBuilder("build")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(className)
+                .addStatement("return new \$T(this)", className)
+                .build(),
+        ).build()
+}
+
+/**
+ * Generates static factory method for builder.
+ */
+private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec {
+    val builderName = "${className.simpleName()}Builder"
+    val implName = "${className.simpleName()}BuilderImpl"
+    val builderClassName = className.nestedClass(builderName)
+    val implClassName = className.nestedClass(implName)
+
+    // Return type: TopicBuilder<?, ?>
+    val wildcardBuilder =
+        ParameterizedTypeName.get(
+            builderClassName,
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+        )
+
+    return MethodSpec
+        .methodBuilder("builder")
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+        .returns(wildcardBuilder)
+        .addStatement("return new \$T()", implClassName)
+        .build()
+}
+
+/**
+ * Generates toBuilder() method for copying instances.
+ */
+private fun generateToBuilderMethod(
+    className: ClassName,
+    fields: List<FieldSpec>,
+): MethodSpec {
+    val builderName = "${className.simpleName()}Builder"
+    val implName = "${className.simpleName()}BuilderImpl"
+    val builderClassName = className.nestedClass(builderName)
+    val implClassName = className.nestedClass(implName)
+
+    // Return type: TopicBuilder<?, ?>
+    val wildcardBuilder =
+        ParameterizedTypeName.get(
+            builderClassName,
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+            WildcardTypeName.subtypeOf(Types.OBJECT),
+        )
+
+    return MethodSpec
+        .methodBuilder("toBuilder")
+        .addModifiers(Modifier.PUBLIC)
+        .returns(wildcardBuilder)
+        .addStatement("return (new \$T()).\$\$fillValuesFrom(this)", implClassName)
+        .build()
 }
 
 private fun addProperties(
@@ -712,17 +1407,41 @@ private fun addFieldIfNew(
                 "schema.json"
             }
 
-        val builder =
-            FieldSpec
-                .builder(typeName, fieldName, Modifier.PRIVATE)
-                .addAnnotation(jsonProperty(p.key))
-                .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
-
         // Check if the schema explicitly allows null (has "null" in its types array)
-        // If so, add @JsonInclude(ALWAYS) to override the class-level NON_NULL setting
         val types = p.value.types?.filterNotNull() ?: emptyList()
-        if (types.contains("null")) {
-            builder.addAnnotation(jsonIncludeAlways())
+        val hasNull = types.contains("null")
+        // Check if this is an object type (not a simple type like String, Integer, etc.)
+        val isObjectType = typeName is ClassName && !isSimpleType(typeName)
+
+        // Determine the actual field type and annotations based on nullability
+        val actualTypeName: TypeName
+        val builder: FieldSpec.Builder
+
+        if (hasNull && isObjectType) {
+            // Wrap in NullableOptional for nullable object fields
+            actualTypeName = ParameterizedTypeName.get(Types.NULLABLE_OPTIONAL, typeName)
+            builder =
+                FieldSpec
+                    .builder(actualTypeName, fieldName, Modifier.PRIVATE)
+                    .addAnnotation(jsonProperty(p.key))
+                    .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
+                    .addAnnotation(nullableOptionalSerializer())
+                    .addAnnotation(nullableOptionalDeserializer())
+                    .addAnnotation(jsonIncludeNonEmpty())
+                    .initializer($$"$T.notSet()", Types.NULLABLE_OPTIONAL)
+        } else {
+            // Keep existing behavior for non-nullable or simple types
+            actualTypeName = typeName
+            builder =
+                FieldSpec
+                    .builder(actualTypeName, fieldName, Modifier.PRIVATE)
+                    .addAnnotation(jsonProperty(p.key))
+                    .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
+
+            if (hasNull) {
+                // Add @JsonInclude(ALWAYS) for simple nullable types
+                builder.addAnnotation(jsonIncludeAlways())
+            }
         }
 
         schemaJavadoc(p).let {
@@ -745,9 +1464,6 @@ private fun buildEnum(
             .enumBuilder(className.simpleName())
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0, context))
-            .addAnnotation(lombok("Getter"))
-            .addAnnotation(lombok("RequiredArgsConstructor"))
-            .addAnnotation(lombok("ToString"))
             .addField(
                 FieldSpec
                     .builder(String::class.java, "value", Modifier.PRIVATE, Modifier.FINAL)
@@ -769,6 +1485,36 @@ private fun buildEnum(
             val enumName = it ?: "null"
             builder.addEnumConstant(enumValue, TypeSpec.anonymousClassBuilder($$"$S", enumName).build())
         }
+
+    // Add explicit constructor
+    builder.addMethod(
+        MethodSpec
+            .constructorBuilder()
+            .addParameter(String::class.java, "value")
+            .addStatement("this.value = value")
+            .build(),
+    )
+
+    // Add explicit getValue() getter
+    builder.addMethod(
+        MethodSpec
+            .methodBuilder("getValue")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(String::class.java)
+            .addStatement("return this.value")
+            .build(),
+    )
+
+    // Add explicit toString() override
+    builder.addMethod(
+        MethodSpec
+            .methodBuilder("toString")
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(Types.OVERRIDE)
+            .returns(String::class.java)
+            .addStatement("return this.value")
+            .build(),
+    )
 
     // Add the converter as a nested static class
     val converterClass = buildEnumConverter(className)

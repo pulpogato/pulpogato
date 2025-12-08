@@ -1,6 +1,8 @@
 package io.github.pulpogato.rest.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.pulpogato.common.NullableOptional;
+import io.github.pulpogato.rest.schemas.SecurityAndAnalysis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -51,8 +53,8 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
         var commit = commits.getFirst();
         assertThat(commit.getSha()).isEqualTo("2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
         assertThat(commit.getCommit().getMessage()).isEqualTo("Merge pull request #206 from pulpogato/test-listOrgApps\n\ntest: Add test for listAppInstallations in an org");
-        assertThat(commit.getCommitter().getSimpleUser().getLogin()).isEqualTo("web-flow");
-        assertThat(commit.getAuthor().getSimpleUser().getLogin()).isEqualTo("rahulsom");
+        assertThat(commit.getCommitter().getValue().getSimpleUser().getLogin()).isEqualTo("web-flow");
+        assertThat(commit.getAuthor().getValue().getSimpleUser().getLogin()).isEqualTo("rahulsom");
     }
 
     @Test
@@ -305,5 +307,97 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
 
         var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testArchiveRepository() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.update("pulpogato", "create-demo", ReposApi.UpdateRequestBody.builder()
+                .archived(true)
+                .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        assertThat(body.getArchived()).isTrue();
+    }
+
+    @Test
+    void testUnrchiveRepository() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.update("pulpogato", "create-demo", ReposApi.UpdateRequestBody.builder()
+                .archived(false)
+                .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        assertThat(body.getArchived()).isFalse();
+    }
+
+    @Test
+    void testSetSecurityAndAnalysis() {
+        var api = new RestClients(webClient).getReposApi();
+        final var requestedSecurityAndAnalysis = ReposApi.UpdateRequestBody.SecurityAndAnalysis.builder()
+                .secretScanning(ReposApi.UpdateRequestBody.SecurityAndAnalysis.SecretScanning.builder()
+                        .status(SecurityAndAnalysis.SecretScanning.Status.ENABLED.getValue())
+                        .build())
+                .secretScanningPushProtection(ReposApi.UpdateRequestBody.SecurityAndAnalysis.SecretScanningPushProtection.builder()
+                        .status(SecurityAndAnalysis.SecretScanningPushProtection.Status.ENABLED.getValue())
+                        .build())
+                .secretScanningNonProviderPatterns(ReposApi.UpdateRequestBody.SecurityAndAnalysis.SecretScanningNonProviderPatterns.builder()
+                        .status(SecurityAndAnalysis.SecretScanningNonProviderPatterns.Status.ENABLED.getValue())
+                        .build())
+                .build();
+        var response = api.update("pulpogato", "create-demo", ReposApi.UpdateRequestBody.builder()
+                .securityAndAnalysis(NullableOptional.of(requestedSecurityAndAnalysis))
+                .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        final var securityAndAnalysis = body.getSecurityAndAnalysis();
+        assertThat(securityAndAnalysis).isNotNull();
+
+        assertThat(securityAndAnalysis.getSecretScanning()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanning().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanning.Status.ENABLED);
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanningPushProtection.Status.ENABLED);
+    }
+
+    @Test
+    void testClearSecurityAndAnalysis() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.update("pulpogato", "create-demo", ReposApi.UpdateRequestBody.builder()
+                .securityAndAnalysis(NullableOptional.ofNull())
+                .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody())
+                .isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        final var securityAndAnalysis = body.getSecurityAndAnalysis();
+        assertThat(securityAndAnalysis).isNotNull();
+
+        assertThat(securityAndAnalysis.getAdvancedSecurity()).isNull();
+        assertThat(securityAndAnalysis.getCodeSecurity()).isNull();
+        assertThat(securityAndAnalysis.getDependabotSecurityUpdates()).isNotNull();
+        assertThat(securityAndAnalysis.getDependabotSecurityUpdates().getStatus())
+                .isEqualTo(SecurityAndAnalysis.DependabotSecurityUpdates.Status.DISABLED);
+        assertThat(securityAndAnalysis.getSecretScanning()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanning().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanning.Status.ENABLED);
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanningPushProtection.Status.ENABLED);
+        assertThat(securityAndAnalysis.getSecretScanningNonProviderPatterns()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanningNonProviderPatterns().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanningNonProviderPatterns.Status.DISABLED);
+        assertThat(securityAndAnalysis.getSecretScanningAiDetection()).isNull();
     }
 }

@@ -319,13 +319,14 @@ class WebhooksBuilder {
                 FieldSpec
                     .builder(ClassName.get(ObjectMapper::class.java), "objectMapper")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
+                    .addModifiers(Modifier.PRIVATE)
                     .build(),
             ).addMethod(
                 MethodSpec
                     .methodBuilder("getObjectMapper")
                     .addModifiers(Modifier.PUBLIC)
                     .returns(ClassName.get(ObjectMapper::class.java))
-                    .addStatement("return objectMapper")
+                    .addStatement("return this.objectMapper")
                     .build(),
             ).addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RestController")).build())
             .addAnnotation(

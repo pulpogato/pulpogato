@@ -2,6 +2,7 @@
 assertj = "3.27.6"
 jspecify = "1.0.0"
 commonmark = "0.27.0"
+commons-lang3 = "3.17.0"
 commons-text = "1.14.0"
 dgs = "8.1.1"
 download = "5.6.0"
@@ -33,6 +34,7 @@ waena = "0.20.0"
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
 commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmark" }
+commonsLang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 commonsText = { group = "org.apache.commons", name = "commons-text", version.ref = "commons-text" }
 glassfishJson = { group = "org.glassfish", name = "javax.json", version.ref = "glassfishJson" }
 groovy = { group = "org.apache.groovy", name = "groovy-all", version.ref = "groovy" }
