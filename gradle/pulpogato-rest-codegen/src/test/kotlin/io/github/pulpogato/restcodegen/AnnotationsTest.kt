@@ -17,14 +17,6 @@ class AnnotationsTest {
     }
 
     @Test
-    fun `superBuilder creates annotation with toBuilder set to true`() {
-        val result = Annotations.superBuilder()
-
-        assertThat(result.type().toString()).isEqualTo("lombok.experimental.SuperBuilder")
-        assertThat(result.members()["toBuilder"].toString()).contains("true")
-    }
-
-    @Test
     fun `jsonValue creates annotation with correct type`() {
         val result = Annotations.jsonValue()
 

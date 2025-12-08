@@ -11,7 +11,6 @@ import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
-import io.github.pulpogato.restcodegen.Annotations.lombok
 import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.nullable
 import io.github.pulpogato.restcodegen.Annotations.testExtension
@@ -89,7 +88,6 @@ class PathsBuilder {
                 .classBuilder("RestClients")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
-                .addAnnotation(lombok("RequiredArgsConstructor"))
                 .addJavadoc($$"$L", "Client to access all REST APIs.")
                 .addField(
                     FieldSpec
@@ -140,6 +138,9 @@ class PathsBuilder {
                         ).build(),
                 )
 
+        // List to collect API field initializations
+        val apiFieldInitializers = mutableListOf<Pair<String, ClassName>>()
+
         openAPI.paths
             .flatMap { (path, pathItem) ->
                 pathItem.readOperationsMap().map { (method, operation) ->
@@ -177,19 +178,52 @@ class PathsBuilder {
                     JavaFile.builder(packageName, typeClassBuilt).build().writeTo(testDir)
                 }
 
+                // Add field without initializer (will be initialized in constructor)
+                val fieldName = interfaceName.camelCase()
                 val apiField =
                     FieldSpec
-                        .builder(typeRef, interfaceName.camelCase(), Modifier.PRIVATE, Modifier.FINAL)
-                        .initializer($$"computeApi($T.class)", typeRef)
+                        .builder(typeRef, fieldName, Modifier.PRIVATE, Modifier.FINAL)
                         .addJavadoc($$"$L", apiDescription ?: "")
-                        .addAnnotation(
-                            AnnotationSpec
-                                .builder(ClassName.get("lombok", "Getter"))
-                                .addMember("lazy", "true")
-                                .build(),
-                        ).build()
+                        .build()
                 restClients.addField(apiField)
+
+                // Store field initialization for later (will be added to constructor)
+                apiFieldInitializers.add(Pair(fieldName, typeRef))
+
+                // Add explicit getter
+                val getterName = "get" + interfaceName.pascalCase()
+                restClients.addMethod(
+                    MethodSpec
+                        .methodBuilder(getterName)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(typeRef)
+                        .addStatement("return this.\$N", fieldName)
+                        .addJavadoc($$"$L", apiDescription ?: "")
+                        .build(),
+                )
             }
+
+        // Add constructor that initializes all API fields
+        val constructorBuilder =
+            MethodSpec
+                .constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(
+                    ParameterSpec
+                        .builder(
+                            ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
+                            "restClient",
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addStatement("this.restClient = restClient")
+
+        // Initialize all API fields in constructor
+        apiFieldInitializers.forEach { (fieldName, typeRef) ->
+            constructorBuilder.addStatement("this.\$N = computeApi(\$T.class)", fieldName, typeRef)
+        }
+
+        restClients.addMethod(constructorBuilder.build())
+
         JavaFile.builder(packageName, restClients.build()).build().writeTo(mainDir)
     }
 
