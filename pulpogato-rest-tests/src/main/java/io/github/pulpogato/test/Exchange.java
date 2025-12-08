@@ -2,7 +2,12 @@ package io.github.pulpogato.test;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Map;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Builder
 @Getter

@@ -11,7 +11,6 @@ import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
-import io.github.pulpogato.restcodegen.Annotations.lombok
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.className
@@ -325,7 +324,14 @@ class WebhooksBuilder {
                 FieldSpec
                     .builder(ClassName.get(ObjectMapper::class.java), "objectMapper")
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.beans.factory.annotation", "Autowired")).build())
-                    .addAnnotation(lombok("Getter"))
+                    .addModifiers(Modifier.PRIVATE)
+                    .build(),
+            ).addMethod(
+                MethodSpec
+                    .methodBuilder("getObjectMapper")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(ClassName.get(ObjectMapper::class.java))
+                    .addStatement("return this.objectMapper")
                     .build(),
             ).addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RestController")).build())
             .addAnnotation(

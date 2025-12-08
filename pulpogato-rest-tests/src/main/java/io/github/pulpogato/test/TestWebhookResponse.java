@@ -1,7 +1,11 @@
 package io.github.pulpogato.test;
 
 import java.util.Map;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
 
 @Builder
 @NoArgsConstructor

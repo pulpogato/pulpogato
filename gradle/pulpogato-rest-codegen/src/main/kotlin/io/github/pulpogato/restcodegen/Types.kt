@@ -50,6 +50,7 @@ object Types {
     // Common Types
     val EMPTY_OBJECT: ClassName = ClassName.get(COMMON_PACKAGE, "EmptyObject")
     val EXCEPTION: ClassName = ClassName.get(java.lang.Exception::class.java)
+    val NULLABLE_OPTIONAL: ClassName = ClassName.get(COMMON_PACKAGE, "NullableOptional")
     val OBJECT: ClassName = ClassName.get(Object::class.java)
     val STRING_OR_INTEGER: ClassName = ClassName.get(COMMON_PACKAGE, "StringOrInteger")
     val TODO: ClassName = ClassName.get(COMMON_PACKAGE, "Todo")
@@ -58,6 +59,8 @@ object Types {
     val LIST: ClassName = ClassName.get(List::class.java)
     val MAP: ClassName = ClassName.get(Map::class.java)
     val CODE_BUILDER: ClassName = ClassName.get(COMMON_PACKAGE, "CodeBuilder")
+    val OBJECTS: ClassName = ClassName.get("java.util", "Objects")
+    val OVERRIDE: ClassName = ClassName.get(Override::class.java)
 
     // Common Parameterized Types
     val MAP_STRING_OBJECT: ParameterizedTypeName = ParameterizedTypeName.get(MAP, STRING, OBJECT)

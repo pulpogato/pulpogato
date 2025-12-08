@@ -19,7 +19,7 @@ class OrgsApiIntegrationTest extends BaseIntegrationTest {
         assertThat(installations.getInstallations()).hasSize(1);
         var installation = installations.getInstallations().getFirst();
         assertThat(installation.getAccount()).isNotNull();
-        assertThat(installation.getAccount().getSimpleUser().getLogin()).isEqualTo("pulpogato");
+        assertThat(installation.getAccount().getValue().getSimpleUser().getLogin()).isEqualTo("pulpogato");
         assertThat(installation.getAppSlug()).isEqualTo("renovate");
     }
 }
