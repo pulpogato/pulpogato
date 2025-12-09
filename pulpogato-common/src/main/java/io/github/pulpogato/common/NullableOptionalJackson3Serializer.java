@@ -14,6 +14,9 @@ import tools.jackson.databind.ser.std.StdSerializer;
  */
 public class NullableOptionalJackson3Serializer extends StdSerializer<NullableOptional<?>> {
 
+    /**
+     * Default constructor required by Jackson for serializer instantiation.
+     */
     public NullableOptionalJackson3Serializer() {
         super(NullableOptional.class);
     }

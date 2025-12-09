@@ -18,8 +18,14 @@ import tools.jackson.databind.deser.std.StdDeserializer;
  */
 public class NullableOptionalJackson3Deserializer extends StdDeserializer<NullableOptional<?>> {
 
+    /**
+     * The type of the value contained in the NullableOptional.
+     */
     private final JavaType valueType;
 
+    /**
+     * Default constructor required by Jackson for deserializer instantiation.
+     */
     public NullableOptionalJackson3Deserializer() {
         super(NullableOptional.class);
         this.valueType = null;

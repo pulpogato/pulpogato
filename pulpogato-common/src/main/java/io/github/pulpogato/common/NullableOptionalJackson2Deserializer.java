@@ -21,8 +21,14 @@ import java.io.IOException;
 public class NullableOptionalJackson2Deserializer extends StdDeserializer<NullableOptional<?>>
         implements ContextualDeserializer {
 
+    /**
+     * The type of the value contained in the NullableOptional.
+     */
     private final JavaType valueType;
 
+    /**
+     * Default constructor required by Jackson for deserializer instantiation.
+     */
     public NullableOptionalJackson2Deserializer() {
         super(NullableOptional.class);
         this.valueType = null;
