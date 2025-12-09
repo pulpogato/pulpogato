@@ -11,7 +11,8 @@ import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import com.palantir.javapoet.WildcardTypeName
 import io.github.pulpogato.restcodegen.Annotations
-import io.github.pulpogato.restcodegen.Annotations.deserializerAnnotation
+import io.github.pulpogato.restcodegen.Annotations.deserializerAnnotationForJackson2
+import io.github.pulpogato.restcodegen.Annotations.deserializerAnnotationForJackson3
 import io.github.pulpogato.restcodegen.Annotations.generated
 import io.github.pulpogato.restcodegen.Annotations.jsonIncludeAlways
 import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonEmpty
@@ -21,7 +22,8 @@ import io.github.pulpogato.restcodegen.Annotations.jsonValue
 import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.nullableOptionalDeserializer
 import io.github.pulpogato.restcodegen.Annotations.nullableOptionalSerializer
-import io.github.pulpogato.restcodegen.Annotations.serializerAnnotation
+import io.github.pulpogato.restcodegen.Annotations.serializerAnnotationForJackson2
+import io.github.pulpogato.restcodegen.Annotations.serializerAnnotationForJackson3
 import io.github.pulpogato.restcodegen.Annotations.singleValueAsArray
 import io.github.pulpogato.restcodegen.Annotations.typeGenerated
 import io.github.pulpogato.restcodegen.Context
@@ -386,16 +388,20 @@ private fun buildFancyObject(
     addToCodeMethod(builtType, theType, classRef)
 
     // Add custom serializers/deserializers (KEEP THIS)
-    val settableFields = getSettableFields(fields, className)
-    val gettableFields = getGettableFields(fields, className)
-    val deserializer = buildDeserializer(className, fancyObjectType, settableFields)
-    val serializer = buildSerializer(className, fancyObjectType, gettableFields)
+    val deserializer3 = buildDeserializer(className, fancyObjectType, getSettableFields(fields, className, 3), 3)
+    val serializer3 = buildSerializer(className, fancyObjectType, getGettableFields(fields, className, 3), 3)
+    val deserializer2 = buildDeserializer(className, fancyObjectType, getSettableFields(fields, className, 2), 2)
+    val serializer2 = buildSerializer(className, fancyObjectType, getGettableFields(fields, className, 2), 2)
 
     theType
-        .addType(deserializer)
-        .addType(serializer)
-        .addAnnotation(deserializerAnnotation(className, deserializer))
-        .addAnnotation(serializerAnnotation(className, serializer))
+        .addType(deserializer3)
+        .addType(serializer3)
+        .addAnnotation(deserializerAnnotationForJackson3(className, deserializer3))
+        .addAnnotation(serializerAnnotationForJackson3(className, serializer3))
+        .addType(deserializer2)
+        .addType(serializer2)
+        .addAnnotation(deserializerAnnotationForJackson2(className, deserializer2))
+        .addAnnotation(serializerAnnotationForJackson2(className, serializer2))
 
     return theType.build()
 }
@@ -605,11 +611,12 @@ private fun buildFieldSpec(
 private fun getGettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
     className: String,
+    jacksonVersion: Int,
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
             "new \$T<>(\$T.class, \$T::get$name)",
-            pulpogatoClass("FancySerializer", "GettableField"),
+            pulpogatoClass("Jackson${jacksonVersion}FancySerializer", "GettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
@@ -623,11 +630,12 @@ private fun pulpogatoClass(
 private fun getSettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
     className: String?,
+    jacksonVersion: Int,
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
             $$"new $T<>($T.class, $T::set$$name)",
-            pulpogatoClass("FancyDeserializer", "SettableField"),
+            pulpogatoClass("Jackson${jacksonVersion}FancyDeserializer", "SettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
@@ -637,11 +645,12 @@ private fun buildSerializer(
     className: String,
     fancyObjectType: String,
     gettableFields: List<CodeBlock>,
+    jacksonVersion: Int,
 ): TypeSpec =
     TypeSpec
-        .classBuilder("${className}Serializer")
+        .classBuilder("${className}Jackson${jacksonVersion}Serializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .superclass(ParameterizedTypeName.get(pulpogatoClass("FancySerializer"), ClassName.get("", className)))
+        .superclass(ParameterizedTypeName.get(pulpogatoClass("Jackson${jacksonVersion}FancySerializer"), ClassName.get("", className)))
         .addMethod(
             MethodSpec
                 .constructorBuilder()
@@ -662,11 +671,12 @@ private fun buildDeserializer(
     className: String,
     fancyObjectType: String,
     settableFields: List<CodeBlock>,
+    jacksonVersion: Int,
 ): TypeSpec =
     TypeSpec
-        .classBuilder("${className}Deserializer")
+        .classBuilder("${className}Jackson${jacksonVersion}Deserializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .superclass(ParameterizedTypeName.get(pulpogatoClass("FancyDeserializer"), ClassName.get("", className)))
+        .superclass(ParameterizedTypeName.get(pulpogatoClass("Jackson${jacksonVersion}FancyDeserializer"), ClassName.get("", className)))
         .addMethod(
             MethodSpec
                 .constructorBuilder()
@@ -1426,8 +1436,8 @@ private fun addFieldIfNew(
                     .builder(actualTypeName, fieldName, Modifier.PRIVATE)
                     .addAnnotation(jsonProperty(p.key))
                     .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
-                    .addAnnotation(nullableOptionalSerializer())
-                    .addAnnotation(nullableOptionalDeserializer())
+                    .addAnnotations(nullableOptionalSerializer())
+                    .addAnnotations(nullableOptionalDeserializer())
                     .addAnnotation(jsonIncludeNonEmpty())
                     .initializer($$"$T.notSet()", Types.NULLABLE_OPTIONAL)
         } else {

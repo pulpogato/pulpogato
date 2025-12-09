@@ -8,16 +8,16 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A class that can represent either a single value or a list of values of the same type.
  *
  * @param <T> the type of the value(s) held by this container
  */
-@JsonDeserialize(using = SingularOrPlural.CustomDeserializer.class)
-@JsonSerialize(using = SingularOrPlural.CustomSerializer.class)
+@tools.jackson.databind.annotation.JsonDeserialize(using = SingularOrPlural.Jackson3Deserializer.class)
+@tools.jackson.databind.annotation.JsonSerialize(using = SingularOrPlural.Jackson3Serializer.class)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = SingularOrPlural.Jackson2Deserializer.class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(using = SingularOrPlural.Jackson2Serializer.class)
 @Getter
 @Setter
 @Accessors(chain = true, fluent = false)
@@ -66,8 +66,8 @@ public class SingularOrPlural<T> implements PulpogatoType {
                         : ("singular(" + CodeBuilder.render(singular) + ")"));
     }
 
-    static class CustomDeserializer extends FancyDeserializer<SingularOrPlural> {
-        public CustomDeserializer() {
+    static class Jackson3Deserializer extends Jackson3FancyDeserializer<SingularOrPlural> {
+        public Jackson3Deserializer() {
             super(
                     SingularOrPlural.class,
                     SingularOrPlural::new,
@@ -78,8 +78,31 @@ public class SingularOrPlural<T> implements PulpogatoType {
         }
     }
 
-    static class CustomSerializer extends FancySerializer<SingularOrPlural> {
-        public CustomSerializer() {
+    static class Jackson3Serializer extends Jackson3FancySerializer<SingularOrPlural> {
+        public Jackson3Serializer() {
+            super(
+                    SingularOrPlural.class,
+                    Mode.ONE_OF,
+                    List.of(
+                            new GettableField<>(List.class, SingularOrPlural::getPlural),
+                            new GettableField<>(Object.class, SingularOrPlural::getSingular)));
+        }
+    }
+
+    static class Jackson2Deserializer extends Jackson2FancyDeserializer<SingularOrPlural> {
+        public Jackson2Deserializer() {
+            super(
+                    SingularOrPlural.class,
+                    SingularOrPlural::new,
+                    Mode.ONE_OF,
+                    List.of(
+                            new SettableField<>(List.class, SingularOrPlural::setPlural),
+                            new SettableField<>(Object.class, SingularOrPlural::setSingular)));
+        }
+    }
+
+    static class Jackson2Serializer extends Jackson2FancySerializer<SingularOrPlural> {
+        public Jackson2Serializer() {
             super(
                     SingularOrPlural.class,
                     Mode.ONE_OF,

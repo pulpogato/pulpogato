@@ -12,9 +12,9 @@ import tools.jackson.databind.ser.std.StdSerializer;
  *   <li><b>VALUE</b>: Field serialized with its value</li>
  * </ul>
  */
-public class NullableOptionalSerializer extends StdSerializer<NullableOptional<?>> {
+public class NullableOptionalJackson3Serializer extends StdSerializer<NullableOptional<?>> {
 
-    public NullableOptionalSerializer() {
+    public NullableOptionalJackson3Serializer() {
         super(NullableOptional.class);
     }
 

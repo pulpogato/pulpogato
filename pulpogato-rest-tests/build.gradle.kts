@@ -19,9 +19,10 @@ dependencies {
 
     implementation(libs.reflections)
     implementation(libs.bundles.springBoot)
-    implementation(libs.jacksonYaml)
+    implementation(libs.jackson3Yaml)
 
-    implementation(libs.jacksonCore)
+    implementation(libs.jackson3Core)
+    implementation(libs.jackson2Time)
 
     implementation(libs.httpclient5)
 }

@@ -33,7 +33,7 @@ class AnnotationsTest {
 
     @Test
     fun `serializerAnnotation creates annotation with correct using member`() {
-        val result = Annotations.serializerAnnotation("TestClass", mockTypeSpec)
+        val result = Annotations.serializerAnnotationForJackson3("TestClass", mockTypeSpec)
 
         assertThat(result.type().toString()).contains("JsonSerialize")
         assertThat(result.members()["using"].toString()).contains("TestClass.MockType.class")
@@ -41,7 +41,7 @@ class AnnotationsTest {
 
     @Test
     fun `deserializerAnnotation creates annotation with correct using member`() {
-        val result = Annotations.deserializerAnnotation("TestClass", mockTypeSpec)
+        val result = Annotations.deserializerAnnotationForJackson3("TestClass", mockTypeSpec)
 
         assertThat(result.type().toString()).contains("JsonDeserialize")
         assertThat(result.members()["using"].toString()).contains("TestClass.MockType.class")

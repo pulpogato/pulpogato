@@ -1,5 +1,13 @@
 package io.github.pulpogato.common;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
@@ -7,18 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ser.std.StdSerializer;
 
 /**
  * A serializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
  *
  * @param <T> The type
  */
-public class FancySerializer<T> extends StdSerializer<T> {
+public class Jackson2FancySerializer<T> extends StdSerializer<T> {
     /**
      * A field that can be read from the object
      *
@@ -29,7 +32,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
      */
     public record GettableField<T, X>(Class<X> type, Function<T, X> getter) {}
 
-    private static final ObjectMapper om = new ObjectMapper();
+    private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
 
     /**
      * Constructs a serializer
@@ -38,7 +41,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
      * @param mode   The mode of serialization
      * @param fields The fields that can be read from the class
      */
-    public FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, ?>> fields) {
+    public Jackson2FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, ?>> fields) {
         super(vc);
         this.mode = mode;
         this.fields = fields;
@@ -55,7 +58,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
     private final transient List<GettableField<T, ?>> fields;
 
     @Override
-    public void serialize(T value, JsonGenerator gen, SerializationContext provider) {
+    public void serialize(T value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         final var serialized = fields.stream()
                 .map(field -> field.getter().apply(value))
                 .filter(Objects::nonNull)
@@ -72,7 +75,7 @@ public class FancySerializer<T> extends StdSerializer<T> {
                 case BigInteger bi -> gen.writeNumber(bi);
                 case Boolean b -> gen.writeBoolean(b);
                 case String s -> gen.writeString(s);
-                case null, default -> gen.writePOJO(o);
+                case null, default -> gen.writeObject(o);
             }
             return;
         }
@@ -80,20 +83,24 @@ public class FancySerializer<T> extends StdSerializer<T> {
         // For ANY_OF mode, serialize the first non-null value directly
         // This handles cases where multiple fields may be set due to type erasure
         if (mode == Mode.ANY_OF && !serialized.isEmpty()) {
-            gen.writePOJO(serialized.getFirst());
+            gen.writeObject(serialized.getFirst());
             return;
         }
 
         var superMap = serialized.stream()
                 .map(x -> {
-                    final String string = om.writeValueAsString(x);
-                    return om.readValue(string, new TypeReference<Map<String, Object>>() {});
+                    try {
+                        final String string = om.writeValueAsString(x);
+                        return om.readValue(string, new TypeReference<Map<String, Object>>() {});
+                    } catch (JsonProcessingException ignored) {
+                        return null;
+                    }
                 })
                 .filter(Objects::nonNull)
                 .reduce(new LinkedHashMap<>(), (m1, m2) -> {
                     m1.putAll(m2);
                     return m1;
                 });
-        gen.writePOJO(superMap);
+        gen.writeObject(superMap);
     }
 }

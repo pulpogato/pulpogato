@@ -3,6 +3,7 @@ package io.github.pulpogato.test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
 import java.time.Instant;
@@ -47,6 +48,14 @@ public class TestUtils {
             .disable(DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
             .build();
 
+    private static final com.fasterxml.jackson.databind.ObjectMapper JACKSON2_OBJECT_MAPPER =
+            com.fasterxml.jackson.databind.json.JsonMapper.builder()
+                    .enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT)
+                    .disable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .serializationInclusion(JsonInclude.Include.NON_NULL)
+                    .addModule(new JavaTimeModule())
+                    .build();
+
     /**
      * Parses the input and compares it to the generated JSON.
      *
@@ -67,6 +76,13 @@ public class TestUtils {
                 GroovyScriptEvaluator evaluator = new GroovyScriptEvaluator();
                 final var evaluation = evaluator.evaluate(new StaticScriptSource(code));
                 assertThat(evaluation).isNotNull().usingRecursiveComparison().isEqualTo(p);
+            }
+
+            // Also verify Jackson 2 can parse the same input
+            try {
+                JACKSON2_OBJECT_MAPPER.readValue(input, parsed.getClass());
+            } catch (Exception e) {
+                softly.fail("Jackson 2 parsing failed: " + e.getMessage());
             }
 
             return parsed;

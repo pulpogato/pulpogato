@@ -12,7 +12,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 object Types {
-    private const val COMMON_PACKAGE = "io.github.pulpogato.common"
+    const val COMMON_PACKAGE = "io.github.pulpogato.common"
 
     // Almost Primitives
     val BOOLEAN: ClassName = ClassName.get(java.lang.Boolean::class.java)
@@ -43,7 +43,12 @@ object Types {
             .annotated(
                 AnnotationSpec
                     .builder(ClassName.get("tools.jackson.databind.annotation", "JsonDeserialize"))
-                    .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeDeserializer"))
+                    .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeJackson3Deserializer"))
+                    .build(),
+            ).annotated(
+                AnnotationSpec
+                    .builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
+                    .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeJackson2Deserializer"))
                     .build(),
             )
 

@@ -16,16 +16,16 @@ import tools.jackson.databind.deser.std.StdDeserializer;
  *   <li><b>Field present with value</b>: Deserializes to of(value)</li>
  * </ul>
  */
-public class NullableOptionalDeserializer extends StdDeserializer<NullableOptional<?>> {
+public class NullableOptionalJackson3Deserializer extends StdDeserializer<NullableOptional<?>> {
 
     private final JavaType valueType;
 
-    public NullableOptionalDeserializer() {
+    public NullableOptionalJackson3Deserializer() {
         super(NullableOptional.class);
         this.valueType = null;
     }
 
-    private NullableOptionalDeserializer(JavaType valueType) {
+    private NullableOptionalJackson3Deserializer(JavaType valueType) {
         super(NullableOptional.class);
         this.valueType = valueType;
     }
@@ -33,7 +33,7 @@ public class NullableOptionalDeserializer extends StdDeserializer<NullableOption
     @Override
     public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
         JavaType type = property != null ? property.getType().containedType(0) : null;
-        return new NullableOptionalDeserializer(type);
+        return new NullableOptionalJackson3Deserializer(type);
     }
 
     @Override

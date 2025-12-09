@@ -10,7 +10,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.jacksonCore)
+    api(libs.jackson3Core)
     compileOnly(libs.jakartaAnnotations)
 }
 

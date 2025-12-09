@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.TypeSpec
+import io.github.pulpogato.restcodegen.Types.COMMON_PACKAGE
 import tools.jackson.databind.annotation.JsonDeserialize
 import tools.jackson.databind.annotation.JsonSerialize
 import java.util.stream.Stream
@@ -23,7 +24,7 @@ object Annotations {
             .addMember("value", $$"$S", property)
             .build()
 
-    fun serializerAnnotation(
+    fun serializerAnnotationForJackson3(
         className: String,
         serializer: TypeSpec,
     ): AnnotationSpec =
@@ -32,12 +33,30 @@ object Annotations {
             .addMember("using", "$className.${serializer.name()}.class")
             .build()
 
-    fun deserializerAnnotation(
+    fun deserializerAnnotationForJackson3(
         className: String,
         deserializer: TypeSpec,
     ): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get(JsonDeserialize::class.java))
+            .addMember("using", "$className.${deserializer.name()}.class")
+            .build()
+
+    fun serializerAnnotationForJackson2(
+        className: String,
+        serializer: TypeSpec,
+    ): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(com.fasterxml.jackson.databind.annotation.JsonSerialize::class.java))
+            .addMember("using", "$className.${serializer.name()}.class")
+            .build()
+
+    fun deserializerAnnotationForJackson2(
+        className: String,
+        deserializer: TypeSpec,
+    ): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(com.fasterxml.jackson.databind.annotation.JsonDeserialize::class.java))
             .addMember("using", "$className.${deserializer.name()}.class")
             .build()
 
@@ -79,17 +98,35 @@ object Annotations {
             .addMember("value", $$"$T.$L", ClassName.get(JsonInclude.Include::class.java), JsonInclude.Include.NON_EMPTY)
             .build()
 
-    fun nullableOptionalSerializer(): AnnotationSpec =
-        AnnotationSpec
-            .builder(ClassName.get(JsonSerialize::class.java))
-            .addMember("using", $$"$T.class", ClassName.get("io.github.pulpogato.common", "NullableOptionalSerializer"))
-            .build()
+    fun nullableOptionalSerializer(): List<AnnotationSpec> =
+        nullableOptionalJacksonAnnotationPair(
+            JsonSerialize::class.java,
+            com.fasterxml.jackson.databind.annotation.JsonSerialize::class.java,
+            "Serializer",
+        )
 
-    fun nullableOptionalDeserializer(): AnnotationSpec =
-        AnnotationSpec
-            .builder(ClassName.get(JsonDeserialize::class.java))
-            .addMember("using", $$"$T.class", ClassName.get("io.github.pulpogato.common", "NullableOptionalDeserializer"))
-            .build()
+    fun nullableOptionalDeserializer(): List<AnnotationSpec> =
+        nullableOptionalJacksonAnnotationPair(
+            JsonDeserialize::class.java,
+            com.fasterxml.jackson.databind.annotation.JsonDeserialize::class.java,
+            "Deserializer",
+        )
+
+    private fun nullableOptionalJacksonAnnotationPair(
+        jackson3Annotation: Class<out Annotation>,
+        jackson2Annotation: Class<out Annotation>,
+        suffix: String,
+    ): List<AnnotationSpec> =
+        listOf(
+            AnnotationSpec
+                .builder(ClassName.get(jackson3Annotation))
+                .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "NullableOptionalJackson3$suffix"))
+                .build(),
+            AnnotationSpec
+                .builder(ClassName.get(jackson2Annotation))
+                .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "NullableOptionalJackson2$suffix"))
+                .build(),
+        )
 
     /*
      GH Annotations
@@ -101,7 +138,7 @@ object Annotations {
     ): AnnotationSpec {
         val builder =
             AnnotationSpec
-                .builder(ClassName.get("io.github.pulpogato.common", "Generated"))
+                .builder(ClassName.get(COMMON_PACKAGE, "Generated"))
                 .addMember("ghVersion", $$"$S", context.version)
         val schemaRef = context.getSchemaStackRef()
         if (schemaRef.isNotEmpty()) {
@@ -118,7 +155,7 @@ object Annotations {
 
     fun typeGenerated(): AnnotationSpec =
         AnnotationSpec
-            .builder(ClassName.get("io.github.pulpogato.common", "TypeGenerated"))
+            .builder(ClassName.get(COMMON_PACKAGE, "TypeGenerated"))
             .addMember("codeRef", $$"$S", codeRef(0))
             .build()
 

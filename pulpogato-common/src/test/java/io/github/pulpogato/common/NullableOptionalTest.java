@@ -3,8 +3,8 @@ package io.github.pulpogato.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.ObjectMapper;
 
 class NullableOptionalTest {
 
@@ -81,21 +81,18 @@ class NullableOptionalTest {
     }
 
     @Test
-    void testSerializationNotSet() throws Exception {
-        var om = new ObjectMapper();
+    void testSerializationNotSetJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
         var wrapper = new TestWrapper();
         wrapper.field = NullableOptional.notSet();
 
         String json = om.writeValueAsString(wrapper);
-        // Note: With class-level @JsonSerialize, isEmpty() may not be called
-        // The generated code uses field-level annotations with @JsonInclude(NON_NULL) at class level
-        // which properly skips empty fields. This test validates the basic serializer works.
-        assertThat(json).doesNotContain("\"value\""); // Should not serialize internal state
+        assertThat(json).doesNotContain("\"value\"");
     }
 
     @Test
-    void testSerializationNull() throws Exception {
-        var om = new ObjectMapper();
+    void testSerializationNullJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
         var wrapper = new TestWrapper();
         wrapper.field = NullableOptional.ofNull();
 
@@ -104,8 +101,8 @@ class NullableOptionalTest {
     }
 
     @Test
-    void testSerializationValue() throws Exception {
-        var om = new ObjectMapper();
+    void testSerializationValueJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
         var wrapper = new TestWrapper();
         wrapper.field = NullableOptional.of("test");
 
@@ -114,20 +111,18 @@ class NullableOptionalTest {
     }
 
     @Test
-    void testDeserializationAbsent() throws Exception {
-        var om = new ObjectMapper();
+    void testDeserializationAbsentJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
         String json = "{}";
 
         TestWrapper result = om.readValue(json, TestWrapper.class);
-        // When field is absent, Lombok/Jackson will leave it as the default value
-        // which is notSet() due to @Builder.Default
         assertThat(result.field).isNotNull();
         assertThat(result.field.isNotSet()).isTrue();
     }
 
     @Test
-    void testDeserializationNull() throws Exception {
-        var om = new ObjectMapper();
+    void testDeserializationNullJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
         String json = "{\"field\":null}";
 
         TestWrapper result = om.readValue(json, TestWrapper.class);
@@ -136,8 +131,69 @@ class NullableOptionalTest {
     }
 
     @Test
-    void testDeserializationValue() throws Exception {
-        var om = new ObjectMapper();
+    void testDeserializationValueJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
+        String json = "{\"field\":\"test\"}";
+
+        TestWrapper result = om.readValue(json, TestWrapper.class);
+        assertThat(result.field).isNotNull();
+        assertThat(result.field.isValue()).isTrue();
+        assertThat(result.field.getValue()).isEqualTo("test");
+    }
+
+    @Test
+    void testSerializationNotSetJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        var wrapper = new TestWrapper();
+        wrapper.field = NullableOptional.notSet();
+
+        String json = om.writeValueAsString(wrapper);
+        assertThat(json).doesNotContain("\"value\"");
+    }
+
+    @Test
+    void testSerializationNullJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        var wrapper = new TestWrapper();
+        wrapper.field = NullableOptional.ofNull();
+
+        String json = om.writeValueAsString(wrapper);
+        assertThat(json).isEqualTo("{\"field\":null}");
+    }
+
+    @Test
+    void testSerializationValueJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        var wrapper = new TestWrapper();
+        wrapper.field = NullableOptional.of("test");
+
+        String json = om.writeValueAsString(wrapper);
+        assertThat(json).isEqualTo("{\"field\":\"test\"}");
+    }
+
+    @Test
+    void testDeserializationAbsentJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        String json = "{}";
+
+        TestWrapper result = om.readValue(json, TestWrapper.class);
+        assertThat(result.field).isNotNull();
+        assertThat(result.field.isNotSet()).isTrue();
+    }
+
+    @Test
+    void testDeserializationNullJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        String json = "{\"field\":null}";
+
+        TestWrapper result = om.readValue(json, TestWrapper.class);
+        assertThat(result.field).isNotNull();
+        assertThat(result.field.isNull()).isTrue();
+    }
+
+    @Test
+    void testDeserializationValueJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
         String json = "{\"field\":\"test\"}";
 
         TestWrapper result = om.readValue(json, TestWrapper.class);
