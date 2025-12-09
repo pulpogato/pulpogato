@@ -3,8 +3,6 @@ package io.github.pulpogato.common;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.EqualsAndHashCode;
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A three-state wrapper for nullable fields that distinguishes between:
@@ -34,8 +32,10 @@ import tools.jackson.databind.annotation.JsonSerialize;
  *
  * @param <T> the type of value that can be held
  */
-@JsonSerialize(using = NullableOptionalSerializer.class)
-@JsonDeserialize(using = NullableOptionalDeserializer.class)
+@tools.jackson.databind.annotation.JsonSerialize(using = NullableOptionalJackson3Serializer.class)
+@tools.jackson.databind.annotation.JsonDeserialize(using = NullableOptionalJackson3Deserializer.class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(using = NullableOptionalJackson2Serializer.class)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = NullableOptionalJackson2Deserializer.class)
 @EqualsAndHashCode
 public final class NullableOptional<T> implements PulpogatoType {
 

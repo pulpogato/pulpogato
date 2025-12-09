@@ -9,11 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 class SingularOrPluralTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jackson3Mapper = new JsonMapper();
+    private final com.fasterxml.jackson.databind.json.JsonMapper jackson2Mapper =
+            new com.fasterxml.jackson.databind.json.JsonMapper();
 
     @Test
     void testSingularFactory() {
@@ -36,7 +38,7 @@ class SingularOrPluralTest {
     void testSingularSerialization() {
         var singularOrPlural = SingularOrPlural.singular("test-value");
 
-        var json = objectMapper.writeValueAsString(singularOrPlural);
+        var json = jackson3Mapper.writeValueAsString(singularOrPlural);
 
         assertThat(json).isEqualTo("\"test-value\"");
     }
@@ -45,7 +47,7 @@ class SingularOrPluralTest {
     void testPluralSerialization() {
         var singularOrPlural = SingularOrPlural.plural(List.of("item1", "item2"));
 
-        var json = objectMapper.writeValueAsString(singularOrPlural);
+        var json = jackson3Mapper.writeValueAsString(singularOrPlural);
 
         assertThat(json).isEqualTo("[\"item1\",\"item2\"]");
     }
@@ -54,7 +56,7 @@ class SingularOrPluralTest {
     void testSingularDeserialization() {
         var json = "\"single-item\"";
 
-        var result = objectMapper.readValue(json, SingularOrPlural.class);
+        var result = jackson3Mapper.readValue(json, SingularOrPlural.class);
 
         assertThat(result.getSingular()).isEqualTo("single-item");
         assertThat(result.getPlural()).isNull();
@@ -64,7 +66,7 @@ class SingularOrPluralTest {
     void testPluralDeserialization() {
         var json = "[\"item1\",\"item2\",\"item3\"]";
 
-        var result = objectMapper.readValue(json, SingularOrPlural.class);
+        var result = jackson3Mapper.readValue(json, SingularOrPlural.class);
 
         assertThat(result.getPlural()).isEqualTo(List.of("item1", "item2", "item3"));
         assertThat(result.getSingular()).isNull();
@@ -74,7 +76,7 @@ class SingularOrPluralTest {
     void testEmptyArrayDeserialization() {
         var json = "[]";
 
-        var result = objectMapper.readValue(json, SingularOrPlural.class);
+        var result = jackson3Mapper.readValue(json, SingularOrPlural.class);
 
         assertThat(result.getPlural()).isEmpty();
         assertThat(result.getSingular()).isNull();
@@ -83,17 +85,17 @@ class SingularOrPluralTest {
     @ParameterizedTest
     @MethodSource("serializationTestCases")
     void testSerialization(String description, SingularOrPlural<String> input, String expectedJson) {
-        var json = objectMapper.writeValueAsString(input);
+        var json = jackson3Mapper.writeValueAsString(input);
         assertThat(json).isEqualTo(expectedJson);
     }
 
     @ParameterizedTest
     @MethodSource("singularSerializationTestCases")
     void testSingularSerializationRoundTrip(String description, SingularOrPlural<String> input, String expectedJson) {
-        var json = objectMapper.writeValueAsString(input);
+        var json = jackson3Mapper.writeValueAsString(input);
         assertThat(json).isEqualTo(expectedJson);
 
-        var deserialized = objectMapper.readValue(json, SingularOrPlural.class);
+        var deserialized = jackson3Mapper.readValue(json, SingularOrPlural.class);
         assertThat(deserialized.getSingular()).isEqualTo(input.getSingular());
         assertThat(deserialized.getPlural()).isNull();
     }
@@ -127,14 +129,14 @@ class SingularOrPluralTest {
         var singularInt = SingularOrPlural.singular(42);
         var pluralInt = SingularOrPlural.plural(List.of(1, 2, 3));
 
-        var singularJson = objectMapper.writeValueAsString(singularInt);
-        var pluralJson = objectMapper.writeValueAsString(pluralInt);
+        var singularJson = jackson3Mapper.writeValueAsString(singularInt);
+        var pluralJson = jackson3Mapper.writeValueAsString(pluralInt);
 
         assertThat(singularJson).isEqualTo("42");
         assertThat(pluralJson).isEqualTo("[1,2,3]");
 
-        var deserializedSingular = objectMapper.readValue(singularJson, SingularOrPlural.class);
-        var deserializedPlural = objectMapper.readValue(pluralJson, SingularOrPlural.class);
+        var deserializedSingular = jackson3Mapper.readValue(singularJson, SingularOrPlural.class);
+        var deserializedPlural = jackson3Mapper.readValue(pluralJson, SingularOrPlural.class);
 
         // Numbers are deserialized as strings due to FancyDeserializer behavior
         assertThat(deserializedSingular.getSingular()).isEqualTo("42");
@@ -147,7 +149,7 @@ class SingularOrPluralTest {
     void testNullSingularSerialization() {
         var singularOrPlural = SingularOrPlural.singular(null);
 
-        var json = objectMapper.writeValueAsString(singularOrPlural);
+        var json = jackson3Mapper.writeValueAsString(singularOrPlural);
 
         assertThat(json).isEqualTo("null");
     }
@@ -156,7 +158,7 @@ class SingularOrPluralTest {
     void testNullDeserialization() {
         var json = "null";
 
-        var result = objectMapper.readValue(json, SingularOrPlural.class);
+        var result = jackson3Mapper.readValue(json, SingularOrPlural.class);
 
         // Null values return null due to FancyDeserializer behavior
         assertThat(result).isNull();
@@ -207,8 +209,8 @@ class SingularOrPluralTest {
         var singular = SingularOrPlural.singular(obj1);
         var plural = SingularOrPlural.plural(List.of(obj1, obj2));
 
-        var singularJson = objectMapper.writeValueAsString(singular);
-        var pluralJson = objectMapper.writeValueAsString(plural);
+        var singularJson = jackson3Mapper.writeValueAsString(singular);
+        var pluralJson = jackson3Mapper.writeValueAsString(plural);
 
         assertThat(singularJson).isEqualTo("{\"name\":\"first\",\"value\":1}");
         assertThat(pluralJson).isEqualTo("[{\"name\":\"first\",\"value\":1},{\"name\":\"second\",\"value\":2}]");
@@ -217,7 +219,7 @@ class SingularOrPluralTest {
     @ParameterizedTest
     @MethodSource("stringDeserializationTestCases")
     void testStringDeserializationFormats(String description, String json, Object expectedValue) {
-        var result = objectMapper.readValue(json, SingularOrPlural.class);
+        var result = jackson3Mapper.readValue(json, SingularOrPlural.class);
 
         assertThat(result.getSingular()).isEqualTo(expectedValue);
         assertThat(result.getPlural()).isNull();
@@ -226,7 +228,7 @@ class SingularOrPluralTest {
     @ParameterizedTest
     @MethodSource("arrayDeserializationTestCases")
     void testArrayDeserializationFormats(String description, String json, List<?> expectedList) {
-        var result = objectMapper.readValue(json, SingularOrPlural.class);
+        var result = jackson3Mapper.readValue(json, SingularOrPlural.class);
 
         // Arrays are now properly deserialized
         assertThat(result.getPlural()).isEqualTo(expectedList);
@@ -247,6 +249,82 @@ class SingularOrPluralTest {
                 Arguments.of("array of booleans", "[true,false]", List.of(true, false)),
                 Arguments.of("mixed array", "[\"text\",123,true]", List.of("text", 123, true)),
                 Arguments.of("single item array", "[\"only\"]", List.of("only")));
+    }
+
+    @Test
+    void testSingularSerializationJackson2() throws Exception {
+        var singularOrPlural = SingularOrPlural.singular("test-value");
+
+        var json = jackson2Mapper.writeValueAsString(singularOrPlural);
+
+        assertThat(json).isEqualTo("\"test-value\"");
+    }
+
+    @Test
+    void testPluralSerializationJackson2() throws Exception {
+        var singularOrPlural = SingularOrPlural.plural(List.of("item1", "item2"));
+
+        var json = jackson2Mapper.writeValueAsString(singularOrPlural);
+
+        assertThat(json).isEqualTo("[\"item1\",\"item2\"]");
+    }
+
+    @Test
+    void testSingularDeserializationJackson2() throws Exception {
+        var json = "\"single-item\"";
+
+        var result = jackson2Mapper.readValue(json, SingularOrPlural.class);
+
+        assertThat(result.getSingular()).isEqualTo("single-item");
+        assertThat(result.getPlural()).isNull();
+    }
+
+    @Test
+    void testPluralDeserializationJackson2() throws Exception {
+        var json = "[\"item1\",\"item2\",\"item3\"]";
+
+        var result = jackson2Mapper.readValue(json, SingularOrPlural.class);
+
+        assertThat(result.getPlural()).isEqualTo(List.of("item1", "item2", "item3"));
+        assertThat(result.getSingular()).isNull();
+    }
+
+    @Test
+    void testEmptyArrayDeserializationJackson2() throws Exception {
+        var json = "[]";
+
+        var result = jackson2Mapper.readValue(json, SingularOrPlural.class);
+
+        assertThat(result.getPlural()).isEmpty();
+        assertThat(result.getSingular()).isNull();
+    }
+
+    @Test
+    void testIntegerSingularOrPluralJackson2() throws Exception {
+        var singularInt = SingularOrPlural.singular(42);
+        var pluralInt = SingularOrPlural.plural(List.of(1, 2, 3));
+
+        var singularJson = jackson2Mapper.writeValueAsString(singularInt);
+        var pluralJson = jackson2Mapper.writeValueAsString(pluralInt);
+
+        assertThat(singularJson).isEqualTo("42");
+        assertThat(pluralJson).isEqualTo("[1,2,3]");
+
+        var deserializedSingular = jackson2Mapper.readValue(singularJson, SingularOrPlural.class);
+        var deserializedPlural = jackson2Mapper.readValue(pluralJson, SingularOrPlural.class);
+
+        assertThat(deserializedSingular.getSingular()).isEqualTo("42");
+        assertThat(deserializedPlural.getPlural()).isEqualTo(List.of(1, 2, 3));
+        assertThat(deserializedPlural.getSingular()).isNull();
+    }
+
+    @Test
+    void testNullDeserializationJackson2() throws Exception {
+        var json = "null";
+
+        var result = jackson2Mapper.readValue(json, SingularOrPlural.class);
+
+        assertThat(result).isNull();
     }
 
     @Nested

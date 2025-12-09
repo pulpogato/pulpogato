@@ -1,5 +1,6 @@
 package io.github.pulpogato.common;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -13,15 +14,15 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.StdSerializer;
 
 /**
  * A class that can be a {@link String} or a {@link Long} Integer.
  */
-@JsonDeserialize(using = StringOrInteger.CustomDeserializer.class)
-@JsonSerialize(using = StringOrInteger.CustomSerializer.class)
+@tools.jackson.databind.annotation.JsonDeserialize(using = StringOrInteger.Jackson3Deserializer.class)
+@tools.jackson.databind.annotation.JsonSerialize(using = StringOrInteger.Jackson3Serializer.class)
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = StringOrInteger.Jackson2Deserializer.class)
+@com.fasterxml.jackson.databind.annotation.JsonSerialize(using = StringOrInteger.Jackson2Serializer.class)
 @Getter
 @Setter
 @Builder(toBuilder = true)
@@ -41,7 +42,7 @@ public class StringOrInteger implements PulpogatoType {
                 .build();
     }
 
-    static class CustomDeserializer extends ValueDeserializer<StringOrInteger> {
+    static class Jackson3Deserializer extends ValueDeserializer<StringOrInteger> {
 
         @Override
         public StringOrInteger deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
@@ -70,8 +71,8 @@ public class StringOrInteger implements PulpogatoType {
         }
     }
 
-    static class CustomSerializer extends StdSerializer<StringOrInteger> {
-        public CustomSerializer() {
+    static class Jackson3Serializer extends StdSerializer<StringOrInteger> {
+        public Jackson3Serializer() {
             super(StringOrInteger.class);
         }
 
@@ -84,6 +85,29 @@ public class StringOrInteger implements PulpogatoType {
             } else {
                 gen.writeNull();
             }
+        }
+    }
+
+    static class Jackson2Deserializer extends Jackson2FancyDeserializer<StringOrInteger> {
+        public Jackson2Deserializer() {
+            super(
+                    StringOrInteger.class,
+                    StringOrInteger::new,
+                    Mode.ONE_OF,
+                    List.of(
+                            new SettableField<>(Long.class, StringOrInteger::setIntegerValue),
+                            new SettableField<>(String.class, StringOrInteger::setStringValue)));
+        }
+    }
+
+    static class Jackson2Serializer extends Jackson2FancySerializer<StringOrInteger> {
+        public Jackson2Serializer() {
+            super(
+                    StringOrInteger.class,
+                    Mode.ONE_OF,
+                    List.of(
+                            new GettableField<>(Long.class, StringOrInteger::getIntegerValue),
+                            new GettableField<>(String.class, StringOrInteger::getStringValue)));
         }
     }
 }

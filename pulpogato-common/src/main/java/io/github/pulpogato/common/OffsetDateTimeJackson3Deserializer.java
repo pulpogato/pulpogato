@@ -16,7 +16,7 @@ import tools.jackson.databind.deser.std.StdDeserializer;
  * This deserializer attempts to parse date-time strings using multiple {@link DateTimeFormatter} patterns,
  * and also handles Unix timestamps as numeric values.
  */
-public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> {
+public class OffsetDateTimeJackson3Deserializer extends StdDeserializer<OffsetDateTime> {
     private static final List<DateTimeFormatter> formatters = List.of(
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSXXX"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
@@ -26,7 +26,7 @@ public class OffsetDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
     /**
      * Default constructor for {@code OffsetDateTimeDeserializer}.
      */
-    public OffsetDateTimeDeserializer() {
+    public OffsetDateTimeJackson3Deserializer() {
         super(OffsetDateTime.class);
     }
 

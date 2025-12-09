@@ -1,15 +1,17 @@
 package io.github.pulpogato.common;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * A deserializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
@@ -17,7 +19,7 @@ import tools.jackson.databind.deser.std.StdDeserializer;
  * @param <T> The type
  */
 @Slf4j
-public class FancyDeserializer<T> extends StdDeserializer<T> {
+public class Jackson2FancyDeserializer<T> extends StdDeserializer<T> {
 
     /**
      * A field that can be set on the field
@@ -29,7 +31,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
      */
     public record SettableField<T, X>(Class<X> type, BiConsumer<T, X> setter) {}
 
-    private static final ObjectMapper om = new ObjectMapper();
+    private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
 
     /**
      * Constructs a deserializer
@@ -39,7 +41,8 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
      * @param mode        The mode of deserialization
      * @param fields      The fields that can be set on the class
      */
-    public FancyDeserializer(Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
+    public Jackson2FancyDeserializer(
+            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
         super(vc);
         this.initializer = initializer;
         this.mode = mode;
@@ -62,7 +65,7 @@ public class FancyDeserializer<T> extends StdDeserializer<T> {
     private final transient List<SettableField<T, ?>> fields;
 
     @Override
-    public T deserialize(JsonParser p, DeserializationContext ctxt) {
+    public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         final var returnValue = initializer.get();
 
         try {

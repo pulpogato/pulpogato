@@ -11,9 +11,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
-class OffsetDateTimeDeserializerTest {
+class OffsetDateTimeJackson3DeserializerTest {
     static class Sample {
-        @JsonDeserialize(using = OffsetDateTimeDeserializer.class)
+        @JsonDeserialize(using = OffsetDateTimeJackson3Deserializer.class)
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         OffsetDateTime dateTime;
     }
