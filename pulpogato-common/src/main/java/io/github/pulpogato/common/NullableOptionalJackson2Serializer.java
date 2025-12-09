@@ -15,6 +15,9 @@ import java.io.IOException;
  */
 public class NullableOptionalJackson2Serializer extends StdSerializer<NullableOptional<?>> {
 
+    /**
+     * Default constructor required by Jackson for serializer instantiation.
+     */
     public NullableOptionalJackson2Serializer() {
         super(NullableOptional.class, false);
     }

@@ -1,11 +1,9 @@
 package io.github.pulpogato.common;
 
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import tools.jackson.core.JacksonException;
@@ -26,13 +24,27 @@ import tools.jackson.databind.ser.std.StdSerializer;
 @Getter
 @Setter
 @Builder(toBuilder = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
 @ToString
 public class StringOrInteger implements PulpogatoType {
     private String stringValue;
     private Long integerValue;
+
+    /**
+     * Default constructor.
+     */
+    public StringOrInteger() {}
+
+    /**
+     * Constructor with all fields.
+     *
+     * @param stringValue  the string value
+     * @param integerValue the integer value
+     */
+    public StringOrInteger(String stringValue, Long integerValue) {
+        this.stringValue = stringValue;
+        this.integerValue = integerValue;
+    }
 
     @Override
     public String toCode() {

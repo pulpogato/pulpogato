@@ -8,17 +8,24 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 
 /**
  * A builder class for constructing code representations of objects with properties.
  */
-@RequiredArgsConstructor
 public class CodeBuilder {
     /**
      * The type of the object being built.
      */
     private final String type;
+
+    /**
+     * Creates a new CodeBuilder for the given type.
+     *
+     * @param type the fully qualified class name of the object to build
+     */
+    public CodeBuilder(String type) {
+        this.type = type;
+    }
 
     private final Map<String, Object> properties = new LinkedHashMap<>();
 
