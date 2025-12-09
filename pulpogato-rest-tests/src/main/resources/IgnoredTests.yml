@@ -202,15 +202,6 @@
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/public-events-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5492"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
 - example: "#/components/examples/repository-paginated-2/value"
   reason: "https://github.com/github/rest-api-description/issues/5497"
   versions:
@@ -248,14 +239,6 @@
     - ghec
 - example: "#/components/examples/enterprise-role/value"
   reason: "TODO: Diagnose this"
-  versions:
-    - ghec
-- example: "#/components/examples/organization-custom-properties/value"
-  reason: "https://github.com/github/rest-api-description/issues/5540"
-  versions:
-    - ghec
-- example: "#/components/examples/organization-custom-properties/value"
-  reason: "https://github.com/github/rest-api-description/issues/5540"
   versions:
     - ghec
 - example: "#/components/examples/organization-simple/value"
