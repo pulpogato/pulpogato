@@ -52,7 +52,8 @@ public class TestUtils {
             com.fasterxml.jackson.databind.json.JsonMapper.builder()
                     .enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT)
                     .disable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                    .serializationInclusion(JsonInclude.Include.NON_NULL)
+                    .defaultPropertyInclusion(
+                            JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.USE_DEFAULTS))
                     .addModule(new JavaTimeModule())
                     .build();
 
