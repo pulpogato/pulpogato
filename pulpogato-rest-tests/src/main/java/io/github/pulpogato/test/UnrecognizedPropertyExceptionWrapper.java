@@ -38,7 +38,7 @@ class UnrecognizedPropertyExceptionWrapper extends RuntimeException {
         for (int i = Math.max(0, line - 5); i < Math.min(lines.length, line + 4); i++) {
             pw.printf("%s%4d: %s%n", i == line - 1 ? ">" : " ", (i + 1), lines[i]);
             if (i == line - 1 && lines[i].trim().length() > 50) {
-                pw.printf("%-" + (1 + 4 + column) + "s^%n", "");
+                pw.printf("%%-%ds^%%n".formatted(1 + 4 + column), "");
             }
         }
         pw.flush();
