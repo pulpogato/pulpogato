@@ -66,6 +66,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
                         : ("singular(" + CodeBuilder.render(singular) + ")"));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     static class Jackson3Deserializer extends Jackson3FancyDeserializer<SingularOrPlural> {
         public Jackson3Deserializer() {
             super(
@@ -78,6 +79,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
         }
     }
 
+    @SuppressWarnings({"rawtypes"})
     static class Jackson3Serializer extends Jackson3FancySerializer<SingularOrPlural> {
         public Jackson3Serializer() {
             super(
@@ -89,6 +91,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     static class Jackson2Deserializer extends Jackson2FancyDeserializer<SingularOrPlural> {
         public Jackson2Deserializer() {
             super(
@@ -101,6 +104,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
         }
     }
 
+    @SuppressWarnings({"rawtypes"})
     static class Jackson2Serializer extends Jackson2FancySerializer<SingularOrPlural> {
         public Jackson2Serializer() {
             super(
