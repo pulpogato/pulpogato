@@ -67,7 +67,7 @@ jobs:
 
     - name: Run Pitest (Renovate PRs Only)
       if: github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
-      run: ./gradlew :pulpogato-rest-fpt:pitest --max-workers=$MAX_WORKERS
+      run: ./gradlew pitest --max-workers=$MAX_WORKERS
 
     - name: Build Snapshot
       if: github.ref == 'refs/heads/main'

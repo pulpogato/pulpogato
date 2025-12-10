@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.spotless)
     alias(libs.plugins.testLogger)
+    alias(libs.plugins.pitest)
 }
 
 val mockitoAgent = configurations.create("mockitoAgent")
@@ -60,4 +61,12 @@ testlogger {
     showPassed = false
     showSkipped = false
     showFailed = true
+}
+
+pitest {
+    timestampedReports = false
+    junit5PluginVersion.set(libs.versions.pitestJunit5Plugin)
+    pitestVersion.set(libs.versions.pitest)
+    mutators.set(setOf("ALL"))
+    outputFormats.set(setOf("XML", "HTML", "CSV"))
 }
