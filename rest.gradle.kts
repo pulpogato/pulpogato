@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
-    alias(libs.plugins.pitest)
     id("jacoco")
     id("io.github.pulpogato.rest-codegen")
 }
@@ -100,14 +99,6 @@ testlogger {
     showFailed = true
 }
 
-pitest {
-    timestampedReports = false
-    junit5PluginVersion.set(libs.versions.pitestJunit5Plugin) // Look here for latest version - https://github.com/pitest/pitest-junit5-plugin/tags
-    pitestVersion.set(libs.versions.pitest) // Look here for latest version - https://github.com/hcoles/pitest/releases
-    mutators.set(setOf("ALL"))
-    outputFormats.set(setOf("XML", "HTML", "CSV"))
-}
-
 val mockitoAgent = configurations.create("mockitoAgent")
 dependencies {
     testImplementation(libs.mockito)
@@ -152,8 +143,4 @@ publishing {
             }
         }
     }
-}
-
-tasks.named("pitest").configure {
-    dependsOn(":pulpogato-rest-tests:jar", ":pulpogato-common:jar")
 }
