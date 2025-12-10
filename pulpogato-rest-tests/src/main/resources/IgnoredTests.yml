@@ -1,3 +1,29 @@
+- example: "#/components/examples/branch-protection/value"
+  reason: "TODO: GitHub example has org data where schema expects SimpleUser/Enterprise"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+    - ghes-3.19
+- example: "#/components/examples/protected-branch-pull-request-review/value"
+  reason: "TODO: GitHub example has org data where schema expects SimpleUser/Enterprise"
+  versions:
+    - fpt
+    - ghec
+    - ghes-3.14
+    - ghes-3.15
+    - ghes-3.16
+    - ghes-3.17
+    - ghes-3.18
+    - ghes-3.19
+- example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/patch/requestBody/content/application~1json/examples/default/value"
+  reason: "TODO: SCIM patch value field becomes null after roundtrip"
+  versions:
+    - ghec
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets/post/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5048"
   versions:

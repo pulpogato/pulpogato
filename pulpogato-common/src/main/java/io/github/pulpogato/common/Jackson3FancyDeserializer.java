@@ -8,8 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * A deserializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
@@ -29,7 +30,9 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
      */
     public record SettableField<T, X>(Class<X> type, BiConsumer<T, X> setter) {}
 
-    private static final ObjectMapper om = new ObjectMapper();
+    private static final JsonMapper om = JsonMapper.builder()
+            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
     /**
      * Constructs a deserializer
