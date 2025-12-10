@@ -1,16 +1,17 @@
 package io.github.pulpogato.test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -19,6 +20,8 @@ import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 import org.assertj.core.api.SoftAssertions;
 import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
@@ -37,6 +40,9 @@ public class TestUtils {
             compareDates(".000", ""),
             compareDates("+00:00", ".000Z"),
             compareDates("+00:00", ".000+00:00"));
+
+    private static final JsonWriterFactory PRETTY_WRITER_FACTORY =
+            Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, true));
 
     private TestUtils() {
         // Empty Default Private Constructor. This should not be instantiated.
@@ -76,19 +82,40 @@ public class TestUtils {
                 final var code = p.toCode();
                 GroovyScriptEvaluator evaluator = new GroovyScriptEvaluator();
                 final var evaluation = evaluator.evaluate(new StaticScriptSource(code));
-                assertThat(evaluation).isNotNull().usingRecursiveComparison().isEqualTo(p);
-            }
-
-            // Also verify Jackson 2 can parse the same input
-            try {
-                JACKSON2_OBJECT_MAPPER.readValue(input, parsed.getClass());
-            } catch (Exception e) {
-                softly.fail("Jackson 2 parsing failed: " + e.getMessage());
+                softly.assertThat(evaluation)
+                        .isNotNull()
+                        .usingRecursiveComparison()
+                        .isEqualTo(p);
             }
 
             return parsed;
         } catch (JacksonException e) {
             throw new UnrecognizedPropertyExceptionWrapper(e, input);
+        }
+    }
+
+    /**
+     * Parses the input and compares it to the generated JSON.
+     *
+     * @param typeReference The type reference to parse to
+     * @param input         The input
+     * @param <T>           The type
+     * @return The parsed object
+     */
+    public static <T> T parseAndCompare(
+            final com.fasterxml.jackson.core.type.TypeReference<T> typeReference,
+            final String input,
+            final SoftAssertions softly) {
+        try {
+            final T parsed = JACKSON2_OBJECT_MAPPER.readValue(input, typeReference);
+            final String generated = JACKSON2_OBJECT_MAPPER.writeValueAsString(parsed);
+            diffJson(input, generated, softly);
+
+            return parsed;
+        } catch (JacksonException e) {
+            throw new UnrecognizedPropertyExceptionWrapper(e, input);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -98,14 +125,13 @@ public class TestUtils {
             final JsonValue source = sourceReader.readValue();
             final JsonValue target = targetReader.readValue();
 
+            softly.assertThat(source).isNotNull();
+            softly.assertThat(target).isNotNull();
+
             if (source instanceof JsonObject && target instanceof JsonObject) {
                 assertOnDiff(softly, Json.createDiff(source.asJsonObject(), target.asJsonObject()), source);
             } else if (source instanceof JsonArray && target instanceof JsonArray) {
                 assertOnDiff(softly, Json.createDiff(source.asJsonArray(), target.asJsonArray()), source);
-            } else if (source == null) {
-                softly.fail("Invalid source: null");
-            } else if (target == null) {
-                softly.fail("Invalid target: null");
             } else {
                 softly.fail("Invalid inputs:: Source:" + source.getValueType() + " Target:" + target.getValueType());
             }
@@ -174,10 +200,44 @@ public class TestUtils {
         }
 
         if (!oldValue.toString().equals(newValue.toString())) {
-            softly.fail(
-                    "Changes found: %s %s %s(%s) -> %s(%s)",
-                    op, path, oldValue, oldValue.getValueType(), newValue, newValue.getValueType());
+            softly.fail(formatStructuredDiff(op, path, oldValue, newValue));
         }
+    }
+
+    private static String formatStructuredDiff(String op, String path, JsonValue oldValue, JsonValue newValue) {
+        var sb = new StringBuilder();
+        sb.append("\n");
+        sb.append("Difference at path: ").append(path).append("\n");
+        sb.append("Operation: ").append(op).append("\n\n");
+        sb.append("Expected (from input):\n");
+        sb.append(indent(prettyPrint(oldValue))).append("\n\n");
+        sb.append("Actual (after roundtrip):\n");
+        sb.append(indent(prettyPrint(newValue)));
+        return sb.toString();
+    }
+
+    private static String prettyPrint(JsonValue value) {
+        if (value == null || value.getValueType() == JsonValue.ValueType.NULL) {
+            return "null";
+        }
+        if (value instanceof JsonString
+                || value instanceof JsonNumber
+                || value.getValueType() == JsonValue.ValueType.TRUE
+                || value.getValueType() == JsonValue.ValueType.FALSE) {
+            return value.toString();
+        }
+        var sw = new StringWriter();
+        try (var writer = PRETTY_WRITER_FACTORY.createWriter(sw)) {
+            writer.write(value);
+        }
+        return sw.toString();
+    }
+
+    private static String indent(String text) {
+        return text.lines()
+                .map(line -> "  " + line)
+                .reduce((a, b) -> a + "\n" + b)
+                .orElse("");
     }
 
     private static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {

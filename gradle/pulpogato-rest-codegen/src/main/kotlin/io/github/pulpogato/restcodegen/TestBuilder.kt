@@ -42,7 +42,8 @@ object TestBuilder {
 
         try {
             // If the string constant would be too large, write it to a JSON file
-            val typeReferenceClass = ClassName.get("tools.jackson.core.type", "TypeReference")
+            val typeReferenceJackson3 = ClassName.get("tools.jackson.core.type", "TypeReference")
+            val typeReferenceJackson2 = ClassName.get("com.fasterxml.jackson.core.type", "TypeReference")
             val methodSpec =
                 if (formatted.length > MAX_STRING_LENGTH) {
                     // Create the test resources directory if it doesn't exist
@@ -76,7 +77,12 @@ object TestBuilder {
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
-                            typeReferenceClass,
+                            typeReferenceJackson3,
+                            className.withoutAnnotations(),
+                        ).addStatement(
+                            $$"$T.parseAndCompare(new $T<$T>() {}, input, softly)",
+                            testUtilsClass,
+                            typeReferenceJackson2,
                             className.withoutAnnotations(),
                         ).addStatement("softly.assertThat(processed).isNotNull()")
                         .addStatement("softly.assertAll()")
@@ -92,7 +98,12 @@ object TestBuilder {
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
-                            typeReferenceClass,
+                            typeReferenceJackson3,
+                            className.withoutAnnotations(),
+                        ).addStatement(
+                            $$"$T.parseAndCompare(new $T<$T>() {}, input, softly)",
+                            testUtilsClass,
+                            typeReferenceJackson2,
                             className.withoutAnnotations(),
                         ).addStatement("softly.assertThat(processed).isNotNull()")
                         .addStatement("softly.assertAll()")
