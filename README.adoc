@@ -71,9 +71,6 @@ dependencyManagement {
 
 == Available versions
 
-This lists the `1.x` versions that work with Jackson 3.x.
-For Jackson 2.x, look at the `0.x` versions on the https://github.com/pulpogato/pulpogato/tree/release/0.x[release/0.x] branch.
-
 |===
 |GitHub Version |GraphQL |REST
 
