@@ -13,6 +13,11 @@ dependencies {
     api(project(":pulpogato-common"))
     api(libs.jackson3Core)
     compileOnly(libs.jakartaAnnotations)
+
+    testImplementation(project(":${rootProject.name}-rest-tests"))
+    testImplementation(libs.bundles.springBoot)
+    testImplementation(libs.dgsClient)
+
 }
 
 fun getUrl(projectVariant: String): String {
@@ -129,6 +134,10 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 tasks.processResources {
