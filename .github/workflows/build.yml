@@ -50,7 +50,7 @@ jobs:
 
     - name: Cache Downloaded Schemas
       id: schema-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           */build/generated-src/main/resources/schema.json
