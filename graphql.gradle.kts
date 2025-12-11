@@ -28,6 +28,12 @@ val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")
 
 description = "GraphQL types for $projectVariant"
 
+sourceSets {
+    named("main") {
+        resources.srcDir("${project.layout.buildDirectory.get()}/resources/main")
+    }
+}
+
 val originalSchemaLocation = file("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls")
 val transformedSchemaLocation = file("${project.layout.buildDirectory.get()}/resources/main-tmp/schema.graphqls")
 
