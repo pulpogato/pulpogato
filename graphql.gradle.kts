@@ -10,6 +10,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":pulpogato-common"))
     api(libs.jackson3Core)
     compileOnly(libs.jakartaAnnotations)
 }
@@ -104,6 +105,7 @@ tasks.named<GenerateJavaTask>("generateJava") {
     typeMapping = mutableMapOf(
         "Base64String" to "java.lang.String",
         "BigInt" to "java.math.BigInteger",
+        "CustomPropertyValue" to "io.github.pulpogato.common.SingularOrPlural<java.lang.String>",
         "Date" to "java.time.LocalDate",
         "DateTime" to "java.time.OffsetDateTime",
         "GitObjectID" to "java.lang.String",
