@@ -1,4 +1,8 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import io.github.pulpogato.restcodegen.DownloadSchemaTask
+import nebula.plugin.info.InfoBrokerPlugin
+import java.security.MessageDigest
+import kotlin.jvm.java
 
 plugins {
     alias(libs.plugins.javaLibrary)
@@ -126,21 +130,24 @@ tasks.withType<JavaCompile> {
     options.setIncremental(true)
 }
 
-publishing {
-    publications {
-        named<MavenPublication>("nebula") {
-            pom {
-                withXml {
-                    val root = asNode()
-                    val propertiesNode = root.get("properties") as groovy.util.NodeList
-                    if (propertiesNode.isNotEmpty()) {
-                        val propNode = propertiesNode.first() as groovy.util.Node
-                        propNode.appendNode("gh.api.repo", project.ext.get("gh.api.repo").toString())
-                        propNode.appendNode("gh.api.version", project.ext.get("gh.api.version").toString())
-                        propNode.appendNode("github.api.sha256", project.ext.get("github.api.sha256").toString())
-                    }
-                }
-            }
-        }
+val addSchemaInfoToBroker = tasks.register("addSchemaInfoToBroker") {
+    dependsOn(downloadSchema)
+    val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { it.schemaFile }
+    inputs.file(schemaFile)
+
+    doLast {
+        val schemaBytes = schemaFile.get().asFile.readBytes()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(schemaBytes)
+        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+
+        val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
+        infoBrokerPlugin.add("GitHub-API-Repo", project.ext.get("gh.api.repo").toString())
+        infoBrokerPlugin.add("GitHub-API-Version", project.ext.get("gh.api.version").toString())
+        infoBrokerPlugin.add("GitHub-API-SHA256", sha256)
     }
+}
+
+tasks.withType<GenerateMavenPom>().configureEach {
+    dependsOn(addSchemaInfoToBroker)
 }

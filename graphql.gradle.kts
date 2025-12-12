@@ -1,5 +1,6 @@
 import com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask
 import de.undercouch.gradle.tasks.download.Download
+import nebula.plugin.info.InfoBrokerPlugin
 import java.security.MessageDigest
 
 plugins {
@@ -52,10 +53,8 @@ val downloadSchema = tasks.register<Download>("downloadSchema") {
 val transformSchema = tasks.register<Sync>("transformSchema") {
     dependsOn(downloadSchema)
     dependsOn(tasks.processResources)
-    inputs.file(originalSchemaLocation)
-    outputs.file(transformedSchemaLocation)
 
-    from(originalSchemaLocation)
+    from(downloadSchema.map { originalSchemaLocation })
     into(transformedSchemaLocation.parent)
     rename { transformedSchemaLocation.name }
 
@@ -77,7 +76,7 @@ val checksumFile = project.layout.buildDirectory.file("schema.sha256")
 val calculateSchemaChecksum = tasks.register("calculateSchemaChecksum") {
     dependsOn(downloadSchema)
     dependsOn(tasks.processResources)
-    inputs.file(originalSchemaLocation)
+    inputs.files(downloadSchema)
     outputs.file(checksumFile)
 
     doLast {
@@ -86,6 +85,7 @@ val calculateSchemaChecksum = tasks.register("calculateSchemaChecksum") {
         val hashBytes = digest.digest(schemaBytes)
         val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
         checksumFile.get().asFile.writeText(sha256)
+        project.plugins.getPlugin(InfoBrokerPlugin::class.java).add("GitHub-Schema-SHA256", sha256)
     }
 }
 
@@ -141,23 +141,6 @@ tasks.withType<Javadoc>().configureEach {
         addStringOption("Xdoclint:none", "-quiet")
         addStringOption("encoding", "UTF-8")
         addStringOption("charSet", "UTF-8")
-    }
-}
-
-publishing {
-    publications {
-        named<MavenPublication>("nebula") {
-            pom {
-                withXml {
-                    val root = asNode()
-                    val propertiesNode = root.get("properties") as groovy.util.NodeList
-                    if (propertiesNode.isNotEmpty()) {
-                        val propNode = propertiesNode.first() as groovy.util.Node
-                        propNode.appendNode("github.schema.sha256", checksumFile.get().asFile.readText())
-                    }
-                }
-            }
-        }
     }
 }
 
