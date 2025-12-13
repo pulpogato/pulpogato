@@ -36,12 +36,12 @@ description = "GraphQL types for $projectVariant"
 
 sourceSets {
     named("main") {
-        resources.srcDir("${project.layout.buildDirectory.get()}/resources/main")
+        resources.srcDir(layout.buildDirectory.dir("generated-src/main/resources"))
     }
 }
 
-val originalSchemaLocation = file("${project.layout.buildDirectory.get()}/resources/main/schema.graphqls")
-val transformedSchemaLocation = file("${project.layout.buildDirectory.get()}/resources/main-tmp/schema.graphqls")
+val originalSchemaLocation = layout.buildDirectory.file("generated-src/main/resources/schema.graphqls")
+val transformedSchemaLocation = layout.buildDirectory.file("schema/transformed/schema.graphqls")
 
 val downloadSchema = tasks.register<Download>("downloadSchema") {
     src(getUrl(projectVariant))
@@ -55,7 +55,7 @@ val downloadSchema = tasks.register<Download>("downloadSchema") {
     outputs.file(originalSchemaLocation)
 
     doLast {
-        if (!originalSchemaLocation.exists()) {
+        if (!originalSchemaLocation.get().asFile.exists()) {
             throw GradleException("Failed to download schema from ${getUrl(projectVariant)}")
         }
     }
@@ -65,9 +65,9 @@ val transformSchema = tasks.register<Sync>("transformSchema") {
     dependsOn(downloadSchema)
     dependsOn(tasks.processResources)
 
-    from(downloadSchema.map { originalSchemaLocation })
-    into(transformedSchemaLocation.parent)
-    rename { transformedSchemaLocation.name }
+    from(originalSchemaLocation)
+    into(transformedSchemaLocation.map { it.asFile.parentFile })
+    rename { transformedSchemaLocation.get().asFile.name }
 
     filter { currentLine ->
         currentLine
@@ -91,7 +91,7 @@ val calculateSchemaChecksum = tasks.register("calculateSchemaChecksum") {
     outputs.file(checksumFile)
 
     doLast {
-        val schemaBytes = originalSchemaLocation.readBytes()
+        val schemaBytes = originalSchemaLocation.get().asFile.readBytes()
         val digest = MessageDigest.getInstance("SHA-256")
         val hashBytes = digest.digest(schemaBytes)
         val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
@@ -103,7 +103,7 @@ val calculateSchemaChecksum = tasks.register("calculateSchemaChecksum") {
 tasks.named<GenerateJavaTask>("generateJava") {
     dependsOn(transformSchema)
 
-    schemaPaths = mutableListOf(transformedSchemaLocation)
+    schemaPaths = mutableListOf(transformedSchemaLocation.get().asFile)
     packageName = "io.github.pulpogato.graphql"
     generateClientv2 = true
     includeQueries = mutableListOf("")
