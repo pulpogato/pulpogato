@@ -61,15 +61,6 @@
   versions:
     - fpt
     - ghec
-- example: "#/paths/~1repos~1{owner}~1{repo}~1issues~1{issue_number}/patch/requestBody/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5234"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
 - example: "#/components/examples/global-advisory-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5479"
   versions:
@@ -143,39 +134,16 @@
   reason: "TODO: Diagnose this"
   versions:
     - ghec
-- example: "#/components/examples/enterprise-ruleset/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
-- example: "#/components/examples/enterprise-ruleset/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
 - example: "#/components/examples/enterprise-ruleset-version-with-state/value"
   reason: "TODO: Diagnose this"
   versions:
     - ghec
     - ghes-3.19
-- example: "#/components/examples/organization-secret-scanning-alert-list/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
 - example: "#/components/examples/enterprise-teams-items/value"
   reason: "TODO: Diagnose this"
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/repository-paginated-2/value"
-  reason: "https://github.com/github/rest-api-description/issues/5497"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
 - example: "#/components/examples/ghes-license-info/value"
   reason: "https://github.com/github/rest-api-description/issues/5516"
   versions:
@@ -232,10 +200,6 @@
   reason: "https://github.com/github/rest-api-description/issues/5552"
   versions:
     - fpt
-- example: "#/components/examples/actions-hosted-runner-curated-image/value"
-  reason: "https://github.com/github/rest-api-description/issues/5552"
-  versions:
-    - fpt
 - example: "#/components/examples/actions-hosted-runner-machine-spec/value"
   reason: "https://github.com/github/rest-api-description/issues/5553"
   versions:
@@ -249,10 +213,6 @@
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/code-security-default-configurations/value"
-  reason: "https://github.com/github/rest-api-description/issues/5591"
-  versions:
-    - ghes-3.15
 - example: "#/components/examples/api-insights-subject-stats/value"
   reason: "https://github.com/github/rest-api-description/issues/5593"
   versions:
