@@ -176,15 +176,6 @@
     - ghes-3.15
     - ghes-3.16
     - ghes-3.17
-- example: "#/components/examples/issue-with-repo-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5515"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.14
-    - ghes-3.15
-    - ghes-3.16
-    - ghes-3.17
 - example: "#/components/examples/ghes-license-info/value"
   reason: "https://github.com/github/rest-api-description/issues/5516"
   versions:
