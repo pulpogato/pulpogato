@@ -23,6 +23,7 @@ import javax.json.JsonValue;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 import org.assertj.core.api.SoftAssertions;
+import org.intellij.lang.annotations.Language;
 import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
 import tools.jackson.core.JacksonException;
@@ -72,9 +73,10 @@ public class TestUtils {
      * @return The parsed object
      */
     public static <T> T parseAndCompare(
-            final TypeReference<T> typeReference, final String input, final SoftAssertions softly) {
+            final TypeReference<T> typeReference, @Language("json") final String input, final SoftAssertions softly) {
         try {
             final T parsed = OBJECT_MAPPER.readValue(input, typeReference);
+            @Language("json")
             final String generated = OBJECT_MAPPER.writeValueAsString(parsed);
             diffJson(input, generated, softly);
 
@@ -104,10 +106,11 @@ public class TestUtils {
      */
     public static <T> T parseAndCompare(
             final com.fasterxml.jackson.core.type.TypeReference<T> typeReference,
-            final String input,
+            @Language("json") final String input,
             final SoftAssertions softly) {
         try {
             final T parsed = JACKSON2_OBJECT_MAPPER.readValue(input, typeReference);
+            @Language("json")
             final String generated = JACKSON2_OBJECT_MAPPER.writeValueAsString(parsed);
             diffJson(input, generated, softly);
 
@@ -119,7 +122,8 @@ public class TestUtils {
         }
     }
 
-    public static void diffJson(final String input, final String output, final SoftAssertions softly) {
+    public static void diffJson(
+            @Language("json") final String input, @Language("json") final String output, final SoftAssertions softly) {
         try (final var sourceReader = Json.createReader(new StringReader(input));
                 final var targetReader = Json.createReader(new StringReader(output))) {
             final JsonValue source = sourceReader.readValue();
