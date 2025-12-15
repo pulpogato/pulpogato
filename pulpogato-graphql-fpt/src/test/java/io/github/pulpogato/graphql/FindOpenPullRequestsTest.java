@@ -1,6 +1,7 @@
 package io.github.pulpogato.graphql;
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
+import io.github.pulpogato.common.LinkedHashMapBuilder;
 import io.github.pulpogato.graphql.types.MergeableState;
 import io.github.pulpogato.graphql.types.PullRequestMergeMethod;
 import io.github.pulpogato.graphql.types.Repository;
@@ -8,7 +9,6 @@ import io.github.pulpogato.test.BaseIntegrationTest;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,10 +49,12 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
     void testFindOpenPullRequestsQuery() {
         var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
         WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
-        var variables = new LinkedHashMap<String, String>();
-        variables.put("owner", "pulpogato");
-        variables.put("repo", "pulpogato");
-        variables.put("branch", "main");
+
+        var variables = LinkedHashMapBuilder.of(
+                Map.entry("owner", "pulpogato"),
+                Map.entry("repo", "pulpogato"),
+                Map.entry("branch", "main")
+        );
         var response = graphQLClient.reactiveExecuteQuery(OPEN_PRS, variables).block();
 
         assertThat(response).isNotNull();
