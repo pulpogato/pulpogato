@@ -9,6 +9,7 @@ dependencies {
     api(libs.assertj)
     implementation(libs.junitPlatformLauncher)
     compileOnly(libs.jspecify)
+    compileOnly(libs.jetbrainsAnnotations)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
@@ -41,4 +42,8 @@ spotless {
     java {
         palantirJavaFormat()
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
