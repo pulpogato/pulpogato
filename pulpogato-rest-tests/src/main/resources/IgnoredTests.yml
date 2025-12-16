@@ -262,11 +262,6 @@
     - fpt
     - ghec
     - ghes-3.19
-- example: "#/components/examples/code-scanning-variant-analysis/value"
-  reason: "https://github.com/github/rest-api-description/issues/5623"
-  versions:
-    - fpt
-    - ghec
 - example: "#/components/examples/repo-codespaces-secret-paginated/value"
   reason: "https://github.com/github/rest-api-description/issues/5624"
   versions:
