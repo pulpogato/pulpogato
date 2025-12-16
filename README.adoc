@@ -142,9 +142,9 @@ If you have low memory or CPU, you can customize parallelism with `--max-workers
 
 When the REST schema contains examples, they are automatically converted to tests in the generated test sources directory.
 
-=== REST API tests
+=== Integration tests
 
-To contribute a test for the REST API:
+To contribute a test for the REST API or GraphQL API:
 
 1. Write a test like the ones in `UserApiIntegrationTest`.
 2. Then set up the environment variable `GITHUB_TOKEN`.
