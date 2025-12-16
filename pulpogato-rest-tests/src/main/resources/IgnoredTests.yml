@@ -354,8 +354,3 @@
   versions:
     - fpt
     - ghec
-- example: "#/paths/~1orgs~1{org}~1artifacts~1metadata~1deployment-record~1cluster~1{cluster}/post/requestBody/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5684"
-  versions:
-    - fpt
-    - ghec
