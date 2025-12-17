@@ -262,16 +262,6 @@
     - fpt
     - ghec
     - ghes-3.19
-- example: "#/components/examples/repo-codespaces-secret-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5624"
-  versions:
-    - fpt
-    - ghec
-- example: "#/components/examples/repo-codespaces-secret/value"
-  reason: "https://github.com/github/rest-api-description/issues/5625"
-  versions:
-    - fpt
-    - ghec
 - example: "#/components/examples/dependabot-alerts-for-repository/value"
   reason: "https://github.com/github/rest-api-description/issues/5628"
   versions:
@@ -286,8 +276,6 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -334,18 +322,3 @@
     - fpt
     - ghec
     - ghes-3.19
-- example: "#/components/examples/codespace-with-full-repository/value"
-  reason: "https://github.com/github/rest-api-description/issues/5650"
-  versions:
-    - fpt
-    - ghec
-- example: "#/components/examples/migration/value"
-  reason: "https://github.com/github/rest-api-description/issues/5653"
-  versions:
-    - fpt
-    - ghec
-- example: "#/components/examples/artifact-deployment-record-list/value"
-  reason: "https://github.com/github/rest-api-description/issues/5683"
-  versions:
-    - fpt
-    - ghec
