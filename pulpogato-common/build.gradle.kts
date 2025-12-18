@@ -13,6 +13,7 @@ val mockitoAgent = configurations.create("mockitoAgent")
 dependencies {
     compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
+    compileOnly(libs.springBootWebflux)
     annotationProcessor(libs.lombok)
     implementation(libs.slf4j)
 
@@ -27,6 +28,7 @@ dependencies {
     testImplementation(libs.assertj)
     testImplementation(libs.mockito)
     testImplementation(libs.mockitoJunitJupiter)
+    testImplementation(libs.springBootWebflux)
     testRuntimeOnly(libs.junitPlatformLauncher)
 
     mockitoAgent(libs.mockito) { isTransitive = false }
