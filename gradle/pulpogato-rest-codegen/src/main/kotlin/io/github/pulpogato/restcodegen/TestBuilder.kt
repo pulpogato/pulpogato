@@ -4,6 +4,7 @@ import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.TypeName
 import io.github.pulpogato.restcodegen.ext.pascalCase
+import org.intellij.lang.annotations.Language
 import tools.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.FileWriter
@@ -93,7 +94,7 @@ object TestBuilder {
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                         .addAnnotation(Annotations.generated(1, context))
-                        .addStatement($$"$T input = /* language=JSON */ $L", String::class.java, formatted.blockQuote())
+                        .addStatement($$"@$T(\"json\") $T input = $L", Language::class.java, String::class.java, formatted.blockQuote())
                         .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",

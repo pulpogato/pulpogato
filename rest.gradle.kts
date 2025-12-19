@@ -24,6 +24,7 @@ dependencies {
     testImplementation(libs.bundles.springBoot)
     testRuntimeOnly(libs.groovy)
     testCompileOnly(libs.lombok)
+    testCompileOnly(libs.jetbrainsAnnotations)
     testAnnotationProcessor(libs.lombok)
 }
 
