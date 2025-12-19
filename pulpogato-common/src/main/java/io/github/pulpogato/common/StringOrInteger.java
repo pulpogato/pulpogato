@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.core.convert.converter.Converter;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
@@ -120,6 +121,19 @@ public class StringOrInteger implements PulpogatoType {
                     List.of(
                             new GettableField<>(Long.class, StringOrInteger::getIntegerValue),
                             new GettableField<>(String.class, StringOrInteger::getStringValue)));
+        }
+    }
+
+    public static class StringConverter implements Converter<StringOrInteger, String> {
+        @Override
+        public String convert(StringOrInteger source) {
+            if (source.getStringValue() != null) {
+                return source.getStringValue();
+            }
+            if (source.getIntegerValue() != null) {
+                return source.getIntegerValue().toString();
+            }
+            return null;
         }
     }
 }

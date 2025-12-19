@@ -1,0 +1,21 @@
+- request:
+    method: POST
+    uri: /repos/pulpogato/pulpogato/actions/workflows/check-issues-statuses.yml/dispatches
+    protocol: HTTP/1.1
+    headers:
+      Content-Type: application/json
+    body: |-
+      {
+        "ref" : "main"
+      }
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+    body: |-
+      {
+        "workflow_run_id" : 20355835086,
+        "run_url" : "https://api.github.com/repos/pulpogato/pulpogato/actions/runs/20355835086",
+        "html_url" : "https://github.com/pulpogato/pulpogato/actions/runs/20355835086"
+      }

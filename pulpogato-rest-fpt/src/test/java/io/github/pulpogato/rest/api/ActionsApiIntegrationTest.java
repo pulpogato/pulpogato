@@ -1,9 +1,11 @@
 package io.github.pulpogato.rest.api;
 
+import io.github.pulpogato.common.StringOrInteger;
 import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,6 +58,23 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
 
         // Verify pagination works
         assertThat(cacheList.getActionsCaches()).hasSize(10);
+    }
+
+    @Test
+    void testCreateWorkflowDispatch() {
+        RestClients restClients = new RestClients(webClient);
+        // Next statement was for testing if converters can be added in user-land.
+        // restClients.getConversionService().addConverter(new StringOrInteger.StringConverter());
+        var api = restClients.getActionsApi();
+
+        var response = api.createWorkflowDispatch(
+                "pulpogato",
+                "pulpogato",
+                StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(),
+                ActionsApi.CreateWorkflowDispatchRequestBody.builder().ref("main").build()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
 }

@@ -98,6 +98,33 @@ class PathsBuilder {
                             Modifier.FINAL,
                         ).addAnnotation(nonNull())
                         .build(),
+                ).addField(
+                    FieldSpec
+                        .builder(
+                            ClassName.get("org.springframework.format.support", "FormattingConversionService"),
+                            "conversionService",
+                            Modifier.PRIVATE,
+                            Modifier.FINAL,
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addField(
+                    FieldSpec
+                        .builder(
+                            ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
+                            "factory",
+                            Modifier.PRIVATE,
+                            Modifier.FINAL,
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .methodBuilder("getConversionService")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(nonNull())
+                        .returns(ClassName.get("org.springframework.format.support", "FormattingConversionService"))
+                        .addStatement("return this.conversionService")
+                        .addJavadoc("Returns the conversion service used for parameter conversion.")
+                        .build(),
                 ).addMethod(
                     MethodSpec
                         .methodBuilder("computeApi")
@@ -113,29 +140,8 @@ class PathsBuilder {
                                     "clazz",
                                 ).build(),
                         ).returns(TypeVariableName.get("T"))
-                        .addStatement(
-                            $$"""
-                        var fcs = new $T()
-                            """.trimIndent(),
-                            ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
-                        ).addStatement(
-                            $$"""
-                        new $T().getConverters().forEach(fcs::addConverter)
-                            """.trimIndent(),
-                            ClassName.get(packageName, "EnumConverters"),
-                        ).addStatement(
-                            $$"""
-                        return $T.builderFor(
-                                $T.create(
-                                        $T.requireNonNull(restClient)))
-                                .conversionService(fcs)
-                                .build()
-                                .createClient(clazz)
-                            """.trimIndent(),
-                            ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
-                            ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
-                            ClassName.get("java.util", "Objects"),
-                        ).build(),
+                        .addStatement("return factory.createClient(clazz)")
+                        .build(),
                 )
 
         // List to collect API field initializations
@@ -216,6 +222,27 @@ class PathsBuilder {
                         ).addAnnotation(nonNull())
                         .build(),
                 ).addStatement("this.restClient = restClient")
+                .addStatement(
+                    "this.conversionService = new \$T()",
+                    ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
+                ).addStatement(
+                    "new \$T().getConverters().forEach(conversionService::addConverter)",
+                    ClassName.get(packageName, "EnumConverters"),
+                ).addStatement(
+                    "conversionService.addConverter(new \$T())",
+                    ClassName.get("io.github.pulpogato.common", "StringOrInteger", "StringConverter"),
+                ).addStatement(
+                    $$"""
+                    this.factory = $T.builderFor(
+                            $T.create(
+                                    $T.requireNonNull(restClient)))
+                            .conversionService(this.conversionService)
+                            .build()
+                    """.trimIndent(),
+                    ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
+                    ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
+                    ClassName.get("java.util", "Objects"),
+                )
 
         // Initialize all API fields in constructor
         apiFieldInitializers.forEach { (fieldName, typeRef) ->
