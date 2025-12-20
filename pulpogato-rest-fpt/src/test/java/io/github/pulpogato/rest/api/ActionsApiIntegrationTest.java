@@ -75,6 +75,9 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        var body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getWorkflowRunId()).isEqualTo(20355835086L);
     }
 
 }

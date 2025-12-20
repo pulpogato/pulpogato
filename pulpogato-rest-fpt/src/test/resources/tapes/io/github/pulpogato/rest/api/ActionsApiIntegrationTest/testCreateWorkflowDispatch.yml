@@ -3,6 +3,7 @@
     uri: /repos/pulpogato/pulpogato/actions/workflows/check-issues-statuses.yml/dispatches
     protocol: HTTP/1.1
     headers:
+      Accept: application/json
       Content-Type: application/json
     body: |-
       {
