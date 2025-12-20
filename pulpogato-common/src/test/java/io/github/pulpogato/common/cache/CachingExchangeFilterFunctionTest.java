@@ -58,7 +58,11 @@ class CachingExchangeFilterFunctionTest {
 
     @BeforeEach
     void setUp() {
-        filter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock);
+        filter = CachingExchangeFilterFunction.builder()
+                .cache(cache)
+                .cacheKeyMapper(cacheKeyMapper)
+                .clock(clock)
+                .build();
         bufferFactory = new DefaultDataBufferFactory();
     }
 
@@ -433,7 +437,11 @@ class CachingExchangeFilterFunctionTest {
         @DisplayName("Response body exceeding max cacheable size returns SKIP and is not cached")
         void bodyExceedingLimitReturnsSkip() {
             // Use a small limit for testing
-            var smallLimitFilter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock, 1000);
+            var smallLimitFilter = CachingExchangeFilterFunction.builder()
+                    .cache(cache)
+                    .cacheKeyMapper(cacheKeyMapper)
+                    .maxCacheableSize(1000)
+                    .build();
             var largeBody = new byte[2000];
             for (int i = 0; i < largeBody.length; i++) {
                 largeBody[i] = (byte) (i % 256);
@@ -467,7 +475,12 @@ class CachingExchangeFilterFunctionTest {
         @Test
         @DisplayName("Response with Content-Length exceeding limit skips caching immediately")
         void contentLengthExceedingLimitSkipsEarly() {
-            var smallLimitFilter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock, 1000);
+            var smallLimitFilter = CachingExchangeFilterFunction.builder()
+                    .cache(cache)
+                    .cacheKeyMapper(cacheKeyMapper)
+                    .clock(clock)
+                    .maxCacheableSize(1000)
+                    .build();
             var largeBody = new byte[2000];
 
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
@@ -492,7 +505,12 @@ class CachingExchangeFilterFunctionTest {
         @Test
         @DisplayName("Custom max cacheable size is respected")
         void customMaxCacheableSizeIsRespected() {
-            var customFilter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock, 500);
+            var customFilter = CachingExchangeFilterFunction.builder()
+                    .cache(cache)
+                    .cacheKeyMapper(cacheKeyMapper)
+                    .clock(clock)
+                    .maxCacheableSize(500)
+                    .build();
             var smallBody = new byte[400]; // Under limit
             var largeBody = new byte[600]; // Over limit
 

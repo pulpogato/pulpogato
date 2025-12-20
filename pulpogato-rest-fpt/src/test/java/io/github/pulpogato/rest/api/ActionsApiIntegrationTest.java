@@ -2,15 +2,12 @@ package io.github.pulpogato.rest.api;
 
 import io.github.pulpogato.common.StringOrInteger;
 import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
-import io.github.pulpogato.common.cache.DefaultCacheKeyMapper;
-import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
+import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.http.HttpStatus;
-
-import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -99,7 +96,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
     @Test
     void testListWorkflowRunsWithCache() {
         var cachingClient = webClient.mutate()
-                .filter(new CachingExchangeFilterFunction(new ConcurrentMapCache("test-cache"), new DefaultCacheKeyMapper(), Clock.systemUTC()))
+                .filter(CachingExchangeFilterFunction.builder().cache(new ConcurrentMapCache("test-cache")).build())
                 .build();
         var api = new RestClients(cachingClient).getActionsApi();
         var response = api.listWorkflowRuns(
