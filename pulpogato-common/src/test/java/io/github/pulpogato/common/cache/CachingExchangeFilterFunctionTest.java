@@ -397,9 +397,10 @@ class CachingExchangeFilterFunctionTest {
     class LargeBodyHandling {
 
         @Test
-        @DisplayName("Response body larger than 256KB default limit is cached successfully")
-        void largeBodyIsCachedSuccessfully() {
+        @DisplayName("Response body larger than 256KB but under 2MB limit is cached successfully")
+        void largeBodyUnderLimitIsCachedSuccessfully() {
             // Create a body larger than Spring's default 256KB (262144 bytes) buffer limit
+            // but under our 2MB default max cacheable size
             var largeBody = new byte[300_000];
             for (int i = 0; i < largeBody.length; i++) {
                 largeBody[i] = (byte) (i % 256);
@@ -426,6 +427,108 @@ class CachingExchangeFilterFunctionTest {
             verify(cache).put(eq(CACHE_KEY), captor.capture());
             assertThat(captor.getValue().body()).hasSize(300_000);
             assertThat(captor.getValue().etag()).isEqualTo("\"large-body\"");
+        }
+
+        @Test
+        @DisplayName("Response body exceeding max cacheable size returns SKIP and is not cached")
+        void bodyExceedingLimitReturnsSkip() {
+            // Use a small limit for testing
+            var smallLimitFilter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock, 1000);
+            var largeBody = new byte[2000];
+            for (int i = 0; i < largeBody.length; i++) {
+                largeBody[i] = (byte) (i % 256);
+            }
+
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var response = ClientResponse.create(HttpStatus.OK)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header("ETag", "\"too-large\"")
+                    .body(Flux.just(bufferFactory.wrap(largeBody)))
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
+
+            var result = smallLimitFilter.filter(request, exchangeFunction).block();
+
+            assertThat(result).isNotNull();
+            assertThat(result.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
+                    .containsExactly("SKIP");
+            assertThat(result.statusCode()).isEqualTo(HttpStatus.OK);
+
+            // Verify body is still returned correctly
+            var bodyContent = result.bodyToMono(byte[].class).block();
+            assertThat(bodyContent).hasSize(2000);
+
+            // Verify cache was NOT called
+            verify(cache, never()).put(any(), any());
+        }
+
+        @Test
+        @DisplayName("Response with Content-Length exceeding limit skips caching immediately")
+        void contentLengthExceedingLimitSkipsEarly() {
+            var smallLimitFilter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock, 1000);
+            var largeBody = new byte[2000];
+
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var response = ClientResponse.create(HttpStatus.OK)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header("Content-Length", "2000")
+                    .header("ETag", "\"too-large\"")
+                    .body(Flux.just(bufferFactory.wrap(largeBody)))
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
+
+            var result = smallLimitFilter.filter(request, exchangeFunction).block();
+
+            // Response is returned as-is (not wrapped), so no X-Pulpogato-Cache header
+            assertThat(result).isNotNull();
+            assertThat(result.statusCode()).isEqualTo(HttpStatus.OK);
+            verify(cache, never()).put(any(), any());
+        }
+
+        @Test
+        @DisplayName("Custom max cacheable size is respected")
+        void customMaxCacheableSizeIsRespected() {
+            var customFilter = new CachingExchangeFilterFunction(cache, cacheKeyMapper, clock, 500);
+            var smallBody = new byte[400]; // Under limit
+            var largeBody = new byte[600]; // Over limit
+
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+
+            // Test small body - should be cached
+            var request1 = createGetRequest();
+            var response1 = ClientResponse.create(HttpStatus.OK)
+                    .header("ETag", "\"small\"")
+                    .body(Flux.just(bufferFactory.wrap(smallBody)))
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response1));
+
+            var result1 = customFilter.filter(request1, exchangeFunction).block();
+            assertThat(result1.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
+                    .containsExactly("MISS");
+            verify(cache).put(eq(CACHE_KEY), any(CachedResponse.class));
+
+            // Reset mocks for second test
+            org.mockito.Mockito.reset(cache, exchangeFunction);
+
+            // Test large body - should skip caching
+            var request2 = createGetRequest();
+            var response2 = ClientResponse.create(HttpStatus.OK)
+                    .header("ETag", "\"large\"")
+                    .body(Flux.just(bufferFactory.wrap(largeBody)))
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response2));
+
+            var result2 = customFilter.filter(request2, exchangeFunction).block();
+            assertThat(result2.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
+                    .containsExactly("SKIP");
+            verify(cache, never()).put(any(), any());
         }
     }
 }
