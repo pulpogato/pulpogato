@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
+import lombok.Builder;
 import org.jspecify.annotations.NonNull;
 import org.springframework.cache.Cache;
+import org.springframework.cache.support.NoOpCache;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
@@ -46,6 +48,7 @@ import reactor.core.publisher.Mono;
  *     .build();
  * }</pre>
  */
+@Builder
 public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
     /**
@@ -70,23 +73,27 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     /**
      * The cache instance to store and retrieve cached responses.
      */
-    private final Cache cache;
+    @Builder.Default
+    private final Cache cache = new NoOpCache("no-op-cache");
 
     /**
      * Function to map ClientRequest to cache key strings.
      */
-    private final CacheKeyMapper cacheKeyMapper;
+    @Builder.Default
+    private final CacheKeyMapper cacheKeyMapper = new DefaultCacheKeyMapper();
 
     /**
      * Clock instance for time-based operations.
      */
-    private final Clock clock;
+    @Builder.Default
+    private final Clock clock = Clock.systemUTC();
 
     /**
      * Maximum size in bytes for responses to be cached.
      * Responses larger than this will be returned but not cached.
      */
-    private final int maxCacheableSize;
+    @Builder.Default
+    private final int maxCacheableSize = DEFAULT_MAX_CACHEABLE_SIZE;
 
     /**
      * Creates a new CachingExchangeFilterFunction with the default max cacheable size (2MB).
@@ -94,9 +101,14 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      * @param cache          The cache instance to store responses
      * @param cacheKeyMapper Function to generate cache keys from requests
      * @param clock          Clock for time-based operations
+     * @deprecated Use the builder() method instead
      */
+    @Deprecated
     public CachingExchangeFilterFunction(Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock) {
-        this(cache, cacheKeyMapper, clock, DEFAULT_MAX_CACHEABLE_SIZE);
+        this.cache = cache;
+        this.cacheKeyMapper = cacheKeyMapper;
+        this.clock = clock;
+        this.maxCacheableSize = DEFAULT_MAX_CACHEABLE_SIZE;
     }
 
     /**
@@ -107,7 +119,9 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      * @param clock            Clock for time-based operations
      * @param maxCacheableSize Maximum response size in bytes to cache (responses larger than this
      *                         will be returned but not cached)
+     * @deprecated Use the builder() method instead
      */
+    @Deprecated
     public CachingExchangeFilterFunction(
             Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock, int maxCacheableSize) {
         this.cache = cache;
