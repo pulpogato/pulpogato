@@ -1,11 +1,16 @@
 package io.github.pulpogato.rest.api;
 
 import io.github.pulpogato.common.StringOrInteger;
+import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
+import io.github.pulpogato.common.cache.DefaultCacheKeyMapper;
 import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.http.HttpStatus;
+
+import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -80,12 +85,26 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
     @Test
     void testListWorkflowRuns() {
         var api = new RestClients(webClient).getActionsApi();
-        var runsResponse = api.listWorkflowRuns(
+        var response = api.listWorkflowRuns(
                 "pulpogato", "pulpogato", StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(), null, null, null, null, null, null, null, null, null, null);
-        assertThat(runsResponse.getBody())
+        assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();
-        assertThat(runsResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void testListWorkflowRunsWithCache() {
+        var cachingClient = webClient.mutate()
+                .filter(new CachingExchangeFilterFunction(new ConcurrentMapCache("test-cache"), new DefaultCacheKeyMapper(), Clock.systemUTC()))
+                .build();
+        var api = new RestClients(cachingClient).getActionsApi();
+        var response = api.listWorkflowRuns(
+                "pulpogato", "pulpogato", StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(), null, null, null, null, null, null, null, null, null, null);
+        assertThat(response.getBody())
+                .as("Workflow runs response should not be null")
+                .isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
 }

@@ -391,4 +391,41 @@ class CachingExchangeFilterFunctionTest {
             verify(cache, never()).put(any(), any());
         }
     }
+
+    @Nested
+    @DisplayName("Large body handling")
+    class LargeBodyHandling {
+
+        @Test
+        @DisplayName("Response body larger than 256KB default limit is cached successfully")
+        void largeBodyIsCachedSuccessfully() {
+            // Create a body larger than Spring's default 256KB (262144 bytes) buffer limit
+            var largeBody = new byte[300_000];
+            for (int i = 0; i < largeBody.length; i++) {
+                largeBody[i] = (byte) (i % 256);
+            }
+
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var response = ClientResponse.create(HttpStatus.OK)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header("ETag", "\"large-body\"")
+                    .body(Flux.just(bufferFactory.wrap(largeBody)))
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
+
+            var result = filter.filter(request, exchangeFunction).block();
+
+            assertThat(result).isNotNull();
+            assertThat(result.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
+                    .containsExactly("MISS");
+
+            var captor = ArgumentCaptor.forClass(CachedResponse.class);
+            verify(cache).put(eq(CACHE_KEY), captor.capture());
+            assertThat(captor.getValue().body()).hasSize(300_000);
+            assertThat(captor.getValue().etag()).isEqualTo("\"large-body\"");
+        }
+    }
 }
