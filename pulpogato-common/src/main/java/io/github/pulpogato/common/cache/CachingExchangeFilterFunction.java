@@ -8,8 +8,10 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.cache.Cache;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -135,16 +137,26 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         // Copy headers to a plain Map for serialization
         var headerMap = new HashMap<String, List<String>>();
         headers.forEach((key, values) -> headerMap.put(key, new ArrayList<>(values)));
-        return response.bodyToMono(byte[].class).defaultIfEmpty(new byte[0]).map(body -> {
-            var cachedResponse = new CachedResponse(body, headerMap, etag, lastModified, maxAge, clock.millis());
-            cache.put(cacheKey, cachedResponse);
+        // Use DataBufferUtils.join with no limit (-1) to avoid the default 256KB buffer limit
+        return DataBufferUtils.join(response.body(BodyExtractors.toDataBuffers()), -1)
+                .map(dataBuffer -> {
+                    var body = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(body);
+                    DataBufferUtils.release(dataBuffer);
+                    return body;
+                })
+                .defaultIfEmpty(new byte[0])
+                .map(body -> {
+                    var cachedResponse =
+                            new CachedResponse(body, headerMap, etag, lastModified, maxAge, clock.millis());
+                    cache.put(cacheKey, cachedResponse);
 
-            return ClientResponse.create(response.statusCode())
-                    .headers(h -> headers.forEach(h::put))
-                    .header(CACHE_HEADER_NAME, "MISS")
-                    .body(Flux.just(bufferFactory.wrap(body)))
-                    .build();
-        });
+                    // Use response.mutate() to preserve the original response's exchange strategies
+                    return response.mutate()
+                            .body(Flux.just(bufferFactory.wrap(body)))
+                            .header(CACHE_HEADER_NAME, "MISS")
+                            .build();
+                });
     }
 
     private static long parseMaxAge(String cacheControl) {
