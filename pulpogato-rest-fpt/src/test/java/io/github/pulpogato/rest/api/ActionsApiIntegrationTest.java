@@ -77,4 +77,15 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    @Test
+    void testListWorkflowRuns() {
+        var api = new RestClients(webClient).getActionsApi();
+        var runsResponse = api.listWorkflowRuns(
+                "pulpogato", "pulpogato", StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(), null, null, null, null, null, null, null, null, null, null);
+        assertThat(runsResponse.getBody())
+                .as("Workflow runs response should not be null")
+                .isNotNull();
+        assertThat(runsResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
 }

@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.client.MockMvcHttpConnector;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootTest(
@@ -38,7 +39,12 @@ public class BaseIntegrationTest {
 
         var mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
+        var strategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .build();
+
         webClient = WebClient.builder()
+                .exchangeStrategies(strategies)
                 .clientConnector(new MockMvcHttpConnector(mockMvc))
                 .defaultHeader("TapeName", classPart + "/" + methodPart)
                 .build();
