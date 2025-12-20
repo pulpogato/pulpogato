@@ -1,11 +1,11 @@
 package io.github.pulpogato.common.cache;
 
+import java.io.ByteArrayOutputStream;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.cache.Cache;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -34,6 +35,9 @@ import reactor.core.publisher.Mono;
  * When expired, conditional headers are added and on 304 Not Modified the cached response body
  * is returned.
  *
+ * <p>Responses larger than {@link #maxCacheableSize} are not cached but are still returned
+ * successfully. This prevents memory issues with very large responses.
+ *
  * <p>Example usage:
  * <pre>{@code
  * HttpCache cache = new InMemoryHttpCache();
@@ -42,7 +46,6 @@ import reactor.core.publisher.Mono;
  *     .build();
  * }</pre>
  */
-@RequiredArgsConstructor
 public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
     /**
@@ -50,7 +53,17 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      */
     public static final String CACHE_HEADER_NAME = "X-Pulpogato-Cache";
 
+    /**
+     * Default maximum size for cacheable responses (2MB).
+     */
+    public static final int DEFAULT_MAX_CACHEABLE_SIZE = 2 * 1024 * 1024;
+
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("max-age=(\\d+)");
+
+    // Use 16MB buffer limit for exchange strategies to handle responses larger than cache limit
+    private static final ExchangeStrategies LARGE_BUFFER_STRATEGIES = ExchangeStrategies.builder()
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
+            .build();
 
     private final DefaultDataBufferFactory bufferFactory = new DefaultDataBufferFactory();
 
@@ -69,6 +82,40 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      */
     private final Clock clock;
 
+    /**
+     * Maximum size in bytes for responses to be cached.
+     * Responses larger than this will be returned but not cached.
+     */
+    private final int maxCacheableSize;
+
+    /**
+     * Creates a new CachingExchangeFilterFunction with the default max cacheable size (2MB).
+     *
+     * @param cache          The cache instance to store responses
+     * @param cacheKeyMapper Function to generate cache keys from requests
+     * @param clock          Clock for time-based operations
+     */
+    public CachingExchangeFilterFunction(Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock) {
+        this(cache, cacheKeyMapper, clock, DEFAULT_MAX_CACHEABLE_SIZE);
+    }
+
+    /**
+     * Creates a new CachingExchangeFilterFunction with a custom max cacheable size.
+     *
+     * @param cache            The cache instance to store responses
+     * @param cacheKeyMapper   Function to generate cache keys from requests
+     * @param clock            Clock for time-based operations
+     * @param maxCacheableSize Maximum response size in bytes to cache (responses larger than this
+     *                         will be returned but not cached)
+     */
+    public CachingExchangeFilterFunction(
+            Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock, int maxCacheableSize) {
+        this.cache = cache;
+        this.cacheKeyMapper = cacheKeyMapper;
+        this.clock = clock;
+        this.maxCacheableSize = maxCacheableSize;
+    }
+
     @Override
     @NonNull
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
@@ -82,7 +129,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
         // If we have a fresh cached response, return it
         if (cached != null && !cached.isExpired(clock.millis())) {
-            return Mono.just(ClientResponse.create(HttpStatus.OK)
+            return Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
                     .headers(h -> h.putAll(cached.headers()))
                     .header(CACHE_HEADER_NAME, "HIT")
                     .body(Flux.just(bufferFactory.wrap(cached.body())))
@@ -106,7 +153,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
             // On 304, return cached body
             if (response.statusCode().value() == 304 && cached != null) {
                 return response.releaseBody()
-                        .then(Mono.just(ClientResponse.create(HttpStatus.OK)
+                        .then(Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
                                 .headers(h -> h.putAll(cached.headers()))
                                 .header(CACHE_HEADER_NAME, "REVALIDATED")
                                 .body(Flux.just(bufferFactory.wrap(cached.body())))
@@ -134,27 +181,47 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         if (etag == null && lastModified == null && maxAge < 0) {
             return Mono.just(response);
         }
+
+        // Check Content-Length if available - skip caching if too large
+        var contentLength = headers.getContentLength();
+        if (contentLength > maxCacheableSize) {
+            return Mono.just(response);
+        }
+
         // Copy headers to a plain Map for serialization
         var headerMap = new HashMap<String, List<String>>();
         headers.forEach((key, values) -> headerMap.put(key, new ArrayList<>(values)));
-        // Use DataBufferUtils.join with no limit (-1) to avoid the default 256KB buffer limit
-        return DataBufferUtils.join(response.body(BodyExtractors.toDataBuffers()), -1)
-                .map(dataBuffer -> {
-                    var body = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(body);
-                    DataBufferUtils.release(dataBuffer);
-                    return body;
+
+        // Buffer the response body and check size
+        return response.body(BodyExtractors.toDataBuffers())
+                .reduce(new ByteArrayOutputStream(), (baos, buffer) -> {
+                    var bytes = new byte[buffer.readableByteCount()];
+                    buffer.read(bytes);
+                    DataBufferUtils.release(buffer);
+                    baos.writeBytes(bytes);
+                    return baos;
                 })
+                .map(ByteArrayOutputStream::toByteArray)
                 .defaultIfEmpty(new byte[0])
                 .map(body -> {
+                    // If response is too large, skip caching but still return the data
+                    if (body.length > maxCacheableSize) {
+                        return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
+                                .headers(h -> h.putAll(headerMap))
+                                .header(CACHE_HEADER_NAME, "SKIP")
+                                .body(Flux.just(bufferFactory.wrap(body)))
+                                .build();
+                    }
+
+                    // Cache and return
                     var cachedResponse =
                             new CachedResponse(body, headerMap, etag, lastModified, maxAge, clock.millis());
                     cache.put(cacheKey, cachedResponse);
 
-                    // Use response.mutate() to preserve the original response's exchange strategies
-                    return response.mutate()
-                            .body(Flux.just(bufferFactory.wrap(body)))
+                    return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
+                            .headers(h -> h.putAll(headerMap))
                             .header(CACHE_HEADER_NAME, "MISS")
+                            .body(Flux.just(bufferFactory.wrap(body)))
                             .build();
                 });
     }
