@@ -1,5 +1,6 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.jackson;
 
+import io.github.pulpogato.common.Mode;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;

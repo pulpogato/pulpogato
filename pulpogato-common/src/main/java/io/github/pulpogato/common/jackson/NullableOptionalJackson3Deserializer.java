@@ -1,14 +1,13 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.jackson;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import java.io.IOException;
+import io.github.pulpogato.common.NullableOptional;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * Custom Jackson deserializer for {@link NullableOptional} that handles three-state deserialization:
@@ -18,8 +17,7 @@ import java.io.IOException;
  *   <li><b>Field present with value</b>: Deserializes to of(value)</li>
  * </ul>
  */
-public class NullableOptionalJackson2Deserializer extends StdDeserializer<NullableOptional<?>>
-        implements ContextualDeserializer {
+public class NullableOptionalJackson3Deserializer extends StdDeserializer<NullableOptional<?>> {
 
     /**
      * The type of the value contained in the NullableOptional.
@@ -29,24 +27,24 @@ public class NullableOptionalJackson2Deserializer extends StdDeserializer<Nullab
     /**
      * Default constructor required by Jackson for deserializer instantiation.
      */
-    public NullableOptionalJackson2Deserializer() {
+    public NullableOptionalJackson3Deserializer() {
         super(NullableOptional.class);
         this.valueType = null;
     }
 
-    private NullableOptionalJackson2Deserializer(JavaType valueType) {
+    private NullableOptionalJackson3Deserializer(JavaType valueType) {
         super(NullableOptional.class);
         this.valueType = valueType;
     }
 
     @Override
-    public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+    public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
         JavaType type = property != null ? property.getType().containedType(0) : null;
-        return new NullableOptionalJackson2Deserializer(type);
+        return new NullableOptionalJackson3Deserializer(type);
     }
 
     @Override
-    public NullableOptional<?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public NullableOptional<?> deserialize(JsonParser p, DeserializationContext ctxt) {
         if (p.currentToken() == JsonToken.VALUE_NULL) {
             return NullableOptional.ofNull();
         }

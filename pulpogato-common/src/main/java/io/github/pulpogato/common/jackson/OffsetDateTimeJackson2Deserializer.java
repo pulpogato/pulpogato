@@ -1,4 +1,4 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.jackson;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;

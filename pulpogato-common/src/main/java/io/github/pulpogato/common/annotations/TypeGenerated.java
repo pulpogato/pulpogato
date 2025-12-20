@@ -1,4 +1,4 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

@@ -43,12 +43,12 @@ object Types {
             .annotated(
                 AnnotationSpec
                     .builder(ClassName.get("tools.jackson.databind.annotation", "JsonDeserialize"))
-                    .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeJackson3Deserializer"))
+                    .addMember("using", $$"$T.class", ClassName.get("$COMMON_PACKAGE.jackson", "OffsetDateTimeJackson3Deserializer"))
                     .build(),
             ).annotated(
                 AnnotationSpec
                     .builder(ClassName.get("com.fasterxml.jackson.databind.annotation", "JsonDeserialize"))
-                    .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "OffsetDateTimeJackson2Deserializer"))
+                    .addMember("using", $$"$T.class", ClassName.get("$COMMON_PACKAGE.jackson", "OffsetDateTimeJackson2Deserializer"))
                     .build(),
             )
 
@@ -64,7 +64,6 @@ object Types {
     val LIST: ClassName = ClassName.get(List::class.java)
     val MAP: ClassName = ClassName.get(Map::class.java)
     val CODE_BUILDER: ClassName = ClassName.get(COMMON_PACKAGE, "CodeBuilder")
-    val OBJECTS: ClassName = ClassName.get("java.util", "Objects")
     val OVERRIDE: ClassName = ClassName.get(Override::class.java)
 
     // Common Parameterized Types

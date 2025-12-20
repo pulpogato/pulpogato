@@ -1,6 +1,6 @@
 package io.github.pulpogato.test;
 
-import io.github.pulpogato.common.Generated;
+import io.github.pulpogato.common.annotations.Generated;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;

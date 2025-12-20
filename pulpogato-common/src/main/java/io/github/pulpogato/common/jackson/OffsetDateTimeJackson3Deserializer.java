@@ -1,4 +1,4 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.jackson;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;

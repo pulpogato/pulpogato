@@ -40,7 +40,7 @@ abstract class DownloadSchemaTask : DefaultTask() {
     /**
      * The GitHub repository path for the REST API description schemas.
      *
-     * This property specifies the repository path (e.g., "github/rest-api-description")
+     * This property specifies the repository path (e.g., `"github/rest-api-description"`)
      * from which OpenAPI schemas will be downloaded.
      */
     @get:Input
@@ -90,7 +90,7 @@ abstract class DownloadSchemaTask : DefaultTask() {
     /**
      * Builds the schema URL based on the given variant and version.
      *
-     * For the "fpt" variant, the path is set to "api.github.com",
+     * For the "fpt" variant, the path is set to `"api.github.com"`,
      * otherwise the variant itself is used as the path.
      *
      * @param variant The project variant (e.g., "fpt", or other variant names)

@@ -21,9 +21,9 @@ object MarkdownHelper {
     private val newParagraphRegex = Regex("</p>\\s*<p>")
 
     /**
-     * Converts a markdown string to an HTML string.
+     * Converts a Markdown string to an HTML string.
      *
-     * @param md The markdown string to convert.
+     * @param md The Markdown string to convert.
      * @return The HTML string.
      */
     fun mdToHtml(md: String?): String {

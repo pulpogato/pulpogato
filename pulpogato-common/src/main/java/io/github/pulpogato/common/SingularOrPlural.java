@@ -1,5 +1,9 @@
 package io.github.pulpogato.common;
 
+import io.github.pulpogato.common.jackson.Jackson2FancyDeserializer;
+import io.github.pulpogato.common.jackson.Jackson2FancySerializer;
+import io.github.pulpogato.common.jackson.Jackson3FancyDeserializer;
+import io.github.pulpogato.common.jackson.Jackson3FancySerializer;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

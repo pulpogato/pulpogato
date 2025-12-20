@@ -3,6 +3,7 @@ package io.github.pulpogato.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.github.pulpogato.common.jackson.OffsetDateTimeJackson3Deserializer;
 import java.time.OffsetDateTime;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;

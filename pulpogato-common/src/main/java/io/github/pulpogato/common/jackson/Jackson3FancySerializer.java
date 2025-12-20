@@ -1,5 +1,6 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.jackson;
 
+import io.github.pulpogato.common.Mode;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
