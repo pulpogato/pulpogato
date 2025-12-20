@@ -321,6 +321,40 @@ private fun buildType(
     return Pair(refName, definition)
 }
 
+/**
+ * Helper function to add standard methods, getters/setters, and builder pattern to a TypeSpec.Builder
+ */
+private fun addStandardMethodsAndBuilder(
+    builder: TypeSpec.Builder,
+    fieldSpecs: List<FieldSpec>,
+    classRef: ClassName,
+) {
+    // Generate all methods
+    fieldSpecs.forEach { field ->
+        val javadoc = extractJavadoc(field)
+        builder
+            .addMethod(generateGetter(field, javadoc))
+            .addMethod(generateSetter(field, javadoc))
+    }
+
+    builder
+        .addMethod(generateEquals())
+        .addMethod(generateHashCode())
+        .addMethod(generateToString())
+        .addMethod(generateNoArgsConstructor())
+
+    if (fieldSpecs.isNotEmpty()) {
+        builder.addMethod(generateAllArgsConstructor(classRef, fieldSpecs))
+    }
+
+    // Add builder pattern
+    builder
+        .addType(generateBuilderClass(classRef, fieldSpecs))
+        .addType(generateBuilderImplClass(classRef))
+        .addMethod(generateBuilderFactoryMethod(classRef))
+        .addMethod(generateToBuilderMethod(classRef))
+}
+
 private fun buildFancyObject(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
@@ -359,30 +393,7 @@ private fun buildFancyObject(
     val builtType = theType.build()
     val fieldSpecs = builtType.fieldSpecs()
 
-    // Generate all methods
-    fieldSpecs.forEach { field ->
-        val javadoc = extractJavadoc(field)
-        theType
-            .addMethod(generateGetter(field, javadoc))
-            .addMethod(generateSetter(field, javadoc))
-    }
-
-    theType
-        .addMethod(generateEquals())
-        .addMethod(generateHashCode())
-        .addMethod(generateToString())
-        .addMethod(generateNoArgsConstructor())
-
-    if (fieldSpecs.isNotEmpty()) {
-        theType.addMethod(generateAllArgsConstructor(classRef, fieldSpecs))
-    }
-
-    // Add builder pattern
-    theType
-        .addType(generateBuilderClass(classRef, fieldSpecs))
-        .addType(generateBuilderImplClass(classRef))
-        .addMethod(generateBuilderFactoryMethod(classRef))
-        .addMethod(generateToBuilderMethod(classRef))
+    addStandardMethodsAndBuilder(theType, fieldSpecs, classRef)
 
     // Add toCode method (existing logic)
     addToCodeMethod(builtType, theType, classRef)
@@ -724,30 +735,7 @@ private fun buildSimpleObject(
     val builtClass = builder.build()
     val fields = builtClass.fieldSpecs()
 
-    // Generate all methods
-    fields.forEach { field ->
-        val javadoc = extractJavadoc(field)
-        builder
-            .addMethod(generateGetter(field, javadoc))
-            .addMethod(generateSetter(field, javadoc))
-    }
-
-    builder
-        .addMethod(generateEquals())
-        .addMethod(generateHashCode())
-        .addMethod(generateToString())
-        .addMethod(generateNoArgsConstructor())
-
-    if (fields.isNotEmpty()) {
-        builder.addMethod(generateAllArgsConstructor(nameRef, fields))
-    }
-
-    // Add builder pattern
-    builder
-        .addType(generateBuilderClass(nameRef, fields))
-        .addType(generateBuilderImplClass(nameRef))
-        .addMethod(generateBuilderFactoryMethod(nameRef))
-        .addMethod(generateToBuilderMethod(nameRef))
+    addStandardMethodsAndBuilder(builder, fields, nameRef)
 
     // Add toCode method (existing logic)
     addToCodeMethod(builtClass, builder, nameRef)
