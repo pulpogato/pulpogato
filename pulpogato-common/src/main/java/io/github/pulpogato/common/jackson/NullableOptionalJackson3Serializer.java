@@ -1,9 +1,9 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.jackson;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
+import io.github.pulpogato.common.NullableOptional;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 /**
  * Custom Jackson serializer for {@link NullableOptional} that handles three-state serialization:
@@ -13,18 +13,17 @@ import java.io.IOException;
  *   <li><b>VALUE</b>: Field serialized with its value</li>
  * </ul>
  */
-public class NullableOptionalJackson2Serializer extends StdSerializer<NullableOptional<?>> {
+public class NullableOptionalJackson3Serializer extends StdSerializer<NullableOptional<?>> {
 
     /**
      * Default constructor required by Jackson for serializer instantiation.
      */
-    public NullableOptionalJackson2Serializer() {
-        super(NullableOptional.class, false);
+    public NullableOptionalJackson3Serializer() {
+        super(NullableOptional.class);
     }
 
     @Override
-    public void serialize(NullableOptional<?> value, JsonGenerator gen, SerializerProvider provider)
-            throws IOException {
+    public void serialize(NullableOptional<?> value, JsonGenerator gen, SerializationContext provider) {
         if (value.isNull()) {
             gen.writeNull();
         } else if (!value.isNotSet()) {
@@ -33,7 +32,7 @@ public class NullableOptionalJackson2Serializer extends StdSerializer<NullableOp
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, NullableOptional<?> value) {
+    public boolean isEmpty(SerializationContext provider, NullableOptional<?> value) {
         // Return true for NOT_SET to skip serialization entirely
         return value == null || value.isNotSet();
     }

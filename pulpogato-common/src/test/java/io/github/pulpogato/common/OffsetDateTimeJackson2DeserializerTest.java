@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.pulpogato.common.jackson.OffsetDateTimeJackson2Deserializer;
 import java.time.OffsetDateTime;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;

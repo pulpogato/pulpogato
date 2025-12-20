@@ -120,11 +120,11 @@ object Annotations {
         listOf(
             AnnotationSpec
                 .builder(ClassName.get(jackson3Annotation))
-                .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "NullableOptionalJackson3$suffix"))
+                .addMember("using", $$"$T.class", ClassName.get("$COMMON_PACKAGE.jackson", "NullableOptionalJackson3$suffix"))
                 .build(),
             AnnotationSpec
                 .builder(ClassName.get(jackson2Annotation))
-                .addMember("using", $$"$T.class", ClassName.get(COMMON_PACKAGE, "NullableOptionalJackson2$suffix"))
+                .addMember("using", $$"$T.class", ClassName.get("$COMMON_PACKAGE.jackson", "NullableOptionalJackson2$suffix"))
                 .build(),
         )
 
@@ -138,7 +138,7 @@ object Annotations {
     ): AnnotationSpec {
         val builder =
             AnnotationSpec
-                .builder(ClassName.get(COMMON_PACKAGE, "Generated"))
+                .builder(ClassName.get("$COMMON_PACKAGE.annotations", "Generated"))
                 .addMember("ghVersion", $$"$S", context.version)
         val schemaRef = context.getSchemaStackRef()
         if (schemaRef.isNotEmpty()) {
@@ -155,7 +155,7 @@ object Annotations {
 
     fun typeGenerated(): AnnotationSpec =
         AnnotationSpec
-            .builder(ClassName.get(COMMON_PACKAGE, "TypeGenerated"))
+            .builder(ClassName.get("$COMMON_PACKAGE.annotations", "TypeGenerated"))
             .addMember("codeRef", $$"$S", codeRef(0))
             .build()
 

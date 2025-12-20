@@ -382,7 +382,7 @@ private fun buildFancyObject(
         .addType(generateBuilderClass(classRef, fieldSpecs))
         .addType(generateBuilderImplClass(classRef))
         .addMethod(generateBuilderFactoryMethod(classRef))
-        .addMethod(generateToBuilderMethod(classRef, fieldSpecs))
+        .addMethod(generateToBuilderMethod(classRef))
 
     // Add toCode method (existing logic)
     addToCodeMethod(builtType, theType, classRef)
@@ -557,7 +557,7 @@ private fun rebuildWithUpdatedMethods(
         .addType(generateBuilderClass(className, allFields))
         .addType(generateBuilderImplClass(className))
         .addMethod(generateBuilderFactoryMethod(className))
-        .addMethod(generateToBuilderMethod(className, allFields))
+        .addMethod(generateToBuilderMethod(className))
 
     // Add toCode method
     val rebuilt = builderWithoutOldBuilder.build()
@@ -615,17 +615,12 @@ private fun getGettableFields(
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
-            "new \$T<>(\$T.class, \$T::get$name)",
-            pulpogatoClass("Jackson${jacksonVersion}FancySerializer", "GettableField"),
+            $$"new $T<>($T.class, $T::get$$name)",
+            ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancySerializer", "GettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
     }
-
-private fun pulpogatoClass(
-    simpleName: String,
-    vararg simpleNames: String,
-): ClassName = ClassName.get(PACKAGE_PULPOGATO_COMMON, simpleName, *simpleNames)
 
 private fun getSettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
@@ -635,7 +630,7 @@ private fun getSettableFields(
     fields.map { (type, name) ->
         CodeBlock.of(
             $$"new $T<>($T.class, $T::set$$name)",
-            pulpogatoClass("Jackson${jacksonVersion}FancyDeserializer", "SettableField"),
+            ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancyDeserializer", "SettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
@@ -650,8 +645,12 @@ private fun buildSerializer(
     TypeSpec
         .classBuilder("${className}Jackson${jacksonVersion}Serializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .superclass(ParameterizedTypeName.get(pulpogatoClass("Jackson${jacksonVersion}FancySerializer"), ClassName.get("", className)))
-        .addMethod(
+        .superclass(
+            ParameterizedTypeName.get(
+                ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancySerializer"),
+                ClassName.get("", className),
+            ),
+        ).addMethod(
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -661,7 +660,7 @@ private fun buildSerializer(
                         |))
                     """.trimMargin(),
                     ClassName.get("", className),
-                    pulpogatoClass("Mode"),
+                    ClassName.get(PACKAGE_PULPOGATO_COMMON, "Mode"),
                     Types.LIST,
                     CodeBlock.join(gettableFields, ",\n    "),
                 ).build(),
@@ -676,8 +675,12 @@ private fun buildDeserializer(
     TypeSpec
         .classBuilder("${className}Jackson${jacksonVersion}Deserializer")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .superclass(ParameterizedTypeName.get(pulpogatoClass("Jackson${jacksonVersion}FancyDeserializer"), ClassName.get("", className)))
-        .addMethod(
+        .superclass(
+            ParameterizedTypeName.get(
+                ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancyDeserializer"),
+                ClassName.get("", className),
+            ),
+        ).addMethod(
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -688,7 +691,7 @@ private fun buildDeserializer(
                     """.trimMargin(),
                     ClassName.get("", className),
                     ClassName.get("", className),
-                    pulpogatoClass("Mode"),
+                    ClassName.get(PACKAGE_PULPOGATO_COMMON, "Mode"),
                     Types.LIST,
                     CodeBlock.join(settableFields, ",\n    "),
                 ).build(),
@@ -744,7 +747,7 @@ private fun buildSimpleObject(
         .addType(generateBuilderClass(nameRef, fields))
         .addType(generateBuilderImplClass(nameRef))
         .addMethod(generateBuilderFactoryMethod(nameRef))
-        .addMethod(generateToBuilderMethod(nameRef, fields))
+        .addMethod(generateToBuilderMethod(nameRef))
 
     // Add toCode method (existing logic)
     addToCodeMethod(builtClass, builder, nameRef)
@@ -782,8 +785,8 @@ private fun addToCodeMethod(
 }
 
 /**
- * Extracts javadoc text from a FieldSpec.
- * Returns empty string if field has no javadoc.
+ * Extracts Javadoc text from a FieldSpec.
+ * Returns empty string if field has no Javadoc.
  */
 private fun extractJavadoc(field: FieldSpec): String {
     val javadoc = field.javadoc()
@@ -810,9 +813,9 @@ private fun generateGetter(
             .methodBuilder(methodName)
             .addModifiers(Modifier.PUBLIC)
             .returns(field.type())
-            .addStatement("return this.\$N", fieldName)
+            .addStatement($$"return this.$N", fieldName)
 
-    // Add javadoc if present
+    // Add Javadoc if present
     if (javadoc.isNotBlank()) {
         builder.addJavadoc(javadoc)
     }
@@ -845,12 +848,12 @@ private fun generateSetter(
                     .builder(fieldType, fieldName)
                     .apply {
                         if (isNullableOptional) {
-                            addAnnotation(Annotations.nonNull())
+                            addAnnotation(nonNull())
                         }
                     }.build(),
-            ).addStatement("this.\$N = \$N", fieldName, fieldName)
+            ).addStatement($$"this.$N = $N", fieldName, fieldName)
 
-    // Add javadoc if present
+    // Add Javadoc if present
     if (javadoc.isNotBlank()) {
         builder.addJavadoc(javadoc)
     }
@@ -889,7 +892,7 @@ private fun generateAllArgsConstructor(
             .addParameter(wildcardBuilder, "b")
 
     fields.forEach { field ->
-        builder.addStatement("this.\$N = b.\$N", field.name(), field.name())
+        builder.addStatement($$"this.$N = b.$N", field.name(), field.name())
     }
 
     return builder.build()
@@ -931,63 +934,6 @@ private fun generateHashCode(): MethodSpec =
         .build()
 
 /**
- * Generates fluent setter method for builder.
- * Returns Builder for method chaining.
- */
-private fun generateBuilderSetter(
-    builderClassName: ClassName,
-    field: FieldSpec,
-    javadoc: String = "",
-): MethodSpec {
-    val fieldName = field.name()
-
-    val builder =
-        MethodSpec
-            .methodBuilder(fieldName)
-            .addModifiers(Modifier.PUBLIC)
-            .returns(builderClassName)
-            .addParameter(
-                ParameterSpec.builder(field.type(), fieldName).build(),
-            ).addStatement("this.\$N = \$N", fieldName, fieldName)
-            .addStatement("return this")
-
-    // Add javadoc if present
-    if (javadoc.isNotBlank()) {
-        builder.addJavadoc(javadoc)
-    }
-
-    return builder.build()
-}
-
-/**
- * Generates build() method that creates parent class instance.
- */
-private fun generateBuildMethod(
-    className: ClassName,
-    fields: List<FieldSpec>,
-): MethodSpec {
-    val builder =
-        MethodSpec
-            .methodBuilder("build")
-            .addModifiers(Modifier.PUBLIC)
-            .returns(className)
-
-    if (fields.isEmpty()) {
-        builder.addStatement("return new \$T()", className)
-    } else {
-        // Build: return new ClassName(this.field1, this.field2, ...);
-        val fieldReferences = fields.map { CodeBlock.of("this.\$N", it.name()) }
-        builder.addStatement(
-            "return new \$T(\$L)",
-            className,
-            CodeBlock.join(fieldReferences, ", "),
-        )
-    }
-
-    return builder.build()
-}
-
-/**
  * Generates $fillValuesFrom method for SuperBuilder pattern.
  */
 private fun generateFillValuesFromMethod(
@@ -995,12 +941,12 @@ private fun generateFillValuesFromMethod(
     cTypeVar: TypeVariableName,
 ): MethodSpec =
     MethodSpec
-        .methodBuilder("\$fillValuesFrom")
+        .methodBuilder($$"$fillValuesFrom")
         .addModifiers(Modifier.PROTECTED)
         .returns(bTypeVar)
         .addParameter(cTypeVar, "instance")
-        .addStatement("\$\$fillValuesFromInstanceIntoBuilder(instance, this)")
-        .addStatement("return (\$T)this.self()", bTypeVar)
+        .addStatement($$$"$$fillValuesFromInstanceIntoBuilder(instance, this)")
+        .addStatement($$"return ($T)this.self()", bTypeVar)
         .build()
 
 /**
@@ -1020,14 +966,14 @@ private fun generateFillValuesFromInstanceIntoBuilderMethod(
 
     val builder =
         MethodSpec
-            .methodBuilder("\$fillValuesFromInstanceIntoBuilder")
+            .methodBuilder($$"$fillValuesFromInstanceIntoBuilder")
             .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
             .returns(TypeName.VOID)
             .addParameter(className, "instance")
             .addParameter(wildcardBuilder, "b")
 
     fields.forEach { field ->
-        builder.addStatement("b.\$N(instance.\$N)", field.name(), field.name())
+        builder.addStatement($$"b.$N(instance.$N)", field.name(), field.name())
     }
 
     return builder.build()
@@ -1065,11 +1011,11 @@ private fun generateAbstractBuilderSetter(
                     .builder(fieldType, fieldName)
                     .apply {
                         if (isNullableOptional) {
-                            addAnnotation(Annotations.nonNull())
+                            addAnnotation(nonNull())
                         }
                     }.build(),
-            ).addStatement("this.\$N = \$N", fieldName, fieldName)
-            .addStatement("return (\$T)this.self()", bTypeVar)
+            ).addStatement($$"this.$N = $N", fieldName, fieldName)
+            .addStatement($$"return ($T)this.self()", bTypeVar)
 
     // Add @JsonProperty annotation
     val jsonPropertyAnnotation =
@@ -1080,7 +1026,7 @@ private fun generateAbstractBuilderSetter(
         mainMethodBuilder.addAnnotation(jsonPropertyAnnotation)
     }
 
-    // Add javadoc if present
+    // Add Javadoc if present
     if (javadoc.isNotBlank()) {
         mainMethodBuilder.addJavadoc(javadoc)
     }
@@ -1115,7 +1061,7 @@ private fun generateAbstractBuilderSetter(
                         fieldName,
                     ).addAnnotation(Annotations.deprecated("1.2.0"))
 
-            // Add javadoc for convenience method
+            // Add Javadoc for convenience method
             if (javadoc.isNotBlank()) {
                 convenienceMethodBuilder.addJavadoc(
                     javadoc + "\n\n<p>Convenience method that wraps the value in NullableOptional automatically.\n" +
@@ -1133,7 +1079,7 @@ private fun generateAbstractBuilderSetter(
             }
 
             methods.add(convenienceMethodBuilder.build())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // If reflection fails, skip generating the convenience method
             // This is a fallback to ensure code generation doesn't fail completely
         }
@@ -1197,7 +1143,7 @@ private fun generateBuilderClass(
             val fieldType = field.type()
             if (fieldType.toString().startsWith("io.github.pulpogato.common.NullableOptional")) {
                 constructorBuilder.addStatement(
-                    "this.\$N = \$T.notSet()",
+                    $$"this.$N = $T.notSet()",
                     field.name(),
                     ClassName.get("io.github.pulpogato.common", "NullableOptional"),
                 )
@@ -1278,7 +1224,7 @@ private fun generateBuilderImplClass(className: ClassName): TypeSpec {
                 .methodBuilder("build")
                 .addModifiers(Modifier.PUBLIC)
                 .returns(className)
-                .addStatement("return new \$T(this)", className)
+                .addStatement($$"return new $T(this)", className)
                 .build(),
         ).build()
 }
@@ -1304,17 +1250,14 @@ private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec {
         .methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .returns(wildcardBuilder)
-        .addStatement("return new \$T()", implClassName)
+        .addStatement($$"return new $T()", implClassName)
         .build()
 }
 
 /**
  * Generates toBuilder() method for copying instances.
  */
-private fun generateToBuilderMethod(
-    className: ClassName,
-    fields: List<FieldSpec>,
-): MethodSpec {
+private fun generateToBuilderMethod(className: ClassName): MethodSpec {
     val builderName = "${className.simpleName()}Builder"
     val implName = "${className.simpleName()}BuilderImpl"
     val builderClassName = className.nestedClass(builderName)
@@ -1332,7 +1275,7 @@ private fun generateToBuilderMethod(
         .methodBuilder("toBuilder")
         .addModifiers(Modifier.PUBLIC)
         .returns(wildcardBuilder)
-        .addStatement("return (new \$T()).\$\$fillValuesFrom(this)", implClassName)
+        .addStatement($$$"return (new $T()).$$fillValuesFrom(this)", implClassName)
         .build()
 }
 

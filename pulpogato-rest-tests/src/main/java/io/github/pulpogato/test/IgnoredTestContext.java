@@ -2,7 +2,7 @@ package io.github.pulpogato.test;
 
 import static org.junit.platform.commons.support.AnnotationSupport.findAnnotation;
 
-import io.github.pulpogato.common.Generated;
+import io.github.pulpogato.common.annotations.Generated;
 import java.lang.reflect.AnnotatedElement;
 import java.util.Optional;
 import org.jspecify.annotations.NonNull;

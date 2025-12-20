@@ -203,7 +203,7 @@ class PathsBuilder {
                         .methodBuilder(getterName)
                         .addModifiers(Modifier.PUBLIC)
                         .returns(typeRef)
-                        .addStatement("return this.\$N", fieldName)
+                        .addStatement($$"return this.$N", fieldName)
                         .addJavadoc($$"$L", apiDescription ?: "")
                         .build(),
                 )
@@ -223,13 +223,13 @@ class PathsBuilder {
                         .build(),
                 ).addStatement("this.restClient = restClient")
                 .addStatement(
-                    "this.conversionService = new \$T()",
+                    $$"this.conversionService = new $T()",
                     ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
                 ).addStatement(
-                    "new \$T().getConverters().forEach(conversionService::addConverter)",
+                    $$"new $T().getConverters().forEach(conversionService::addConverter)",
                     ClassName.get(packageName, "EnumConverters"),
                 ).addStatement(
-                    "conversionService.addConverter(new \$T())",
+                    $$"conversionService.addConverter(new $T())",
                     ClassName.get("io.github.pulpogato.common", "StringOrInteger", "StringConverter"),
                 ).addStatement(
                     $$"""
@@ -246,7 +246,7 @@ class PathsBuilder {
 
         // Initialize all API fields in constructor
         apiFieldInitializers.forEach { (fieldName, typeRef) ->
-            constructorBuilder.addStatement("this.\$N = computeApi(\$T.class)", fieldName, typeRef)
+            constructorBuilder.addStatement($$"this.$N = computeApi($T.class)", fieldName, typeRef)
         }
 
         restClients.addMethod(constructorBuilder.build())

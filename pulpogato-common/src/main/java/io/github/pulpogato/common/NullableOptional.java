@@ -1,5 +1,9 @@
 package io.github.pulpogato.common;
 
+import io.github.pulpogato.common.jackson.NullableOptionalJackson2Deserializer;
+import io.github.pulpogato.common.jackson.NullableOptionalJackson2Serializer;
+import io.github.pulpogato.common.jackson.NullableOptionalJackson3Deserializer;
+import io.github.pulpogato.common.jackson.NullableOptionalJackson3Serializer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.EqualsAndHashCode;
@@ -92,13 +96,15 @@ public final class NullableOptional<T> implements PulpogatoType {
     }
 
     /**
+     * <p>
      * Returns a NullableOptional for the given value, which may be null.
      * If the value is null, returns a NULL state NullableOptional.
      * If the value is non-null, returns a VALUE state NullableOptional.
-     *
+     * </p>
+     * <p>
      * This is useful in builder patterns where the caller has a potentially
      * null value and wants it automatically wrapped appropriately.
-     *
+     * </p>
      * @param value the value to wrap (may be null)
      * @param <T> the type of the value
      * @return a NullableOptional in NULL state if value is null, VALUE state otherwise
