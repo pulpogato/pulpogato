@@ -43,7 +43,7 @@ java {
 description = "Common utilities for Pulpogato REST types"
 
 tasks.withType<JavaCompile> {
-    options.setIncremental(true)
+    options.isIncremental = true
 }
 
 tasks.withType<Test> {

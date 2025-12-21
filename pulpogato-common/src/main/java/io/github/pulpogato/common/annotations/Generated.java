@@ -16,7 +16,7 @@ public @interface Generated {
     String ghVersion();
     /**
      * The location of the type in the schema
-     * @return The location as a json reference
+     * @return The location as a JSON reference
      */
     String schemaRef() default "";
     /**
