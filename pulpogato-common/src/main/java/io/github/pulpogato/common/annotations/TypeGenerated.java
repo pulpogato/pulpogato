@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 public @interface TypeGenerated {
     /**
      * The location of the type in the schema
-     * @return The location as a json reference
+     * @return The location as a JSON reference
      */
     String codeRef();
 }

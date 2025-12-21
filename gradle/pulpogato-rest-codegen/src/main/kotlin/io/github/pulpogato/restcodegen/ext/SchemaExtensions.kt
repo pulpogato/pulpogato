@@ -321,6 +321,40 @@ private fun buildType(
     return Pair(refName, definition)
 }
 
+/**
+ * Extracted common logic for adding standard methods, getters/setters, and builder pattern to a TypeSpec.Builder
+ */
+private fun addStandardMethodsAndBuilderLogic(
+    builder: TypeSpec.Builder,
+    fieldSpecs: List<FieldSpec>,
+    classRef: ClassName,
+) {
+    // Generate all methods
+    fieldSpecs.forEach { field ->
+        val javadoc = extractJavadoc(field)
+        builder
+            .addMethod(generateGetter(field, javadoc))
+            .addMethod(generateSetter(field, javadoc))
+    }
+
+    builder
+        .addMethod(generateEquals())
+        .addMethod(generateHashCode())
+        .addMethod(generateToString())
+        .addMethod(generateNoArgsConstructor())
+
+    if (fieldSpecs.isNotEmpty()) {
+        builder.addMethod(generateAllArgsConstructor(classRef, fieldSpecs))
+    }
+
+    // Add builder pattern
+    builder
+        .addType(generateBuilderClass(classRef, fieldSpecs))
+        .addType(generateBuilderImplClass(classRef))
+        .addMethod(generateBuilderFactoryMethod(classRef))
+        .addMethod(generateToBuilderMethod(classRef))
+}
+
 private fun buildFancyObject(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
@@ -359,30 +393,7 @@ private fun buildFancyObject(
     val builtType = theType.build()
     val fieldSpecs = builtType.fieldSpecs()
 
-    // Generate all methods
-    fieldSpecs.forEach { field ->
-        val javadoc = extractJavadoc(field)
-        theType
-            .addMethod(generateGetter(field, javadoc))
-            .addMethod(generateSetter(field, javadoc))
-    }
-
-    theType
-        .addMethod(generateEquals())
-        .addMethod(generateHashCode())
-        .addMethod(generateToString())
-        .addMethod(generateNoArgsConstructor())
-
-    if (fieldSpecs.isNotEmpty()) {
-        theType.addMethod(generateAllArgsConstructor(classRef, fieldSpecs))
-    }
-
-    // Add builder pattern
-    theType
-        .addType(generateBuilderClass(classRef, fieldSpecs))
-        .addType(generateBuilderImplClass(classRef))
-        .addMethod(generateBuilderFactoryMethod(classRef))
-        .addMethod(generateToBuilderMethod(classRef))
+    addStandardMethodsAndBuilderLogic(theType, fieldSpecs, classRef)
 
     // Add toCode method (existing logic)
     addToCodeMethod(builtType, theType, classRef)
@@ -446,13 +457,33 @@ private fun processNestedType(
 private fun copyTypeSpecToBuilder(
     original: TypeSpec,
     methodFilter: (MethodSpec) -> Boolean = { true },
+): TypeSpec.Builder = copyTypeSpecToBuilderWithFilteredTypes(original, { true }, methodFilter)
+
+/**
+ * Determines if a method should be kept (not filtered out) - returns true to keep the method
+ */
+private fun shouldKeepMethod(method: MethodSpec): Boolean =
+    when {
+        method.isConstructor -> false
+        method.name() in setOf("toString", "toCode", "equals", "hashCode", "toBuilder", "builder") -> false
+        method.name().startsWith("get") || method.name().startsWith("set") -> false
+        else -> true
+    }
+
+/**
+ * Creates a TypeSpec.Builder from an existing TypeSpec, with option to filter typeSpecs (nested classes)
+ */
+private fun copyTypeSpecToBuilderWithFilteredTypes(
+    original: TypeSpec,
+    typeSpecFilter: (TypeSpec) -> Boolean = { true },
+    methodFilter: (MethodSpec) -> Boolean = { true },
 ): TypeSpec.Builder {
     val builder = TypeSpec.classBuilder(original.name())
     original.annotations().forEach { builder.addAnnotation(it) }
     original.modifiers().forEach { builder.addModifiers(it) }
     original.superinterfaces().forEach { builder.addSuperinterface(it) }
     original.fieldSpecs().forEach { builder.addField(it) }
-    original.typeSpecs().forEach { builder.addType(it) }
+    original.typeSpecs().filter(typeSpecFilter).forEach { builder.addType(it) }
     original.methodSpecs().filter(methodFilter).forEach { builder.addMethod(it) }
     if (!original.javadoc().isEmpty) {
         builder.addJavadoc(original.javadoc())
@@ -488,11 +519,7 @@ private fun handleToCodeMethods(
         !hasToCodeMethod -> addMethodsToNewType(builtWithAllProperties, className, theType)
         else -> {
             // Even if toCode doesn't need updating, the Builder might need regenerating if fields were added
-            if (hasNewFields) {
-                rebuildWithUpdatedMethods(builtWithAllProperties, className, theType)
-            } else {
-                theType.addType(builtWithAllProperties)
-            }
+            theType.addType(builtWithAllProperties)
         }
     }
 }
@@ -507,57 +534,28 @@ private fun rebuildWithUpdatedMethods(
         copyTypeSpecToBuilder(builtWithAllProperties) { method ->
             // Keep only methods that are NOT auto-generated (like enum methods, custom logic)
             // Exclude: constructors, getters, setters, equals, hashCode, toString, toCode, builder methods, canEqual
-            when {
-                method.isConstructor -> false
-                method.name() in setOf("toString", "toCode", "equals", "hashCode", "toBuilder", "builder") -> false
-                method.name().startsWith("get") || method.name().startsWith("set") -> false
-                else -> true
-            }
+            shouldKeepMethod(method)
         }
 
-    // Remove old Builder nested class
-    val builderWithoutOldBuilder = TypeSpec.classBuilder(builtWithAllProperties.name())
-    builtWithAllProperties.annotations().forEach { builderWithoutOldBuilder.addAnnotation(it) }
-    builtWithAllProperties.modifiers().forEach { builderWithoutOldBuilder.addModifiers(it) }
-    builtWithAllProperties.superinterfaces().forEach { builderWithoutOldBuilder.addSuperinterface(it) }
-    builtWithAllProperties.fieldSpecs().forEach { builderWithoutOldBuilder.addField(it) }
-    // Filter out builder classes (ends with "Builder" or "BuilderImpl")
-    builtWithAllProperties
-        .typeSpecs()
-        .filter {
-            !it.name().endsWith("Builder") && !it.name().endsWith("BuilderImpl")
-        }.forEach { builderWithoutOldBuilder.addType(it) }
-    builderWithoutGeneratedMethods.build().methodSpecs().forEach { builderWithoutOldBuilder.addMethod(it) }
-    if (!builtWithAllProperties.javadoc().isEmpty) {
-        builderWithoutOldBuilder.addJavadoc(builtWithAllProperties.javadoc())
-    }
+    // Use helper function to copy TypeSpec with filtered types
+    val builderWithoutOldBuilder =
+        copyTypeSpecToBuilderWithFilteredTypes(
+            builtWithAllProperties,
+            typeSpecFilter = { !it.name().endsWith("Builder") && !it.name().endsWith("BuilderImpl") },
+            methodFilter = { method ->
+                // Keep only methods that are NOT auto-generated (like enum methods, custom logic)
+                // Exclude: constructors, getters, setters, equals, hashCode, toString, toCode, builder methods, canEqual
+                shouldKeepMethod(method)
+            },
+        ).apply {
+            // Add the custom methods from the temporary builder
+            builderWithoutGeneratedMethods.build().methodSpecs().forEach { addMethod(it) }
+        }
 
     // Now regenerate all methods with the complete field list
     val allFields = builtWithAllProperties.fieldSpecs()
 
-    allFields.forEach { field ->
-        val javadoc = extractJavadoc(field)
-        builderWithoutOldBuilder
-            .addMethod(generateGetter(field, javadoc))
-            .addMethod(generateSetter(field, javadoc))
-    }
-
-    builderWithoutOldBuilder
-        .addMethod(generateEquals())
-        .addMethod(generateHashCode())
-        .addMethod(generateToString())
-        .addMethod(generateNoArgsConstructor())
-
-    if (allFields.isNotEmpty()) {
-        builderWithoutOldBuilder.addMethod(generateAllArgsConstructor(className, allFields))
-    }
-
-    // Add builder pattern
-    builderWithoutOldBuilder
-        .addType(generateBuilderClass(className, allFields))
-        .addType(generateBuilderImplClass(className))
-        .addMethod(generateBuilderFactoryMethod(className))
-        .addMethod(generateToBuilderMethod(className))
+    addStandardMethodsAndBuilderLogic(builderWithoutOldBuilder, allFields, className)
 
     // Add toCode method
     val rebuilt = builderWithoutOldBuilder.build()
@@ -724,30 +722,7 @@ private fun buildSimpleObject(
     val builtClass = builder.build()
     val fields = builtClass.fieldSpecs()
 
-    // Generate all methods
-    fields.forEach { field ->
-        val javadoc = extractJavadoc(field)
-        builder
-            .addMethod(generateGetter(field, javadoc))
-            .addMethod(generateSetter(field, javadoc))
-    }
-
-    builder
-        .addMethod(generateEquals())
-        .addMethod(generateHashCode())
-        .addMethod(generateToString())
-        .addMethod(generateNoArgsConstructor())
-
-    if (fields.isNotEmpty()) {
-        builder.addMethod(generateAllArgsConstructor(nameRef, fields))
-    }
-
-    // Add builder pattern
-    builder
-        .addType(generateBuilderClass(nameRef, fields))
-        .addType(generateBuilderImplClass(nameRef))
-        .addMethod(generateBuilderFactoryMethod(nameRef))
-        .addMethod(generateToBuilderMethod(nameRef))
+    addStandardMethodsAndBuilderLogic(builder, fields, nameRef)
 
     // Add toCode method (existing logic)
     addToCodeMethod(builtClass, builder, nameRef)
@@ -1232,44 +1207,32 @@ private fun generateBuilderImplClass(className: ClassName): TypeSpec {
 /**
  * Generates static factory method for builder.
  */
-private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec {
-    val builderName = "${className.simpleName()}Builder"
-    val implName = "${className.simpleName()}BuilderImpl"
-    val builderClassName = className.nestedClass(builderName)
-    val implClassName = className.nestedClass(implName)
-
-    // Return type: TopicBuilder<?, ?>
-    val wildcardBuilder =
-        ParameterizedTypeName.get(
-            builderClassName,
-            WildcardTypeName.subtypeOf(Types.OBJECT),
-            WildcardTypeName.subtypeOf(Types.OBJECT),
-        )
-
-    return MethodSpec
+private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec =
+    MethodSpec
         .methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .returns(wildcardBuilder)
-        .addStatement($$"return new $T()", implClassName)
+        .returns(createBuilder(className))
+        .addStatement($$"return new $T()", className.nestedClass("${className.simpleName()}BuilderImpl"))
         .build()
+
+/**
+ * Gets the wildcard builder type for a given class.
+ */
+private fun createBuilder(className: ClassName): ParameterizedTypeName {
+    val builderClassName = className.nestedClass("${className.simpleName()}Builder")
+    return ParameterizedTypeName.get(
+        builderClassName,
+        WildcardTypeName.subtypeOf(Types.OBJECT),
+        WildcardTypeName.subtypeOf(Types.OBJECT),
+    )
 }
 
 /**
  * Generates toBuilder() method for copying instances.
  */
 private fun generateToBuilderMethod(className: ClassName): MethodSpec {
-    val builderName = "${className.simpleName()}Builder"
-    val implName = "${className.simpleName()}BuilderImpl"
-    val builderClassName = className.nestedClass(builderName)
-    val implClassName = className.nestedClass(implName)
-
-    // Return type: TopicBuilder<?, ?>
-    val wildcardBuilder =
-        ParameterizedTypeName.get(
-            builderClassName,
-            WildcardTypeName.subtypeOf(Types.OBJECT),
-            WildcardTypeName.subtypeOf(Types.OBJECT),
-        )
+    val wildcardBuilder = createBuilder(className)
+    val implClassName = className.nestedClass("${className.simpleName()}BuilderImpl")
 
     return MethodSpec
         .methodBuilder("toBuilder")
