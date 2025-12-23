@@ -91,7 +91,6 @@ class JsonRefValidator(
         val errors = schemaRefs.count { it != null }
         val total = schemaRefs.size
         check(errors <= threshold) { "Found $errors errors in $total JSON references" }
-        println("Found $errors errors in $total JSON references")
     }
 
     /**
