@@ -76,10 +76,9 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
                 ActionsApi.CreateWorkflowDispatchRequestBody.builder().ref("main").build()
         );
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         var body = response.getBody();
-        assertThat(body).isNotNull();
-        assertThat(body.getWorkflowRunId()).isEqualTo(20355835086L);
+        assertThat(body).isNull();
     }
 
     @Test
