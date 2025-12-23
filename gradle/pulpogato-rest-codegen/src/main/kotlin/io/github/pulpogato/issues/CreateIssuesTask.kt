@@ -71,7 +71,7 @@ abstract class CreateIssuesTask : DefaultTask() {
                         """
 # Schema Inaccuracy
 
-This is the json ref for the example
+This is the JSON ref for the example
 
 ```
 $exampleRef
