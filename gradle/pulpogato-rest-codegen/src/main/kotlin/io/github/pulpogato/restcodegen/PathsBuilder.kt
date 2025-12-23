@@ -92,15 +92,6 @@ class PathsBuilder {
                 .addField(
                     FieldSpec
                         .builder(
-                            ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
-                            "restClient",
-                            Modifier.PRIVATE,
-                            Modifier.FINAL,
-                        ).addAnnotation(nonNull())
-                        .build(),
-                ).addField(
-                    FieldSpec
-                        .builder(
                             ClassName.get("org.springframework.format.support", "FormattingConversionService"),
                             "conversionService",
                             Modifier.PRIVATE,
@@ -221,8 +212,7 @@ class PathsBuilder {
                             "restClient",
                         ).addAnnotation(nonNull())
                         .build(),
-                ).addStatement("this.restClient = restClient")
-                .addStatement(
+                ).addStatement(
                     $$"this.conversionService = new $T()",
                     ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
                 ).addStatement(
