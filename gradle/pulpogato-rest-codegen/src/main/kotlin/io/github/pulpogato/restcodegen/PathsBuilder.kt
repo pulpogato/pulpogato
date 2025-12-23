@@ -224,14 +224,12 @@ class PathsBuilder {
                 ).addStatement(
                     $$"""
                     this.factory = $T.builderFor(
-                            $T.create(
-                                    $T.requireNonNull(restClient)))
+                            $T.create(restClient))
                             .conversionService(this.conversionService)
                             .build()
                     """.trimIndent(),
                     ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
                     ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
-                    ClassName.get("java.util", "Objects"),
                 )
 
         // Initialize all API fields in the constructor
