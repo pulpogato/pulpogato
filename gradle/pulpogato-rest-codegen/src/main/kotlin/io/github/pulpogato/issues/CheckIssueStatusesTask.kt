@@ -13,7 +13,7 @@ import java.io.File
 /**
  * Gradle task to check the status of GitHub issues related to ignored tests.
  * This task reads an input file containing GitHub issue URLs, fetches their current status
- * from GitHub, and verifies that all issues are still in OPEN state.
+ * from GitHub, and verifies that all issues are still in the OPEN state.
  *
  * If any issues are found to be closed or not open, the task will throw a GradleException.
  */

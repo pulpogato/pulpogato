@@ -38,7 +38,7 @@ import javax.lang.model.element.Modifier
  */
 class PathsBuilder {
     /**
-     * Represents a single HTTP operation (method + path) from an OpenAPI specification.
+     * Represents a single HTTP operation (method and path) from an OpenAPI specification.
      *
      * @property path The API endpoint path (e.g., "/users/{id}")
      * @property method The HTTP method (GET, POST, PUT, DELETE, etc.)
@@ -77,7 +77,7 @@ class PathsBuilder {
         packageName: String,
         enumConverters: MutableSet<ClassName>,
     ) {
-        // Create test resources directory for large JSON examples
+        // Create the test resources directory for large JSON examples
         val testResourcesDir = File(testDir.parentFile, "resources")
         val apiDir = File(mainDir, packageName.replace(".", "/"))
         apiDir.mkdirs()
@@ -184,7 +184,7 @@ class PathsBuilder {
                     JavaFile.builder(packageName, typeClassBuilt).build().writeTo(testDir)
                 }
 
-                // Add field without initializer (will be initialized in constructor)
+                // Add a field without an initializer (will be initialized in constructor)
                 val fieldName = interfaceName.camelCase()
                 val apiField =
                     FieldSpec
@@ -209,7 +209,7 @@ class PathsBuilder {
                 )
             }
 
-        // Add constructor that initializes all API fields
+        // Add a constructor that initializes all API fields
         val constructorBuilder =
             MethodSpec
                 .constructorBuilder()
@@ -244,7 +244,7 @@ class PathsBuilder {
                     ClassName.get("java.util", "Objects"),
                 )
 
-        // Initialize all API fields in constructor
+        // Initialize all API fields in the constructor
         apiFieldInitializers.forEach { (fieldName, typeRef) ->
             constructorBuilder.addStatement($$"this.$N = computeApi($T.class)", fieldName, typeRef)
         }
@@ -410,7 +410,7 @@ class PathsBuilder {
             }
         return examples
             .mapNotNull { (k, v) ->
-                // Resolve example value and build proper schema ref, handling $ref if present
+                // Resolve example value and build a proper schema ref, handling $ref if present
                 val (exampleValue, schemaRefPath) =
                     when {
                         v.value != null ->

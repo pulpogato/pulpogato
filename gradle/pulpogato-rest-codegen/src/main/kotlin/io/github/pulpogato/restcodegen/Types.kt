@@ -66,7 +66,7 @@ object Types {
     val CODE_BUILDER: ClassName = ClassName.get(COMMON_PACKAGE, "CodeBuilder")
     val OVERRIDE: ClassName = ClassName.get(Override::class.java)
 
-    // Common Parameterized Types
+    // Commonly Parameterized Types
     val MAP_STRING_OBJECT: ParameterizedTypeName = ParameterizedTypeName.get(MAP, STRING, OBJECT)
     val SINGULAR_OR_PLURAL: ClassName = ClassName.get(COMMON_PACKAGE, "SingularOrPlural")
 }
