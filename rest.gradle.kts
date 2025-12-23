@@ -36,7 +36,7 @@ codegen {
     packageName.set("io.github.pulpogato")
     mainDir.set(file("${project.layout.buildDirectory.get()}/generated-src/main/java"))
     testDir.set(file("${project.layout.buildDirectory.get()}/generated-src/test/java"))
-    apiVersion.set(project.ext.get("gh.api.version").toString())
+    apiVersion.set(project.ext.get("gh.api.commit").toString())
     apiRepository.set(project.ext.get("gh.api.repo").toString())
     projectVariant.set(variant)
 }
@@ -144,7 +144,7 @@ val addSchemaInfoToBroker = tasks.register("addSchemaInfoToBroker") {
 
         val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
         infoBrokerPlugin.add("GitHub-API-Repo", project.ext.get("gh.api.repo").toString())
-        infoBrokerPlugin.add("GitHub-API-Version", project.ext.get("gh.api.version").toString())
+        infoBrokerPlugin.add("GitHub-API-Commit", project.ext.get("gh.api.commit").toString())
         infoBrokerPlugin.add("GitHub-API-SHA256", sha256)
     }
 }
