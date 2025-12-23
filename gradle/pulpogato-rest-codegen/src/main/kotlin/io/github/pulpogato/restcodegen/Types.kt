@@ -11,6 +11,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 object Types {
     const val COMMON_PACKAGE = "io.github.pulpogato.common"
 
