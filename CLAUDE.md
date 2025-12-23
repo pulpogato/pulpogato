@@ -64,7 +64,7 @@ Code generation is core to the project:
 - Parallel builds enabled (`org.gradle.parallel=true`)
 - Custom JVM args for compilation with module exports
 - Memory allocated: 4GB (`-Xmx4g`)
-- GitHub API version tracked in `gradle.properties` as `gh.api.version`
+- GitHub API version tracked in `gradle.properties` as `gh.api.commit`
 
 ## Testing Approach
 
