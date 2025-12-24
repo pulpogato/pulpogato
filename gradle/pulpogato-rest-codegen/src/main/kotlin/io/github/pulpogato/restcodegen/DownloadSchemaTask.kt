@@ -21,6 +21,14 @@ import java.security.MessageDigest
 @CacheableTask
 abstract class DownloadSchemaTask : DefaultTask() {
     /**
+     * The commit from which API schema is downloaded.
+     *
+     * This property specifies which version of the API schema to retrieve.
+     */
+    @get:Input
+    abstract val apiCommit: Property<String>
+
+    /**
      * The API version to download schema for.
      *
      * This property specifies which version of the API schema to retrieve.
@@ -67,16 +75,27 @@ abstract class DownloadSchemaTask : DefaultTask() {
     @TaskAction
     fun download() {
         val variant = projectVariant.get()
-        val version = apiVersion.get()
+        val commit = apiCommit.get()
+        val apiVersion = apiVersion.get()
         val outputFile = schemaFile.get().asFile
 
-        val url = buildSchemaUrl(variant, version)
+        val url = buildSchemaUrl(variant, commit, apiVersion)
         logger.info("Downloading schema from: $url")
 
         outputFile.parentFile.mkdirs()
 
         val schemaBytes = URI(url).toURL().readBytes()
         outputFile.writeBytes(schemaBytes)
+
+        // Write the headers properties file alongside the schema
+        val propertiesFile = outputFile.parentFile.resolve("pulpogato-headers.properties")
+        val projectVersion = project.version.toString()
+        propertiesFile.writeText(
+            """# Pulpogato Headers Properties
+pulpogato.version=$projectVersion
+github.api.version=$apiVersion
+""",
+        )
 
         val sha256 = calculateSha256(schemaBytes)
         project.extensions.extraProperties["github.api.sha256"] = sha256
@@ -94,16 +113,17 @@ abstract class DownloadSchemaTask : DefaultTask() {
      * otherwise the variant itself is used as the path.
      *
      * @param variant The project variant (e.g., "fpt", or other variant names)
-     * @param version The API version to download
+     * @param commit The API version to download
      * @return The complete URL for downloading the schema
      */
     private fun buildSchemaUrl(
         variant: String,
-        version: String,
+        commit: String,
+        apiVersion: String,
     ): String {
         val path = if (variant == "fpt") "api.github.com" else variant
         val repo = apiRepository.get()
-        return "https://github.com/$repo/raw/$version/descriptions-next/$path/$path.json"
+        return "https://github.com/$repo/raw/$commit/descriptions-next/$path/$path.$apiVersion.json"
     }
 
     /**
