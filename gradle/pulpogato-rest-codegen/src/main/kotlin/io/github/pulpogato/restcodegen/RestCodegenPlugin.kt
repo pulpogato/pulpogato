@@ -11,10 +11,11 @@ class RestCodegenPlugin : Plugin<Project> {
 
         val downloadSchema = target.tasks.register("downloadSchema", DownloadSchemaTask::class.java)
         downloadSchema.configure {
+            apiCommit.set(extension.apiCommit)
             apiVersion.set(extension.apiVersion)
             projectVariant.set(extension.projectVariant)
             apiRepository.set(extension.apiRepository)
-            schemaFile.set(target.layout.buildDirectory.file("generated-src/main/resources/schema.json"))
+            schemaFile.set(target.layout.buildDirectory.file("generated-src/main/resources/github.schema.json"))
         }
 
         val generateJava = target.tasks.register("generateJava", GenerateJavaTask::class.java)

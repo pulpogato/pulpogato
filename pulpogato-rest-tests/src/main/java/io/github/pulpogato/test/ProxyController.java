@@ -34,7 +34,7 @@ public class ProxyController {
     private final RestTemplate restTemplate;
 
     public ProxyController() {
-        // Configure RestTemplate with Apache HttpClient to support PATCH method
+        // Configure RestTemplate with Apache HttpClient to support the PATCH method
         var httpClient = HttpClients.createDefault();
         var requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
@@ -140,8 +140,9 @@ public class ProxyController {
         var requestHeadersMap = new HashMap<String, String>();
 
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            if (Set.of("user-agent", "host", "TapeName", "Content-Length").stream()
-                    .noneMatch(it -> it.equalsIgnoreCase(headerName))) {
+            Set<String> excludedHeaders = Set.of(
+                    "user-agent", "host", "TapeName", "Content-Length", "X-GitHub-Api-Version", "X-Pulpogato-Version");
+            if (excludedHeaders.stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
                 requestHeadersMap.put(headerName, request.getHeader(headerName));
             }
         });

@@ -223,13 +223,17 @@ class PathsBuilder {
                     ClassName.get("io.github.pulpogato.common", "StringOrInteger", "StringConverter"),
                 ).addStatement(
                     $$"""
-                    this.factory = $T.builderFor(
-                            $T.create(restClient))
+                    this.factory = $T.builderFor($T.create(
+                            restClient.mutate()
+                                    .filter(new $T())
+                                    .build()
+                            ))
                             .conversionService(this.conversionService)
                             .build()
                     """.trimIndent(),
                     ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
                     ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
+                    ClassName.get("io.github.pulpogato.common", "DefaultHeadersExchangeFunction"),
                 )
 
         // Initialize all API fields in the constructor

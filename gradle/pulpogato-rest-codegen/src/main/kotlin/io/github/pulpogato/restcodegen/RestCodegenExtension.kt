@@ -49,10 +49,15 @@ open class RestCodegenExtension(
     var testDir: RegularFileProperty = project.objects.fileProperty()
 
     /**
-     * The version of the API being generated.
+     * The commit hash from which the API is being generated.
      *
      * This property is used for version tracking and may be used in generated code
      * for documentation or version-specific configurations.
+     */
+    var apiCommit: Property<String> = project.objects.property(String::class.java)
+
+    /**
+     * The API Version from GitHub.
      */
     var apiVersion: Property<String> = project.objects.property(String::class.java)
 
