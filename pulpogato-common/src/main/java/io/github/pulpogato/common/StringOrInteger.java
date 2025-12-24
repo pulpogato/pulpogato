@@ -2,6 +2,7 @@ package io.github.pulpogato.common;
 
 import io.github.pulpogato.common.jackson.Jackson2FancyDeserializer;
 import io.github.pulpogato.common.jackson.Jackson2FancySerializer;
+import io.github.pulpogato.common.util.CodeBuilder;
 import java.util.List;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

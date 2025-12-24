@@ -64,7 +64,7 @@ object Types {
     // Utility types
     val LIST: ClassName = ClassName.get(List::class.java)
     val MAP: ClassName = ClassName.get(Map::class.java)
-    val CODE_BUILDER: ClassName = ClassName.get(COMMON_PACKAGE, "CodeBuilder")
+    val CODE_BUILDER: ClassName = ClassName.get(COMMON_PACKAGE + ".util", "CodeBuilder")
     val OVERRIDE: ClassName = ClassName.get(Override::class.java)
 
     // Commonly Parameterized Types

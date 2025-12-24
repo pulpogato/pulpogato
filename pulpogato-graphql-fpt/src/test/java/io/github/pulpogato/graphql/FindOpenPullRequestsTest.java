@@ -1,7 +1,7 @@
 package io.github.pulpogato.graphql;
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
-import io.github.pulpogato.common.LinkedHashMapBuilder;
+import io.github.pulpogato.common.util.LinkedHashMapBuilder;
 import io.github.pulpogato.graphql.types.MergeableState;
 import io.github.pulpogato.graphql.types.PullRequestMergeMethod;
 import io.github.pulpogato.graphql.types.Repository;
