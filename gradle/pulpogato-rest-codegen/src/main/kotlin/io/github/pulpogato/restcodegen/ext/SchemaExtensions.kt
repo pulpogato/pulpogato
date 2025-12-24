@@ -41,27 +41,22 @@ fun Map.Entry<String, Schema<*>>.className() = key.pascalCase()
  * that should NOT be wrapped in NullableOptional.
  */
 private fun isSimpleType(typeName: TypeName): Boolean {
-    // For annotated types, we need to check the base type
-    // The toString() of an annotated type includes annotations like "java.lang. @Annotation String"
-    // We need to remove both the annotation and any extra spacing/dots
-    val typeString =
-        typeName
-            .toString()
-            .replace(Regex("""\s+@\w+(\.\w+)*\([^)]*\)"""), "") // Remove @package.Annotation(args)
-            .replace(Regex("""\s+@\w+(\.\w+)*"""), "") // Remove @package.Annotation
-            .replace(Regex("""\.\s+"""), ".") // Fix "java.lang. String" -> "java.lang.String"
-            .trim()
+    val type = typeName.withoutAnnotations()
+    if (type.isPrimitive) return true
+    if (type !is ClassName) return false
 
     return when {
-        typeString == "java.lang.String" -> true
-        typeString == "java.lang.Boolean" || typeString == "boolean" -> true
-        typeString == "java.lang.Integer" || typeString == "int" -> true
-        typeString == "java.lang.Long" || typeString == "long" -> true
-        typeString == "java.lang.Double" || typeString == "double" -> true
-        typeString == "java.lang.Float" || typeString == "float" -> true
-        typeString == "java.math.BigDecimal" -> true
-        typeString.startsWith("java.time.") -> true
-        typeString.startsWith("java.net.URI") -> true
+        type.packageName() == "java.lang" && type.simpleName() == "String" -> true
+        type.packageName() == "java.lang" && (
+            type.simpleName() == "Boolean" ||
+                type.simpleName() == "Integer" ||
+                type.simpleName() == "Long" ||
+                type.simpleName() == "Double" ||
+                type.simpleName() == "Float"
+        ) -> true
+        type.packageName() == "java.math" && type.simpleName() == "BigDecimal" -> true
+        type.packageName().startsWith("java.time") -> true
+        type.packageName() == "java.net" && type.simpleName() == "URI" -> true
         else -> false
     }
 }
@@ -396,7 +391,7 @@ private fun buildFancyObject(
     addStandardMethodsAndBuilderLogic(theType, fieldSpecs, classRef)
 
     // Add toCode method (existing logic)
-    addToCodeMethod(builtType, theType, classRef)
+    addToCodeMethod(fieldSpecs, theType, classRef)
 
     // Add custom serializers/deserializers (KEEP THIS)
     val deserializer3 = buildDeserializer(className, fancyObjectType, getSettableFields(fields, className, 3), 3)
@@ -558,8 +553,7 @@ private fun rebuildWithUpdatedMethods(
     addStandardMethodsAndBuilderLogic(builderWithoutOldBuilder, allFields, className)
 
     // Add toCode method
-    val rebuilt = builderWithoutOldBuilder.build()
-    addToCodeMethod(rebuilt, builderWithoutOldBuilder, className)
+    addToCodeMethod(allFields, builderWithoutOldBuilder, className)
 
     theType.addType(builderWithoutOldBuilder.build())
 }
@@ -570,7 +564,7 @@ private fun addMethodsToNewType(
     theType: TypeSpec.Builder,
 ) {
     val builder = builtWithAllProperties.toBuilder()
-    addToCodeMethod(builtWithAllProperties, builder, className)
+    addToCodeMethod(builtWithAllProperties.fieldSpecs(), builder, className)
     theType.addType(builder.build())
 }
 
@@ -725,38 +719,36 @@ private fun buildSimpleObject(
     addStandardMethodsAndBuilderLogic(builder, fields, nameRef)
 
     // Add toCode method (existing logic)
-    addToCodeMethod(builtClass, builder, nameRef)
+    addToCodeMethod(fields, builder, nameRef)
 
     return builder.build()
 }
 
 private fun addToCodeMethod(
-    builtClass: TypeSpec,
+    fields: List<FieldSpec>,
     builder: TypeSpec.Builder,
     nameRef: ClassName,
 ) {
-    if (builtClass.fieldSpecs().isNotEmpty()) {
-        val toCodeStatement =
-            CodeBlock
-                .builder()
-                .add($$"return new $T($S)", Types.CODE_BUILDER, nameRef.canonicalName())
+    val toCodeStatement =
+        CodeBlock
+            .builder()
+            .add($$"return new $T($S)", Types.CODE_BUILDER, nameRef.canonicalName())
 
-        builtClass.fieldSpecs().forEach { field ->
-            toCodeStatement.add($$"\n    .addProperty($S, $N)", field.name(), field.name())
-        }
-
-        toCodeStatement.add("\n    .build()")
-
-        builder
-            .addMethod(
-                MethodSpec
-                    .methodBuilder("toCode")
-                    .addModifiers(Modifier.PUBLIC)
-                    .returns(String::class.java)
-                    .addStatement(toCodeStatement.build())
-                    .build(),
-            )
+    fields.forEach { field ->
+        toCodeStatement.add($$"\n    .addProperty($S, $N)", field.name(), field.name())
     }
+
+    toCodeStatement.add("\n    .build()")
+
+    builder
+        .addMethod(
+            MethodSpec
+                .methodBuilder("toCode")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(String::class.java)
+                .addStatement(toCodeStatement.build())
+                .build(),
+        )
 }
 
 /**
@@ -1013,10 +1005,7 @@ private fun generateAbstractBuilderSetter(
         // Use reflection to access the private typeArguments field
         // This is necessary because Palantir's JavaPoet 0.9.0 doesn't expose a public API for this
         try {
-            val typeArgumentsField = ParameterizedTypeName::class.java.getDeclaredField("typeArguments")
-            typeArgumentsField.isAccessible = true
-            @Suppress("UNCHECKED_CAST")
-            val typeArguments = typeArgumentsField.get(fieldType) as List<TypeName>
+            val typeArguments = fieldType.typeArguments()
             val unwrappedType = typeArguments[0]
 
             val convenienceMethodBuilder =
@@ -1248,25 +1237,26 @@ private fun addProperties(
     nameRef: ClassName,
     classBuilder: TypeSpec.Builder,
 ) {
-    val knownFields = classBuilder.build().fieldSpecs().map { it.name() }
-    val knownSubTypes = classBuilder.build().typeSpecs().map { it.name() }
+    val built = classBuilder.build()
+    val knownFields = built.fieldSpecs().map { it.name() }
+    val knownSubTypes = built.typeSpecs().map { it.name() }
 
-    entry.value.properties?.forEach { p ->
-        processProperty(context, p, nameRef, classBuilder, knownFields, knownSubTypes)
+    entry.value.properties?.forEach { property ->
+        processProperty(context, property, nameRef, classBuilder, knownFields, knownSubTypes)
     }
 }
 
 private fun processProperty(
     context: Context,
-    p: Map.Entry<String, Schema<*>>,
+    property: Map.Entry<String, Schema<*>>,
     nameRef: ClassName,
     classBuilder: TypeSpec.Builder,
     knownFields: List<String>,
     knownSubTypes: List<String>,
 ) {
-    referenceAndDefinition(context.withSchemaStack("properties", p.key), p, "", nameRef)?.let { (d, s) ->
+    referenceAndDefinition(context.withSchemaStack("properties", property.key), property, "", nameRef)?.let { (d, s) ->
         processNestedTypeIfPresent(s, d, knownSubTypes, classBuilder)
-        addFieldIfNew(context, p, d, knownFields, classBuilder)
+        addFieldIfNew(context, property, d, knownFields, classBuilder)
     }
 }
 
@@ -1290,7 +1280,7 @@ private fun addNestedTypeWithMethods(
 ) {
     if (nestedType.methodSpecs().none { it.name() == "toCode" } && typeName is ClassName) {
         val builder = nestedType.toBuilder()
-        addToCodeMethod(nestedType, builder, typeName)
+        addToCodeMethod(nestedType.fieldSpecs(), builder, typeName)
         classBuilder.addType(builder.addModifiers(Modifier.STATIC).build())
     } else {
         classBuilder.addType(nestedType.toBuilder().addModifiers(Modifier.STATIC).build())
@@ -1299,33 +1289,19 @@ private fun addNestedTypeWithMethods(
 
 private fun addFieldIfNew(
     context: Context,
-    p: Map.Entry<String, Schema<*>>,
+    property: Map.Entry<String, Schema<*>>,
     typeName: TypeName,
     knownFields: List<String>,
     classBuilder: TypeSpec.Builder,
 ) {
-    val fieldName = p.key.unkeywordize().camelCase()
+    val fieldName = property.key.unkeywordize().camelCase()
     if (!knownFields.contains(fieldName)) {
         // Check if this property was added from additions.schema.json
-        val schemaName =
-            if (context.schemaStack.size >= 4 &&
-                context.schemaStack[0] == "#" &&
-                context.schemaStack[1] == "components" &&
-                context.schemaStack[2] == "schemas"
-            ) {
-                context.schemaStack[3]
-            } else {
-                null
-            }
-        val sourceFile =
-            if (schemaName != null && context.isAddedProperty(schemaName, p.key)) {
-                "additions.schema.json"
-            } else {
-                "schema.json"
-            }
+        val schemaName = getSchemaName(context)
+        val sourceFile = getSourceFile(schemaName, context, property)
 
         // Check if the schema explicitly allows null (has "null" in its types array)
-        val types = p.value.types?.filterNotNull() ?: emptyList()
+        val types = property.value.types?.filterNotNull() ?: emptyList()
         val hasNull = types.contains("null")
         // Check if this is an object type (not a simple type like String, Integer, etc.)
         val isObjectType = typeName is ClassName && !isSimpleType(typeName)
@@ -1340,8 +1316,8 @@ private fun addFieldIfNew(
             builder =
                 FieldSpec
                     .builder(actualTypeName, fieldName, Modifier.PRIVATE)
-                    .addAnnotation(jsonProperty(p.key))
-                    .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
+                    .addAnnotation(jsonProperty(property.key))
+                    .addAnnotation(generated(0, context.withSchemaStack("properties", property.key), sourceFile))
                     .addAnnotations(nullableOptionalSerializer())
                     .addAnnotations(nullableOptionalDeserializer())
                     .addAnnotation(jsonIncludeNonEmpty())
@@ -1352,8 +1328,8 @@ private fun addFieldIfNew(
             builder =
                 FieldSpec
                     .builder(actualTypeName, fieldName, Modifier.PRIVATE)
-                    .addAnnotation(jsonProperty(p.key))
-                    .addAnnotation(generated(0, context.withSchemaStack("properties", p.key), sourceFile))
+                    .addAnnotation(jsonProperty(property.key))
+                    .addAnnotation(generated(0, context.withSchemaStack("properties", property.key), sourceFile))
 
             if (hasNull) {
                 // Add @JsonInclude(ALWAYS) for simple nullable types
@@ -1361,7 +1337,7 @@ private fun addFieldIfNew(
             }
         }
 
-        schemaJavadoc(p).let {
+        schemaJavadoc(property).let {
             if (it.isNotBlank()) {
                 builder.addJavadoc($$"$L", it)
             }
@@ -1370,6 +1346,28 @@ private fun addFieldIfNew(
         classBuilder.addField(builder.build())
     }
 }
+
+private fun getSchemaName(context: Context): String? =
+    if (context.schemaStack.size >= 4 &&
+        context.schemaStack[0] == "#" &&
+        context.schemaStack[1] == "components" &&
+        context.schemaStack[2] == "schemas"
+    ) {
+        context.schemaStack[3]
+    } else {
+        null
+    }
+
+private fun getSourceFile(
+    schemaName: String?,
+    context: Context,
+    property: Map.Entry<String, Schema<*>>,
+): String =
+    if (schemaName != null && context.isAddedProperty(schemaName, property.key)) {
+        "additions.schema.json"
+    } else {
+        "schema.json"
+    }
 
 private fun buildEnum(
     context: Context,
