@@ -1,5 +1,6 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.util;
 
+import io.github.pulpogato.common.PulpogatoType;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;

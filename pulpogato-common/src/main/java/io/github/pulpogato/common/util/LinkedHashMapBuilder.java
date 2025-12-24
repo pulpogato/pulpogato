@@ -1,4 +1,4 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.util;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

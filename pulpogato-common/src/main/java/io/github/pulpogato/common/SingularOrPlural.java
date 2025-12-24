@@ -4,6 +4,7 @@ import io.github.pulpogato.common.jackson.Jackson2FancyDeserializer;
 import io.github.pulpogato.common.jackson.Jackson2FancySerializer;
 import io.github.pulpogato.common.jackson.Jackson3FancyDeserializer;
 import io.github.pulpogato.common.jackson.Jackson3FancySerializer;
+import io.github.pulpogato.common.util.CodeBuilder;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -4,6 +4,7 @@ import io.github.pulpogato.common.jackson.NullableOptionalJackson2Deserializer;
 import io.github.pulpogato.common.jackson.NullableOptionalJackson2Serializer;
 import io.github.pulpogato.common.jackson.NullableOptionalJackson3Deserializer;
 import io.github.pulpogato.common.jackson.NullableOptionalJackson3Serializer;
+import io.github.pulpogato.common.util.CodeBuilder;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.EqualsAndHashCode;
