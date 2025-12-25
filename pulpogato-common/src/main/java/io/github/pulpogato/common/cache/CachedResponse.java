@@ -2,6 +2,10 @@ package io.github.pulpogato.common.cache;
 
 import java.util.List;
 import java.util.Map;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -12,20 +16,36 @@ import org.jspecify.annotations.Nullable;
  * the response was cached. This information is used to determine cache
  * freshness and to send conditional requests (If-None-Match, If-Modified-Since).
  *
- * @param body The cached response body as bytes
- * @param headers All response headers to preserve (Content-Type, etc.)
- * @param etag The ETag header value from the response, if present
- * @param lastModified The Last-Modified header value from the response, if present
- * @param maxAgeSeconds The max-age value from Cache-Control header in seconds, or -1 if not present
- * @param cachedAtMillis The system time in milliseconds when this response was cached
  */
-public record CachedResponse(
-        byte[] body,
-        Map<String, List<String>> headers,
-        @Nullable String etag,
-        @Nullable String lastModified,
-        long maxAgeSeconds,
-        long cachedAtMillis) {
+@EqualsAndHashCode(of = {"body", "headers", "etag", "lastModified", "maxAgeSeconds", "cachedAtMillis"})
+@ToString(of = {"headers", "etag", "lastModified", "maxAgeSeconds", "cachedAtMillis"})
+@RequiredArgsConstructor
+@Getter
+public final class CachedResponse {
+    /**
+     * The cached response body as bytes.
+     */
+    private final byte[] body;
+    /**
+     * All response headers to preserve ({@code Content-Type}, etc.).
+     */
+    private final Map<String, List<String>> headers;
+    /**
+     * The {@code ETag} header value from the response, if present.
+     */
+    private final @Nullable String etag;
+    /**
+     * The {@code Last-Modified} header value from the response, if present.
+     */
+    private final @Nullable String lastModified;
+    /**
+     * The max-age value from the {@code Cache-Control} header in seconds, or {@code -1} if not present.
+     */
+    private final long maxAgeSeconds;
+    /**
+     * The system time in milliseconds when this response was cached.
+     */
+    private final long cachedAtMillis;
 
     /**
      * Checks if this cached response has expired based on the max-age directive.

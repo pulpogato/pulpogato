@@ -144,20 +144,20 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         // If we have a fresh cached response, return it
         if (cached != null && !cached.isExpired(clock.millis())) {
             return Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
-                    .headers(h -> h.putAll(cached.headers()))
+                    .headers(h -> h.putAll(cached.getHeaders()))
                     .header(CACHE_HEADER_NAME, "HIT")
-                    .body(Flux.just(bufferFactory.wrap(cached.body())))
+                    .body(Flux.just(bufferFactory.wrap(cached.getBody())))
                     .build());
         }
 
         // Build request with conditional headers if we have a stale cache entry
         var requestBuilder = ClientRequest.from(request);
         if (cached != null && cached.canRevalidate()) {
-            if (cached.etag() != null) {
-                requestBuilder.header("If-None-Match", cached.etag());
+            if (cached.getEtag() != null) {
+                requestBuilder.header("If-None-Match", cached.getEtag());
             }
-            if (cached.lastModified() != null) {
-                requestBuilder.header("If-Modified-Since", cached.lastModified());
+            if (cached.getLastModified() != null) {
+                requestBuilder.header("If-Modified-Since", cached.getLastModified());
             }
         }
 
@@ -168,9 +168,9 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
             if (response.statusCode().value() == 304 && cached != null) {
                 return response.releaseBody()
                         .then(Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
-                                .headers(h -> h.putAll(cached.headers()))
+                                .headers(h -> h.putAll(cached.getHeaders()))
                                 .header(CACHE_HEADER_NAME, "REVALIDATED")
-                                .body(Flux.just(bufferFactory.wrap(cached.body())))
+                                .body(Flux.just(bufferFactory.wrap(cached.getBody())))
                                 .build()));
             }
 

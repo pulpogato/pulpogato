@@ -134,7 +134,7 @@ class CachingExchangeFilterFunctionTest {
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
-            assertThat(captor.getValue().etag()).isEqualTo("\"abc123\"");
+            assertThat(captor.getValue().getEtag()).isEqualTo("\"abc123\"");
         }
 
         @Test
@@ -152,7 +152,7 @@ class CachingExchangeFilterFunctionTest {
             assertThat(result).isNotNull();
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
-            assertThat(captor.getValue().lastModified()).isEqualTo("Wed, 21 Oct 2015 07:28:00 GMT");
+            assertThat(captor.getValue().getLastModified()).isEqualTo("Wed, 21 Oct 2015 07:28:00 GMT");
         }
 
         @Test
@@ -170,7 +170,7 @@ class CachingExchangeFilterFunctionTest {
             assertThat(result).isNotNull();
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
-            assertThat(captor.getValue().maxAgeSeconds()).isEqualTo(60);
+            assertThat(captor.getValue().getMaxAgeSeconds()).isEqualTo(60);
         }
 
         @Test
@@ -188,8 +188,8 @@ class CachingExchangeFilterFunctionTest {
             assertThat(result).isNotNull();
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
-            assertThat(captor.getValue().headers()).containsKey("Content-Type");
-            assertThat(captor.getValue().headers().get("Content-Type")).contains("application/json");
+            assertThat(captor.getValue().getHeaders()).containsKey("Content-Type");
+            assertThat(captor.getValue().getHeaders().get("Content-Type")).contains("application/json");
         }
     }
 
@@ -331,7 +331,7 @@ class CachingExchangeFilterFunctionTest {
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
-            assertThat(captor.getValue().etag()).isEqualTo("\"new\"");
+            assertThat(captor.getValue().getEtag()).isEqualTo("\"new\"");
         }
     }
 
@@ -429,8 +429,8 @@ class CachingExchangeFilterFunctionTest {
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
-            assertThat(captor.getValue().body()).hasSize(300_000);
-            assertThat(captor.getValue().etag()).isEqualTo("\"large-body\"");
+            assertThat(captor.getValue().getBody()).hasSize(300_000);
+            assertThat(captor.getValue().getEtag()).isEqualTo("\"large-body\"");
         }
 
         @Test
