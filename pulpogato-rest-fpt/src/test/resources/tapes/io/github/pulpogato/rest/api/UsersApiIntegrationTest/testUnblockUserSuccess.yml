@@ -1,5 +1,5 @@
 - request:
-    method: PUT
+    method: DELETE
     uri: /user/blocks/gooduser
     protocol: HTTP/1.1
     headers: {}
