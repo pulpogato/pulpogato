@@ -5,27 +5,25 @@ plugins {
 }
 
 dependencies {
-    api(libs.junit)
     api(libs.assertj)
-    implementation(libs.junitPlatformLauncher)
-    compileOnly(libs.jspecify)
-    compileOnly(libs.jetbrainsAnnotations)
+    api(libs.junit)
 
+    compileOnly(libs.jetbrainsAnnotations)
+    compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
+
     annotationProcessor(libs.lombok)
 
-    implementation(libs.jsonApi)
-    implementation(libs.glassfishJson)
-    implementation(project(":${rootProject.name}-common"))
-
-    implementation(libs.reflections)
     implementation(libs.bundles.springBoot)
-    implementation(libs.jackson3Yaml)
-
-    implementation(libs.jackson3Core)
-    implementation(libs.jackson2Time)
-
+    implementation(libs.glassfishJson)
     implementation(libs.httpclient5)
+    implementation(libs.jackson2Time)
+    implementation(libs.jackson3Core)
+    implementation(libs.jackson3Yaml)
+    implementation(libs.jsonApi)
+    implementation(libs.junitPlatformLauncher)
+    implementation(libs.reflections)
+    implementation(project(":${rootProject.name}-common"))
 }
 
 java {
