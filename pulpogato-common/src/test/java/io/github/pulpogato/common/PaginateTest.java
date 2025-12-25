@@ -88,10 +88,8 @@ class PaginateTest {
         when(fetchPage.apply(1L)).thenReturn(new Response(List.of("1", "2", "3"), 3));
         when(fetchPage.apply(2L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
-        assertThatThrownBy(() -> paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages)
-                        .toList())
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Failed to fetch page");
+        var stream = paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages);
+        assertThatThrownBy(stream::toList).isInstanceOf(RuntimeException.class).hasMessage("Failed to fetch page");
     }
 
     @Test
