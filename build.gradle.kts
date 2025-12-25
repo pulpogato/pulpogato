@@ -54,6 +54,8 @@ waena {
 }
 
 tasks.register("updateRestSchemaVersion") {
+    description = "Update Rest Schema Version from GitHub Rest API Descriptions"
+    group = "maintenance"
     doLast {
         val connection = uri("https://api.github.com/repos/github/rest-api-description/branches/main").toURL().openConnection()
         val gitHubToken = System.getenv("GITHUB_TOKEN")
@@ -75,6 +77,8 @@ tasks.register("updateRestSchemaVersion") {
 }
 
 val checkPlugin = tasks.register("checkPlugin", Exec::class) {
+    description = "Run check on plugin code"
+    group = "verification"
     commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
 }
 
@@ -83,9 +87,13 @@ tasks.named("check").configure {
 }
 
 val pitestPlugin = tasks.register("pitestPlugin", Exec::class) {
+    description = "Run pitest on plugin code"
+    group = "verification"
     commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "pitest")
 }
 
 tasks.register("pitest") {
+    description = "Run pitest from plugin"
+    group = "verification"
     dependsOn(pitestPlugin)
 }
