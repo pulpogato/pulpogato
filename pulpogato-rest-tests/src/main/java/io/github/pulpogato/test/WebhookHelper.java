@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.assertj.core.api.SoftAssertions;
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.params.provider.Arguments;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -84,7 +85,9 @@ public class WebhookHelper {
                 new ObjectMapper().readValue(mvcResult.getResponse().getContentAsString(), TestWebhookResponse.class);
 
         final var softly = new SoftAssertions();
+        @Language("json")
         final var originalRequest = mvcResult.getRequest().getContentAsString();
+        @Language("json")
         final var echoedRequest = response.getBody();
         TestUtils.diffJson(originalRequest, echoedRequest, softly);
         softly.assertAll();
@@ -100,7 +103,7 @@ public class WebhookHelper {
         final MockHttpServletRequestBuilder requestBuilder = post("/webhooks");
         while (true) {
             final String line = reader.readLine();
-            if (line.isEmpty()) {
+            if (line == null || line.isEmpty()) {
                 break;
             }
             final String[] split = line.split(":", 2);
