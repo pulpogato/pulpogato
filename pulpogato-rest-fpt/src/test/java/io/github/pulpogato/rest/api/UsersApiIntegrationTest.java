@@ -152,7 +152,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
     @Test
     void testUnblockUserSuccess() {
         var api = new RestClients(webClient).getUsersApi();
-        var blocked = api.block("gooduser");
+        var blocked = api.unblock("gooduser");
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody())
