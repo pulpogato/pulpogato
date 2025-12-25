@@ -73,3 +73,19 @@ tasks.register("updateRestSchemaVersion") {
         }
     }
 }
+
+val checkPlugin = tasks.register("checkPlugin", Exec::class) {
+    commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
+}
+
+tasks.named("check").configure {
+    dependsOn(checkPlugin)
+}
+
+val pitestPlugin = tasks.register("pitestPlugin", Exec::class) {
+    commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "pitest")
+}
+
+tasks.register("pitest") {
+    dependsOn(pitestPlugin)
+}
