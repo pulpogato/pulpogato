@@ -33,13 +33,13 @@ class RateLimitApiIntegrationTest extends BaseIntegrationTest {
         assertThat(resources.getSearch().getLimit()).isEqualTo(30);
         assertThat(resources.getSearch().getRemaining()).isEqualTo(30);
         assertThat(resources.getSearch().getReset()).isEqualTo(1749011183);
-        assertThat(resources.getSearch().getUsed()).isEqualTo(0);
+        assertThat(resources.getSearch().getUsed()).isZero();
         
         // Verify GraphQL rate limit information
         assertThat(resources.getGraphql().getLimit()).isEqualTo(5000);
         assertThat(resources.getGraphql().getRemaining()).isEqualTo(5000);
         assertThat(resources.getGraphql().getReset()).isEqualTo(1749014723);
-        assertThat(resources.getGraphql().getUsed()).isEqualTo(0);
+        assertThat(resources.getGraphql().getUsed()).isZero();
         
         // Verify the legacy rate object
         assertThat(rateLimitOverview.getRate().getLimit()).isEqualTo(5000);

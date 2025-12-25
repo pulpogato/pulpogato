@@ -29,10 +29,10 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(user.getCompany()).isNull();
         assertThat(user.getLocation()).isEqualTo("City, ST");
         assertThat(user.getEmail()).isEqualTo("user1@example.com");
-        assertThat(user.getPublicRepos()).isEqualTo(0);
-        assertThat(user.getPublicGists()).isEqualTo(0);
-        assertThat(user.getFollowers()).isEqualTo(0);
-        assertThat(user.getFollowing()).isEqualTo(0);
+        assertThat(user.getPublicRepos()).isZero();
+        assertThat(user.getPublicGists()).isZero();
+        assertThat(user.getFollowers()).isZero();
+        assertThat(user.getFollowing()).isZero();
         assertThat(user.getSuspendedAt()).isNull();
     }
 
@@ -58,10 +58,10 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(user.getCompany()).isNull();
         assertThat(user.getLocation()).isNull();
         assertThat(user.getEmail()).isEqualTo("user2@example.com");
-        assertThat(user.getPublicRepos()).isEqualTo(0);
-        assertThat(user.getPublicGists()).isEqualTo(0);
-        assertThat(user.getFollowers()).isEqualTo(0);
-        assertThat(user.getFollowing()).isEqualTo(0);
+        assertThat(user.getPublicRepos()).isZero();
+        assertThat(user.getPublicGists()).isZero();
+        assertThat(user.getFollowers()).isZero();
+        assertThat(user.getFollowing()).isZero();
         assertThat(user.getSuspendedAt()).isNotNull();
 
     }
