@@ -105,10 +105,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      */
     @Deprecated
     public CachingExchangeFilterFunction(Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock) {
-        this.cache = cache;
-        this.cacheKeyMapper = cacheKeyMapper;
-        this.clock = clock;
-        this.maxCacheableSize = DEFAULT_MAX_CACHEABLE_SIZE;
+        this(cache, cacheKeyMapper, clock, DEFAULT_MAX_CACHEABLE_SIZE);
     }
 
     /**
