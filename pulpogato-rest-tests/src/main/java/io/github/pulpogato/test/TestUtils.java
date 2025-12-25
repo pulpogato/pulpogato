@@ -118,7 +118,7 @@ public class TestUtils {
         } catch (JacksonException e) {
             throw new UnrecognizedPropertyExceptionWrapper(e, input);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new JsonProcessingExceptionWrapper(e);
         }
     }
 

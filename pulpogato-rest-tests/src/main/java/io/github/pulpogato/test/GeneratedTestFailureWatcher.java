@@ -124,7 +124,7 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
                         return classAnnotation.schemaRef();
                     }
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                    throw new GeneratedTestFailedException(e);
                 }
             }
             return "unknown";
