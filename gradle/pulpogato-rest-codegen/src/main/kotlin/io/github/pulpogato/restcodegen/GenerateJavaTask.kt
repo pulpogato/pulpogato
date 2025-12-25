@@ -177,18 +177,17 @@ open class GenerateJavaTask : DefaultTask() {
         val schema = objectMapper.readTree(swaggerSpec) as ObjectNode
         val schemaAdds = objectMapper.readTree(schemaAddsJson)
 
-        val additions = schemaAdds.get("components")?.get("schemas")
+        val additions = schemaAdds["components"]?.get("schemas")
         if (additions != null && additions.isObject) {
             additions.properties().forEach { (schemaName, schemaAddition) ->
-                val properties = schemaAddition.get("properties")
+                val properties = schemaAddition["properties"]
                 if (properties != null && properties.isObject) {
                     val targetSchema = schema.at("/components/schemas/$schemaName")
                     if (targetSchema.isMissingNode) {
                         project.logger.warn("Schema '$schemaName' not found in OpenAPI spec, skipping additions")
                     } else {
                         val targetProperties =
-                            (targetSchema as ObjectNode)
-                                .get("properties") as ObjectNode
+                            (targetSchema as ObjectNode)["properties"] as ObjectNode
 
                         val propertyNames = mutableSetOf<String>()
                         properties.properties().forEach { (propertyName, propertySpec) ->
