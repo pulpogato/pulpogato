@@ -68,8 +68,8 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pullRequests.getTotalCount()).isEqualTo(5);
 
         var nodes = pullRequests.getNodes();
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).hasSize(5);
+        assertThat(nodes).isNotNull()
+                .hasSize(5);
 
         // PR #769 - renovate/spring-core
         var pr769 = nodes.get(0);
