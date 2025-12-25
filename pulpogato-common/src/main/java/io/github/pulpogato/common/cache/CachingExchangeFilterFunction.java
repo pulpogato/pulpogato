@@ -103,7 +103,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      * @param clock          Clock for time-based operations
      * @deprecated Use the builder() method instead
      */
-    @Deprecated
+    @Deprecated(since = "2.5.0", forRemoval = true)
     public CachingExchangeFilterFunction(Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock) {
         this.cache = cache;
         this.cacheKeyMapper = cacheKeyMapper;
@@ -121,7 +121,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
      *                         will be returned but not cached)
      * @deprecated Use the builder() method instead
      */
-    @Deprecated
+    @Deprecated(since = "2.5.0", forRemoval = true)
     public CachingExchangeFilterFunction(
             Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock, int maxCacheableSize) {
         this.cache = cache;
