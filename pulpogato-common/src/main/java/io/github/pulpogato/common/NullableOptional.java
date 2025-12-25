@@ -193,13 +193,11 @@ public final class NullableOptional<T> implements PulpogatoType {
      * @return a NullableOptional with the mapped value or NOT_SET
      */
     public <U> NullableOptional<U> map(Function<? super T, ? extends U> mapper) {
-        if (state == State.VALUE) {
-            return NullableOptional.of(mapper.apply(value));
-        } else if (state == State.NULL) {
-            return NullableOptional.ofNull();
-        } else {
-            return NullableOptional.notSet();
-        }
+        return switch (state) {
+            case VALUE -> NullableOptional.of(mapper.apply(value));
+            case NULL -> NullableOptional.ofNull();
+            case null, default -> NullableOptional.notSet();
+        };
     }
 
     @Override
