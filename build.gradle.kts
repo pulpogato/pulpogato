@@ -97,3 +97,15 @@ tasks.register("pitest") {
     group = "verification"
     dependsOn(pitestPlugin)
 }
+
+val spotlessApplyPlugin = tasks.register("spotlessApplyPlugin", Exec::class) {
+    description = "Run spotlessApply on plugin code"
+    group = "verification"
+    commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "spotlessApply")
+}
+
+tasks.register("spotlessApply") {
+    description = "Run spotlessApply from plugin"
+    group = "verification"
+    dependsOn(spotlessApplyPlugin)
+}
