@@ -15,9 +15,9 @@ import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.className
 import io.github.pulpogato.restcodegen.ext.pascalCase
-import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
+import io.swagger.v3.oas.models.media.MediaType
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
@@ -36,7 +36,6 @@ class WebhooksBuilder {
     )
 
     data class ProcessingContext(
-        val openAPI: OpenAPI,
         val restPackage: String,
         val operation: Operation,
         val methodSpecBuilder: MethodSpec.Builder,
@@ -54,7 +53,7 @@ class WebhooksBuilder {
         restPackage: String,
         webhooksPackage: String,
     ) {
-        // Create test resources directory for large JSON examples
+        // Create the test resources directory for large JSON examples
         val testResourcesDir = File(testDir.parentFile, "resources")
         val testControllerBuilder = buildTestController()
 
@@ -77,7 +76,7 @@ class WebhooksBuilder {
                 val builders = WebhookBuilderParams(interfaceBuilder, unitTestBuilder, testControllerBuilder)
                 v.forEach { (name, webhook) ->
                     val requestBody =
-                        createWebhookInterface(context, name, webhook, openAPI, restPackage, builders, testResourcesDir)
+                        createWebhookInterface(context, name, webhook, restPackage, builders, testResourcesDir)
                     val methodName =
                         "process" +
                             webhook
@@ -345,7 +344,6 @@ class WebhooksBuilder {
         context: Context,
         name: String,
         webhook: PathItem,
-        openAPI: OpenAPI,
         restPackage: String,
         builders: WebhookBuilderParams,
         testResourcesDir: File,
@@ -370,7 +368,7 @@ class WebhooksBuilder {
                 )
 
         val requestBody = operation.requestBody
-        val processingContext = ProcessingContext(openAPI, restPackage, operation, methodSpecBuilder, context1, tests, builders, name, testResourcesDir)
+        val processingContext = ProcessingContext(restPackage, operation, methodSpecBuilder, context1, tests, builders, name, testResourcesDir)
         val bodyType = processRequestBody(requestBody, processingContext)
 
         val javadoc = buildJavadoc(operation)
@@ -473,14 +471,14 @@ class WebhooksBuilder {
     }
 
     private fun processJsonRequestBody(
-        entry: Map.Entry<String, io.swagger.v3.oas.models.media.MediaType>,
+        entry: Map.Entry<String, MediaType>,
         ctx: ProcessingContext,
     ): ClassName {
         val ref =
             entry.value.schema.`$ref`
                 .replace("#/components/schemas/", "")
         val schema =
-            ctx.openAPI.components.schemas.entries
+            ctx.context.openAPI.components.schemas.entries
                 .first { it.key == ref }
         val type = schema.className()
 
@@ -495,7 +493,7 @@ class WebhooksBuilder {
                 .build(),
         )
 
-        processExamples(entry, ctx.openAPI, ctx.context, ctx.tests, bodyType, ctx.testResourcesDir)
+        processExamples(entry, ctx.context, ctx.tests, bodyType, ctx.testResourcesDir)
 
         if (ctx.tests.isNotEmpty()) {
             ctx.builders.unitTestBuilder.addType(
@@ -545,13 +543,13 @@ class WebhooksBuilder {
             .addMember("value", $$"$S", requestHeaderName)
 
     private fun processExamples(
-        entry: Map.Entry<String, io.swagger.v3.oas.models.media.MediaType>,
-        openAPI: OpenAPI,
+        entry: Map.Entry<String, MediaType>,
         context: Context,
         tests: MutableList<MethodSpec>,
         bodyType: ClassName,
         testResourcesDir: File,
     ) {
+        val openAPI = context.openAPI
         val examples = entry.value.examples
         if (entry.key.contains("json")) {
             examples?.forEach { (key, value) ->
