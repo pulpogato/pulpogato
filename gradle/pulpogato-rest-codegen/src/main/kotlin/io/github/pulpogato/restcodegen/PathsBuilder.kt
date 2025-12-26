@@ -18,7 +18,6 @@ import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.pascalCase
 import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
 import io.github.pulpogato.restcodegen.ext.unkeywordize
-import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem.HttpMethod
 import io.swagger.v3.oas.models.media.MediaType
@@ -160,7 +159,6 @@ class PathsBuilder {
                     buildMethod(
                         context.withSchemaStack("#", "paths", atomicMethod.path, atomicMethod.method.name.lowercase()),
                         atomicMethod,
-                        openAPI,
                         pathInterface,
                         typeRef,
                         testClass,
@@ -294,7 +292,6 @@ class PathsBuilder {
      *
      * @param context The generation context containing schema information
      * @param atomicMethod The atomic method representing the API operation
-     * @param openAPI The complete OpenAPI specification
      * @param typeDef The type specification builder for the API interface
      * @param typeRef The class name reference for the API interface
      * @param testClass The test class builder to which test methods will be added
@@ -304,14 +301,13 @@ class PathsBuilder {
     private fun buildMethod(
         context: Context,
         atomicMethod: AtomicMethod,
-        openAPI: OpenAPI,
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
         enumConverters: MutableSet<ClassName>,
         testResourcesDir: File,
     ) {
-        val parameters = getParameters(context, atomicMethod, openAPI, typeDef, typeRef, testClass, enumConverters, testResourcesDir)
+        val parameters = getParameters(context, atomicMethod, typeDef, typeRef, testClass, enumConverters, testResourcesDir)
 
         val successResponses =
             atomicMethod.operation.responses
@@ -703,7 +699,6 @@ class PathsBuilder {
      * @param ref The type name reference for the parameter type
      * @param atomicMethod The atomic method representing the API operation
      * @param testClass The test class builder to which test methods will be added
-     * @param operationName The name of the operation
      * @param typeRef The class name reference for the API interface
      * @param testResourcesDir The directory where test resource files will be stored
      */
@@ -713,10 +708,10 @@ class PathsBuilder {
         ref: TypeName,
         atomicMethod: AtomicMethod,
         testClass: TypeSpec.Builder,
-        operationName: String,
         typeRef: ClassName,
         testResourcesDir: File,
     ) {
+        val operationName = atomicMethod.operationId.split('/')[1]
         val paramName = theParameter.name.unkeywordize().camelCase()
         val testMethods =
             (theParameter.examples ?: emptyMap())
@@ -766,7 +761,6 @@ class PathsBuilder {
      *
      * @param context The generation context for tracking schema locations
      * @param atomicMethod The atomic method representing the API operation
-     * @param openAPI The complete OpenAPI specification
      * @param typeDef The type specification builder for the API interface
      * @param typeRef The class name reference for the API interface
      * @param testClass The test class builder to which test methods will be added
@@ -777,13 +771,13 @@ class PathsBuilder {
     private fun getParameters(
         context: Context,
         atomicMethod: AtomicMethod,
-        openAPI: OpenAPI,
         typeDef: TypeSpec.Builder,
         typeRef: ClassName,
         testClass: TypeSpec.Builder,
         enumConverters: MutableSet<ClassName>,
         testResourcesDir: File,
     ): List<Pair<Parameter, ParameterSpec>> {
+        val openAPI = context.openAPI
         val parameters =
             atomicMethod.operation.parameters
                 ?.mapIndexed { idx, parameter ->
@@ -887,7 +881,7 @@ class PathsBuilder {
             if (parameter.`in` == "body") {
                 val operationName = atomicMethod.operationId.split('/')[1]
                 val (ref, _) = referenceAndDefinition(context, mapOf(parameter.name to parameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
-                buildBodyTestCode(context, parameter, ref, atomicMethod, testClass, operationName, typeRef, testResourcesDir)
+                buildBodyTestCode(context, parameter, ref, atomicMethod, testClass, typeRef, testResourcesDir)
             }
         }
     }
