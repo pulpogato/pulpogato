@@ -33,7 +33,7 @@ java {
 }
 
 tasks.withType<JavaCompile> {
-    options.setIncremental(true)
+    options.isIncremental = true
 }
 
 spotless {

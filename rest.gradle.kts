@@ -129,7 +129,7 @@ tasks.jacocoTestReport {
 }
 
 tasks.withType<JavaCompile> {
-    options.setIncremental(true)
+    options.isIncremental = true
 }
 
 val addSchemaInfoToBroker = tasks.register("addSchemaInfoToBroker") {
