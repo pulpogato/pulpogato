@@ -28,9 +28,9 @@ import reactor.core.publisher.Mono;
  * <p>This filter intercepts requests and responses to provide HTTP caching based on:
  *
  * <ul>
- *   <li>ETag / If-None-Match
- *   <li>Last-Modified / If-Modified-Since
- *   <li>Cache-Control max-age
+ *   <li>{@code ETag} / {@code If-None-Match}
+ *   <li>{@code Last-Modified} / {@code If-Modified-Since}
+ *   <li>{@code Cache-Control max-age}
  * </ul>
  *
  * <p>When a cached response exists and is still fresh (within max-age), it is returned directly.

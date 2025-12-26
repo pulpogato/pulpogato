@@ -1,4 +1,4 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
