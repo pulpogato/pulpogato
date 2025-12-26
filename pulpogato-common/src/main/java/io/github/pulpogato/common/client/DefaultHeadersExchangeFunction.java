@@ -1,4 +1,4 @@
-package io.github.pulpogato.common;
+package io.github.pulpogato.common.client;
 
 import java.io.IOException;
 import java.io.InputStream;
