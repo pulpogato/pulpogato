@@ -106,8 +106,6 @@ tasks.named<GenerateJavaTask>("generateJava") {
     schemaPaths = mutableListOf(transformedSchemaLocation.get().asFile)
     packageName = "io.github.pulpogato.graphql"
     generateClientv2 = true
-    includeQueries = mutableListOf("")
-    includeMutations = mutableListOf("")
 
     addDeprecatedAnnotation = true
     addGeneratedAnnotation = true
@@ -133,6 +131,14 @@ tasks.named<GenerateJavaTask>("generateJava") {
         delete(fileTree(layout.buildDirectory.dir("generated/sources/dgs-codegen")) {
             include("**/DgsConstants.java")
         })
+////      This is a workaround. We shouldn't need this.
+//
+//        fileTree(layout.buildDirectory.dir("generated/sources/dgs-codegen"))
+//            .matching { include("**/*.java") }
+//            .forEach { file ->
+//                val content = file.readText()
+//                file.writeText(content.replace(" package,", " _package,"))
+//            }
     }
 }
 
