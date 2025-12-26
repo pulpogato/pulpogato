@@ -80,7 +80,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pr769.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
         assertThat(pr769.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
         assertThat(pr769.getAuthor().getLogin()).isEqualTo("renovate");
-        assertThat(pr769.getUrl().toString()).isEqualTo("https://github.com/pulpogato/pulpogato/pull/769");
+        assertThat(pr769.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/769");
         assertThat(pr769.getAutoMergeRequest()).isNotNull();
         assertThat(pr769.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("renovate");
         assertThat(pr769.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
@@ -94,7 +94,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pr768.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
         assertThat(pr768.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
         assertThat(pr768.getAuthor().getLogin()).isEqualTo("rahulsom");
-        assertThat(pr768.getUrl().toString()).isEqualTo("https://github.com/pulpogato/pulpogato/pull/768");
+        assertThat(pr768.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/768");
         assertThat(pr768.getAutoMergeRequest()).isNotNull();
         assertThat(pr768.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("rahulsom");
         assertThat(pr768.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
@@ -108,7 +108,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pr767.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
         assertThat(pr767.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
         assertThat(pr767.getAuthor().getLogin()).isEqualTo("renovate");
-        assertThat(pr767.getUrl().toString()).isEqualTo("https://github.com/pulpogato/pulpogato/pull/767");
+        assertThat(pr767.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/767");
         assertThat(pr767.getAutoMergeRequest()).isNotNull();
         assertThat(pr767.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("renovate");
         assertThat(pr767.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
@@ -122,7 +122,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pr766.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
         assertThat(pr766.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
         assertThat(pr766.getAuthor().getLogin()).isEqualTo("renovate");
-        assertThat(pr766.getUrl().toString()).isEqualTo("https://github.com/pulpogato/pulpogato/pull/766");
+        assertThat(pr766.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/766");
         assertThat(pr766.getAutoMergeRequest()).isNotNull();
         assertThat(pr766.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("renovate");
         assertThat(pr766.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
@@ -136,7 +136,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pr730.getBaseRefOid()).isEqualTo("caf877eec171597a21b980f51910b7b45a4593cc");
         assertThat(pr730.getMergeable()).isIn(MergeableState.UNKNOWN, MergeableState.CONFLICTING);
         assertThat(pr730.getAuthor().getLogin()).isEqualTo("rahulsom");
-        assertThat(pr730.getUrl().toString()).isEqualTo("https://github.com/pulpogato/pulpogato/pull/730");
+        assertThat(pr730.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/730");
         assertThat(pr730.getAutoMergeRequest()).isNull();
     }
 }
