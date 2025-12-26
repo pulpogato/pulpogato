@@ -44,7 +44,7 @@ import reactor.core.publisher.Mono;
  * <pre>{@code
  * HttpCache cache = new InMemoryHttpCache();
  * WebClient client = WebClient.builder()
- *     .filter(new CachingExchangeFilterFunction(cache))
+ *     .filter(CachingExchangeFilterFunction.builder().cache(cache).build())
  *     .build();
  * }</pre>
  */
@@ -63,7 +63,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("max-age=(\\d+)");
 
-    // Use 16MB buffer limit for exchange strategies to handle responses larger than cache limit
+    // Use a 16MB buffer limit for exchange strategies to handle responses larger than the cache limit
     private static final ExchangeStrategies LARGE_BUFFER_STRATEGIES = ExchangeStrategies.builder()
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
             .build();
@@ -215,7 +215,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                 .map(ByteArrayOutputStream::toByteArray)
                 .defaultIfEmpty(new byte[0])
                 .map(body -> {
-                    // If response is too large, skip caching but still return the data
+                    // If the response is too large, skip caching but still return the data
                     if (body.length > maxCacheableSize) {
                         return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
                                 .headers(h -> h.putAll(headerMap))
