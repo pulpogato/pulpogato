@@ -719,14 +719,12 @@ class PathsBuilder {
                 .mapNotNull { (k, v) ->
                     atomicMethod.operation.requestBody.content
                         .filterKeys { contentType -> contentType.lowercase().contains("json") }
-                        .map { (_, _) ->
+                        .map { (contentType, _) ->
                             TestBuilder.buildTest(
                                 context.withSchemaStack(
                                     "requestBody",
                                     "content",
-                                    atomicMethod.operation.requestBody.content
-                                        .firstEntry()
-                                        .key,
+                                    contentType,
                                     "examples",
                                     k,
                                     "value",
