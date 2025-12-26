@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -209,15 +210,16 @@ public class TestUtils {
     }
 
     private static String formatStructuredDiff(String op, String path, JsonValue oldValue, JsonValue newValue) {
-        var sb = new StringBuilder();
-        sb.append("\n");
-        sb.append("Difference at path: ").append(path).append("\n");
-        sb.append("Operation: ").append(op).append("\n\n");
-        sb.append("Expected (from input):\n");
-        sb.append(indent(prettyPrint(oldValue))).append("\n\n");
-        sb.append("Actual (after roundtrip):\n");
-        sb.append(indent(prettyPrint(newValue)));
-        return sb.toString();
+        return MessageFormat.format("""
+
+                Difference at path: {0}
+                Operation: {1}
+
+                Expected (from input):
+                {2}
+
+                Actual (after roundtrip):
+                {3}""", path, op, indent(prettyPrint(oldValue)), indent(prettyPrint(newValue)));
     }
 
     private static String prettyPrint(JsonValue value) {
