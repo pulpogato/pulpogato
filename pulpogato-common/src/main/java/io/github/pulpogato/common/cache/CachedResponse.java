@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * freshness and to send conditional requests (If-None-Match, If-Modified-Since).
  *
  */
-@EqualsAndHashCode(of = {"body", "headers", "etag", "lastModified", "maxAgeSeconds", "cachedAtMillis"})
+@EqualsAndHashCode(of = {"headers", "etag", "lastModified", "maxAgeSeconds", "cachedAtMillis"})
 @ToString(of = {"headers", "etag", "lastModified", "maxAgeSeconds", "cachedAtMillis"})
 @RequiredArgsConstructor
 @Getter
