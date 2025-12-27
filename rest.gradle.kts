@@ -14,17 +14,21 @@ plugins {
 
 dependencies {
     compileOnly(libs.jspecify)
-    compileOnly(libs.springWeb)
     compileOnly(libs.springBootWebflux)
+    compileOnly(libs.springWeb)
+
     implementation(libs.commonsLang3)
 
     api(project(":${rootProject.name}-common"))
 
-    testImplementation(project(":${rootProject.name}-rest-tests"))
     testImplementation(libs.bundles.springBoot)
+    testImplementation(project(":${rootProject.name}-rest-tests"))
+
     testRuntimeOnly(libs.groovy)
-    testCompileOnly(libs.lombok)
+
     testCompileOnly(libs.jetbrainsAnnotations)
+    testCompileOnly(libs.lombok)
+
     testAnnotationProcessor(libs.lombok)
 }
 
