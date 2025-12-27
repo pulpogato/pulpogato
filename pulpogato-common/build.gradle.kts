@@ -14,7 +14,9 @@ dependencies {
     compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
     compileOnly(libs.springBootWebflux)
+
     annotationProcessor(libs.lombok)
+
     implementation(libs.slf4j)
 
     api(libs.jackson2Core)
@@ -22,13 +24,15 @@ dependencies {
     api(libs.jackson3Core)
 
     testCompileOnly(libs.lombok)
+
     testAnnotationProcessor(libs.lombok)
 
-    testImplementation(libs.junit)
     testImplementation(libs.assertj)
+    testImplementation(libs.junit)
     testImplementation(libs.mockito)
     testImplementation(libs.mockitoJunitJupiter)
     testImplementation(libs.springBootWebflux)
+
     testRuntimeOnly(libs.junitPlatformLauncher)
 
     mockitoAgent(libs.mockito) { isTransitive = false }

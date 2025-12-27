@@ -11,14 +11,14 @@ plugins {
 }
 
 dependencies {
-    api(project(":pulpogato-common"))
     api(libs.jackson3Core)
+    api(project(":pulpogato-common"))
+
     compileOnly(libs.jakartaAnnotations)
 
-    testImplementation(project(":${rootProject.name}-rest-tests"))
     testImplementation(libs.bundles.springBoot)
     testImplementation(libs.dgsClient)
-
+    testImplementation(project(":${rootProject.name}-rest-tests"))
 }
 
 fun getUrl(projectVariant: String): String {
