@@ -19,11 +19,13 @@ jsonApi = "1.1.4"
 junit = "6.0.1"
 junitPlatformLauncher = "6.0.1"
 lombok = "1.18.42"
+micrometer = "1.12.3"
 mockito = "5.21.0"
 palantirJavaFormat = "2.83.0"
 pitest = "1.22.0"
 pitestJunit5Plugin = "1.2.3"
 pitestPlugin = "1.19.0-rc.2"
+reactor = "3.6.0"
 reflections = "0.10.2"
 slf4j = "2.0.17"
 spotless = "8.1.0"
@@ -58,9 +60,12 @@ junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-l
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockitoJunitJupiter = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
+micrometerCore = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer" }
+micrometerObservation = { group = "io.micrometer", name = "micrometer-observation", version.ref = "micrometer" }
 palantirJavaFormat = { group = "com.palantir.javaformat", name = "palantir-java-format", version.ref = "palantirJavaFormat" }
 pitest = { group = "org.pitest", name = "pitest", version.ref = "pitest" }
 pitestJunit5Plugin = { group = "org.pitest", name = "pitest-junit5-plugin", version.ref = "pitestJunit5Plugin" }
+reactorTest = {group = "io.projectreactor", name = "reactor-test", version.ref = "reactor"}
 reflections = { group = "org.reflections", name = "reflections", version.ref = "reflections" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 spotless = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }

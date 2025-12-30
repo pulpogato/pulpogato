@@ -8,11 +8,13 @@ plugins {
     alias(libs.plugins.pitest)
 }
 
-val mockitoAgent = configurations.create("mockitoAgent")
+val mockitoAgent by configurations.creating
 
 dependencies {
     compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
+    compileOnly(libs.micrometerCore)
+    compileOnly(libs.micrometerObservation)
     compileOnly(libs.springBootWebflux)
 
     annotationProcessor(libs.lombok)
@@ -29,8 +31,11 @@ dependencies {
 
     testImplementation(libs.assertj)
     testImplementation(libs.junit)
+    testImplementation(libs.micrometerCore)
+    testImplementation(libs.micrometerObservation)
     testImplementation(libs.mockito)
     testImplementation(libs.mockitoJunitJupiter)
+    testImplementation(libs.reactorTest)
     testImplementation(libs.springBootWebflux)
 
     testRuntimeOnly(libs.junitPlatformLauncher)
