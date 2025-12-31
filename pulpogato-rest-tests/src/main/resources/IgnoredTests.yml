@@ -101,22 +101,6 @@
   reason: "TODO: Diagnose this"
   versions:
     - ghec
-- example: "#/components/examples/actions-hosted-runner-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5481"
-  versions:
-    - ghec
-- example: "#/components/examples/actions-hosted-runner/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
-- example: "#/components/examples/actions-hosted-runner-curated-image/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
-- example: "#/components/examples/actions-hosted-runner-machine-spec/value"
-  reason: "TODO: Diagnose this"
-  versions:
-    - ghec
 - example: "#/components/examples/get-consumed-licenses/value"
   reason: "https://github.com/github/rest-api-description/issues/5485"
   versions:
@@ -184,42 +168,8 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
-- example: "#/components/examples/actions-hosted-runner-paginated/value"
-  reason: "https://github.com/github/rest-api-description/issues/5550"
-  versions:
-    - fpt
-- example: "#/components/examples/actions-hosted-runner/value"
-  reason: "https://github.com/github/rest-api-description/issues/5550"
-  versions:
-    - fpt
-- example: "#/components/examples/actions-hosted-runner-custom-image-versions/value"
-  reason: "https://github.com/github/rest-api-description/issues/5551"
-  versions:
-    - fpt
-- example: "#/components/examples/actions-hosted-runner-curated-image/value"
-  reason: "https://github.com/github/rest-api-description/issues/5552"
-  versions:
-    - fpt
-- example: "#/components/examples/actions-hosted-runner-machine-spec/value"
-  reason: "https://github.com/github/rest-api-description/issues/5553"
-  versions:
-    - fpt
-- example: "#/components/examples/update-budget/value"
-  reason: "https://github.com/github/rest-api-description/issues/5588"
-  versions:
-    - ghec
 - example: "#/components/examples/list-attestations-bulk/value"
   reason: "TODO: Diagnose this"
-  versions:
-    - fpt
-    - ghec
-- example: "#/components/examples/api-insights-subject-stats/value"
-  reason: "https://github.com/github/rest-api-description/issues/5593"
-  versions:
-    - fpt
-    - ghec
-- example: "#/components/examples/codespace/value"
-  reason: "https://github.com/github/rest-api-description/issues/5594"
   versions:
     - fpt
     - ghec
@@ -229,16 +179,6 @@
     - fpt
     - ghec
     - ghes-3.19
-- example: "#/components/examples/projects-v2-field-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5600"
-  versions:
-    - fpt
-    - ghec
-- example: "#/components/examples/projects-v2-field/value"
-  reason: "https://github.com/github/rest-api-description/issues/5600"
-  versions:
-    - fpt
-    - ghec
 - example: "#/components/examples/projects-v2-item-with-content/value"
   reason: "https://github.com/github/rest-api-description/issues/5601"
   versions:
