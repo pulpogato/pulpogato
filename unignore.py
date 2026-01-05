@@ -1,15 +1,16 @@
 #!/usr/bin/env uv run
 # /// script
 # dependencies = [
-#   "PyYAML",
+#   "ruamel.yaml",
 # ]
 # ///
 
+import io
 import sys
-import yaml
 import subprocess
 import copy
 from pathlib import Path
+from ruamel.yaml import YAML
 
 
 def run_gradle_check():
@@ -51,10 +52,23 @@ def remove_version_from_entry(data, entry_index, version_index):
     return None
 
 
-def save_yaml(data, file_path):
-    """Save data to YAML file."""
+def save_yaml(yaml, data, file_path):
+    """Save data to YAML file, preserving formatting."""
+    output = io.StringIO()
+    yaml.dump(data, output)
+    result = output.getvalue()
+
+    # Fix root sequence indentation (ruamel.yaml adds 2 spaces we don't want)
+    lines = result.split('\n')
+    fixed_lines = []
+    for line in lines:
+        if line.startswith('  - '):
+            fixed_lines.append(line[2:])
+        else:
+            fixed_lines.append(line)
+
     with open(file_path, 'w') as f:
-        yaml.dump(data, f, default_flow_style=False)
+        f.write('\n'.join(fixed_lines))
 
 
 def main():
@@ -71,9 +85,14 @@ def main():
         print(f"YAML file not found: {yaml_file}")
         sys.exit(1)
 
+    # Create YAML instance that preserves formatting
+    yaml = YAML()
+    yaml.preserve_quotes = True
+    yaml.indent(mapping=2, sequence=2, offset=2)
+
     # Read the YAML file
     with open(yaml_file, 'r') as f:
-        original_data = yaml.safe_load(f)
+        original_data = yaml.load(f)
 
     if not original_data:
         print("YAML file is empty or invalid")
@@ -91,8 +110,8 @@ def main():
             removed_entry = remove_root_level_entry(test_data, i)
             
             # Save the test data temporarily
-            save_yaml(test_data, yaml_file)
-            
+            save_yaml(yaml, test_data, yaml_file)
+
             # Run gradle check
             if run_gradle_check():
                 # If check passes, keep the change and continue
@@ -101,7 +120,7 @@ def main():
             else:
                 # If check fails, revert the change
                 print("Reverting change...")
-                save_yaml(working_data, yaml_file)
+                save_yaml(yaml, working_data, yaml_file)
                 i += 1  # Move to next item
                 
     elif mode == 2:
@@ -116,8 +135,8 @@ def main():
                     removed_version = remove_version_from_entry(test_data, entry_idx, version_idx)
                     
                     # Save the test data temporarily
-                    save_yaml(test_data, yaml_file)
-                    
+                    save_yaml(yaml, test_data, yaml_file)
+
                     # Run gradle check
                     if run_gradle_check():
                         # If check passes, keep the change
@@ -126,7 +145,7 @@ def main():
                     else:
                         # If check fails, revert the change
                         print("Reverting change...")
-                        save_yaml(working_data, yaml_file)
+                        save_yaml(yaml, working_data, yaml_file)
                         version_idx += 1  # Move to next version
                 entry_idx += 1  # Move to next entry after processing all versions
             else:
