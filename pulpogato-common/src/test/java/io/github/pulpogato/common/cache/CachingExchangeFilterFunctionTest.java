@@ -397,6 +397,65 @@ class CachingExchangeFilterFunctionTest {
     }
 
     @Nested
+    @DisplayName("Always revalidate mode")
+    class AlwaysRevalidateMode {
+
+        @Test
+        @DisplayName("Fresh cached response still triggers revalidation when alwaysRevalidate is true")
+        void freshCacheTriggersRevalidationWhenAlwaysRevalidateEnabled() {
+            var revalidatingFilter = CachingExchangeFilterFunction.builder()
+                    .cache(cache)
+                    .cacheKeyMapper(cacheKeyMapper)
+                    .clock(clock)
+                    .alwaysRevalidate(true)
+                    .build();
+
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            // Fresh cache entry (not expired)
+            var cachedResponse =
+                    new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME);
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(cachedResponse);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
+
+            var result = revalidatingFilter.filter(request, exchangeFunction).block();
+
+            // Should have made a server request with conditional header
+            var captor = ArgumentCaptor.forClass(ClientRequest.class);
+            verify(exchangeFunction).exchange(captor.capture());
+            assertThat(captor.getValue().headers().getFirst("If-None-Match")).isEqualTo("\"abc123\"");
+
+            // Should return REVALIDATED since server returned 304
+            assertThat(result).isNotNull();
+            assertThat(result.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
+                    .containsExactly("REVALIDATED");
+        }
+
+        @Test
+        @DisplayName("Fresh cached response returns HIT when alwaysRevalidate is false (default)")
+        void freshCacheReturnsHitWhenAlwaysRevalidateDisabled() {
+            // Using default filter which has alwaysRevalidate=false
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var cachedResponse =
+                    new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME);
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(cachedResponse);
+
+            var result = filter.filter(request, exchangeFunction).block();
+
+            // Should NOT have made a server request
+            verify(exchangeFunction, never()).exchange(any());
+
+            // Should return HIT directly
+            assertThat(result).isNotNull();
+            assertThat(result.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
+                    .containsExactly("HIT");
+        }
+    }
+
+    @Nested
     @DisplayName("Large body handling")
     class LargeBodyHandling {
 

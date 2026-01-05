@@ -96,6 +96,14 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     private final int maxCacheableSize = DEFAULT_MAX_CACHEABLE_SIZE;
 
     /**
+     * When true, always send conditional requests to revalidate cached responses,
+     * even if they haven't expired according to max-age. This is useful when
+     * the data may change more frequently than the cache headers suggest.
+     */
+    @Builder.Default
+    private final boolean alwaysRevalidate = false;
+
+    /**
      * Creates a new CachingExchangeFilterFunction with the default max cacheable size (2MB).
      *
      * @param cache          The cache instance to store responses
@@ -121,10 +129,16 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     @Deprecated(since = "2.5.0", forRemoval = true)
     public CachingExchangeFilterFunction(
             Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock, int maxCacheableSize) {
+        this(cache, cacheKeyMapper, clock, maxCacheableSize, false);
+    }
+
+    private CachingExchangeFilterFunction(
+            Cache cache, CacheKeyMapper cacheKeyMapper, Clock clock, int maxCacheableSize, boolean alwaysRevalidate) {
         this.cache = cache;
         this.cacheKeyMapper = cacheKeyMapper;
         this.clock = clock;
         this.maxCacheableSize = maxCacheableSize;
+        this.alwaysRevalidate = alwaysRevalidate;
     }
 
     @Override
@@ -138,8 +152,8 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         var cacheKey = cacheKeyMapper.apply(request);
         var cached = cache.get(cacheKey, CachedResponse.class);
 
-        // If we have a fresh cached response, return it
-        if (cached != null && !cached.isExpired(clock.millis())) {
+        // If we have a fresh cached response and not forcing revalidation, return it
+        if (cached != null && !cached.isExpired(clock.millis()) && !alwaysRevalidate) {
             return Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
                     .headers(h -> h.putAll(cached.getHeaders()))
                     .header(CACHE_HEADER_NAME, "HIT")
@@ -147,7 +161,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                     .build());
         }
 
-        // Build request with conditional headers if we have a stale cache entry
+        // Build request with conditional headers if we have a cache entry (stale or forcing revalidation)
         var requestBuilder = ClientRequest.from(request);
         if (cached != null && cached.canRevalidate()) {
             if (cached.getEtag() != null) {
