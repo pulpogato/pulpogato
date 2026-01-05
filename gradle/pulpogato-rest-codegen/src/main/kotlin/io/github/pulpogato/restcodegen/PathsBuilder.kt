@@ -106,6 +106,15 @@ class PathsBuilder {
                             Modifier.FINAL,
                         ).addAnnotation(nonNull())
                         .build(),
+                ).addField(
+                    FieldSpec
+                        .builder(
+                            ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
+                            "restWebClient",
+                            Modifier.PRIVATE,
+                            Modifier.FINAL,
+                        ).addAnnotation(nonNull())
+                        .build(),
                 ).addMethod(
                     MethodSpec
                         .methodBuilder("getConversionService")
@@ -114,6 +123,15 @@ class PathsBuilder {
                         .returns(ClassName.get("org.springframework.format.support", "FormattingConversionService"))
                         .addStatement("return this.conversionService")
                         .addJavadoc("Returns the conversion service used for parameter conversion.")
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .methodBuilder("getRestWebClient")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(nonNull())
+                        .returns(ClassName.get("org.springframework.web.reactive.function.client", "WebClient"))
+                        .addStatement("return this.restWebClient")
+                        .addJavadoc("Returns the WebClient used for REST API calls.")
                         .build(),
                 ).addMethod(
                     MethodSpec
@@ -207,9 +225,12 @@ class PathsBuilder {
                     ParameterSpec
                         .builder(
                             ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
-                            "restClient",
+                            "restWebClient",
                         ).addAnnotation(nonNull())
                         .build(),
+                ).addStatement(
+                    $$"this.restWebClient = restWebClient.mutate().filter(new $T()).build()",
+                    ClassName.get("io.github.pulpogato.common.client", "DefaultHeadersExchangeFunction"),
                 ).addStatement(
                     $$"this.conversionService = new $T()",
                     ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
@@ -221,17 +242,12 @@ class PathsBuilder {
                     ClassName.get("io.github.pulpogato.common", "StringOrInteger", "StringConverter"),
                 ).addStatement(
                     $$"""
-                    this.factory = $T.builderFor($T.create(
-                            restClient.mutate()
-                                    .filter(new $T())
-                                    .build()
-                            ))
+                    this.factory = $T.builderFor($T.create(this.restWebClient))
                             .conversionService(this.conversionService)
                             .build()
                     """.trimIndent(),
                     ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
                     ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
-                    ClassName.get("io.github.pulpogato.common.client", "DefaultHeadersExchangeFunction"),
                 )
 
         // Initialize all API fields in the constructor
