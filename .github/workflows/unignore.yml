@@ -1,0 +1,71 @@
+name: Unignore Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode to run (1: Root-level, 2: Version-level)'
+        required: true
+        default: '1'
+        type: choice
+        options:
+        - '1'
+        - '2'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  unignore-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: 1784694
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - uses: gradle/actions/wrapper-validation@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: 21
+          distribution: zulu
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run unignore script
+        run: |-
+          ./unignore.py ${{ inputs.mode }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          commit-message: "refactor: unignore tests (Mode ${{ inputs.mode }})"
+          branch: unignore-tests-mode-${{ inputs.mode }}
+          delete-branch: true
+          title: "Unignore Tests (Mode ${{ inputs.mode }})"
+          body: |
+            Running `unignore.py` with mode ${{ inputs.mode }}.
+            
+            - Mode 1: Remove root-level entries.
+            - Mode 2: Remove versions from entries.
+            
+            Automated change.

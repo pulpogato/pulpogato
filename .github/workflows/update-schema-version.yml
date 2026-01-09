@@ -36,10 +36,10 @@ jobs:
           distribution: zulu
           cache: gradle
 
+      - uses: gradle/actions/setup-gradle@v5
+
       - name: Update Schema Version
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |-
           ./update-schema-version.sh
-
-      - uses: gradle/actions/setup-gradle@v5
