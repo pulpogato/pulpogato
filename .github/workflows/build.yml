@@ -83,8 +83,7 @@ jobs:
               --destination-dir pulpogato-docs/build \
               --backend=html5 \
               --out-file index.html \
-              pulpogato-docs/src/index.adoc && \
-          echo 'docs.pulpogato.io' > pulpogato-docs/build/CNAME
+              pulpogato-docs/src/index.adoc
 
     - name: Deploy docs to ghpages
       uses: peaceiris/actions-gh-pages@v4
