@@ -1,0 +1,104 @@
+= Pulpogato
+:package: io.github.pulpogato
+:package-path: io/github/pulpogato
+:package-path-encoded: io%2Fgithub%2Fpulpogato
+:snapshot-prefix: image:https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2F{package-path-encoded}%2F
+:snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=S[alt=Maven Snapshot,height=30,link="https://central.sonatype.com/repository/maven-snapshots/{package-path}/
+:snapshot-suffix: /maven-metadata.xml"]
+:central-prefix: image:https://img.shields.io/maven-central/v/{package}/
+:central-middle: ?style=for-the-badge&label=R&color=green[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
+:central-suffix: /overview"]
+:deprecated-middle: ?style=for-the-badge&label=R&color=lightgrey[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
+:nofooter:
+:source-highlighter: rouge
+:toc: left
+
+Pulpogato is a java client for GitHub.
+
+== Installation
+
+include::../../README.adoc[tags=installation]
+
+== Usage
+
+=== REST Client Example
+
+This shows how to create a REST client and get the authenticated user.
+Ideally, you would inject the WebClient and export a Bean for RestClients.
+If you're supporting multiple GitHub Apps or sites, you would export a factory bean instead.
+
+[source,java]
+----
+public class Example {
+    public static void main(String[] args) {
+        // create a WebClient
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build();
+
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/UsersApiIntegrationTest.java[tags=getAuthenticatedPublic]
+
+    }
+}
+----
+
+=== Webhook Example
+
+This shows how to create a Webhook handler that listens for ping events.
+There are many other event types you can listen for.
+
+[source,java,indent=0]
+----
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/webhooks/PingWebhooksIntegrationTest.java[tags=ping-webhook-controller]
+----
+
+=== GraphQL Client Example
+
+This shows how to create a GraphQL client and get the authenticated user.
+Ideally, you would inject the WebClient and export a Bean for GraphQLClients.
+If you're supporting multiple GitHub Apps or sites, you would export a factory bean instead.
+
+This example uses a String for the query.
+
+[source,java]
+----
+public class Example {
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=query]
+
+    public static void main(String[] args) {
+        // create a WebClient
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.github.com/graphql")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build();
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=execute]
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=extract]
+
+    }
+}
+----
+
+This is the same query, but constructed using java types
+
+[source,java]
+----
+public class Example {
+
+    public static void main(String[] args) {
+        // create a WebClient
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.github.com/graphql")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build();
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=execute]
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=extract]
+
+    }
+}
+----
