@@ -5,8 +5,10 @@ import io.github.pulpogato.rest.schemas.PrivateUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.rest.schemas.ValidationErrorSimple;
 import io.github.pulpogato.test.BaseIntegrationTest;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -19,8 +21,14 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
     @Test
     void testGetAuthenticatedPublic() {
-        var api = new RestClients(webClient).getUsersApi();
-        var authenticated = api.getAuthenticated();
+        // tag::getAuthenticatedPublic[]
+        // Create RestClients instance
+        RestClients restClients = new RestClients(webClient);
+        // Get UsersApi
+        UsersApi api = restClients.getUsersApi();
+        // Call getAuthenticated method
+        ResponseEntity<UsersApi.@NonNull GetAuthenticated200> authenticated = api.getAuthenticated();
+        // end::getAuthenticatedPublic[]
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody())
                 .isNotNull()

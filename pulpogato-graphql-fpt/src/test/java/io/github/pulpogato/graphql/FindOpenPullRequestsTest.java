@@ -14,6 +14,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FindOpenPullRequestsTest extends BaseIntegrationTest {
+    // tag::query[]
     @Language("graphql")
     public static final String OPEN_PRS = """
         query findOpenPullRequests($owner: String!, $repo: String!, $branch: String!) {
@@ -44,10 +45,12 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
           }
         }
         """;
+    // end::query[]
 
     @Test
     void testFindOpenPullRequestsQuery() {
         var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
+        // tag::execute[]
         WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
 
         var variables = LinkedHashMapBuilder.of(
@@ -56,11 +59,14 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
                 Map.entry("branch", "main")
         );
         var response = graphQLClient.reactiveExecuteQuery(OPEN_PRS, variables).block();
+        // end::execute[]
 
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEmpty();
 
+        // tag::extract[]
         var repository = response.extractValueAsObject("repository", Repository.class);
+        // end::extract[]
         assertThat(repository).isNotNull();
 
         var pullRequests = repository.getPullRequests();

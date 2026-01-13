@@ -252,7 +252,12 @@ class WebhooksBuilder {
             .classBuilder("WebhooksIntegrationTest")
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.webmvc.test.autoconfigure", "WebMvcTest")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.webmvc.test.autoconfigure", "AutoConfigureMockMvc")).build())
-            .addField(createMvcField())
+            .addAnnotation(
+                AnnotationSpec
+                    .builder(ClassName.get("org.springframework.test.context", "ContextConfiguration"))
+                    .addMember("classes", $$"$T.class", ClassName.get("", "WebhooksIntegrationTest.TestConfig"))
+                    .build(),
+            ).addField(createMvcField())
             .addMethod(
                 MethodSpec
                     .methodBuilder("files")
@@ -292,7 +297,7 @@ class WebhooksBuilder {
     private fun buildTestConfig(testController: TypeSpec): TypeSpec.Builder =
         TypeSpec
             .classBuilder("TestConfig")
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.test.context", "TestConfiguration")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.context.annotation", "Configuration")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot", "SpringBootConfiguration")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.web.servlet.config.annotation", "EnableWebMvc")).build())
             .addMethod(
