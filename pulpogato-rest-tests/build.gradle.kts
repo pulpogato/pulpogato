@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.junitPlatformLauncher)
     implementation(libs.reflections)
     implementation(project(":${rootProject.name}-common"))
+
+    testCompileOnly(libs.jetbrainsAnnotations)
 }
 
 java {
