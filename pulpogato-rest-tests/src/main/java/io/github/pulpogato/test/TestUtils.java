@@ -143,7 +143,7 @@ public class TestUtils {
         }
     }
 
-    private static void assertOnDiff(final SoftAssertions softly, final JsonPatch diff, final JsonValue source) {
+    static void assertOnDiff(final SoftAssertions softly, final JsonPatch diff, final JsonValue source) {
         diff.toJsonArray().stream().map(JsonValue::asJsonObject).forEach(it -> {
             final String op = it.getString("op");
             final String path = it.getString("path");
@@ -164,11 +164,11 @@ public class TestUtils {
         });
     }
 
-    private static BiPredicate<String, String> compareDates(String target, String replacement) {
+    static BiPredicate<String, String> compareDates(String target, String replacement) {
         return (oldStr, newStr) -> oldStr.equals(newStr.replace(target, replacement));
     }
 
-    private static void compareOldAndNew(
+    static void compareOldAndNew(
             final SoftAssertions softly,
             final JsonValue oldValue,
             final JsonValue newValue1,
@@ -239,14 +239,14 @@ public class TestUtils {
         return sw.toString();
     }
 
-    private static String indent(String text) {
+    static String indent(String text) {
         return text.lines()
                 .map(line -> "  " + line)
                 .reduce((a, b) -> a + "\n" + b)
                 .orElse("");
     }
 
-    private static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
+    static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
 
         String stringValue =
                 switch (valueSource.getValueType()) {
@@ -277,7 +277,7 @@ public class TestUtils {
         }
     }
 
-    private static JsonValue traverse(final JsonValue value, final List<String> pathSteps) {
+    static JsonValue traverse(final JsonValue value, final List<String> pathSteps) {
         if (value == null) {
             return null;
         }
