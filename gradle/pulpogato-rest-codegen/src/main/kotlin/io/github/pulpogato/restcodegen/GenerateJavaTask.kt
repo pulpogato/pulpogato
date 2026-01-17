@@ -1,6 +1,7 @@
 package io.github.pulpogato.restcodegen
 
 import com.diffplug.spotless.glue.pjf.PalantirJavaFormatFormatterFunc
+import com.palantir.javaformat.java.JavaFormatterOptions.Style
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
@@ -123,10 +124,13 @@ open class GenerateJavaTask : DefaultTask() {
         // Format generated Java code
         val javaFiles = getJavaFiles(main)
         val testJavaFiles = getJavaFiles(test)
-        val formatter = PalantirJavaFormatFormatterFunc("PALANTIR", true)
-        (javaFiles + testJavaFiles).parallelStream().forEach { f ->
-            val formatted = formatter.apply(f.readText())
-            f.writeText(formatted)
+
+        withMaxLineWidth(200) {
+            val formatter = PalantirJavaFormatFormatterFunc("PALANTIR", true)
+            (javaFiles + testJavaFiles).parallelStream().forEach { f ->
+                val formatted = formatter.apply(f.readText().replace(") @", ")\n@"))
+                f.writeText(formatted)
+            }
         }
 
         // Validate JSON references
@@ -140,6 +144,27 @@ open class GenerateJavaTask : DefaultTask() {
         }
 
         JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
+    }
+
+    private fun withMaxLineWidth(
+        maxLineWidth: Int,
+        block: () -> Unit,
+    ) {
+        val oldWidth = updatePalantirMaxLineWidth(maxLineWidth)
+        try {
+            block()
+        } finally {
+            updatePalantirMaxLineWidth(oldWidth)
+        }
+    }
+
+    private fun updatePalantirMaxLineWidth(maxLineWidth: Int): Int {
+        val styleClass = Style::class.java
+        val maxLineLengthField = styleClass.getDeclaredField("maxLineLength")
+        maxLineLengthField.isAccessible = true
+        val oldValue = maxLineLengthField[Style.PALANTIR] as Int
+        maxLineLengthField[Style.PALANTIR] = maxLineWidth
+        return oldValue
     }
 
     /**
