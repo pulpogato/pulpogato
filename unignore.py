@@ -131,16 +131,16 @@ def main():
             if run_gradle_check():
                 # If check passes, keep the change and continue
                 remove_root_level_entry(working_data, i)
-                print(f"Successfully removed '{entry_name}'")
+                end_group()
+                print(f"  Successfully removed '{entry_name}'")
                 # Don't increment i since we removed an item
             else:
                 # If check fails, revert the change
-                print("Reverting change...")
+                end_group()
+                print("  Reverting change...")
                 save_yaml(yaml, working_data, yaml_file)
                 i += 1  # Move to next item
 
-            end_group()
-                
     elif mode == 2:
         # Remove one version at a time
         entry_idx = 0
@@ -165,15 +165,16 @@ def main():
                     if run_gradle_check():
                         # If check passes, keep the change
                         remove_version_from_entry(working_data, entry_idx, version_idx)
-                        print(f"Successfully removed version '{version_name}' from '{entry_name}'")
+                        end_group()
+                        print(f"  Successfully removed version '{version_name}' from '{entry_name}'")
                         # Don't increment version_idx since we removed an item
                     else:
                         # If check fails, revert the change
-                        print("Reverting change...")
+                        end_group()
+                        print("  Reverting change...")
                         save_yaml(yaml, working_data, yaml_file)
                         version_idx += 1  # Move to next version
 
-                    end_group()
                 entry_idx += 1  # Move to next entry after processing all versions
             else:
                 entry_idx += 1  # Move to next entry if no versions to process
