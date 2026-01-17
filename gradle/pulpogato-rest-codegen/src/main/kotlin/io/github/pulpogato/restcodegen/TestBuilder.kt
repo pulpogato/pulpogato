@@ -1,11 +1,11 @@
 package io.github.pulpogato.restcodegen
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.TypeName
 import io.github.pulpogato.restcodegen.ext.pascalCase
 import org.intellij.lang.annotations.Language
-import tools.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
@@ -26,16 +26,17 @@ object TestBuilder {
     ): MethodSpec? {
         val om = ObjectMapper()
 
+        val exampleJson = om.writeValueAsString(example)
         val formatted: String =
             try {
-                val parsed = om.readValue(example.toString(), TreeMap::class.java)
+                val parsed = om.readValue(exampleJson, TreeMap::class.java)
                 format(context, om, parsed)
             } catch (_: Exception) {
                 try {
-                    val parsed = om.readValue(example.toString(), List::class.java)
+                    val parsed = om.readValue(exampleJson, List::class.java)
                     format(context, om, parsed)
                 } catch (_: Exception) {
-                    example.toString()
+                    exampleJson
                 }
             }
 

@@ -561,7 +561,7 @@ class PathsBuilder {
             "application/json" -> ""
             "application/vnd.github.v3.star+json" -> "Star"
             "application/vnd.github.object" -> "Object"
-            "application/json+sarif" -> "Sarif"
+            "application/json+sarif", "application/sarif+json" -> "Sarif"
             else -> throw IllegalArgumentException("Unknown content type: $key")
         }
 
