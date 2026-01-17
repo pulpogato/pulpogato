@@ -16,7 +16,7 @@ from ruamel.yaml import YAML
 def run_gradle_check():
     """Run the gradle check command and return True if it passes, False otherwise."""
     print("Running ./gradlew check --max-workers=3...")
-    result = subprocess.run(["./gradlew", "check", "--max-workers=3"], 
+    result = subprocess.run(["./gradlew", "check", "--max-workers=3"],
                           capture_output=True, text=True)
     success = result.returncode == 0
     if not success:
@@ -26,6 +26,16 @@ def run_gradle_check():
     else:
         print("Gradle check passed!")
     return success
+
+
+def start_group(title):
+    """Start a GitHub Actions log group."""
+    print(f"::group::{title}")
+
+
+def end_group():
+    """End a GitHub Actions log group."""
+    print("::endgroup::")
 
 
 def remove_root_level_entry(data, index):
@@ -104,11 +114,16 @@ def main():
     if mode == 1:
         # Remove one root-level entry at a time
         i = 0
+        iteration = 0
         while i < len(working_data):
+            iteration += 1
+            entry_name = working_data[i].get('example', f'entry {i}')
+            start_group(f"Iteration {iteration}: Testing removal of '{entry_name}'")
+
             # Create a temporary copy to test
             test_data = copy.deepcopy(working_data)
             removed_entry = remove_root_level_entry(test_data, i)
-            
+
             # Save the test data temporarily
             save_yaml(yaml, test_data, yaml_file)
 
@@ -116,24 +131,33 @@ def main():
             if run_gradle_check():
                 # If check passes, keep the change and continue
                 remove_root_level_entry(working_data, i)
+                print(f"Successfully removed '{entry_name}'")
                 # Don't increment i since we removed an item
             else:
                 # If check fails, revert the change
                 print("Reverting change...")
                 save_yaml(yaml, working_data, yaml_file)
                 i += 1  # Move to next item
+
+            end_group()
                 
     elif mode == 2:
         # Remove one version at a time
         entry_idx = 0
+        iteration = 0
         while entry_idx < len(working_data):
             if 'versions' in working_data[entry_idx] and len(working_data[entry_idx]['versions']) > 0:
                 version_idx = 0
                 while version_idx < len(working_data[entry_idx]['versions']):
+                    iteration += 1
+                    entry_name = working_data[entry_idx].get('example', f'entry {entry_idx}')
+                    version_name = working_data[entry_idx]['versions'][version_idx]
+                    start_group(f"Iteration {iteration}: Testing removal of version '{version_name}' from '{entry_name}'")
+
                     # Create a temporary copy to test
                     test_data = copy.deepcopy(working_data)
                     removed_version = remove_version_from_entry(test_data, entry_idx, version_idx)
-                    
+
                     # Save the test data temporarily
                     save_yaml(yaml, test_data, yaml_file)
 
@@ -141,12 +165,15 @@ def main():
                     if run_gradle_check():
                         # If check passes, keep the change
                         remove_version_from_entry(working_data, entry_idx, version_idx)
+                        print(f"Successfully removed version '{version_name}' from '{entry_name}'")
                         # Don't increment version_idx since we removed an item
                     else:
                         # If check fails, revert the change
                         print("Reverting change...")
                         save_yaml(yaml, working_data, yaml_file)
                         version_idx += 1  # Move to next version
+
+                    end_group()
                 entry_idx += 1  # Move to next entry after processing all versions
             else:
                 entry_idx += 1  # Move to next entry if no versions to process
