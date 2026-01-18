@@ -78,27 +78,27 @@
     - fpt
     - ghec
 - example: "#/components/examples/classroom-accepted-assignment/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5862"
   versions:
     - fpt
     - ghec
 - example: "#/components/examples/simple-classroom/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5863"
   versions:
     - fpt
     - ghec
 - example: "#/components/examples/classroom/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5864"
   versions:
     - fpt
     - ghec
 - example: "#/components/examples/simple-classroom-assignment/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5865"
   versions:
     - fpt
     - ghec
 - example: "#/components/examples/server-statistics/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5866"
   versions:
     - ghec
 - example: "#/components/examples/get-consumed-licenses/value"
@@ -142,7 +142,7 @@
   versions:
     - ghec
 - example: "#/components/examples/enterprise-role/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5868"
   versions:
     - ghec
 - example: "#/components/examples/organization-simple/value"
