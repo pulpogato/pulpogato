@@ -169,7 +169,7 @@
     - ghes-3.18
     - ghes-3.19
 - example: "#/components/examples/list-attestations-bulk/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5861"
   versions:
     - fpt
     - ghec
@@ -197,7 +197,7 @@
     - ghes-3.18
     - ghes-3.19
 - example: "#/components/examples/org-ruleset-version-with-state/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5860"
   versions:
     - fpt
     - ghec
@@ -257,7 +257,7 @@
     - ghes-3.18
     - ghes-3.19
 - example: "#/components/examples/repository-ruleset-version-with-state/value"
-  reason: "State is 'Map<String, Object>' and the types in it are unknown"
+  reason: "https://github.com/github/rest-api-description/issues/5859"
   versions:
     - fpt
     - ghec
