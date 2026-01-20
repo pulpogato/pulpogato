@@ -72,10 +72,6 @@ pitest {
     excludedTestClasses.set(listOf("io.github.pulpogato.restcodegen.RestCodegenPluginTest"))
 }
 
-tasks.named("pitest") {
-    dependsOn("pluginUnderTestMetadata")
-}
-
 spotless {
     kotlin {
         ktlint()
