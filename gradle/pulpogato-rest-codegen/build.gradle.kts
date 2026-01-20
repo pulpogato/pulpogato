@@ -64,8 +64,8 @@ testlogger {
 
 pitest {
     timestampedReports = false
-    junit5PluginVersion.set(libs.versions.pitestJunit5Plugin) // Look here for latest version - https://github.com/pitest/pitest-junit5-plugin/tags
-    pitestVersion.set(libs.versions.pitest) // Look here for latest version - https://github.com/hcoles/pitest/releases
+    junit5PluginVersion.set(libs.versions.pitestJunit5Plugin)
+    pitestVersion.set(libs.versions.pitest)
     mutators.set(setOf("ALL"))
     outputFormats.set(setOf("XML", "HTML"))
     targetClasses.set(listOf("io.github.pulpogato.restcodegen.*"))
