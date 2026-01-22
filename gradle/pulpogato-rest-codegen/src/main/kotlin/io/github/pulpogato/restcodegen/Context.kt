@@ -21,7 +21,7 @@ data class Context(
     val openAPI: OpenAPI,
     val version: String,
     val schemaStack: List<String>,
-    val addedProperties: Map<String, Set<String>> = emptyMap(),
+    val addedProperties: Map<String, Map<String, String>> = emptyMap(),
 ) {
     // Cached schema stack reference to avoid repeated string operations
     private val cachedSchemaStackRef: String by lazy {
@@ -57,19 +57,18 @@ data class Context(
     fun getSchemaStackRef() = cachedSchemaStackRef
 
     /**
-     * Checks if a property has been added to a given schema from external additions.
+     * Gets the source file for an added property.
      *
      * This method is used to determine if a property was added from an external schema
      * additions file (like additions.schema.json) rather than being part of the original
-     * OpenAPI specification. This helps in properly handling and tracking such properties
-     * during code generation.
+     * OpenAPI specification.
      *
      * @param schemaName The name of the schema to check
      * @param propertyName The name of the property to check
-     * @return `true` if the property has been added to the schema from external additions, `false` otherwise
+     * @return The source file name if the property was added, null otherwise
      */
-    fun isAddedProperty(
+    fun getAddedPropertySource(
         schemaName: String,
         propertyName: String,
-    ): Boolean = addedProperties[schemaName]?.contains(propertyName) == true
+    ): String? = addedProperties[schemaName]?.get(propertyName)
 }

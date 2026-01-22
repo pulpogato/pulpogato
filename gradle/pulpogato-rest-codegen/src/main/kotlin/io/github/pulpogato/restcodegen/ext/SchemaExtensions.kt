@@ -1296,7 +1296,7 @@ private fun addFieldIfNew(
 ) {
     val fieldName = property.key.unkeywordize().camelCase()
     if (!knownFields.contains(fieldName)) {
-        // Check if this property was added from additions.schema.json
+        // Check if this property was added from an addition file
         val schemaName = getSchemaName(context)
         val sourceFile = getSourceFile(schemaName, context, property)
 
@@ -1363,8 +1363,8 @@ private fun getSourceFile(
     context: Context,
     property: Map.Entry<String, Schema<*>>,
 ): String =
-    if (schemaName != null && context.isAddedProperty(schemaName, property.key)) {
-        "additions.schema.json"
+    if (schemaName != null) {
+        context.getAddedPropertySource(schemaName, property.key) ?: "schema.json"
     } else {
         "schema.json"
     }
