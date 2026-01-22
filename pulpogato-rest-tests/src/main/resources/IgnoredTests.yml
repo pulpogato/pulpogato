@@ -21,7 +21,7 @@
     - ghes-3.18
     - ghes-3.19
 - example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/patch/requestBody/content/application~1json/examples/default/value"
-  reason: "TODO: SCIM patch value field becomes null after roundtrip"
+  reason: "https://github.com/github/rest-api-description/issues/5874"
   versions:
     - ghec
 - example: "#/paths/~1enterprises~1{enterprise}~1rulesets/post/requestBody/content/application~1json/examples/default/value"
