@@ -23,8 +23,8 @@ import kotlin.io.readText
  * Gradle task to generate Java classes from OpenAPI schema.
  *
  * This task reads an OpenAPI schema file, processes it to generate Java classes
- * for APIs, webhooks, and schemas. It supports schema additions through an optional
- * additions.schema.json file and formats the generated code using Palantir Java Format.
+ * for APIs, webhooks, and schemas. It supports schema additions through optional
+ * `*.schema.json` files and formats the generated code using Palantir Java Format.
  * It also validates JSON references in the generated code.
  */
 @CacheableTask
@@ -96,16 +96,23 @@ open class GenerateJavaTask : DefaultTask() {
 
         val swaggerSpec = schemaFile.readText()
 
-        // Check for additions.schema.json in the module's resources directory
+        // Check for *.schema.json in the module's resources directory
         val resourcesDir = project.projectDir.resolve("src/main/resources")
-        val schemaAddsFile = resourcesDir.resolve("additions.schema.json")
-        val addedProperties = mutableMapOf<String, Set<String>>()
-        val mergedSpec =
-            if (schemaAddsFile.exists()) {
-                mergeSchemaAdditions(swaggerSpec, schemaAddsFile.readText(), addedProperties)
+        val schemaAdditionsFiles =
+            if (resourcesDir.exists()) {
+                resourcesDir
+                    .listFiles { _, name -> name.endsWith(".schema.json") }
+                    ?.sortedBy { it.name }
+                    ?.toList() ?: emptyList()
             } else {
-                swaggerSpec
+                emptyList()
             }
+
+        val addedProperties = mutableMapOf<String, MutableMap<String, String>>()
+        var mergedSpec = swaggerSpec
+        schemaAdditionsFiles.forEach { schemaAddsFile ->
+            mergedSpec = mergeSchemaAdditions(mergedSpec, schemaAddsFile.readText(), schemaAddsFile.name, addedProperties)
+        }
 
         val parseOptions = ParseOptions()
         val result = OpenAPIParser().readContents(mergedSpec, listOf(), parseOptions)
@@ -133,10 +140,10 @@ open class GenerateJavaTask : DefaultTask() {
         val mapper = ObjectMapper()
         val schemas = mutableMapOf("schema.json" to mapper.readTree(swaggerSpec))
 
-        // Add additions schema if it exists
-        if (schemaAddsFile.exists()) {
+        // Add additions schemas if they exist
+        schemaAdditionsFiles.forEach { schemaAddsFile ->
             val additionsJson = mapper.readTree(schemaAddsFile.readText())
-            schemas["additions.schema.json"] = additionsJson
+            schemas[schemaAddsFile.name] = additionsJson
         }
 
         JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
@@ -156,7 +163,7 @@ open class GenerateJavaTask : DefaultTask() {
             .toList()
 
     /**
-     * Merges schema additions from an additions.schema.json file into the main schema.
+     * Merges schema additions from an addition file into the main schema.
      *
      * This method looks for additional schema definitions in the additions file
      * and merges them into the main OpenAPI specification. It also tracks which
@@ -171,7 +178,8 @@ open class GenerateJavaTask : DefaultTask() {
     private fun mergeSchemaAdditions(
         swaggerSpec: String,
         schemaAddsJson: String,
-        addedProperties: MutableMap<String, Set<String>>,
+        sourceFileName: String,
+        addedProperties: MutableMap<String, MutableMap<String, String>>,
     ): String {
         val objectMapper = ObjectMapper()
         val schema = objectMapper.readTree(swaggerSpec) as ObjectNode
@@ -189,13 +197,12 @@ open class GenerateJavaTask : DefaultTask() {
                         val targetProperties =
                             (targetSchema as ObjectNode)["properties"] as ObjectNode
 
-                        val propertyNames = mutableSetOf<String>()
+                        val propertyNames = addedProperties.getOrPut(schemaName) { mutableMapOf() }
                         properties.properties().forEach { (propertyName, propertySpec) ->
                             targetProperties.putIfAbsent(propertyName, propertySpec)
-                            propertyNames.add(propertyName)
-                            project.logger.info("Added property '$propertyName' to schema '$schemaName'")
+                            propertyNames[propertyName] = sourceFileName
+                            project.logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
                         }
-                        addedProperties[schemaName] = propertyNames
                     }
                 }
             }
