@@ -115,16 +115,16 @@
     - ghes-3.18
     - ghes-3.19
 - example: "#/components/examples/enterprise-ruleset/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5871"
   versions:
     - ghec
 - example: "#/components/examples/enterprise-ruleset-version-with-state/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5872"
   versions:
     - ghec
     - ghes-3.19
 - example: "#/components/examples/enterprise-teams-items/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5873"
   versions:
     - fpt
     - ghec
@@ -138,7 +138,7 @@
     - ghes-3.18
     - ghes-3.19
 - example: "#/components/examples/enterprise-role-list/value"
-  reason: "TODO: Diagnose this"
+  reason: "https://github.com/github/rest-api-description/issues/5870"
   versions:
     - ghec
 - example: "#/components/examples/enterprise-role/value"
