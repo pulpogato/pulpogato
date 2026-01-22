@@ -913,7 +913,7 @@ private fun generateFillValuesFromMethod(
         .returns(bTypeVar)
         .addParameter(cTypeVar, "instance")
         .addStatement($$$"$$fillValuesFromInstanceIntoBuilder(instance, this)")
-        .addStatement($$"return ($T)this.self()", bTypeVar)
+        .addStatement("return this.self()")
         .build()
 
 /**
@@ -982,7 +982,7 @@ private fun generateAbstractBuilderSetter(
                         }
                     }.build(),
             ).addStatement($$"this.$N = $N", fieldName, fieldName)
-            .addStatement($$"return ($T)this.self()", bTypeVar)
+            .addStatement("return this.self()")
 
     // Add @JsonProperty annotation
     val jsonPropertyAnnotation =
