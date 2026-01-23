@@ -1,6 +1,8 @@
 name: Unignore Tests
 
 on:
+  schedule:
+    - cron: '0 1 * * 6'
   workflow_dispatch:
     inputs:
       mode:
@@ -52,7 +54,7 @@ jobs:
 
       - name: Run unignore script
         run: |-
-          uv run unignore.py ${{ inputs.mode }}
+          uv run unignore.py ${{ inputs.mode || '1' }}
 
       - name: Check for changes
         run: |
@@ -68,7 +70,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           commit-message: "refactor: unignore passing tests"
-          branch: unignore-tests-mode-${{ inputs.mode }}
+          branch: unignore-tests-mode-${{ inputs.mode || '1' }}
           delete-branch: true
           title: "Unignore Tests"
           body: |
