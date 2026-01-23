@@ -176,3 +176,47 @@ To contribute a Webhook test:
 1. Capture the HTTP request from the webhook using any tool. If you're looking at public data, something like RequestBin is useful.
 2. Clean up the data and place it in `pulpogato-rest-tests/src/main/resources/webhooks/` under the right directory based on the `x-github-event` header.
 3. Verify the tests work.
+
+=== Schema additions
+
+GitHub's OpenAPI schema may sometimes be incomplete or missing properties that exist in the actual API responses.
+Pulpogato supports extending schemas with additional properties through `*.schema.json` files.
+
+Schema additions are loaded from two locations:
+
+1. `pulpogato-common/src/main/resources/` - additions that apply to all REST modules
+2. `pulpogato-rest-<version>/src/main/resources/` - additions specific to a single version
+
+The files follow the OpenAPI 3.1.0 format and add properties to existing schemas.
+
+.Example: `user.suspendedAt.schema.json`
+[%collapsible]
+====
+[source,json]
+----
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Additions Schema",
+        "version": "1.0.0"
+    },
+    "components": {
+        "schemas": {
+            "public-user": {
+                "properties": {
+                    "suspended_at": {
+                        "type": ["string", "null"],
+                        "format": "date-time",
+                        "description": "https://github.com/github/rest-api-description/issues/5667"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {}
+}
+----
+====
+
+This adds the `suspended_at` property to the `public-user` schema.
+The property will be available as `suspendedAt` in the generated Java code.
