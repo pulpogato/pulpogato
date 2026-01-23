@@ -96,17 +96,10 @@ open class GenerateJavaTask : DefaultTask() {
 
         val swaggerSpec = schemaFile.readText()
 
-        // Check for *.schema.json in the module's resources directory
-        val resourcesDir = project.projectDir.resolve("src/main/resources")
-        val schemaAdditionsFiles =
-            if (resourcesDir.exists()) {
-                resourcesDir
-                    .listFiles { _, name -> name.endsWith(".schema.json") }
-                    ?.sortedBy { it.name }
-                    ?.toList() ?: emptyList()
-            } else {
-                emptyList()
-            }
+        // Check for *.schema.json in pulpogato-common and the module's resources directory
+        val commonResourcesDir = project.rootProject.projectDir.resolve("pulpogato-common/src/main/resources")
+        val moduleResourcesDir = project.projectDir.resolve("src/main/resources")
+        val schemaAdditionsFiles = findSchemaFiles(commonResourcesDir) + findSchemaFiles(moduleResourcesDir)
 
         val addedProperties = mutableMapOf<String, MutableMap<String, String>>()
         var mergedSpec = swaggerSpec
@@ -161,6 +154,22 @@ open class GenerateJavaTask : DefaultTask() {
             .filter { it.isFile }
             .filter { it.toPath().extension == "java" }
             .toList()
+
+    /**
+     * Finds all schema addition files (*.schema.json) in the specified directory.
+     *
+     * @param dir The directory to search for schema files
+     * @return A list of schema files sorted by name, or empty list if directory doesn't exist
+     */
+    private fun findSchemaFiles(dir: File): List<File> =
+        if (dir.exists()) {
+            dir
+                .listFiles { _, name -> name.endsWith(".schema.json") }
+                ?.sortedBy { it.name }
+                ?.toList() ?: emptyList()
+        } else {
+            emptyList()
+        }
 
     /**
      * Merges schema additions from an addition file into the main schema.
