@@ -1,11 +1,11 @@
 package io.github.pulpogato.rest.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.pulpogato.rest.schemas.ApiOverview;
 import io.github.pulpogato.rest.schemas.Root;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class MetaApiIntegrationTest extends BaseIntegrationTest {
 
@@ -15,17 +15,12 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
         var response = api.root();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(Root.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(Root.class);
 
         var root = response.getBody();
-        assertThat(root.getCurrentUserUrl())
-                .isEqualTo("https://api.github.com/user");
-        assertThat(root.getEmojisUrl())
-                .isEqualTo("https://api.github.com/emojis");
-        assertThat(root.getEventsUrl())
-                .isEqualTo("https://api.github.com/events");
+        assertThat(root.getCurrentUserUrl()).isEqualTo("https://api.github.com/user");
+        assertThat(root.getEmojisUrl()).isEqualTo("https://api.github.com/emojis");
+        assertThat(root.getEventsUrl()).isEqualTo("https://api.github.com/events");
     }
 
     @Test
@@ -34,9 +29,7 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
         var response = api.get();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(ApiOverview.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(ApiOverview.class);
 
         var meta = response.getBody();
         assertThat(meta.getVerifiablePasswordAuthentication()).isFalse();
@@ -45,6 +38,4 @@ class MetaApiIntegrationTest extends BaseIntegrationTest {
         assertThat(meta.getHooks()).hasSize(6);
         assertThat(meta.getGit()).hasSize(36);
     }
-
-
 }

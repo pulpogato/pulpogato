@@ -4,18 +4,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.pulpogato.rest.schemas.WebhookPing;
 import io.github.pulpogato.test.TestWebhookResponse;
 import io.github.pulpogato.test.WebhookHelper;
+import java.util.stream.Stream;
 import lombok.Getter;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +25,6 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.util.stream.Stream;
 
 @WebMvcTest
 @AutoConfigureMockMvc
@@ -59,10 +58,8 @@ class PingWebhooksIntegrationTest {
 
         static
         // tag::ping-webhook-controller[]
-        @Getter
-        @RestController
-        @RequestMapping("/webhooks")
-        public class PingWebhooksController implements PingWebhooks<TestWebhookResponse> {
+        @Getter @RestController @RequestMapping("/webhooks") public class PingWebhooksController
+                implements PingWebhooks<TestWebhookResponse> {
             @Autowired
             private ObjectMapper objectMapper;
 
@@ -81,7 +78,6 @@ class PingWebhooksIntegrationTest {
                         .body(objectMapper.writeValueAsString(requestBody))
                         .build());
             }
-
         }
         // end::ping-webhook-controller[]
     }

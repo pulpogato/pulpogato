@@ -1,13 +1,12 @@
 package io.github.pulpogato.rest.api;
 
-import io.github.pulpogato.rest.schemas.LicenseSimple;
-import io.github.pulpogato.rest.schemas.License;
-import io.github.pulpogato.test.BaseIntegrationTest;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import io.github.pulpogato.rest.schemas.License;
+import io.github.pulpogato.rest.schemas.LicenseSimple;
+import io.github.pulpogato.test.BaseIntegrationTest;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class LicensesApiIntegrationTest extends BaseIntegrationTest {
 
@@ -17,22 +16,15 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         var response = api.getAllCommonlyUsed(null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var licenses = response.getBody();
-        assertThat(licenses)
-                .isNotEmpty()
-                .hasSizeGreaterThan(5);
+        assertThat(licenses).isNotEmpty().hasSizeGreaterThan(5);
 
         // Verify common licenses are present
-        var licenseKeys = licenses.stream()
-                .map(LicenseSimple::getKey)
-                .toList();
+        var licenseKeys = licenses.stream().map(LicenseSimple::getKey).toList();
 
-        assertThat(licenseKeys)
-                .contains("mit", "apache-2.0", "gpl-3.0");
+        assertThat(licenseKeys).contains("mit", "apache-2.0", "gpl-3.0");
 
         // Verify structure of first license
         var firstLicense = licenses.getFirst();
@@ -48,26 +40,18 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         var response = api.get("mit");
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(License.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(License.class);
 
         var mitLicense = response.getBody();
         assertThat(mitLicense.getKey()).isEqualTo("mit");
         assertThat(mitLicense.getName()).contains("MIT");
         assertThat(mitLicense.getSpdxId()).isEqualTo("MIT");
-        assertThat(mitLicense.getBody())
-                .contains("MIT License")
-                .contains("Permission is hereby granted");
-        assertThat(mitLicense.getConditions())
-                .hasSize(1)
-                .contains("include-copyright");
+        assertThat(mitLicense.getBody()).contains("MIT License").contains("Permission is hereby granted");
+        assertThat(mitLicense.getConditions()).hasSize(1).contains("include-copyright");
         assertThat(mitLicense.getPermissions())
                 .hasSize(4)
                 .contains("commercial-use", "modifications", "distribution", "private-use");
-        assertThat(mitLicense.getLimitations())
-                .hasSize(2)
-                .contains("liability", "warranty");
+        assertThat(mitLicense.getLimitations()).hasSize(2).contains("liability", "warranty");
     }
 
     @Test
@@ -76,17 +60,13 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         var response = api.get("apache-2.0");
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(License.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(License.class);
 
         var apacheLicense = response.getBody();
         assertThat(apacheLicense.getKey()).isEqualTo("apache-2.0");
         assertThat(apacheLicense.getName()).contains("Apache");
         assertThat(apacheLicense.getSpdxId()).isEqualTo("Apache-2.0");
-        assertThat(apacheLicense.getBody())
-                .contains("Apache License")
-                .contains("Version 2.0");
+        assertThat(apacheLicense.getBody()).contains("Apache License").contains("Version 2.0");
     }
 
     @Test
@@ -95,14 +75,10 @@ class LicensesApiIntegrationTest extends BaseIntegrationTest {
         var response = api.getAllCommonlyUsed(true, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var featuredLicenses = response.getBody();
-        assertThat(featuredLicenses)
-                .isNotEmpty()
-                .hasSize(3); // Featured licenses should be a smaller subset
+        assertThat(featuredLicenses).isNotEmpty().hasSize(3); // Featured licenses should be a smaller subset
 
         // Verify the first featured license has specific values
         var firstFeatured = featuredLicenses.getFirst();

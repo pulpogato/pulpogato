@@ -1,5 +1,5 @@
 {
-    "sonarCloudOrganization": "pulpogato",
-    "projectKey": "pulpogato_pulpogato",
-    "region": "EU"
+  "sonarCloudOrganization": "pulpogato",
+  "projectKey": "pulpogato_pulpogato",
+  "region": "EU"
 }

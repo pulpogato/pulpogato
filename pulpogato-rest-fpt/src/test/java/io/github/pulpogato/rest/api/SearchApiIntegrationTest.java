@@ -1,9 +1,9 @@
 package io.github.pulpogato.rest.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class SearchApiIntegrationTest extends BaseIntegrationTest {
 
@@ -13,9 +13,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
         var response = api.repos("pulpogato", null, null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(SearchApi.Repos200.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Repos200.class);
 
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
@@ -36,9 +34,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
         var response = api.repos("language:java", null, null, 10L, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(SearchApi.Repos200.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Repos200.class);
 
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
@@ -51,9 +47,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
         var response = api.users("rahulsom", null, null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(SearchApi.Users200.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Users200.class);
 
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
@@ -73,9 +67,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
         var response = api.users("location:california", null, null, 5L, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(SearchApi.Users200.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Users200.class);
 
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
@@ -91,9 +83,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
         var response = api.topics("java", null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(SearchApi.Topics200.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Topics200.class);
 
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
@@ -113,9 +103,7 @@ class SearchApiIntegrationTest extends BaseIntegrationTest {
         var response = api.topics("machine-learning", 10L, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(SearchApi.Topics200.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Topics200.class);
 
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
