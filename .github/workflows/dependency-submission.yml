@@ -2,7 +2,7 @@ name: Dependency Submission
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
 
 permissions:
   contents: write
@@ -11,13 +11,13 @@ jobs:
   dependency-submission:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 1
-    - uses: actions/setup-java@v5
-      with:
-        distribution: zulu
-        java-version: 21
-    - uses: gradle/actions/wrapper-validation@v5
-    - name: Generate and submit dependency graph
-      uses: gradle/actions/dependency-submission@v5
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/wrapper-validation@v5
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v5

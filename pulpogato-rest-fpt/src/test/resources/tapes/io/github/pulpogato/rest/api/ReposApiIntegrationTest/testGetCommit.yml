@@ -10,7 +10,8 @@
     headers:
       Content-Type: application/json; charset=utf-8
       Transfer-Encoding: chunked
-      Link: "<https://api.github.com/repositories/825463572/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39?page=2&per_page=1>;\
+      Link:
+        "<https://api.github.com/repositories/825463572/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39?page=2&per_page=1>;\
         \ rel=\"next\", <https://api.github.com/repositories/825463572/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39?page=3&per_page=1>;\
         \ rel=\"last\""
     body: |-
