@@ -774,10 +774,8 @@ There are many other event types you can listen for.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Getter</span>
-<span class="nd">@RestController</span>
-<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/webhooks"</span><span class="o">)</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PingWebhooksController</span> <span class="kd">implements</span> <span class="nc">PingWebhooks</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="o">{</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Getter</span> <span class="nd">@RestController</span> <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/webhooks"</span><span class="o">)</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">PingWebhooksController</span>
+        <span class="kd">implements</span> <span class="nc">PingWebhooks</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="o">{</span>
     <span class="nd">@Autowired</span>
     <span class="kd">private</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span><span class="o">;</span>
 
@@ -796,7 +794,6 @@ There are many other event types you can listen for.</p>
                 <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">requestBody</span><span class="o">))</span>
                 <span class="o">.</span><span class="na">build</span><span class="o">());</span>
     <span class="o">}</span>
-
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -856,10 +853,7 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
         <span class="nc">WebClientGraphQLClient</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">);</span>
 
         <span class="kt">var</span> <span class="n">variables</span> <span class="o">=</span> <span class="nc">LinkedHashMapBuilder</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
-                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"owner"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span>
-                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"repo"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span>
-                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"branch"</span><span class="o">,</span> <span class="s">"main"</span><span class="o">)</span>
-        <span class="o">);</span>
+                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"owner"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"repo"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"branch"</span><span class="o">,</span> <span class="s">"main"</span><span class="o">));</span>
         <span class="kt">var</span> <span class="n">response</span> <span class="o">=</span> <span class="n">graphQLClient</span><span class="o">.</span><span class="na">reactiveExecuteQuery</span><span class="o">(</span><span class="no">OPEN_PRS</span><span class="o">,</span> <span class="n">variables</span><span class="o">).</span><span class="na">block</span><span class="o">();</span>
 
         <span class="kt">var</span> <span class="n">repository</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="na">extractValueAsObject</span><span class="o">(</span><span class="s">"repository"</span><span class="o">,</span> <span class="nc">Repository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
@@ -885,10 +879,7 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
         <span class="nc">WebClientGraphQLClient</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">);</span>
 
         <span class="kt">var</span> <span class="n">variables</span> <span class="o">=</span> <span class="nc">LinkedHashMapBuilder</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
-                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"owner"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span>
-                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"repo"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span>
-                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"branch"</span><span class="o">,</span> <span class="s">"main"</span><span class="o">)</span>
-        <span class="o">);</span>
+                <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"owner"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"repo"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <span class="nc">Map</span><span class="o">.</span><span class="na">entry</span><span class="o">(</span><span class="s">"branch"</span><span class="o">,</span> <span class="s">"main"</span><span class="o">));</span>
         <span class="kt">var</span> <span class="n">response</span> <span class="o">=</span> <span class="n">graphQLClient</span><span class="o">.</span><span class="na">reactiveExecuteQuery</span><span class="o">(</span><span class="no">OPEN_PRS</span><span class="o">,</span> <span class="n">variables</span><span class="o">).</span><span class="na">block</span><span class="o">();</span>
 
         <span class="kt">var</span> <span class="n">repository</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="na">extractValueAsObject</span><span class="o">(</span><span class="s">"repository"</span><span class="o">,</span> <span class="nc">Repository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
