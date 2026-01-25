@@ -2,3 +2,5 @@
 20bcbd31ecc5812fa86f21867c107ed681c0c643
 # chore: Apply spotless to code
 97de62f1d4986e21485102c415d4b3a89532f7cc
+# chore: Format YAML with spotless + prettier
+4da878fc39005b82f3505591d6034f00fa32d683
