@@ -64,12 +64,13 @@ tasks.register("updateRestSchemaVersion") {
         }
         val branches = connection.getInputStream().bufferedReader().readText()
         val json = ObjectMapper().readTree(branches)
-        val sha = json.get("commit").get("sha").asText().take(7)
+        val sha =
+            json["commit"]["sha"].asText().take(7)
         val oldProps = project.file("gradle.properties").readText()
         val newProps = oldProps.replace(Regex("gh.api.commit=.*"), "gh.api.commit=$sha")
         project.file("gradle.properties").writeText(newProps)
-        if (project.ext.get("gh.api.commit") != sha) {
-            println("Updated gh.api.commit from ${project.ext.get("gh.api.commit")} to $sha")
+        if (project.ext["gh.api.commit"] != sha) {
+            println("Updated gh.api.commit from ${project.ext["gh.api.commit"]} to $sha")
         } else {
             println("gh.api.commit is already up to date")
         }
