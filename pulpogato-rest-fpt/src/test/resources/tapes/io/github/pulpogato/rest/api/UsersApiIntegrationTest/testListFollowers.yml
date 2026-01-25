@@ -9,7 +9,8 @@
     statusCode: 200
     headers:
       Content-Type: application/json; charset=utf-8
-      Link: "<https://api.github.com/user/followers?per_page=5&page=2>; rel=\"next\"\
+      Link:
+        "<https://api.github.com/user/followers?per_page=5&page=2>; rel=\"next\"\
         , <https://api.github.com/user/followers?per_page=5&page=8>; rel=\"last\""
     body: |-
       [ {

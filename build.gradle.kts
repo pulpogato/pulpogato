@@ -122,4 +122,9 @@ spotless {
         target("**/*.json")
         targetExclude("**/build/**/*.json")
     }
+    yaml {
+        prettier()
+        target("**/*.yaml", "**/*.yml")
+        targetExclude("**/build/**/*.yaml", "**/build/**/*.yml")
+    }
 }

@@ -2,17 +2,17 @@ name: Unignore Tests
 
 on:
   schedule:
-    - cron: '0 1 * * 6'
+    - cron: "0 1 * * 6"
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Mode to run (1: Root-level, 2: Version-level)'
+        description: "Mode to run (1: Root-level, 2: Version-level)"
         required: true
-        default: '1'
+        default: "1"
         type: choice
         options:
-        - '1'
-        - '2'
+          - "1"
+          - "2"
 
 permissions:
   contents: write

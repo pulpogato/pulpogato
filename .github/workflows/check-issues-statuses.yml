@@ -2,9 +2,9 @@ name: Check Issue Statuses
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   schedule:
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
