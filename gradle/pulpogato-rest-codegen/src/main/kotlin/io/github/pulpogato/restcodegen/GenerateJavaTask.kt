@@ -1,6 +1,6 @@
 package io.github.pulpogato.restcodegen
 
-import com.diffplug.spotless.glue.pjf.PalantirJavaFormatFormatterFunc
+import com.palantir.javaformat.java.Formatter
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
@@ -123,9 +123,9 @@ open class GenerateJavaTask : DefaultTask() {
         // Format generated Java code
         val javaFiles = getJavaFiles(main)
         val testJavaFiles = getJavaFiles(test)
-        val formatter = PalantirJavaFormatFormatterFunc("PALANTIR", true)
+        val formatter = Formatter.create()
         (javaFiles + testJavaFiles).parallelStream().forEach { f ->
-            val formatted = formatter.apply(f.readText())
+            val formatted = formatter.formatSource(f.readText())
             f.writeText(formatted)
         }
 

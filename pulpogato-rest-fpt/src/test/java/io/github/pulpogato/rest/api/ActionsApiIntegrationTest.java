@@ -1,5 +1,7 @@
 package io.github.pulpogato.rest.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.pulpogato.common.StringOrInteger;
 import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
@@ -9,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.http.HttpStatus;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ActionsApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
@@ -19,9 +19,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         var response = api.getActionsCacheUsage("pulpogato", "pulpogato");
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(ActionsCacheUsageByRepository.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheUsageByRepository.class);
 
         var cacheUsage = response.getBody();
         assertThat(cacheUsage.getFullName()).isEqualTo("pulpogato/pulpogato");
@@ -35,9 +33,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         var response = api.getActionsCacheList("pulpogato", "pulpogato", null, null, null, null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(ActionsCacheList.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheList.class);
 
         var cacheList = response.getBody();
         assertThat(cacheList.getTotalCount()).isEqualTo(60);
@@ -50,9 +46,7 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         var response = api.getActionsCacheList("pulpogato", "pulpogato", 10L, 0L, null, null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(ActionsCacheList.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheList.class);
 
         var cacheList = response.getBody();
         assertThat(cacheList.getTotalCount()).isEqualTo(60);
@@ -72,9 +66,12 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
         var response = api.createWorkflowDispatch(
                 "pulpogato",
                 "pulpogato",
-                StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(),
-                ActionsApi.CreateWorkflowDispatchRequestBody.builder().ref("main").build()
-        );
+                StringOrInteger.builder()
+                        .stringValue("check-issues-statuses.yml")
+                        .build(),
+                ActionsApi.CreateWorkflowDispatchRequestBody.builder()
+                        .ref("main")
+                        .build());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         var body = response.getBody();
@@ -85,7 +82,21 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
     void testListWorkflowRuns() {
         var api = new RestClients(webClient).getActionsApi();
         var response = api.listWorkflowRuns(
-                "pulpogato", "pulpogato", StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(), null, null, null, null, null, null, null, null, null, null);
+                "pulpogato",
+                "pulpogato",
+                StringOrInteger.builder()
+                        .stringValue("check-issues-statuses.yml")
+                        .build(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();
@@ -94,16 +105,32 @@ class ActionsApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testListWorkflowRunsWithCache() {
-        var cachingClient = webClient.mutate()
-                .filter(CachingExchangeFilterFunction.builder().cache(new ConcurrentMapCache("test-cache")).build())
+        var cachingClient = webClient
+                .mutate()
+                .filter(CachingExchangeFilterFunction.builder()
+                        .cache(new ConcurrentMapCache("test-cache"))
+                        .build())
                 .build();
         var api = new RestClients(cachingClient).getActionsApi();
         var response = api.listWorkflowRuns(
-                "pulpogato", "pulpogato", StringOrInteger.builder().stringValue("check-issues-statuses.yml").build(), null, null, null, null, null, null, null, null, null, null);
+                "pulpogato",
+                "pulpogato",
+                StringOrInteger.builder()
+                        .stringValue("check-issues-statuses.yml")
+                        .build(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
-
 }

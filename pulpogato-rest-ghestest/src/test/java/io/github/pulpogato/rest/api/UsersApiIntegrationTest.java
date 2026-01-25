@@ -1,9 +1,9 @@
 package io.github.pulpogato.rest.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UsersApiIntegrationTest extends BaseIntegrationTest {
 
@@ -63,6 +63,5 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(user.getFollowers()).isZero();
         assertThat(user.getFollowing()).isZero();
         assertThat(user.getSuspendedAt()).isNotNull();
-
     }
 }

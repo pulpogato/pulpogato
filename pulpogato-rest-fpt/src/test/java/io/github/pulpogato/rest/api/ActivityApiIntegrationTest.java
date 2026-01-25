@@ -1,12 +1,11 @@
 package io.github.pulpogato.rest.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.pulpogato.rest.schemas.Feed;
 import io.github.pulpogato.test.BaseIntegrationTest;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ActivityApiIntegrationTest extends BaseIntegrationTest {
 
@@ -16,14 +15,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         var response = api.listPublicEvents(10L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var events = response.getBody();
-        assertThat(events)
-                .isNotNull()
-                .hasSize(10); // We requested max 10 per page
+        assertThat(events).isNotNull().hasSize(10); // We requested max 10 per page
 
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50486820386");
@@ -39,9 +34,7 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         var response = api.getFeeds();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(Feed.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(Feed.class);
 
         var feed = response.getBody();
         assertThat(feed.getTimelineUrl()).isEqualTo("https://github.com/timeline");
@@ -67,14 +60,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         var response = api.listPublicOrgEvents("github", 5L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var events = response.getBody();
-        assertThat(events)
-                .isNotNull()
-                .hasSize(5); // We requested max 5 per page
+        assertThat(events).isNotNull().hasSize(5); // We requested max 5 per page
 
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50473417741");
@@ -95,14 +84,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         var response = api.listRepoEvents("octocat", "Hello-World", 5L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var events = response.getBody();
-        assertThat(events)
-                .isNotNull()
-                .hasSize(5); // We requested max 5 per page
+        assertThat(events).isNotNull().hasSize(5); // We requested max 5 per page
 
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50472301049");
@@ -115,18 +100,13 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
     @Test
     void testListReposStarredByAuthenticatedUser() {
         var api = new RestClients(webClient).getActivityApi();
-        var response = api.listReposStarredByAuthenticatedUser(
-                null, null, 10L, 1L);
+        var response = api.listReposStarredByAuthenticatedUser(null, null, 10L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var repositories = response.getBody();
-        assertThat(repositories)
-                .isNotNull()
-                .hasSize(1); // We have 1 starred repository
+        assertThat(repositories).isNotNull().hasSize(1); // We have 1 starred repository
 
         // Verify starred repositories structure
         var firstRepo = repositories.getFirst();
@@ -143,14 +123,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         var response = api.listWatchedReposForAuthenticatedUser(10L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var repositories = response.getBody();
-        assertThat(repositories)
-                .isNotNull()
-                .hasSize(10); // We requested max 10 per page
+        assertThat(repositories).isNotNull().hasSize(10); // We requested max 10 per page
 
         // Verify watched repositories structure
         var firstRepo = repositories.getFirst();
@@ -167,14 +143,10 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         var response = api.listPublicEventsForUser("rahulsom", 5L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var events = response.getBody();
-        assertThat(events)
-                .isNotNull()
-                .hasSize(5); // We requested max 5 per page
+        assertThat(events).isNotNull().hasSize(5); // We requested max 5 per page
 
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50486444578");
@@ -183,5 +155,4 @@ class ActivityApiIntegrationTest extends BaseIntegrationTest {
         assertThat(firstEvent.getRepo().getName()).isEqualTo("pulpogato/pulpogato");
         assertThat(firstEvent.getCreatedAt()).isNotNull();
     }
-
 }

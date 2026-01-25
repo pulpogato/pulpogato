@@ -136,24 +136,25 @@ tasks.withType<JavaCompile> {
     options.isIncremental = true
 }
 
-val addSchemaInfoToBroker = tasks.register("addSchemaInfoToBroker") {
-    dependsOn(downloadSchema)
-    val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { it.schemaFile }
-    inputs.file(schemaFile)
+val addSchemaInfoToBroker =
+    tasks.register("addSchemaInfoToBroker") {
+        dependsOn(downloadSchema)
+        val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { it.schemaFile }
+        inputs.file(schemaFile)
 
-    doLast {
-        val schemaBytes = schemaFile.get().asFile.readBytes()
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(schemaBytes)
-        val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+        doLast {
+            val schemaBytes = schemaFile.get().asFile.readBytes()
+            val digest = MessageDigest.getInstance("SHA-256")
+            val hashBytes = digest.digest(schemaBytes)
+            val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
 
-        val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
-        infoBrokerPlugin.add("GitHub-API-Repo", project.ext.get("gh.api.repo").toString())
-        infoBrokerPlugin.add("GitHub-API-Commit", project.ext.get("gh.api.commit").toString())
-        infoBrokerPlugin.add("GitHub-API-Version", project.ext.get("gh.api.version").toString())
-        infoBrokerPlugin.add("GitHub-API-SHA256", sha256)
+            val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
+            infoBrokerPlugin.add("GitHub-API-Repo", project.ext.get("gh.api.repo").toString())
+            infoBrokerPlugin.add("GitHub-API-Commit", project.ext.get("gh.api.commit").toString())
+            infoBrokerPlugin.add("GitHub-API-Version", project.ext.get("gh.api.version").toString())
+            infoBrokerPlugin.add("GitHub-API-SHA256", sha256)
+        }
     }
-}
 
 tasks.withType<GenerateMavenPom>().configureEach {
     dependsOn(addSchemaInfoToBroker)

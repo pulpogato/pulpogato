@@ -9,7 +9,6 @@ buildscript {
 
 plugins {
     `kotlin-dsl`
-    alias(libs.plugins.spotless)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
 }
@@ -70,10 +69,4 @@ pitest {
     outputFormats.set(setOf("XML", "HTML"))
     targetClasses.set(listOf("io.github.pulpogato.restcodegen.*"))
     excludedTestClasses.set(listOf("io.github.pulpogato.restcodegen.RestCodegenPluginTest"))
-}
-
-spotless {
-    kotlin {
-        ktlint()
-    }
 }

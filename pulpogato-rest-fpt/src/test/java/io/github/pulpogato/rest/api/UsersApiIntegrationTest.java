@@ -1,10 +1,14 @@
 package io.github.pulpogato.rest.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
+
 import io.github.pulpogato.rest.schemas.BasicError;
 import io.github.pulpogato.rest.schemas.PrivateUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.rest.schemas.ValidationErrorSimple;
 import io.github.pulpogato.test.BaseIntegrationTest;
+import java.util.List;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -12,12 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
-
-    class UsersApiIntegrationTest extends BaseIntegrationTest {
+class UsersApiIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void testGetAuthenticatedPublic() {
@@ -30,9 +29,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         ResponseEntity<UsersApi.@NonNull GetAuthenticated200> authenticated = api.getAuthenticated();
         // end::getAuthenticatedPublic[]
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(authenticated.getBody())
-                .isNotNull()
-                .isInstanceOf(UsersApi.GetAuthenticated200.class);
+        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
         var body = authenticated.getBody();
         // TODO: This should be a PublicUser
         assertThat(body.getPrivateUser()).isNotNull();
@@ -46,9 +43,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var authenticated = api.getAuthenticated();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(authenticated.getBody())
-                .isNotNull()
-                .isInstanceOf(UsersApi.GetAuthenticated200.class);
+        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
         var body = authenticated.getBody();
 
         assertThat(body.getPrivateUser()).isNotNull();
@@ -68,9 +63,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
                 .build();
         var authenticated = api.updateAuthenticated(update);
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(authenticated.getBody())
-                .isNotNull()
-                .isInstanceOf(PrivateUser.class);
+        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PrivateUser.class);
         var body = authenticated.getBody();
         assertThat(body.getId()).isNotNull();
         assertThat(body.getLogin()).isNotNull();
@@ -82,13 +75,9 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(blocked.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(blocked.getBody()).isNotNull().isInstanceOf(List.class);
         var blockedBody = blocked.getBody();
-        assertThat(blockedBody)
-                .isNotNull()
-                .isEmpty();
+        assertThat(blockedBody).isNotNull().isEmpty();
     }
 
     @Test
@@ -96,17 +85,11 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(blocked.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(blocked.getBody()).isNotNull().isInstanceOf(List.class);
         var blockedBody = blocked.getBody();
-        assertThat(blockedBody)
-                .isNotNull()
-                .hasSize(1);
+        assertThat(blockedBody).isNotNull().hasSize(1);
         var blockedUser = blockedBody.getFirst();
-        assertThat(blockedUser)
-                .isNotNull()
-                .isInstanceOf(SimpleUser.class);
+        assertThat(blockedUser).isNotNull().isInstanceOf(SimpleUser.class);
         assertThat(blockedUser.getId()).isEqualTo(96304584L);
     }
 
@@ -115,8 +98,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.checkBlocked("some-blocked-user");
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(blocked.getBody())
-                .isNull();
+        assertThat(blocked.getBody()).isNull();
     }
 
     @Test
@@ -153,8 +135,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var blocked = api.block("gooduser");
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(blocked.getBody())
-                .isNull();
+        assertThat(blocked.getBody()).isNull();
     }
 
     @Test
@@ -163,26 +144,19 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var blocked = api.unblock("gooduser");
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(blocked.getBody())
-                .isNull();
+        assertThat(blocked.getBody()).isNull();
     }
 
     @Test
     void testListFollowers() {
         var api = new RestClients(webClient).getUsersApi();
-        var followers = api.listFollowersForAuthenticatedUser( 5L, 0L);
+        var followers = api.listFollowersForAuthenticatedUser(5L, 0L);
         assertThat(followers.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(followers.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(followers.getBody()).isNotNull().isInstanceOf(List.class);
         var followersBody = followers.getBody();
-        assertThat(followersBody)
-                .isNotNull()
-                .hasSize(5);
+        assertThat(followersBody).isNotNull().hasSize(5);
         var follower = followersBody.getFirst();
-        assertThat(follower)
-                .isNotNull()
-                .isInstanceOf(SimpleUser.class);
+        assertThat(follower).isNotNull().isInstanceOf(SimpleUser.class);
         assertThat(follower.getId()).isEqualTo(29520L);
     }
 
@@ -191,16 +165,11 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var gpgKeys = api.listGpgKeysForAuthenticatedUser(5L, 0L);
         assertThat(gpgKeys.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(gpgKeys.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(gpgKeys.getBody()).isNotNull().isInstanceOf(List.class);
         var gpgKeysBody = gpgKeys.getBody();
-        assertThat(gpgKeysBody)
-                .isNotNull()
-                .hasSize(1);
+        assertThat(gpgKeysBody).isNotNull().hasSize(1);
         var gpgKey = gpgKeysBody.getFirst();
-        assertThat(gpgKey)
-                .isNotNull();
+        assertThat(gpgKey).isNotNull();
         assertThat(gpgKey.getId()).isEqualTo(175109L);
         assertThat(gpgKey.getKeyId()).isEqualTo("8B459169D13D7E09");
     }
@@ -210,11 +179,9 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var gpgKey = api.getGpgKeyForAuthenticatedUser(175109L);
         assertThat(gpgKey.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(gpgKey.getBody())
-                .isNotNull();
+        assertThat(gpgKey.getBody()).isNotNull();
         var gpgKeyBody = gpgKey.getBody();
-        assertThat(gpgKeyBody)
-                .isNotNull();
+        assertThat(gpgKeyBody).isNotNull();
         assertThat(gpgKeyBody.getId()).isEqualTo(175109L);
         assertThat(gpgKeyBody.getKeyId()).isEqualTo("8B459169D13D7E09");
     }
@@ -224,9 +191,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var response = api.listPublicEmailsForAuthenticatedUser(5L, 0L);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
         var emails = response.getBody();
         assertThat(emails).hasSize(2);
 
@@ -248,9 +213,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         var api = new RestClients(webClient).getUsersApi();
         var response = api.listEmailsForAuthenticatedUser(5L, 0L);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
         var emails = response.getBody();
         assertThat(emails).hasSize(3);
 
@@ -271,7 +234,6 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         assertThat(third.getPrimary()).isFalse();
         assertThat(third.getVerified()).isTrue();
         assertThat(third.getVisibility()).isNull();
-
     }
 
     @Test
@@ -282,9 +244,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody())
-                .isNotNull()
-                .isInstanceOf(List.class);
+        assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
         var socialAccount = response.getBody().getFirst();
         assertThat(socialAccount).isNotNull();
@@ -353,10 +313,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
     void testGetByUsername404() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var exception = catchThrowableOfType(
-                WebClientResponseException.class,
-                () -> api.getByUsername("rahulsom1")
-        );
+        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.getByUsername("rahulsom1"));
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().value()).isEqualTo(404);
@@ -411,5 +368,4 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
         assertThat(following.getId()).isEqualTo(4732L);
         assertThat(following.getLogin()).isEqualTo("jashkenas");
     }
-
 }

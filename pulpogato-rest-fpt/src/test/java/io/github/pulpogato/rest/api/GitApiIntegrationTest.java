@@ -1,12 +1,11 @@
 package io.github.pulpogato.rest.api;
 
-import io.github.pulpogato.test.BaseIntegrationTest;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static io.github.pulpogato.rest.api.GitApi.CreateTreeRequestBody.Tree;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import io.github.pulpogato.test.BaseIntegrationTest;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class GitApiIntegrationTest extends BaseIntegrationTest {
     /**
@@ -31,25 +30,27 @@ public class GitApiIntegrationTest extends BaseIntegrationTest {
         var baseTreeSha = "c16df50e4252a304c1b00418b3f86e94ceec62a6";
         var readmeBlobSha = "e0190bf9ca1fa03808d7c0cc4a04e3203d78f94e";
 
-        var response = api.createTree(owner, repo, GitApi.CreateTreeRequestBody.builder()
-                .baseTree(baseTreeSha)
-                .tree(List.of(
-                        // Add README.md at new location with existing blob SHA
-                        Tree.builder()
-                                .mode(Tree.Mode._100644)
-                                .type(Tree.Type.BLOB)
-                                .path("docs/README.md")
-                                .sha(readmeBlobSha)
-                                .build(),
-                        // Delete README.md from old location by setting sha to null
-                        Tree.builder()
-                                .mode(Tree.Mode._100644)
-                                .type(Tree.Type.BLOB)
-                                .path("README.md")
-                                .sha(null) // null sha means delete it
-                                .build())
-                )
-                .build());
+        var response = api.createTree(
+                owner,
+                repo,
+                GitApi.CreateTreeRequestBody.builder()
+                        .baseTree(baseTreeSha)
+                        .tree(List.of(
+                                // Add README.md at new location with existing blob SHA
+                                Tree.builder()
+                                        .mode(Tree.Mode._100644)
+                                        .type(Tree.Type.BLOB)
+                                        .path("docs/README.md")
+                                        .sha(readmeBlobSha)
+                                        .build(),
+                                // Delete README.md from old location by setting sha to null
+                                Tree.builder()
+                                        .mode(Tree.Mode._100644)
+                                        .type(Tree.Type.BLOB)
+                                        .path("README.md")
+                                        .sha(null) // null sha means delete it
+                                        .build()))
+                        .build());
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();

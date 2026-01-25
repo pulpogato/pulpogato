@@ -1,17 +1,16 @@
 package io.github.pulpogato.graphql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
 import io.github.pulpogato.common.util.LinkedHashMapBuilder;
 import io.github.pulpogato.graphql.types.MergeableState;
 import io.github.pulpogato.graphql.types.PullRequestMergeMethod;
 import io.github.pulpogato.graphql.types.Repository;
 import io.github.pulpogato.test.BaseIntegrationTest;
+import java.util.Map;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class FindOpenPullRequestsTest extends BaseIntegrationTest {
     // tag::query[]
@@ -54,10 +53,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
 
         var variables = LinkedHashMapBuilder.of(
-                Map.entry("owner", "pulpogato"),
-                Map.entry("repo", "pulpogato"),
-                Map.entry("branch", "main")
-        );
+                Map.entry("owner", "pulpogato"), Map.entry("repo", "pulpogato"), Map.entry("branch", "main"));
         var response = graphQLClient.reactiveExecuteQuery(OPEN_PRS, variables).block();
         // end::execute[]
 
@@ -74,8 +70,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         assertThat(pullRequests.getTotalCount()).isEqualTo(5);
 
         var nodes = pullRequests.getNodes();
-        assertThat(nodes).isNotNull()
-                .hasSize(5);
+        assertThat(nodes).isNotNull().hasSize(5);
 
         // PR #769 - renovate/spring-core
         var pr769 = nodes.get(0);
