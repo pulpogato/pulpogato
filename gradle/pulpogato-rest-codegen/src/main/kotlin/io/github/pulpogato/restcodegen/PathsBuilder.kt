@@ -417,11 +417,13 @@ class PathsBuilder {
                 // Resolve example value and build a proper schema ref, handling $ref if present
                 val (exampleValue, schemaRefPath) =
                     when {
-                        v.value != null ->
+                        v.value != null -> {
                             Pair(
                                 v.value,
                                 context.withSchemaStack("responses", successResponse.key, "content", contentType, "examples", k, "value"),
                             )
+                        }
+
                         v.`$ref` != null -> {
                             val refName = v.`$ref`.replace("#/components/examples/", "")
                             val resolvedExample =
@@ -432,7 +434,10 @@ class PathsBuilder {
                                 context.withSchemaStack("#", "components", "examples", refName, "value"),
                             )
                         }
-                        else -> Pair(null, context)
+
+                        else -> {
+                            Pair(null, context)
+                        }
                     }
 
                 if (exampleValue != null) {
@@ -655,7 +660,7 @@ class PathsBuilder {
             .builder(ref, paramName)
             .addAnnotations(
                 when (theParameter.`in`) {
-                    "query" ->
+                    "query" -> {
                         mutableListOf(
                             AnnotationSpec
                                 .builder(webBind("RequestParam"))
@@ -664,14 +669,16 @@ class PathsBuilder {
                                 .build(),
                             if (theParameter.required) nonNull() else nullable(),
                         )
+                    }
 
-                    "body" ->
+                    "body" -> {
                         mutableListOf(
                             AnnotationSpec.builder(webBind("RequestBody")).build(),
                             nonNull(),
                         )
+                    }
 
-                    "path" ->
+                    "path" -> {
                         mutableListOf(
                             AnnotationSpec
                                 .builder(webBind("PathVariable"))
@@ -679,14 +686,18 @@ class PathsBuilder {
                                 .build(),
                             nonNull(),
                         )
+                    }
 
-                    "header" ->
+                    "header" -> {
                         mutableListOf(
                             AnnotationSpec.builder(webBind("RequestHeader")).build(),
                             nonNull(),
                         )
+                    }
 
-                    else -> throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
+                    else -> {
+                        throw IllegalArgumentException("Unknown parameter type: ${theParameter.`in`}")
+                    }
                 },
             ).build()
     }

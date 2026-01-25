@@ -47,6 +47,7 @@ private fun isSimpleType(typeName: TypeName): Boolean {
 
     return when {
         type.packageName() == "java.lang" && type.simpleName() == "String" -> true
+
         type.packageName() == "java.lang" && (
             type.simpleName() == "Boolean" ||
                 type.simpleName() == "Integer" ||
@@ -54,9 +55,13 @@ private fun isSimpleType(typeName: TypeName): Boolean {
                 type.simpleName() == "Double" ||
                 type.simpleName() == "Float"
         ) -> true
+
         type.packageName() == "java.math" && type.simpleName() == "BigDecimal" -> true
+
         type.packageName().startsWith("java.time") -> true
+
         type.packageName() == "java.net" && type.simpleName() == "URI" -> true
+
         else -> false
     }
 }
@@ -110,8 +115,13 @@ fun referenceAndDefinition(
     val allOf = entry.value.allOf?.filterNotNull()
 
     return when {
-        entry.key == "empty-object" -> Pair(Types.EMPTY_OBJECT, null)
-        entry.value.`$ref` != null -> buildReferenceAndDefinitionFromRef(context, entry)
+        entry.key == "empty-object" -> {
+            Pair(Types.EMPTY_OBJECT, null)
+        }
+
+        entry.value.`$ref` != null -> {
+            buildReferenceAndDefinitionFromRef(context, entry)
+        }
 
         anyOf != null && anyOf.size == 1 -> {
             val anyOfValue = anyOf.first()
@@ -122,48 +132,70 @@ fun referenceAndDefinition(
             isSingleOrArray(
                 oneOf,
                 "string",
-            ) -> Pair(ParameterizedTypeName.get(Types.SINGULAR_OR_PLURAL, Types.STRING).annotated(typeGenerated(), singleValueAsArray()), null)
+            ) -> {
+            Pair(ParameterizedTypeName.get(Types.SINGULAR_OR_PLURAL, Types.STRING).annotated(typeGenerated(), singleValueAsArray()), null)
+        }
 
         oneOf != null &&
             typesAre(
                 oneOf,
                 "string",
                 "integer",
-            ) && oneOf.any { it.format == "date-time" } -> Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
+            ) && oneOf.any { it.format == "date-time" } -> {
+            Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
+        }
 
-        oneOf != null && typesAre(oneOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
-        anyOf != null && typesAre(anyOf, "string", "integer") -> Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
-        anyOf != null && isAnyOfOnlyForValidation(anyOf, entry.value) ->
+        oneOf != null && typesAre(oneOf, "string", "integer") -> {
+            Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
+        }
+
+        anyOf != null && typesAre(anyOf, "string", "integer") -> {
+            Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
+        }
+
+        anyOf != null && isAnyOfOnlyForValidation(anyOf, entry.value) -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
-        anyOf != null ->
+        }
+
+        anyOf != null -> {
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, anyOf, "anyOf", it)
             }
+        }
 
-        oneOf != null ->
+        oneOf != null -> {
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, oneOf, "oneOf", it)
             }
+        }
 
-        allOf != null ->
+        allOf != null -> {
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, allOf, "allOf", it)
             }
+        }
 
-        types == null && entry.value.properties != null ->
+        types == null && entry.value.properties != null -> {
             referenceAndDefinition(context, mapOf(entry.key to entry.value.also { it.types = mutableSetOf("object") }).entries.first(), "", parentClass)!!
+        }
 
-        types == null && entry.value.properties != null && entry.value.properties.isEmpty() && entry.value.additionalProperties == false ->
+        types == null && entry.value.properties != null && entry.value.properties.isEmpty() && entry.value.additionalProperties == false -> {
             Pair(Types.VOID.annotated(typeGenerated()), null)
+        }
 
-        types == null && entry.value.properties != null && entry.value.properties.isNotEmpty() ->
+        types == null && entry.value.properties != null && entry.value.properties.isNotEmpty() -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
+        }
 
-        types == null -> Pair(Types.OBJECT.annotated(typeGenerated()), null)
+        types == null -> {
+            Pair(Types.OBJECT.annotated(typeGenerated()), null)
+        }
 
-        types.isEmpty() -> Pair(Types.OBJECT.annotated(typeGenerated()), null)
+        types.isEmpty() -> {
+            Pair(Types.OBJECT.annotated(typeGenerated()), null)
+        }
 
-        types.size == 1 ->
+        types.size == 1 -> {
             when (types.first()) {
                 "string" -> buildReferenceAndDefinitionFromString(context, entry, prefix, parentClass)
                 "integer" -> buildReferenceAndDefinitionFromInteger(entry)
@@ -173,9 +205,15 @@ fun referenceAndDefinition(
                 "object" -> buildReferenceAndDefinitionFromObject(context, entry, parentClass, prefix)
                 else -> throw RuntimeException("Unknown type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
             }
+        }
 
-        types.toSet() == setOf("string", "integer") -> Pair(Types.STRING_OR_INTEGER, null)
-        else -> Pair(Types.TODO, null)
+        types.toSet() == setOf("string", "integer") -> {
+            Pair(Types.STRING_OR_INTEGER, null)
+        }
+
+        else -> {
+            Pair(Types.TODO, null)
+        }
     }
 }
 
@@ -203,12 +241,15 @@ private fun buildReferenceAndDefinitionFromObject(
             }
         }
 
-        entry.value.properties != null && entry.value.properties.isNotEmpty() ->
+        entry.value.properties != null && entry.value.properties.isNotEmpty() -> {
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildSimpleObject(context, entry, it)
             }
+        }
 
-        else -> Pair(Types.MAP_STRING_OBJECT.annotated(typeGenerated()), null)
+        else -> {
+            Pair(Types.MAP_STRING_OBJECT.annotated(typeGenerated()), null)
+        }
     }
 
 private fun buildReferenceAndDefinitionFromArray(
@@ -263,24 +304,48 @@ private fun buildReferenceAndDefinitionFromString(
     parentClass: ClassName?,
 ): Pair<TypeName, TypeSpec?> =
     when {
-        entry.value.enum != null -> buildType("${prefix}${entry.className()}", parentClass) { buildEnum(context, entry, it) }
+        entry.value.enum != null -> {
+            buildType("${prefix}${entry.className()}", parentClass) { buildEnum(context, entry, it) }
+        }
 
-        entry.value.format == null -> Pair(Types.STRING, null)
-        else ->
+        entry.value.format == null -> {
+            Pair(Types.STRING, null)
+        }
+
+        else -> {
             when (entry.value.format) {
-                "uri" -> Pair(Types.URI.annotated(typeGenerated()), null)
-                "uuid" -> Pair(Types.UUID.annotated(typeGenerated()), null)
-                "date" -> Pair(Types.LOCAL_DATE.annotated(typeGenerated()), null)
-                "date-time" -> Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
-                "binary" -> Pair(Types.BYTE_ARRAY.annotated(typeGenerated()), null)
-                "email", "hostname", "ip/cidr", "uri-template", "repo.nwo", "ssh-key", "ssh-key fingerprint" ->
+                "uri" -> {
+                    Pair(Types.URI.annotated(typeGenerated()), null)
+                }
+
+                "uuid" -> {
+                    Pair(Types.UUID.annotated(typeGenerated()), null)
+                }
+
+                "date" -> {
+                    Pair(Types.LOCAL_DATE.annotated(typeGenerated()), null)
+                }
+
+                "date-time" -> {
+                    Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
+                }
+
+                "binary" -> {
+                    Pair(Types.BYTE_ARRAY.annotated(typeGenerated()), null)
+                }
+
+                "email", "hostname", "ip/cidr", "uri-template", "repo.nwo", "ssh-key", "ssh-key fingerprint" -> {
                     Pair(
                         Types.STRING.annotated(typeGenerated()),
                         null,
                     )
+                }
 
-                else -> throw RuntimeException("Unknown string type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
+                else -> {
+                    throw RuntimeException("Unknown string type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
+                }
             }
+        }
     }
 
 private fun buildReferenceAndDefinitionFromRef(
@@ -510,8 +575,14 @@ private fun handleToCodeMethods(
     val hasNewFields = builtWithAllProperties.fieldSpecs().size > original.fieldSpecs().size
 
     when {
-        hasToCodeMethod && hasNewFields -> rebuildWithUpdatedMethods(builtWithAllProperties, className, theType)
-        !hasToCodeMethod -> addMethodsToNewType(builtWithAllProperties, className, theType)
+        hasToCodeMethod && hasNewFields -> {
+            rebuildWithUpdatedMethods(builtWithAllProperties, className, theType)
+        }
+
+        !hasToCodeMethod -> {
+            addMethodsToNewType(builtWithAllProperties, className, theType)
+        }
+
         else -> {
             // Even if toCode doesn't need updating, the Builder might need regenerating if fields were added
             theType.addType(builtWithAllProperties)
