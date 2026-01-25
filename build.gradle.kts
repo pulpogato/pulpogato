@@ -25,6 +25,11 @@ plugins {
     alias(libs.plugins.waenaPublished).apply(false)
     alias(libs.plugins.dgs).apply(false)
     alias(libs.plugins.download).apply(false)
+    alias(libs.plugins.spotless)
+}
+
+repositories {
+    mavenCentral()
 }
 
 allprojects {
@@ -77,21 +82,23 @@ tasks.register("updateRestSchemaVersion") {
     }
 }
 
-val checkPlugin = tasks.register("checkPlugin", Exec::class) {
-    description = "Run check on plugin code"
-    group = "verification"
-    commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
-}
+val checkPlugin =
+    tasks.register("checkPlugin", Exec::class) {
+        description = "Run check on plugin code"
+        group = "verification"
+        commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
+    }
 
 tasks.named("check").configure {
     dependsOn(checkPlugin)
 }
 
-val pitestPlugin = tasks.register("pitestPlugin", Exec::class) {
-    description = "Run pitest on plugin code"
-    group = "verification"
-    commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "pitest")
-}
+val pitestPlugin =
+    tasks.register("pitestPlugin", Exec::class) {
+        description = "Run pitest on plugin code"
+        group = "verification"
+        commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "pitest")
+    }
 
 tasks.register("pitest") {
     description = "Run pitest from plugin"
@@ -99,14 +106,20 @@ tasks.register("pitest") {
     dependsOn(pitestPlugin)
 }
 
-val spotlessApplyPlugin = tasks.register("spotlessApplyPlugin", Exec::class) {
-    description = "Run spotlessApply on plugin code"
-    group = "verification"
-    commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "spotlessApply")
-}
-
-tasks.register("spotlessApply") {
-    description = "Run spotlessApply from plugin"
-    group = "verification"
-    dependsOn(spotlessApplyPlugin)
+spotless {
+    kotlin {
+        ktlint()
+        target("**/*.kt", "**/*.kts")
+        targetExclude("**/build/**/*.kt", "**/build/**/*.kts")
+    }
+    java {
+        palantirJavaFormat()
+        target("**/src/**/*.java")
+        targetExclude("**/build/**/*.java")
+    }
+    json {
+        jackson()
+        target("**/*.json")
+        targetExclude("**/build/**/*.json")
+    }
 }

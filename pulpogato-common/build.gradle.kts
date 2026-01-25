@@ -3,7 +3,6 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
-    alias(libs.plugins.spotless)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
 }
@@ -57,12 +56,6 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-spotless {
-    java {
-        palantirJavaFormat()
-    }
 }
 
 testlogger {
