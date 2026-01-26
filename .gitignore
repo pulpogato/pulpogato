@@ -15,9 +15,9 @@ gradle-app.setting
 /.idea_modules/
 
 # VS Code/Eclipse template
-/.classpath
-/.project
-/.settings
+.classpath
+.project
+.settings
 **/bin/
 .vscode
 
