@@ -30,8 +30,6 @@ val allVersions =
     listOf(
         "fpt",
         "ghec",
-        "ghes-3.14",
-        "ghes-3.15",
         "ghes-3.16",
         "ghes-3.17",
         "ghes-3.18",
