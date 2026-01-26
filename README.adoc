@@ -96,14 +96,6 @@ dependencyManagement {
 |{central-prefix}pulpogato-graphql-ghes-3.16{central-middle}pulpogato-graphql-ghes-3.16{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.16{snapshot-middle}pulpogato-graphql-ghes-3.16{snapshot-suffix}
 |{central-prefix}pulpogato-rest-ghes-3.16{central-middle}pulpogato-rest-ghes-3.16{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.16{snapshot-middle}pulpogato-rest-ghes-3.16{snapshot-suffix}
 
-|https://docs.github.com/en/enterprise-server@3.15[GHES-3.15]
-|{central-prefix}pulpogato-graphql-ghes-3.15{central-middle}pulpogato-graphql-ghes-3.15{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.15{snapshot-middle}pulpogato-graphql-ghes-3.15{snapshot-suffix}
-|{central-prefix}pulpogato-rest-ghes-3.15{central-middle}pulpogato-rest-ghes-3.15{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.15{snapshot-middle}pulpogato-rest-ghes-3.15{snapshot-suffix}
-
-|https://docs.github.com/en/enterprise-server@3.14[GHES-3.14]
-|{central-prefix}pulpogato-graphql-ghes-3.14{central-middle}pulpogato-graphql-ghes-3.14{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.14{snapshot-middle}pulpogato-graphql-ghes-3.14{snapshot-suffix}
-|{central-prefix}pulpogato-rest-ghes-3.14{central-middle}pulpogato-rest-ghes-3.14{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.14{snapshot-middle}pulpogato-rest-ghes-3.14{snapshot-suffix}
-
 |===
 
 .EOL Versions
@@ -112,6 +104,14 @@ dependencyManagement {
 
 |===
 |GitHub Version |GraphQL |REST
+
+|https://docs.github.com/en/enterprise-server@3.15[GHES-3.15]
+|{central-prefix}pulpogato-graphql-ghes-3.15{deprecated-middle}pulpogato-graphql-ghes-3.15{central-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.15{deprecated-middle}pulpogato-rest-ghes-3.15{central-suffix}
+
+|https://docs.github.com/en/enterprise-server@3.14[GHES-3.14]
+|{central-prefix}pulpogato-graphql-ghes-3.14{deprecated-middle}pulpogato-graphql-ghes-3.14{central-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.14{deprecated-middle}pulpogato-rest-ghes-3.14{central-suffix}
 
 |https://docs.github.com/en/enterprise-server@3.13[GHES-3.13]
 |{central-prefix}pulpogato-graphql-ghes-3.13{deprecated-middle}pulpogato-graphql-ghes-3.13{central-suffix}
