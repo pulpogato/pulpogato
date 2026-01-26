@@ -4,10 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
 import io.github.pulpogato.common.util.LinkedHashMapBuilder;
+import io.github.pulpogato.graphql.types.AutoMergeRequest;
 import io.github.pulpogato.graphql.types.MergeableState;
+import io.github.pulpogato.graphql.types.PullRequest;
 import io.github.pulpogato.graphql.types.PullRequestMergeMethod;
 import io.github.pulpogato.graphql.types.Repository;
+import io.github.pulpogato.graphql.types.User;
 import io.github.pulpogato.test.BaseIntegrationTest;
+import java.net.URI;
 import java.util.Map;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
@@ -74,70 +78,100 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
 
         // PR #769 - renovate/spring-core
         var pr769 = nodes.get(0);
-        assertThat(pr769.getId()).isEqualTo("PR_kwDOMTOTFM64abAF");
-        assertThat(pr769.getNumber()).isEqualTo(769);
-        assertThat(pr769.getHeadRefName()).isEqualTo("renovate/spring-core");
-        assertThat(pr769.getHeadRefOid()).isEqualTo("fbc53e352ab54e24e1e3de5484c713fa3cf319a0");
-        assertThat(pr769.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
-        assertThat(pr769.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
-        assertThat(pr769.getAuthor().getLogin()).isEqualTo("renovate");
-        assertThat(pr769.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/769");
-        assertThat(pr769.getAutoMergeRequest()).isNotNull();
-        assertThat(pr769.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("renovate");
-        assertThat(pr769.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
+        assertThat(pr769)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(PullRequest.newBuilder()
+                        .id("PR_kwDOMTOTFM64abAF")
+                        .number(769)
+                        .headRefName("renovate/spring-core")
+                        .headRefOid("fbc53e352ab54e24e1e3de5484c713fa3cf319a0")
+                        .baseRefOid("b585f610fde01343985ad97455a33def33af63be")
+                        .mergeable(MergeableState.MERGEABLE)
+                        .author(User.newBuilder().login("renovate").build())
+                        .url(URI.create("https://github.com/pulpogato/pulpogato/pull/769"))
+                        .autoMergeRequest(AutoMergeRequest.newBuilder()
+                                .enabledBy(User.newBuilder().login("renovate").build())
+                                .mergeMethod(PullRequestMergeMethod.MERGE)
+                                .build())
+                        .build());
 
         // PR #768 - remove-jackson-split-reference
         var pr768 = nodes.get(1);
-        assertThat(pr768.getId()).isEqualTo("PR_kwDOMTOTFM64OYaG");
-        assertThat(pr768.getNumber()).isEqualTo(768);
-        assertThat(pr768.getHeadRefName()).isEqualTo("remove-jackson-split-reference");
-        assertThat(pr768.getHeadRefOid()).isEqualTo("ca664557f0cc6cdaf96a2b98d200ec05df883329");
-        assertThat(pr768.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
-        assertThat(pr768.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
-        assertThat(pr768.getAuthor().getLogin()).isEqualTo("rahulsom");
-        assertThat(pr768.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/768");
-        assertThat(pr768.getAutoMergeRequest()).isNotNull();
-        assertThat(pr768.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("rahulsom");
-        assertThat(pr768.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
+        assertThat(pr768)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(PullRequest.newBuilder()
+                        .id("PR_kwDOMTOTFM64OYaG")
+                        .number(768)
+                        .headRefName("remove-jackson-split-reference")
+                        .headRefOid("ca664557f0cc6cdaf96a2b98d200ec05df883329")
+                        .baseRefOid("b585f610fde01343985ad97455a33def33af63be")
+                        .mergeable(MergeableState.MERGEABLE)
+                        .author(User.newBuilder().login("rahulsom").build())
+                        .url(URI.create("https://github.com/pulpogato/pulpogato/pull/768"))
+                        .autoMergeRequest(AutoMergeRequest.newBuilder()
+                                .enabledBy(User.newBuilder().login("rahulsom").build())
+                                .mergeMethod(PullRequestMergeMethod.MERGE)
+                                .build())
+                        .build());
 
         // PR #767 - renovate/com.gradle.develocity-4.x
         var pr767 = nodes.get(2);
-        assertThat(pr767.getId()).isEqualTo("PR_kwDOMTOTFM64N5J8");
-        assertThat(pr767.getNumber()).isEqualTo(767);
-        assertThat(pr767.getHeadRefName()).isEqualTo("renovate/com.gradle.develocity-4.x");
-        assertThat(pr767.getHeadRefOid()).isEqualTo("a978c20c700e39103864d0eedbdd195ee02134bf");
-        assertThat(pr767.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
-        assertThat(pr767.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
-        assertThat(pr767.getAuthor().getLogin()).isEqualTo("renovate");
-        assertThat(pr767.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/767");
-        assertThat(pr767.getAutoMergeRequest()).isNotNull();
-        assertThat(pr767.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("renovate");
-        assertThat(pr767.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
+        assertThat(pr767)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(PullRequest.newBuilder()
+                        .id("PR_kwDOMTOTFM64N5J8")
+                        .number(767)
+                        .headRefName("renovate/com.gradle.develocity-4.x")
+                        .headRefOid("a978c20c700e39103864d0eedbdd195ee02134bf")
+                        .baseRefOid("b585f610fde01343985ad97455a33def33af63be")
+                        .mergeable(MergeableState.MERGEABLE)
+                        .author(User.newBuilder().login("renovate").build())
+                        .url(URI.create("https://github.com/pulpogato/pulpogato/pull/767"))
+                        .autoMergeRequest(AutoMergeRequest.newBuilder()
+                                .enabledBy(User.newBuilder().login("renovate").build())
+                                .mergeMethod(PullRequestMergeMethod.MERGE)
+                                .build())
+                        .build());
 
         // PR #766 - renovate/dgs
         var pr766 = nodes.get(3);
-        assertThat(pr766.getId()).isEqualTo("PR_kwDOMTOTFM64N5HO");
-        assertThat(pr766.getNumber()).isEqualTo(766);
-        assertThat(pr766.getHeadRefName()).isEqualTo("renovate/dgs");
-        assertThat(pr766.getHeadRefOid()).isEqualTo("75640d81374341d80e40d4a8716a8c224457985b");
-        assertThat(pr766.getBaseRefOid()).isEqualTo("b585f610fde01343985ad97455a33def33af63be");
-        assertThat(pr766.getMergeable()).isEqualTo(MergeableState.MERGEABLE);
-        assertThat(pr766.getAuthor().getLogin()).isEqualTo("renovate");
-        assertThat(pr766.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/766");
-        assertThat(pr766.getAutoMergeRequest()).isNotNull();
-        assertThat(pr766.getAutoMergeRequest().getEnabledBy().getLogin()).isEqualTo("renovate");
-        assertThat(pr766.getAutoMergeRequest().getMergeMethod()).isEqualTo(PullRequestMergeMethod.MERGE);
+        assertThat(pr766)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(PullRequest.newBuilder()
+                        .id("PR_kwDOMTOTFM64N5HO")
+                        .number(766)
+                        .headRefName("renovate/dgs")
+                        .headRefOid("75640d81374341d80e40d4a8716a8c224457985b")
+                        .baseRefOid("b585f610fde01343985ad97455a33def33af63be")
+                        .mergeable(MergeableState.MERGEABLE)
+                        .author(User.newBuilder().login("renovate").build())
+                        .url(URI.create("https://github.com/pulpogato/pulpogato/pull/766"))
+                        .autoMergeRequest(AutoMergeRequest.newBuilder()
+                                .enabledBy(User.newBuilder().login("renovate").build())
+                                .mergeMethod(PullRequestMergeMethod.MERGE)
+                                .build())
+                        .build());
 
         // PR #730 - test-utils-test (no auto-merge, UNKNOWN mergeable state in first response)
         var pr730 = nodes.get(4);
-        assertThat(pr730.getId()).isEqualTo("PR_kwDOMTOTFM62Jj6D");
-        assertThat(pr730.getNumber()).isEqualTo(730);
-        assertThat(pr730.getHeadRefName()).isEqualTo("test-utils-test");
-        assertThat(pr730.getHeadRefOid()).isEqualTo("0d53e71c027ed068c616cf9e966def858dfa1c41");
-        assertThat(pr730.getBaseRefOid()).isEqualTo("caf877eec171597a21b980f51910b7b45a4593cc");
-        assertThat(pr730.getMergeable()).isIn(MergeableState.UNKNOWN, MergeableState.CONFLICTING);
-        assertThat(pr730.getAuthor().getLogin()).isEqualTo("rahulsom");
-        assertThat(pr730.getUrl()).hasToString("https://github.com/pulpogato/pulpogato/pull/730");
-        assertThat(pr730.getAutoMergeRequest()).isNull();
+        assertThat(pr730)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .ignoringFields("mergeable")
+                .isEqualTo(PullRequest.newBuilder()
+                        .id("PR_kwDOMTOTFM62Jj6D")
+                        .number(730)
+                        .headRefName("test-utils-test")
+                        .headRefOid("0d53e71c027ed068c616cf9e966def858dfa1c41")
+                        .baseRefOid("caf877eec171597a21b980f51910b7b45a4593cc")
+                        .mergeable(MergeableState.UNKNOWN)
+                        .author(User.newBuilder().login("rahulsom").build())
+                        .url(URI.create("https://github.com/pulpogato/pulpogato/pull/730"))
+                        .autoMergeRequest(null)
+                        .build());
     }
 }
