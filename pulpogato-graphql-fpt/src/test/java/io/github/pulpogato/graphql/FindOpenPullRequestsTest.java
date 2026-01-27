@@ -1,5 +1,6 @@
 package io.github.pulpogato.graphql;
 
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
@@ -12,7 +13,6 @@ import io.github.pulpogato.graphql.types.Repository;
 import io.github.pulpogato.graphql.types.User;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import java.net.URI;
-import java.util.Map;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +57,7 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
 
         var variables = LinkedHashMapBuilder.of(
-                Map.entry("owner", "pulpogato"), Map.entry("repo", "pulpogato"), Map.entry("branch", "main"));
+                entry("owner", "pulpogato"), entry("repo", "pulpogato"), entry("branch", "main"));
         var response = graphQLClient.reactiveExecuteQuery(OPEN_PRS, variables).block();
         // end::execute[]
 
