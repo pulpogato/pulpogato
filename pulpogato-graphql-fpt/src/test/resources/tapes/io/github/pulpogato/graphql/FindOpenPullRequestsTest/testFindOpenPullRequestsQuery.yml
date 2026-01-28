@@ -7,7 +7,7 @@
       Content-Type: application/json
     body: |-
       {
-        "query" : "query findOpenPullRequests($owner: String!, $repo: String!, $branch: String!) {\n  repository(owner: $owner, name: $repo, followRenames: false) {\n    pullRequests(first: 100, states: [OPEN], baseRefName: $branch, orderBy: {field: UPDATED_AT, direction: DESC}) {\n      totalCount\n      nodes {\n        id\n        number\n        headRefName\n        headRefOid\n        baseRefOid\n        mergeable\n        author {\n          __typename\n          login\n        }\n        url\n        autoMergeRequest {\n          enabledBy {\n            __typename\n            login\n          }\n          mergeMethod\n        }\n      }\n    }\n  }\n}\n",
+        "query" : "query findOpenPullRequests($owner: String!, $repo: String!, $branch: String!) {\n  repository(owner: $owner, name: $repo, followRenames: false) {\n    pullRequests(\n        first: 100, states: [OPEN], baseRefName: $branch,\n        orderBy: {field: UPDATED_AT, direction: DESC}\n    ) {\n      totalCount\n      nodes {\n        id\n        number\n        headRefName\n        headRefOid\n        baseRefOid\n        mergeable\n        author {\n          __typename\n          login\n        }\n        url\n        autoMergeRequest {\n          enabledBy {\n            __typename\n            login\n          }\n          mergeMethod\n        }\n      }\n    }\n  }\n}\n",
         "operationName" : null,
         "variables" : {
           "owner" : "pulpogato",

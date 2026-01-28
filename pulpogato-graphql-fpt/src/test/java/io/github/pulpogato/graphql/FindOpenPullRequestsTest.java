@@ -22,7 +22,10 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
     public static final String OPEN_PRS = """
         query findOpenPullRequests($owner: String!, $repo: String!, $branch: String!) {
           repository(owner: $owner, name: $repo, followRenames: false) {
-            pullRequests(first: 100, states: [OPEN], baseRefName: $branch, orderBy: {field: UPDATED_AT, direction: DESC}) {
+            pullRequests(
+                first: 100, states: [OPEN], baseRefName: $branch,
+                orderBy: {field: UPDATED_AT, direction: DESC}
+            ) {
               totalCount
               nodes {
                 id
