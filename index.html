@@ -782,10 +782,11 @@ There are many other event types you can listen for.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Getter</span> <span class="nd">@RestController</span> <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/webhooks"</span><span class="o">)</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">PingWebhooksController</span>
-        <span class="kd">implements</span> <span class="nc">PingWebhooks</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="o">{</span>
-    <span class="nd">@Autowired</span>
-    <span class="kd">private</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span><span class="o">;</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@RestController</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/webhooks"</span><span class="o">)</span>
+<span class="nd">@RequiredArgsConstructor</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PingWebhooksController</span> <span class="kd">implements</span> <span class="nc">PingWebhooks</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span><span class="o">;</span>
 
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPing</span><span class="o">(</span>
