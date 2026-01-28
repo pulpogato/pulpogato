@@ -5,7 +5,7 @@ import io.github.pulpogato.rest.schemas.WebhookPing;
 import io.github.pulpogato.test.TestWebhookResponse;
 import io.github.pulpogato.test.WebhookHelper;
 import java.util.stream.Stream;
-import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -56,12 +56,13 @@ class PingWebhooksIntegrationTest {
                     .build();
         }
 
-        static
+        @SuppressWarnings("InnerClassMayBeStatic")
         // tag::ping-webhook-controller[]
-        @Getter @RestController @RequestMapping("/webhooks") public class PingWebhooksController
-                implements PingWebhooks<TestWebhookResponse> {
-            @Autowired
-            private ObjectMapper objectMapper;
+        @RestController
+        @RequestMapping("/webhooks")
+        @RequiredArgsConstructor
+        public class PingWebhooksController implements PingWebhooks<TestWebhookResponse> {
+            private final ObjectMapper objectMapper;
 
             @Override
             public ResponseEntity<TestWebhookResponse> processPing(
