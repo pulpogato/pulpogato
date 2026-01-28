@@ -9,10 +9,8 @@ import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.rest.schemas.ValidationErrorSimple;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import java.util.List;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -26,16 +24,23 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         // Get UsersApi
         UsersApi api = restClients.getUsersApi();
         // Call getAuthenticated method
-        ResponseEntity<UsersApi.@NonNull GetAuthenticated200> authenticated = api.getAuthenticated();
+        var authenticated = api.getAuthenticated();
         // end::getAuthenticatedPublic[]
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
+        // tag::getBody[]
         var body = authenticated.getBody();
+        // end::getBody[]
         // TODO: This should be a PublicUser
-        assertThat(body.getPrivateUser()).isNotNull();
+        // tag::getUser[]
         var privateUser = body.getPrivateUser();
+        // end::getUser[]
+        assertThat(body.getPrivateUser()).isNotNull();
         assertThat(privateUser.getId()).isEqualTo(193047L);
-        assertThat(privateUser.getLogin()).isEqualTo("rahulsom");
+        // tag::getLogin[]
+        var login = privateUser.getLogin();
+        // end::getLogin[]
+        assertThat(login).isEqualTo("rahulsom");
     }
 
     @Test
