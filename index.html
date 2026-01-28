@@ -764,7 +764,10 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
         <span class="c1">// Get UsersApi</span>
         <span class="nc">UsersApi</span> <span class="n">api</span> <span class="o">=</span> <span class="n">restClients</span><span class="o">.</span><span class="na">getUsersApi</span><span class="o">();</span>
         <span class="c1">// Call getAuthenticated method</span>
-        <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">UsersApi</span><span class="o">.</span><span class="nd">@NonNull</span> <span class="nc">GetAuthenticated200</span><span class="o">&gt;</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">body</span> <span class="o">=</span> <span class="n">authenticated</span><span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">privateUser</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="na">getPrivateUser</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">login</span> <span class="o">=</span> <span class="n">privateUser</span><span class="o">.</span><span class="na">getLogin</span><span class="o">();</span>
 
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
