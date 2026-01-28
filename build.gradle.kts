@@ -1,3 +1,4 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rahulsom.waena.WaenaExtension
 import nebula.plugin.contacts.ContactsExtension
@@ -25,7 +26,7 @@ plugins {
     alias(libs.plugins.waenaPublished).apply(false)
     alias(libs.plugins.dgs).apply(false)
     alias(libs.plugins.download).apply(false)
-    alias(libs.plugins.spotless)
+    alias(libs.plugins.spotless).apply(false)
 }
 
 repositories {
@@ -34,6 +35,30 @@ repositories {
 
 allprojects {
     group = "io.github.pulpogato"
+    apply(plugin = "com.diffplug.spotless")
+
+    configure<SpotlessExtension> {
+        kotlin {
+            ktlint()
+            target("src/**/*.kt", "*.kts")
+            targetExclude("build/**")
+        }
+        java {
+            palantirJavaFormat()
+            target("src/**/*.java")
+            targetExclude("build/**")
+        }
+        json {
+            jackson()
+            target("src/**/*.json", "*.json", ".vscode/**/*.json", ".sonarlint/**/*.json")
+            targetExclude("build/**")
+        }
+        yaml {
+            prettier()
+            target("src/**/*.yaml", "*.yaml", "*.yml", ".github/**/*.yaml", ".github/**/*.yml")
+            targetExclude("build/**")
+        }
+    }
 
     extensions.findByType<ContactsExtension>()?.apply {
         with(addPerson("rahulsom@noreply.github.com")) {
@@ -104,27 +129,4 @@ tasks.register("pitest") {
     description = "Run pitest from plugin"
     group = "verification"
     dependsOn(pitestPlugin)
-}
-
-spotless {
-    kotlin {
-        ktlint()
-        target("**/*.kt", "**/*.kts")
-        targetExclude("**/build/**/*.kt", "**/build/**/*.kts")
-    }
-    java {
-        palantirJavaFormat()
-        target("**/src/**/*.java")
-        targetExclude("**/build/**/*.java")
-    }
-    json {
-        jackson()
-        target("**/*.json")
-        targetExclude("**/build/**/*.json")
-    }
-    yaml {
-        prettier()
-        target("**/*.yaml", "**/*.yml")
-        targetExclude("**/build/**/*.yaml", "**/build/**/*.yml")
-    }
 }
