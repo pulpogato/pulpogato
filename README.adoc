@@ -224,3 +224,16 @@ The files follow the OpenAPI 3.1.0 format and add properties to existing schemas
 
 This adds the `suspended_at` property to the `public-user` schema.
 The property will be available as `suspendedAt` in the generated Java code.
+
+=== Asciidoctor docs
+
+To run asciidoctor locally, run this command
+
+[source, bash]
+----
+docker run -v $(pwd):/documents asciidoctor/docker-asciidoctor:main asciidoctor \
+    --destination-dir pulpogato-docs/build \
+    --backend=html5 \
+    --out-file index.html \
+    pulpogato-docs/src/index.adoc
+----
