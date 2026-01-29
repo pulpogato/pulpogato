@@ -9,8 +9,7 @@
     statusCode: 200
     headers:
       Content-Type: application/json; charset=utf-8
-      Link:
-        "<https://api.github.com/organizations/9919/events?per_page=5&page=2>;\
+      Link: "<https://api.github.com/organizations/9919/events?per_page=5&page=2>;\
         \ rel=\"next\", <https://api.github.com/organizations/9919/events?per_page=5&page=53>;\
         \ rel=\"last\""
     body: |-

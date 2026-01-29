@@ -10,8 +10,7 @@
     headers:
       Content-Type: application/json; charset=utf-8
       Transfer-Encoding: chunked
-      Link:
-        "<https://api.github.com/repositories/825463572/actions/workflows/check-issues-statuses.yml/runs?page=2>;\
+      Link: "<https://api.github.com/repositories/825463572/actions/workflows/check-issues-statuses.yml/runs?page=2>;\
         \ rel=\"next\", <https://api.github.com/repositories/825463572/actions/workflows/check-issues-statuses.yml/runs?page=4>;\
         \ rel=\"last\""
     body: |-
