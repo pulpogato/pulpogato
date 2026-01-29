@@ -74,8 +74,8 @@ class CachingExchangeFilterFunctionTest {
         return ClientRequest.create(HttpMethod.POST, URI.create(TEST_URL)).build();
     }
 
-    private ClientResponse createResponse(HttpStatus status, String etag, String lastModified, String cacheControl) {
-        var builder = ClientResponse.create(status).header("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+    private ClientResponse createResponse(String etag, String lastModified, String cacheControl) {
+        var builder = ClientResponse.create(HttpStatus.OK).header("Content-Type", MediaType.APPLICATION_JSON_VALUE);
         if (etag != null) {
             builder.header("ETag", etag);
         }
@@ -101,7 +101,7 @@ class CachingExchangeFilterFunctionTest {
         @DisplayName("POST requests bypass cache")
         void postRequestsBypassCache() {
             var request = createPostRequest();
-            var response = createResponse(HttpStatus.OK, null, null, null);
+            var response = createResponse(null, null, null);
             when(exchangeFunction.exchange(request)).thenReturn(Mono.just(response));
 
             var result = filter.filter(request, exchangeFunction).block();
@@ -122,7 +122,7 @@ class CachingExchangeFilterFunctionTest {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
             var request = createGetRequest();
-            var response = createResponse(HttpStatus.OK, "\"abc123\"", null, null);
+            var response = createResponse("\"abc123\"", null, null);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
@@ -143,7 +143,7 @@ class CachingExchangeFilterFunctionTest {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
             var request = createGetRequest();
-            var response = createResponse(HttpStatus.OK, null, "Wed, 21 Oct 2015 07:28:00 GMT", null);
+            var response = createResponse(null, "Wed, 21 Oct 2015 07:28:00 GMT", null);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
@@ -161,7 +161,7 @@ class CachingExchangeFilterFunctionTest {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
             var request = createGetRequest();
-            var response = createResponse(HttpStatus.OK, null, null, "private, max-age=60");
+            var response = createResponse(null, null, "private, max-age=60");
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
@@ -179,7 +179,7 @@ class CachingExchangeFilterFunctionTest {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
             var request = createGetRequest();
-            var response = createResponse(HttpStatus.OK, "\"abc123\"", null, null);
+            var response = createResponse("\"abc123\"", null, null);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
@@ -319,7 +319,7 @@ class CachingExchangeFilterFunctionTest {
             var request = createGetRequest();
             var staleCache = new CachedResponse(
                     "old data".getBytes(), DEFAULT_HEADERS, "\"old\"", null, 1, CURRENT_TIME - 10000);
-            var newResponse = createResponse(HttpStatus.OK, "\"new\"", null, null);
+            var newResponse = createResponse("\"new\"", null, null);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(newResponse));
 
