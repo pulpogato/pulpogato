@@ -586,6 +586,7 @@ class CachingExchangeFilterFunctionTest {
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response1));
 
             var result1 = customFilter.filter(request1, exchangeFunction).block();
+            assertThat(result1).isNotNull();
             assertThat(result1.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
                     .containsExactly("MISS");
             verify(cache).put(eq(CACHE_KEY), any(CachedResponse.class));
@@ -603,6 +604,7 @@ class CachingExchangeFilterFunctionTest {
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response2));
 
             var result2 = customFilter.filter(request2, exchangeFunction).block();
+            assertThat(result2).isNotNull();
             assertThat(result2.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
                     .containsExactly("SKIP");
             verify(cache, never()).put(any(), any());
