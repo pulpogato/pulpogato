@@ -29,7 +29,7 @@ If you're supporting multiple GitHub Apps or sites, you would export a factory b
 
 [source,java]
 ----
-public class Example {
+public class RestExample {
     public static void main(String[] args) {
         // create a WebClient
         WebClient webClient = WebClient.builder()
@@ -66,13 +66,13 @@ This example uses a String for the query.
 
 [source,java]
 ----
-public class Example {
+public class GraphQlExample {
 
 include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=query]
 
     public static void main(String[] args) {
         // create a WebClient
-        WebClient webClient = WebClient.builder()
+        WebClient graphqlWebClient = WebClient.builder()
                 .baseUrl("https://api.github.com/graphql")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
                 .build();
