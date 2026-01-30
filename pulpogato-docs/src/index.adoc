@@ -84,24 +84,3 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
     }
 }
 ----
-
-This is the same query, but constructed using java types
-
-[source,java]
-----
-public class Example {
-
-    public static void main(String[] args) {
-        // create a WebClient
-        WebClient webClient = WebClient.builder()
-                .baseUrl("https://api.github.com/graphql")
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
-                .build();
-
-include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=execute]
-
-include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=extract]
-
-    }
-}
-----
