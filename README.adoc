@@ -55,18 +55,19 @@ The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
 ext {
     set("netflixDgsVersion", "9.1.2")
     set("ghVersion", "fpt")
-    set("pulpogatoVersion", "0.26.0")
+    set("pulpogatoVersion", "2.8.0")
 }
+
+val ghVersion: String by project.ext
+val pulpogatoVersion: String by project.ext
+val netflixDgsVersion: String by project.ext
 
 dependencies {
-    implementation("io.github.pulpogato:pulpogato-rest-${property("ghVersion")}:${property("pulpogatoVersion")}")
-    implementation("io.github.pulpogato:pulpogato-graphql-${property("ghVersion")}:${property("pulpogatoVersion")}")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${property("netflixDgsVersion")}")
-    }
+    implementation("io.github.pulpogato:pulpogato-rest-${ghVersion}:${pulpogatoVersion}")
+    implementation("io.github.pulpogato:pulpogato-graphql-${ghVersion}:${pulpogatoVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:4.0.2")
+    implementation("com.netflix.graphql.dgs:graphql-dgs-client:11.1.0")
+    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"))
 }
 ----
 ====
