@@ -618,18 +618,19 @@ pre.rouge .gs {
 <span class="nf">ext</span> <span class="p">{</span>
     <span class="k">set</span><span class="p">(</span><span class="s">"netflixDgsVersion"</span><span class="p">,</span> <span class="s">"9.1.2"</span><span class="p">)</span>
     <span class="k">set</span><span class="p">(</span><span class="s">"ghVersion"</span><span class="p">,</span> <span class="s">"fpt"</span><span class="p">)</span>
-    <span class="k">set</span><span class="p">(</span><span class="s">"pulpogatoVersion"</span><span class="p">,</span> <span class="s">"0.26.0"</span><span class="p">)</span>
+    <span class="k">set</span><span class="p">(</span><span class="s">"pulpogatoVersion"</span><span class="p">,</span> <span class="s">"2.8.0"</span><span class="p">)</span>
 <span class="p">}</span>
+
+<span class="kd">val</span> <span class="py">ghVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
+<span class="kd">val</span> <span class="py">pulpogatoVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
+<span class="kd">val</span> <span class="py">netflixDgsVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
 
 <span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-rest-${property("</span><span class="n">ghVersion</span><span class="s">")}:${property("</span><span class="n">pulpogatoVersion</span><span class="s">")}"</span><span class="p">)</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-graphql-${property("</span><span class="n">ghVersion</span><span class="s">")}:${property("</span><span class="n">pulpogatoVersion</span><span class="s">")}"</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="nf">dependencyManagement</span> <span class="p">{</span>
-    <span class="nf">imports</span> <span class="p">{</span>
-        <span class="nf">mavenBom</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${property("</span><span class="n">netflixDgsVersion</span><span class="s">")}"</span><span class="p">)</span>
-    <span class="p">}</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-rest-${ghVersion}:${pulpogatoVersion}"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-graphql-${ghVersion}:${pulpogatoVersion}"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"org.springframework.boot:spring-boot-starter-webflux:4.0.2"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-client:11.1.0"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="nf">platform</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"</span><span class="p">))</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
