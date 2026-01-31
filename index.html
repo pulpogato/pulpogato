@@ -574,6 +574,12 @@ pre.rouge .gs {
 <li><a href="#_advanced_caching_options">Advanced Caching Options</a></li>
 </ul>
 </li>
+<li><a href="#_rate_limit_metrics">Rate Limit Metrics</a>
+<ul class="sectlevel2">
+<li><a href="#_basic_metrics_setup">Basic Metrics Setup</a></li>
+<li><a href="#_advanced_metrics_options">Advanced Metrics Options</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -900,7 +906,10 @@ This can significantly reduce API calls and improve performance.</p>
         <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
-<span class="kt">var</span> <span class="n">cachingClient</span> <span class="o">=</span> <span class="n">webClient</span><span class="o">.</span><span class="na">mutate</span><span class="o">().</span><span class="na">filter</span><span class="o">(</span><span class="n">cachingFilter</span><span class="o">).</span><span class="na">build</span><span class="o">();</span></code></pre>
+<span class="kt">var</span> <span class="n">cachingClient</span> <span class="o">=</span> <span class="n">webClient</span>
+        <span class="o">.</span><span class="na">mutate</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">cachingFilter</span><span class="o">)</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -908,6 +917,10 @@ This can significantly reduce API calls and improve performance.</p>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
 <td>This is a Spring Cache (ConcurrentMapCache, Caffeine, Redis, etc.)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>You can add multiple filters here. This filter configures caching.</td>
 </tr>
 </table>
 </div>
@@ -965,11 +978,11 @@ This can significantly reduce API calls and improve performance.</p>
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Custom cache key mapper to customize cache keys</td>
+<td>Custom function to generate cache keys from requests</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Set maximum cacheable response size. Default is 2MB.</td>
+<td>Maximum response size to cache (default: 2MB)</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -977,21 +990,82 @@ This can significantly reduce API calls and improve performance.</p>
 </tr>
 </table>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rate_limit_metrics">Rate Limit Metrics</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>Options include:</p>
+<p>Pulpogato provides <code>MetricsExchangeFunction</code> to capture GitHub API rate limit information as Micrometer metrics.
+This helps monitor your API usage and avoid hitting rate limits.</p>
+</div>
+<div class="sect2">
+<h3 id="_basic_metrics_setup">Basic Metrics Setup</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">metricsFilter</span> <span class="o">=</span> <span class="nc">MetricsExchangeFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">registry</span><span class="o">(</span><span class="n">meterRegistry</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">metricsClient</span> <span class="o">=</span> <span class="n">webClient</span><span class="o">.</span><span class="na">mutate</span><span class="o">().</span><span class="na">filter</span><span class="o">(</span><span class="n">metricsFilter</span><span class="o">).</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>This is a Micrometer MeterRegistry (SimpleMeterRegistry, PrometheusMeterRegistry, etc.) It could be injected from Spring.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The filter extracts these headers from GitHub responses and creates gauges:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>cacheKeyMapper</code> - Custom function to generate cache keys from requests</p>
+<p><code>github.api.rateLimit.limit</code> - Maximum requests allowed</p>
 </li>
 <li>
-<p><code>maxCacheableSize</code> - Maximum response size to cache (default: 2MB)</p>
+<p><code>github.api.rateLimit.remaining</code> - Requests remaining in current window</p>
 </li>
 <li>
-<p><code>alwaysRevalidate</code> - Always send conditional requests even if cache is fresh</p>
+<p><code>github.api.rateLimit.used</code> - Requests used in current window</p>
+</li>
+<li>
+<p><code>github.api.rateLimit.secondsToReset</code> - Seconds until rate limit resets</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>All metrics are tagged with the <code>resource</code> (e.g., "core", "search", "graphql").</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_metrics_options">Advanced Metrics Options</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">metricsFilter</span> <span class="o">=</span> <span class="nc">MetricsExchangeFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">registry</span><span class="o">(</span><span class="n">meterRegistry</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">prefix</span><span class="o">(</span><span class="s">"myapp.github.rateLimit"</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">defaultTags</span><span class="o">(</span><span class="nc">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="nc">Tag</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="s">"env"</span><span class="o">,</span> <span class="s">"production"</span><span class="o">)))</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">metricsClient</span> <span class="o">=</span> <span class="n">webClient</span><span class="o">.</span><span class="na">mutate</span><span class="o">().</span><span class="na">filter</span><span class="o">(</span><span class="n">metricsFilter</span><span class="o">).</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Custom metric name prefix</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Additional tags to add to all metrics</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
