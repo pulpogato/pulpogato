@@ -8,7 +8,7 @@ import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 
-class CachingIntegrationTest {
+class DocumentationIntegrationTest {
     @Test
     void setupCache() {
         // Setup cache
