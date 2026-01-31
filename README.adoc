@@ -231,7 +231,7 @@ To run asciidoctor locally, run this command
 
 [source, bash]
 ----
-docker run -v $(pwd):/documents asciidoctor/docker-asciidoctor:main asciidoctor \
+docker run --rm -v $(pwd):/documents asciidoctor/docker-asciidoctor:main asciidoctor \
     --destination-dir pulpogato-docs/build \
     --backend=html5 \
     --out-file index.html \
