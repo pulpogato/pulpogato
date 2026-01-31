@@ -12,6 +12,7 @@
 :nofooter:
 :source-highlighter: rouge
 :toc: left
+:icons: font
 
 Pulpogato is a java client for GitHub.
 
@@ -84,3 +85,45 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
     }
 }
 ----
+
+== HTTP Caching
+
+Pulpogato provides `CachingExchangeFilterFunction` to cache HTTP responses based on standard HTTP caching headers (ETag, Last-Modified, Cache-Control).
+This can significantly reduce API calls and improve performance.
+
+=== Basic Caching Setup
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/cache/CachingIntegrationTest.java[tags=setup-cache]
+----
+<1> This is a Spring Cache (ConcurrentMapCache, Caffeine, Redis, etc.)
+
+The filter handles:
+
+* **ETag / If-None-Match**: Stores the ETag and sends conditional requests
+* **Last-Modified / If-Modified-Since**: Stores the last modified date and sends conditional requests
+* **Cache-Control max-age**: Returns cached responses directly while fresh
+
+The response includes an `X-Pulpogato-Cache` header indicating the cache status:
+
+* `HIT` - Response served from cache without server request
+* `MISS` - Response fetched from server and cached
+* `REVALIDATED` - Server returned 304, cached response body returned
+* `SKIP` - Response too large to cache (still returned to caller)
+
+=== Advanced Caching Options
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/cache/CachingIntegrationTest.java[tags=advanced-cache]
+----
+<1> Custom cache key mapper to customize cache keys
+<2> Set maximum cacheable response size. Default is 2MB.
+<3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your usecase.
+
+Options include:
+
+* `cacheKeyMapper` - Custom function to generate cache keys from requests
+* `maxCacheableSize` - Maximum response size to cache (default: 2MB)
+* `alwaysRevalidate` - Always send conditional requests even if cache is fresh
