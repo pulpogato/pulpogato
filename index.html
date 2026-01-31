@@ -433,6 +433,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
 pre.rouge table td { padding: 5px; }
 pre.rouge table pre { margin: 0; }
@@ -565,6 +566,12 @@ pre.rouge .gs {
 <li><a href="#_rest_client_example">REST Client Example</a></li>
 <li><a href="#_webhook_example">Webhook Example</a></li>
 <li><a href="#_graphql_client_example">GraphQL Client Example</a></li>
+</ul>
+</li>
+<li><a href="#_http_caching">HTTP Caching</a>
+<ul class="sectlevel2">
+<li><a href="#_basic_caching_setup">Basic Caching Setup</a></li>
+<li><a href="#_advanced_caching_options">Advanced Caching Options</a></li>
 </ul>
 </li>
 </ul>
@@ -874,6 +881,117 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_http_caching">HTTP Caching</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Pulpogato provides <code>CachingExchangeFilterFunction</code> to cache HTTP responses based on standard HTTP caching headers (ETag, Last-Modified, Cache-Control).
+This can significantly reduce API calls and improve performance.</p>
+</div>
+<div class="sect2">
+<h3 id="_basic_caching_setup">Basic Caching Setup</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">cachingFilter</span> <span class="o">=</span> <span class="nc">CachingExchangeFilterFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">cachingClient</span> <span class="o">=</span> <span class="n">webClient</span><span class="o">.</span><span class="na">mutate</span><span class="o">().</span><span class="na">filter</span><span class="o">(</span><span class="n">cachingFilter</span><span class="o">).</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>This is a Spring Cache (ConcurrentMapCache, Caffeine, Redis, etc.)</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The filter handles:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ETag / If-None-Match</strong>: Stores the ETag and sends conditional requests</p>
+</li>
+<li>
+<p><strong>Last-Modified / If-Modified-Since</strong>: Stores the last modified date and sends conditional requests</p>
+</li>
+<li>
+<p><strong>Cache-Control max-age</strong>: Returns cached responses directly while fresh</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The response includes an <code>X-Pulpogato-Cache</code> header indicating the cache status:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>HIT</code> - Response served from cache without server request</p>
+</li>
+<li>
+<p><code>MISS</code> - Response fetched from server and cached</p>
+</li>
+<li>
+<p><code>REVALIDATED</code> - Server returned 304, cached response body returned</p>
+</li>
+<li>
+<p><code>SKIP</code> - Response too large to cache (still returned to caller)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_caching_options">Advanced Caching Options</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">cachingFilter</span> <span class="o">=</span> <span class="nc">CachingExchangeFilterFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">cacheKeyMapper</span><span class="o">(</span><span class="n">request</span> <span class="o">-&gt;</span> <span class="n">request</span><span class="o">.</span><span class="na">url</span><span class="o">().</span><span class="na">toASCIIString</span><span class="o">())</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">maxCacheableSize</span><span class="o">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">)</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">.</span><span class="na">alwaysRevalidate</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">cachingClient</span> <span class="o">=</span> <span class="n">webClient</span><span class="o">.</span><span class="na">mutate</span><span class="o">().</span><span class="na">filter</span><span class="o">(</span><span class="n">cachingFilter</span><span class="o">).</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Custom cache key mapper to customize cache keys</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Set maximum cacheable response size. Default is 2MB.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Always send conditional requests even if cache is fresh. This is helpful when GitHub&#8217;s cache directive is too long for your usecase.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Options include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>cacheKeyMapper</code> - Custom function to generate cache keys from requests</p>
+</li>
+<li>
+<p><code>maxCacheableSize</code> - Maximum response size to cache (default: 2MB)</p>
+</li>
+<li>
+<p><code>alwaysRevalidate</code> - Always send conditional requests even if cache is fresh</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
