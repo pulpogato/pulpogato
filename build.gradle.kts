@@ -114,8 +114,19 @@ val checkPlugin =
         commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
     }
 
+val spotlessApplyPlugin =
+    tasks.register("spotlessApplyPlugin", Exec::class) {
+        description = "Run spotlessApply on plugin code"
+        group = "verification"
+        commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "spotlessApply")
+    }
+
 tasks.named("check").configure {
     dependsOn(checkPlugin)
+}
+
+tasks.named("spotlessApply").configure {
+    dependsOn(spotlessApplyPlugin)
 }
 
 val pitestPlugin =
