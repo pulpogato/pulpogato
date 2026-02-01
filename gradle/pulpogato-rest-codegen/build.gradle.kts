@@ -11,6 +11,7 @@ plugins {
     `kotlin-dsl`
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
+    alias(libs.plugins.spotless)
 }
 
 repositories {
@@ -69,4 +70,12 @@ pitest {
     outputFormats.set(setOf("XML", "HTML"))
     targetClasses.set(listOf("io.github.pulpogato.restcodegen.*"))
     excludedTestClasses.set(listOf("io.github.pulpogato.restcodegen.RestCodegenPluginTest"))
+}
+
+spotless {
+    kotlin {
+        ktlint()
+        target("src/**/*.kt", "*.kts")
+        targetExclude("build/**")
+    }
 }
