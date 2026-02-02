@@ -443,6 +443,8 @@ private fun buildFancyObject(
             var newKey = entry.key + index
             if (it.`$ref` != null) {
                 newKey = it.`$ref`.replace("#/components/schemas/", "")
+            } else if (it.title != null) {
+                newKey = it.title
             }
             newKey to it
         }.forEachIndexed { index, (newKey, subSchema) ->
