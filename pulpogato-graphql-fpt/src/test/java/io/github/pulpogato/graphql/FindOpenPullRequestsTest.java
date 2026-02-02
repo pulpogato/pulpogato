@@ -60,7 +60,9 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
 
         var variables = LinkedHashMapBuilder.of(
-                entry("owner", "pulpogato"), entry("repo", "pulpogato"), entry("branch", "main"));
+                entry("owner", "pulpogato"), // <1>
+                entry("repo", "pulpogato"),
+                entry("branch", "main"));
         var response = graphQLClient.reactiveExecuteQuery(OPEN_PRS, variables).block();
         // end::execute[]
 

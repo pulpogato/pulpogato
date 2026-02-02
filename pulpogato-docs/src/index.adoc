@@ -85,6 +85,7 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
     }
 }
 ----
+<1> Set variables for the query
 
 == HTTP Caching
 
