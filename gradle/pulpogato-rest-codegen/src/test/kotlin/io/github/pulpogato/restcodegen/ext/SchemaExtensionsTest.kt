@@ -101,4 +101,65 @@ class SchemaExtensionsTest {
 
         assertThat(typesAre(oneOf, "string", "boolean")).isFalse()
     }
+
+    @Test
+    fun `isOneOfOnlyForValidation returns true for oneOf with only required constraints`() {
+        val oneOfSchema1 =
+            Schema<Any>().apply {
+                required = listOf("code_scanning_alerts")
+            }
+        val oneOfSchema2 =
+            Schema<Any>().apply {
+                required = listOf("secret_scanning_alerts")
+            }
+
+        val parentSchema =
+            Schema<Any>().apply {
+                type = "object"
+                properties =
+                    mapOf(
+                        "name" to Schema<Any>().apply { type = "string" },
+                        "code_scanning_alerts" to Schema<Any>().apply { type = "array" },
+                        "secret_scanning_alerts" to Schema<Any>().apply { type = "array" },
+                    )
+            }
+
+        assertThat(isOneOfOnlyForValidation(listOf(oneOfSchema1, oneOfSchema2), parentSchema)).isTrue()
+    }
+
+    @Test
+    fun `isOneOfOnlyForValidation returns false for oneOf with type definitions`() {
+        val oneOfSchema1 =
+            Schema<Any>().apply {
+                type = "object"
+                types = setOf("object")
+                properties = mapOf("field1" to Schema<Any>().apply { type = "string" })
+            }
+        val oneOfSchema2 =
+            Schema<Any>().apply {
+                type = "object"
+                types = setOf("object")
+                properties = mapOf("field2" to Schema<Any>().apply { type = "integer" })
+            }
+
+        val parentSchema =
+            Schema<Any>().apply {
+                type = "object"
+                properties = mapOf("name" to Schema<Any>().apply { type = "string" })
+            }
+
+        assertThat(isOneOfOnlyForValidation(listOf(oneOfSchema1, oneOfSchema2), parentSchema)).isFalse()
+    }
+
+    @Test
+    fun `isOneOfOnlyForValidation returns false when parent has no properties`() {
+        val oneOfSchema =
+            Schema<Any>().apply {
+                required = listOf("code_scanning_alerts")
+            }
+
+        val parentSchema = Schema<Any>()
+
+        assertThat(isOneOfOnlyForValidation(listOf(oneOfSchema), parentSchema)).isFalse()
+    }
 }
