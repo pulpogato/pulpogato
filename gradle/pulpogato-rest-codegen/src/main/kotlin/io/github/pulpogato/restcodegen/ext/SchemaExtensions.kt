@@ -84,12 +84,22 @@ fun typesAre(
 fun isAnyOfOnlyForValidation(
     anyOf: List<Schema<Any>>,
     parentSchema: Schema<*>,
+): Boolean = isOnlyForValidation(anyOf, parentSchema)
+
+fun isOneOfOnlyForValidation(
+    oneOf: List<Schema<Any>>,
+    parentSchema: Schema<*>,
+): Boolean = isOnlyForValidation(oneOf, parentSchema)
+
+private fun isOnlyForValidation(
+    subSchemas: List<Schema<Any>>,
+    parentSchema: Schema<*>,
 ): Boolean {
     if (parentSchema.properties == null || parentSchema.properties.isEmpty()) {
         return false
     }
 
-    return anyOf.all { subSchema ->
+    return subSchemas.all { subSchema ->
         (subSchema.properties == null || subSchema.properties.isEmpty()) &&
             subSchema.`$ref` == null &&
             (subSchema.types == null || subSchema.types.isEmpty()) &&
@@ -161,6 +171,10 @@ fun referenceAndDefinition(
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, anyOf, "anyOf", it)
             }
+        }
+
+        oneOf != null && isOneOfOnlyForValidation(oneOf, entry.value) -> {
+            buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
         }
 
         oneOf != null -> {
