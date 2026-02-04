@@ -129,11 +129,11 @@ open class GenerateJavaTask : DefaultTask() {
             f.writeText(formatted)
         }
 
-        // Validate JSON references
+        // Validate JSON references using the merged spec (includes additions)
         val mapper = ObjectMapper()
-        val schemas = mutableMapOf("schema.json" to mapper.readTree(swaggerSpec))
+        val schemas = mutableMapOf("schema.json" to mapper.readTree(mergedSpec))
 
-        // Add additions schemas if they exist
+        // Add additions schemas if they exist (for refs that explicitly reference them)
         schemaAdditionsFiles.forEach { schemaAddsFile ->
             val additionsJson = mapper.readTree(schemaAddsFile.readText())
             schemas[schemaAddsFile.name] = additionsJson
@@ -175,9 +175,12 @@ open class GenerateJavaTask : DefaultTask() {
      * Merges schema additions from an addition file into the main schema.
      *
      * This method looks for additional schema definitions in the additions file
-     * and merges them into the main OpenAPI specification. It also tracks which
-     * additional properties were added so they can be properly handled during
-     * code generation.
+     * and merges them into the main OpenAPI specification. It supports both:
+     * - Adding new properties to existing schemas
+     * - Adding entirely new schemas that don't exist in the main spec
+     *
+     * It also tracks which additional properties were added so they can be
+     * properly handled during code generation.
      *
      * @param swaggerSpec The original OpenAPI specification as a JSON string
      * @param schemaAddsJson The additions schema as a JSON string
@@ -197,12 +200,16 @@ open class GenerateJavaTask : DefaultTask() {
         val additions = schemaAdds["components"]?.get("schemas")
         if (additions != null && additions.isObject) {
             additions.properties().forEach { (schemaName, schemaAddition) ->
-                val properties = schemaAddition["properties"]
-                if (properties != null && properties.isObject) {
-                    val targetSchema = schema.at("/components/schemas/$schemaName")
-                    if (targetSchema.isMissingNode) {
-                        project.logger.warn("Schema '$schemaName' not found in OpenAPI spec, skipping additions")
-                    } else {
+                val targetSchema = schema.at("/components/schemas/$schemaName")
+                if (targetSchema.isMissingNode) {
+                    // Schema doesn't exist - add it as a new schema
+                    val schemasNode = schema.at("/components/schemas") as ObjectNode
+                    schemasNode.set(schemaName, schemaAddition)
+                    project.logger.info("Added new schema '$schemaName' from '$sourceFileName'")
+                } else {
+                    // Schema exists - merge properties
+                    val properties = schemaAddition["properties"]
+                    if (properties != null && properties.isObject) {
                         val targetProperties =
                             (targetSchema as ObjectNode)["properties"] as ObjectNode
 
