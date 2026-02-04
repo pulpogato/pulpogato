@@ -1,0 +1,32 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "pinned-issue-comment": {
+        "title": "Pinned Issue Comment",
+        "description": "Metadata about a pinned issue comment. This schema is missing from the upstream OpenAPI spec. See: https://github.com/github/rest-api-description/issues/5938",
+        "type": "object",
+        "properties": {
+          "pinned_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the comment was pinned"
+          },
+          "pinned_by": {
+            "anyOf": [ {
+              "type": "null"
+            }, {
+              "$ref": "#/components/schemas/simple-user"
+            } ],
+            "description": "The user who pinned the comment"
+          }
+        }
+      }
+    }
+  },
+  "paths": { }
+}
