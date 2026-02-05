@@ -568,6 +568,11 @@ pre.rouge .gs {
 <li><a href="#_graphql_client_example">GraphQL Client Example</a></li>
 </ul>
 </li>
+<li><a href="#_github_app_jwt_authentication">GitHub App JWT Authentication</a>
+<ul class="sectlevel2">
+<li><a href="#_jwt_filter_setup">JWT Filter Setup</a></li>
+</ul>
+</li>
 <li><a href="#_http_caching">HTTP Caching</a>
 <ul class="sectlevel2">
 <li><a href="#_basic_caching_setup">Basic Caching Setup</a></li>
@@ -897,6 +902,70 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 <td>Set variables for the query</td>
 </tr>
 </table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_github_app_jwt_authentication">GitHub App JWT Authentication</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Pulpogato provides <code>JwtFilter</code> to authenticate as a GitHub App using JSON Web Tokens (JWT).
+This is useful when you need to authenticate as the app itself rather than as an installation.</p>
+</div>
+<div class="sect2">
+<h3 id="_jwt_filter_setup">JWT Filter Setup</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">jwtFactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JwtFactory</span><span class="o">(</span>
+        <span class="n">privateKeyPem</span><span class="o">,</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="mi">12345L</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">);</span>
+<span class="kt">var</span> <span class="n">jwtFilter</span> <span class="o">=</span> <span class="nc">JwtFilter</span><span class="o">.</span><span class="na">builder</span><span class="o">().</span><span class="na">jwtFactory</span><span class="o">(</span><span class="n">jwtFactory</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">webClient</span> <span class="o">=</span> <span class="nc">WebClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">jwtFilter</span><span class="o">)</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The RSA private key in PEM format (PKCS#1 or PKCS#8), loaded from your GitHub App settings</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Your GitHub App ID (or client ID) as a string</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Add the filter to your WebClient</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The filter:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Generates RS256-signed JWTs per GitHub&#8217;s requirements</p>
+</li>
+<li>
+<p>Sets <code>iat</code> (issued at) 60 seconds in the past to account for clock drift</p>
+</li>
+<li>
+<p>Sets <code>exp</code> (expiration) to 9 minutes in the future</p>
+</li>
+<li>
+<p>Caches tokens and refreshes them 30 seconds before expiry</p>
+</li>
+<li>
+<p>Supports both PKCS#1 (<code>BEGIN RSA PRIVATE KEY</code>) and PKCS#8 (<code>BEGIN PRIVATE KEY</code>) formats</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
