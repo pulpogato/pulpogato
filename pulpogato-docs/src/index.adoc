@@ -87,6 +87,29 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
 ----
 <1> Set variables for the query
 
+== GitHub App JWT Authentication
+
+Pulpogato provides `JwtFilter` to authenticate as a GitHub App using JSON Web Tokens (JWT).
+This is useful when you need to authenticate as the app itself rather than as an installation.
+
+=== JWT Filter Setup
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=setup-jwt]
+----
+<1> The RSA private key in PEM format (PKCS#1 or PKCS#8), loaded from your GitHub App settings
+<2> Your GitHub App ID (or client ID) as a string
+<3> Add the filter to your WebClient
+
+The filter:
+
+* Generates RS256-signed JWTs per GitHub's requirements
+* Sets `iat` (issued at) 60 seconds in the past to account for clock drift
+* Sets `exp` (expiration) to 9 minutes in the future
+* Caches tokens and refreshes them 30 seconds before expiry
+* Supports both PKCS#1 (`BEGIN RSA PRIVATE KEY`) and PKCS#8 (`BEGIN PRIVATE KEY`) formats
+
 == HTTP Caching
 
 Pulpogato provides `CachingExchangeFilterFunction` to cache HTTP responses based on standard HTTP caching headers (ETag, Last-Modified, Cache-Control).

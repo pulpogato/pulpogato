@@ -18,6 +18,8 @@ dependencies {
 
     annotationProcessor(libs.lombok)
 
+    implementation(libs.bouncycastle)
+    implementation(libs.javaJwt)
     implementation(libs.slf4j)
 
     api(libs.jackson2Core)

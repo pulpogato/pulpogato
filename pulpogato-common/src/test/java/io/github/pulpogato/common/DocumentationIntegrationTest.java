@@ -3,10 +3,15 @@ package io.github.pulpogato.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
+import io.github.pulpogato.common.client.JwtFactory;
+import io.github.pulpogato.common.client.JwtFilter;
 import io.github.pulpogato.common.client.MetricsExchangeFunction;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.io.StringWriter;
+import java.security.KeyPairGenerator;
 import java.util.List;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.Cache;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
@@ -104,5 +109,32 @@ class DocumentationIntegrationTest {
         var metricsClient = webClient.mutate().filter(metricsFilter).build();
         // end::advanced-metrics[]
         assertThat(metricsClient).isNotNull();
+    }
+
+    @Test
+    void setupJwt() throws Exception {
+        // Generate a test key (in real code, load from GitHub App settings)
+        var keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(2048);
+        var keyPair = keyGen.generateKeyPair();
+        var writer = new StringWriter();
+        try (var pemWriter = new JcaPEMWriter(writer)) {
+            pemWriter.writeObject(keyPair);
+        }
+        var privateKeyPem = writer.toString();
+
+        // tag::setup-jwt[]
+        var jwtFactory = new JwtFactory(
+                privateKeyPem, // <1>
+                12345L // <2>
+                );
+        var jwtFilter = JwtFilter.builder().jwtFactory(jwtFactory).build();
+
+        var webClient = WebClient.builder()
+                .baseUrl("https://api.github.com")
+                .filter(jwtFilter) // <3>
+                .build();
+        // end::setup-jwt[]
+        assertThat(webClient).isNotNull();
     }
 }
