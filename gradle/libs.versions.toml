@@ -1,6 +1,6 @@
 [versions]
 assertj = "3.27.7"
-bouncycastle = "1.80"
+bouncycastle = "1.83"
 javaJwt = "4.5.0"
 jspecify = "1.0.0"
 commonmark = "0.27.1"
