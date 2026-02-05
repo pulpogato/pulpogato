@@ -146,11 +146,17 @@ object TestBuilder {
         input: Map<*, *>,
     ): Any {
         if (input.size == 1 && input.containsKey($$"$ref")) {
-            return normalize(
-                context,
-                context.openAPI.components.examples[input[$$"$ref"].toString().replace("#/components/examples/", "")]
-                    ?.value,
-            )!!
+            val ref = input[$$"$ref"].toString()
+            if (ref.startsWith("#/components/examples/")) {
+                val exampleName = ref.removePrefix("#/components/examples/")
+                val resolved =
+                    context.openAPI.components.examples[exampleName]
+                        ?.value
+                if (resolved != null) {
+                    return normalize(context, resolved)!!
+                }
+            }
+            // If we can't resolve the ref, fall through to normal map handling
         }
         return input.entries.associate { (k, v) -> k to normalize(context, v) }
     }
