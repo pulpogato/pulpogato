@@ -24,14 +24,6 @@
   reason: "https://github.com/github/rest-api-description/issues/5874"
   versions:
     - ghec
-- example: "#/paths/~1enterprises~1{enterprise}~1rulesets/post/requestBody/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5048"
-  versions:
-    - ghec
-- example: "#/paths/~1enterprises~1{enterprise}~1rulesets~1{ruleset_id}/put/requestBody/content/application~1json/examples/default/value"
-  reason: "https://github.com/github/rest-api-description/issues/5048"
-  versions:
-    - ghec
 - example: "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/4590"
   versions:
@@ -97,10 +89,6 @@
   versions:
     - fpt
     - ghec
-- example: "#/components/examples/server-statistics/value"
-  reason: "https://github.com/github/rest-api-description/issues/5866"
-  versions:
-    - ghec
 - example: "#/components/examples/get-consumed-licenses/value"
   reason: "https://github.com/github/rest-api-description/issues/5485"
   versions:
@@ -114,20 +102,6 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
-- example: "#/components/examples/enterprise-ruleset/value"
-  reason: "https://github.com/github/rest-api-description/issues/5871"
-  versions:
-    - ghec
-- example: "#/components/examples/enterprise-ruleset-version-with-state/value"
-  reason: "https://github.com/github/rest-api-description/issues/5872"
-  versions:
-    - ghec
-    - ghes-3.19
-- example: "#/components/examples/enterprise-teams-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5873"
-  versions:
-    - fpt
-    - ghec
 - example: "#/components/examples/ghes-license-info/value"
   reason: "https://github.com/github/rest-api-description/issues/5516"
   versions:
@@ -137,14 +111,6 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
-- example: "#/components/examples/enterprise-role-list/value"
-  reason: "https://github.com/github/rest-api-description/issues/5870"
-  versions:
-    - ghec
-- example: "#/components/examples/enterprise-role/value"
-  reason: "https://github.com/github/rest-api-description/issues/5868"
-  versions:
-    - ghec
 - example: "#/components/examples/organization-simple/value"
   reason: "https://github.com/github/rest-api-description/issues/5542"
   versions:
@@ -255,10 +221,4 @@
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
-    - ghes-3.19
-- example: "#/components/examples/repository-ruleset-version-with-state/value"
-  reason: "https://github.com/github/rest-api-description/issues/5859"
-  versions:
-    - fpt
-    - ghec
     - ghes-3.19
