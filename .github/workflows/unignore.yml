@@ -60,18 +60,16 @@ jobs:
         run: |
           if git diff --quiet; then
             echo "No changes detected"
+            exit 1
           else
             echo "Changes detected:"
             git diff
           fi
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-          commit-message: "refactor: unignore passing tests"
-          branch: unignore-tests-mode-${{ inputs.mode || '1' }}
-          delete-branch: true
-          title: "Unignore Tests"
-          body: |
-            These tests were previously ignored and have been verified to pass.
+        run: |-
+          git checkout -b unignore-tests
+          git add .
+          git commit -m "Unignore tests"
+          git push --force origin unignore-tests
+          gh pr create --base main
