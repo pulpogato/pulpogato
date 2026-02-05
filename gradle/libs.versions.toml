@@ -1,5 +1,7 @@
 [versions]
 assertj = "3.27.7"
+bouncycastle = "1.80"
+javaJwt = "4.5.0"
 jspecify = "1.0.0"
 commonmark = "0.27.1"
 commons-lang3 = "3.20.0"
@@ -37,6 +39,8 @@ waena = "0.21.1"
 
 [libraries]
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+bouncycastle = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
+javaJwt = { group = "com.auth0", name = "java-jwt", version.ref = "javaJwt" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
 commonmarkExtAutolink = { group = "org.commonmark", name = "commonmark-ext-autolink", version.ref = "commonmark" }
 commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmark" }
