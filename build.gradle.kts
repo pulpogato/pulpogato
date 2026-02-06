@@ -15,9 +15,21 @@ buildscript {
                 // waena -> jreleaser -> commonmark can mess with the codegen module.
                 // This forces the version of commonmark to one compatible with the codegen module.
                 force(libs.commonmark, libs.commonmarkExtAutolink)
-                // spotless -> jgit can mess with jreleaser
-                // This forces the version of jgit to one compatible with jreleaser.
-                force(libs.jgit)
+            }
+        }
+    }
+    dependencies {
+        components {
+            // spotless brings jgit 7.x which is incompatible with jreleaser.
+            // Removing jgit from spotless's metadata lets jreleaser be the sole provider.
+            listOf("com.diffplug.spotless:spotless-plugin-gradle", "com.diffplug.spotless:spotless-lib-extra").forEach {
+                withModule(it) {
+                    allVariants {
+                        withDependencies {
+                            removeAll { it.group == "org.eclipse.jgit" }
+                        }
+                    }
+                }
             }
         }
     }

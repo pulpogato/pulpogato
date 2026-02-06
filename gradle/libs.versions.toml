@@ -17,7 +17,6 @@ javapoet = "0.11.0"
 glassfishJson = "1.1.4"
 httpclient5 = "5.6"
 jetbrainsAnnotations = "26.0.2-1"
-jgit = "5.13.5.202508271544-r"
 jsonApi = "1.1.4"
 junit = "6.0.2"
 junitPlatformLauncher = "6.0.2"
@@ -58,7 +57,6 @@ jackson3Yaml = { group = "tools.jackson.dataformat", name = "jackson-dataformat-
 jakartaAnnotations = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta" }
 javapoet = { group = "com.palantir.javapoet", name = "javapoet", version.ref = "javapoet" }
 jetbrainsAnnotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotations" }
-jgit = { group = "org.eclipse.jgit", name = "org.eclipse.jgit", version.ref = "jgit" }
 jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }
 jsonApi = { group = "javax.json", name = "javax.json-api", version.ref = "jsonApi" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
