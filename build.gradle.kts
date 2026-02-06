@@ -9,13 +9,15 @@ buildscript {
         gradlePluginPortal()
         mavenCentral()
     }
-    // waena -> jreleaser -> commonmark can mess with the codegen module.
-    // This forces the version of commonmark to one compatible with the codegen module.
     configurations {
         classpath {
             resolutionStrategy {
-                force(libs.commonmark)
-                force(libs.commonmarkExtAutolink)
+                // waena -> jreleaser -> commonmark can mess with the codegen module.
+                // This forces the version of commonmark to one compatible with the codegen module.
+                force(libs.commonmark, libs.commonmarkExtAutolink)
+                // spotless -> jgit can mess with jreleaser
+                // This forces the version of jgit to one compatible with jreleaser.
+                force(libs.jgit)
             }
         }
     }
