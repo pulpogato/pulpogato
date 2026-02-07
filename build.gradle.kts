@@ -22,11 +22,11 @@ buildscript {
         components {
             // spotless brings jgit 7.x which is incompatible with jreleaser.
             // Removing jgit from spotless's metadata lets jreleaser be the sole provider.
-            listOf("com.diffplug.spotless:spotless-plugin-gradle", "com.diffplug.spotless:spotless-lib-extra").forEach {
-                withModule(it) {
+            listOf("com.diffplug.spotless:spotless-plugin-gradle", "com.diffplug.spotless:spotless-lib-extra").forEach { module ->
+                withModule(module) {
                     allVariants {
                         withDependencies {
-                            removeAll { it.group == "org.eclipse.jgit" }
+                            removeAll { dependency -> dependency.group == "org.eclipse.jgit" }
                         }
                     }
                 }

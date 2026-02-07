@@ -69,13 +69,13 @@ val transformSchema =
         dependsOn(tasks.processResources)
 
         from(originalSchemaLocation)
-        into(transformedSchemaLocation.map { it.asFile.parentFile })
+        into(transformedSchemaLocation.map { thePath -> thePath.asFile.parentFile })
         rename { transformedSchemaLocation.get().asFile.name }
 
         filter { currentLine ->
             currentLine
-                .replace(Regex("<(https?:.+?)>")) {
-                    "<a href=\"${it.groupValues[1]}\">${it.groupValues[1]}</a>"
+                .replace(Regex("<(https?:.+?)>")) { match ->
+                    "<a href=\"${match.groupValues[1]}\">${match.groupValues[1]}</a>"
                 }.replace("< ", "&lt; ")
                 .replace("> ", "&gt; ")
                 .replace("<= ", "&lt;= ")
@@ -97,7 +97,7 @@ val calculateSchemaChecksum =
             val schemaBytes = originalSchemaLocation.get().asFile.readBytes()
             val digest = MessageDigest.getInstance("SHA-256")
             val hashBytes = digest.digest(schemaBytes)
-            val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+            val sha256 = hashBytes.joinToString("") { theByte -> "%02x".format(theByte) }
             checksumFile.get().asFile.writeText(sha256)
             project.plugins.getPlugin(InfoBrokerPlugin::class.java).add("GitHub-Schema-SHA256", sha256)
         }

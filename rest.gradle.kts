@@ -139,14 +139,14 @@ tasks.withType<JavaCompile> {
 val addSchemaInfoToBroker =
     tasks.register("addSchemaInfoToBroker") {
         dependsOn(downloadSchema)
-        val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { it.schemaFile }
+        val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { theTask -> theTask.schemaFile }
         inputs.file(schemaFile)
 
         doLast {
             val schemaBytes = schemaFile.get().asFile.readBytes()
             val digest = MessageDigest.getInstance("SHA-256")
             val hashBytes = digest.digest(schemaBytes)
-            val sha256 = hashBytes.joinToString("") { "%02x".format(it) }
+            val sha256 = hashBytes.joinToString("") { theByte -> "%02x".format(theByte) }
 
             val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
             infoBrokerPlugin.add("GitHub-API-Repo", project.ext.get("gh.api.repo").toString())
