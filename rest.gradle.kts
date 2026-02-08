@@ -57,8 +57,8 @@ sourceSets {
     }
 }
 
-val downloadSchema = tasks.named("downloadSchema")
-val generateJava = tasks.named("generateJava")
+val downloadSchema = tasks.named("downloadSchema")!!
+val generateJava = tasks.named("generateJava")!!
 
 tasks.compileJava {
     dependsOn(generateJava)
@@ -109,7 +109,7 @@ testlogger {
     showFailed = true
 }
 
-val mockitoAgent = configurations.create("mockitoAgent")
+val mockitoAgent = configurations.create("mockitoAgent")!!
 dependencies {
     testImplementation(libs.mockito)
     mockitoAgent(libs.mockito) { isTransitive = false }
@@ -154,7 +154,7 @@ val addSchemaInfoToBroker =
             infoBrokerPlugin.add("GitHub-API-Version", project.ext.get("gh.api.version").toString())
             infoBrokerPlugin.add("GitHub-API-SHA256", sha256)
         }
-    }
+    }!!
 
 tasks.withType<GenerateMavenPom>().configureEach {
     dependsOn(addSchemaInfoToBroker)

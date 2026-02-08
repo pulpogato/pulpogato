@@ -41,8 +41,8 @@ sourceSets {
     }
 }
 
-val originalSchemaLocation = layout.buildDirectory.file("generated-src/main/resources/schema.graphqls")
-val transformedSchemaLocation = layout.buildDirectory.file("schema/transformed/schema.graphqls")
+val originalSchemaLocation = layout.buildDirectory.file("generated-src/main/resources/schema.graphqls")!!
+val transformedSchemaLocation = layout.buildDirectory.file("schema/transformed/schema.graphqls")!!
 
 val downloadSchema =
     tasks.register<Download>("downloadSchema") {
@@ -84,7 +84,7 @@ val transformSchema =
         }
     }
 
-val checksumFile = project.layout.buildDirectory.file("schema.sha256")
+val checksumFile = project.layout.buildDirectory.file("schema.sha256")!!
 
 val calculateSchemaChecksum =
     tasks.register("calculateSchemaChecksum") {
@@ -101,7 +101,7 @@ val calculateSchemaChecksum =
             checksumFile.get().asFile.writeText(sha256)
             project.plugins.getPlugin(InfoBrokerPlugin::class.java).add("GitHub-Schema-SHA256", sha256)
         }
-    }
+    }!!
 
 tasks.named<GenerateJavaTask>("generateJava") {
     dependsOn(transformSchema)
