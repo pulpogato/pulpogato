@@ -3,12 +3,14 @@ package io.github.pulpogato.common.util;
 import io.github.pulpogato.common.PulpogatoType;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A builder class for constructing code representations of objects with properties.
@@ -82,37 +84,45 @@ public class CodeBuilder {
             case PulpogatoType pt -> pt.toCode().indent(2).trim();
             case Enum<?> e -> e.getClass().getName() + "." + e.name();
             case URI u -> "URI.create(\"" + u + "\")";
-            case OffsetDateTime odt ->
-                "OffsetDateTime.parse(\"" + odt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
-                        + "\")";
+            case OffsetDateTime odt -> formatDateTime(odt);
             case LocalDate ld -> "LocalDate.parse(\"" + ld + "\")";
-            case Map<?, ?> map -> {
-                StringBuilder sb = new StringBuilder();
-                sb.append("new java.util.HashMap<Object, Object>() {{\n");
-                for (Map.Entry<?, ?> entry : map.entrySet()) {
-                    sb.append("        put(")
-                            .append(render(entry.getKey()))
-                            .append(", ")
-                            .append(render(entry.getValue()))
-                            .append(");\n");
-                }
-                sb.append("    }}");
-                yield sb.toString();
-            }
-            case List<?> list -> {
-                StringBuilder sb = new StringBuilder();
-                sb.append("List.of(\n");
-                for (Object item : list) {
-                    sb.append("        ").append(render(item)).append(",\n");
-                }
-                if (!list.isEmpty()) {
-                    sb.setLength(sb.length() - 2); // Remove last comma and newline
-                }
-                sb.append("\n    )");
-                yield sb.toString();
-            }
+            case Map<?, ?> map -> formatMap(map);
+            case List<?> list -> formatList(list);
             default -> "/* [TODO: CodeBuilder.render]" + value + " */ " + null;
         };
+    }
+
+    private static @NonNull String formatMap(Map<?, ?> map) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("new java.util.HashMap<Object, Object>() {{\n");
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            sb.append("        put(")
+                    .append(render(entry.getKey()))
+                    .append(", ")
+                    .append(render(entry.getValue()))
+                    .append(");\n");
+        }
+        sb.append("    }}");
+        return sb.toString();
+    }
+
+    private static @NonNull String formatDateTime(OffsetDateTime odt) {
+        return MessageFormat.format(
+                "OffsetDateTime.parse(\"{0}\")",
+                odt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")));
+    }
+
+    private static @NonNull String formatList(List<?> list) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("List.of(\n");
+        for (int i = 0; i < list.size(); i++) {
+            sb.append("        ").append(render(list.get(i)));
+            if (i < list.size() - 1) {
+                sb.append(",\n");
+            }
+        }
+        sb.append("\n    )");
+        return sb.toString();
     }
 
     /**
