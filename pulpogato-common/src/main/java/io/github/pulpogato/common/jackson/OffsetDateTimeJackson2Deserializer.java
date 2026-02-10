@@ -9,8 +9,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Custom deserializer for {@link OffsetDateTime} objects.
@@ -18,11 +16,6 @@ import java.util.Objects;
  * and also handles Unix timestamps as numeric values.
  */
 public class OffsetDateTimeJackson2Deserializer extends StdDeserializer<OffsetDateTime> {
-    private static final List<DateTimeFormatter> formatters = List.of(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"),
-            DateTimeFormatter.ISO_INSTANT);
-
     /**
      * Default constructor for {@code OffsetDateTimeDeserializer}.
      */
@@ -51,19 +44,6 @@ public class OffsetDateTimeJackson2Deserializer extends StdDeserializer<OffsetDa
 
         // Handle string date-time values
         final var text = jsonParser.getText();
-        if (text == null) {
-            return null;
-        }
-        return formatters.stream()
-                .map(formatter -> {
-                    try {
-                        return OffsetDateTime.parse(text, formatter);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        return OffsetDateTimeUtil.parseStringDateTime(text);
     }
 }
