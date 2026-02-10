@@ -19,14 +19,10 @@ class OffsetDateTimeJackson2DeserializerTest {
     }
 
     static Stream<Arguments> params() {
-        // Jackson 2 deserializer only has 3 formatters (no nanosecond precision)
-        // so the nanosecond test case from Jackson 3 is not included
         return Stream.of(
-                Arguments.arguments("1696517280", 1696517280L),
-                Arguments.arguments("2023-10-05T14:48:00.123Z", 1696517280L),
+                // String parsing formats are covered by OffsetDateTimeUtilTest
                 Arguments.arguments("2023-10-05T14:48:00Z", 1696517280L),
-                Arguments.arguments("2023-10-05T16:48:00.123+02:00", 1696517280L),
-                Arguments.arguments("2023-10-05T16:48:00+02:00", 1696517280L));
+                Arguments.arguments("1696517280", 1696517280L));
     }
 
     @ParameterizedTest

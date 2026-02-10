@@ -21,12 +21,9 @@ class OffsetDateTimeJackson3DeserializerTest {
 
     static Stream<Arguments> params() {
         return Stream.of(
-                Arguments.arguments("1696517280", 1696517280L),
-                Arguments.arguments("2023-10-05T14:48:00.123Z", 1696517280L),
+                // String parsing formats are covered by OffsetDateTimeUtilTest
                 Arguments.arguments("2023-10-05T14:48:00Z", 1696517280L),
-                Arguments.arguments("2023-10-05T16:48:00.123+02:00", 1696517280L),
-                Arguments.arguments("2023-10-05T16:48:00+02:00", 1696517280L),
-                Arguments.arguments("2025-06-03T05:53:24.752653000Z", 1748930004L));
+                Arguments.arguments("1696517280", 1696517280L));
     }
 
     @ParameterizedTest
