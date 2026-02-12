@@ -47,6 +47,10 @@ gradlePlugin {
         id = "io.github.pulpogato.issue-statuses"
         implementationClass = "io.github.pulpogato.issues.IssueStatusesPlugin"
     }
+    val githubFilesCodegen by plugins.creating {
+        id = "io.github.pulpogato.github-files-codegen"
+        implementationClass = "io.github.pulpogato.githubfilescodegen.GithubFilesCodegenPlugin"
+    }
 }
 
 tasks.withType<Test> {

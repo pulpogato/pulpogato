@@ -52,6 +52,7 @@ groovy = { group = "org.apache.groovy", name = "groovy-all", version.ref = "groo
 httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "httpclient5" }
 jackson2Core = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson2" }
 jackson2Time = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson2" }
+jackson2Yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson2" }
 jackson3Core = { group = "tools.jackson.core", name = "jackson-databind", version.ref = "jackson3" }
 jackson3Yaml = { group = "tools.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson3" }
 jakartaAnnotations = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta" }
