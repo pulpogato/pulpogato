@@ -111,6 +111,19 @@ dependencies {
 
 |===
 
+=== Shared modules
+
+|===
+|Module |Version
+
+|pulpogato-common
+|{central-prefix}pulpogato-common{central-middle}pulpogato-common{central-suffix} {snapshot-prefix}pulpogato-common{snapshot-middle}pulpogato-common{snapshot-suffix}
+
+|pulpogato-github-files
+|{central-prefix}pulpogato-github-files{central-middle}pulpogato-github-files{central-suffix} {snapshot-prefix}pulpogato-github-files{snapshot-middle}pulpogato-github-files{snapshot-suffix}
+
+|===
+
 .EOL Versions
 [%collapsible]
 ====
