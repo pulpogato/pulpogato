@@ -16,45 +16,73 @@ else
     git checkout main
 fi
 
-OLD_SHA=$(grep gh.api.commit gradle.properties | cut -d'=' -f2)
-export OLD_SHA
+# Updates a property via a Gradle task and creates/updates a PR if changed.
+#
+# Arguments:
+#   $1 - Gradle task name (e.g. updateRestSchemaVersion)
+#   $2 - Property name in gradle.properties (e.g. gh.api.commit)
+#   $3 - Branch name for the PR (e.g. update-schema-version)
+#   $4 - GitHub repo for compare URL (e.g. github/rest-api-description)
+update_and_pr() {
+    local gradle_task="$1"
+    local property_name="$2"
+    local branch_name="$3"
+    local repo_for_compare="$4"
 
-./gradlew updateRestSchemaVersion
-NEW_SHA=$(grep gh.api.commit gradle.properties | cut -d'=' -f2)
-export NEW_SHA
+    local old_sha
+    old_sha=$(grep "${property_name}=" gradle.properties | cut -d'=' -f2)
 
-BRANCH_NAME=update-schema-version
+    ./gradlew "${gradle_task}"
 
-if git diff --quiet; then
-    echo "No changes to rest-api-description"
-    exit 2
-else
-    if [ $(git branch | grep -c "${BRANCH_NAME}") -gt 0 ]; then
-        echo "Branch ${BRANCH_NAME} already exists. Deleting..."
-        git branch -D ${BRANCH_NAME}
+    local new_sha
+    new_sha=$(grep "${property_name}=" gradle.properties | cut -d'=' -f2)
+
+    if [ "${old_sha}" = "${new_sha}" ]; then
+        echo "No changes to ${property_name}"
+        return
     fi
-    git checkout -b ${BRANCH_NAME}
+
+    if [ "$(git branch | grep -c "${branch_name}")" -gt 0 ]; then
+        echo "Branch ${branch_name} already exists. Deleting..."
+        git branch -D "${branch_name}"
+    fi
+    git checkout -b "${branch_name}"
     git add .
-    COMMIT_MESSAGE="chore(deps): Update rest-api-description to ${NEW_SHA}"
-    PR_BODY="See changes: https://github.com/github/rest-api-description/compare/${OLD_SHA}...${NEW_SHA}"
-    git commit -m "${COMMIT_MESSAGE}" -m "${PR_BODY}"
-    git push origin ${BRANCH_NAME} --force
-    PR_NUMBER=$(gh pr list --head ${BRANCH_NAME} --json number -q '.[0].number' || echo "")
-    if [ -z "$PR_NUMBER" ]; then
+    local commit_message="chore(deps): Update ${property_name} to ${new_sha}"
+    local pr_body="See changes: https://github.com/${repo_for_compare}/compare/${old_sha}...${new_sha}"
+    git commit -m "${commit_message}" -m "${pr_body}"
+    git push origin "${branch_name}" --force
+    local pr_number
+    pr_number=$(gh pr list --head "${branch_name}" --json number -q '.[0].number' || echo "")
+    if [ -z "$pr_number" ]; then
         gh pr create \
-            --title "${COMMIT_MESSAGE}" \
-            --body "${PR_BODY}" \
+            --title "${commit_message}" \
+            --body "${pr_body}" \
             --base main \
-            --head ${BRANCH_NAME} \
+            --head "${branch_name}" \
             --label "dependency"
     else
-        gh pr edit ${PR_NUMBER} \
-            --title "${COMMIT_MESSAGE}" \
-            --body "${PR_BODY}"
+        gh pr edit "${pr_number}" \
+            --title "${commit_message}" \
+            --body "${pr_body}"
     fi
     gh pr merge --auto --merge
     git checkout main
     if [ "$CI" != "" ]; then
-        git branch -D ${BRANCH_NAME}
+        git branch -D "${branch_name}"
     fi
-fi
+}
+
+GH_API_REPO=$(grep "gh.api.repo=" gradle.properties | cut -d'=' -f2)
+update_and_pr \
+    "updateRestSchemaVersion" \
+    "gh.api.commit" \
+    "update-schema-version" \
+    "${GH_API_REPO}"
+
+SCHEMASTORE_REPO=$(grep "schemastore.repo=" gradle.properties | cut -d'=' -f2)
+update_and_pr \
+    "updateSchemastoreVersion" \
+    "schemastore.commit" \
+    "update-schemastore-version" \
+    "${SCHEMASTORE_REPO}"

@@ -11,7 +11,8 @@ plugins {
     id("io.github.pulpogato.github-files-codegen")
 }
 
-val schemastoreCommit: String by project
+val schemastoreRepo = project.ext["schemastore.repo"].toString()
+val schemastoreCommit = project.ext["schemastore.commit"].toString()
 
 description = "Java types for GitHub file configuration schemas"
 
@@ -40,7 +41,7 @@ schemas.forEach { spec ->
         tasks.register<Download>("downloadSchema$taskSuffix") {
             group = "code generation"
             description = "Download ${spec.filename} from schemastore"
-            src("https://raw.githubusercontent.com/schemastore/schemastore/$schemastoreCommit/src/schemas/json/${spec.filename}")
+            src("https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/${spec.filename}")
             dest(project.layout.buildDirectory.file("generated-src/main/resources/${spec.filename}"))
             overwrite(false)
         }

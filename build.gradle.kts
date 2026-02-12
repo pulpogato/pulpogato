@@ -101,7 +101,8 @@ tasks.register("updateRestSchemaVersion") {
     description = "Update Rest Schema Version from GitHub Rest API Descriptions"
     group = "maintenance"
     doLast {
-        val connection = uri("https://api.github.com/repos/github/rest-api-description/branches/main").toURL().openConnection()
+        val repo = project.ext["gh.api.repo"]
+        val connection = uri("https://api.github.com/repos/$repo/branches/main").toURL().openConnection()
         val gitHubToken = System.getenv("GITHUB_TOKEN")
         if (gitHubToken != null) {
             (connection as HttpURLConnection).addRequestProperty("Authentication", "token $gitHubToken")
@@ -117,6 +118,31 @@ tasks.register("updateRestSchemaVersion") {
             println("Updated gh.api.commit from ${project.ext["gh.api.commit"]} to $sha")
         } else {
             println("gh.api.commit is already up to date")
+        }
+    }
+}
+
+tasks.register("updateSchemastoreVersion") {
+    description = "Update Schemastore Version from schemastore/schemastore"
+    group = "maintenance"
+    doLast {
+        val repo = project.ext["schemastore.repo"]
+        val connection = uri("https://api.github.com/repos/$repo/branches/master").toURL().openConnection()
+        val gitHubToken = System.getenv("GITHUB_TOKEN")
+        if (gitHubToken != null) {
+            (connection as HttpURLConnection).addRequestProperty("Authentication", "token $gitHubToken")
+        }
+        val branches = connection.getInputStream().bufferedReader().readText()
+        val json = ObjectMapper().readTree(branches)
+        val sha =
+            json["commit"]["sha"].asText().take(7)
+        val oldProps = project.file("gradle.properties").readText()
+        val newProps = oldProps.replace(Regex("schemastore.commit=.*"), "schemastore.commit=$sha")
+        project.file("gradle.properties").writeText(newProps)
+        if (project.ext["schemastore.commit"] != sha) {
+            println("Updated schemastore.commit from ${project.ext["schemastore.commit"]} to $sha")
+        } else {
+            println("schemastore.commit is already up to date")
         }
     }
 }
