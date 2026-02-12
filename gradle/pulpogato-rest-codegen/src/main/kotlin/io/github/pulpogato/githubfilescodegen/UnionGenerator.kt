@@ -18,11 +18,17 @@ object UnionGenerator {
     private val LOMBOK_NO_ARGS = ClassName.get("lombok", "NoArgsConstructor")
     private val LOMBOK_ALL_ARGS = ClassName.get("lombok", "AllArgsConstructor")
 
-    private val JACKSON2_FANCY_DESER = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson2FancyDeserializer")
-    private val JACKSON2_FANCY_SER = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson2FancySerializer")
-    private val SETTABLE_FIELD = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson2FancyDeserializer", "SettableField")
-    private val GETTABLE_FIELD = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson2FancySerializer", "GettableField")
     private val MODE = ClassName.get(Types.COMMON_PACKAGE, "Mode")
+
+    private fun fancyDeser(jacksonVersion: Int) = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancyDeserializer")
+
+    private fun fancySer(jacksonVersion: Int) = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancySerializer")
+
+    private fun settableField(jacksonVersion: Int) =
+        ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancyDeserializer", "SettableField")
+
+    private fun gettableField(jacksonVersion: Int) =
+        ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancySerializer", "GettableField")
 
     /**
      * Generates a union wrapper class with Jackson2FancyDeserializer/Serializer.
@@ -39,14 +45,12 @@ object UnionGenerator {
         description: String?,
         mode: String = "ONE_OF",
     ): TypeSpec {
-        val deserializerName = "${className}Jackson2Deserializer"
-        val serializerName = "${className}Jackson2Serializer"
-
         val thisClass = ClassName.bestGuess(className)
 
-        // Build deserializer
-        val deserializer = buildDeserializer(deserializerName, thisClass, variants, mode)
-        val serializer = buildSerializer(serializerName, thisClass, variants, mode)
+        val deserializer3 = buildDeserializer(3, thisClass, variants, mode)
+        val serializer3 = buildSerializer(3, thisClass, variants, mode)
+        val deserializer2 = buildDeserializer(2, thisClass, variants, mode)
+        val serializer2 = buildSerializer(2, thisClass, variants, mode)
 
         val builder =
             TypeSpec
@@ -56,8 +60,10 @@ object UnionGenerator {
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_BUILDER).build())
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_NO_ARGS).build())
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_ALL_ARGS).build())
-                .addAnnotation(Annotations.deserializerAnnotationForJackson2(className, deserializer))
-                .addAnnotation(Annotations.serializerAnnotationForJackson2(className, serializer))
+                .addAnnotation(Annotations.deserializerAnnotationForJackson3(className, deserializer3))
+                .addAnnotation(Annotations.serializerAnnotationForJackson3(className, serializer3))
+                .addAnnotation(Annotations.deserializerAnnotationForJackson2(className, deserializer2))
+                .addAnnotation(Annotations.serializerAnnotationForJackson2(className, serializer2))
 
         if (!description.isNullOrBlank()) {
             builder.addJavadoc($$"$L", MarkdownHelper.mdToHtml(description))
@@ -72,26 +78,28 @@ object UnionGenerator {
             )
         }
 
-        builder.addType(deserializer)
-        builder.addType(serializer)
+        builder.addType(deserializer3)
+        builder.addType(serializer3)
+        builder.addType(deserializer2)
+        builder.addType(serializer2)
 
         return builder.build()
     }
 
     private fun buildDeserializer(
-        deserializerName: String,
+        jacksonVersion: Int,
         thisClass: ClassName,
         variants: List<VariantSpec>,
         mode: String,
     ): TypeSpec {
-        val superClass = ParameterizedTypeName.get(JACKSON2_FANCY_DESER, thisClass)
+        val deserializerName = "${thisClass.simpleName()}Jackson${jacksonVersion}Deserializer"
+        val superClass = ParameterizedTypeName.get(fancyDeser(jacksonVersion), thisClass)
 
         val constructorBuilder =
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
 
-        // Build the statement dynamically
         val formatParts = mutableListOf<String>()
         val args = mutableListOf<Any>()
 
@@ -107,7 +115,7 @@ object UnionGenerator {
                 formatParts.add(", ")
             }
             formatParts.add($$"new $T<>($T.class, $T::set$${v.fieldName.replaceFirstChar { it.uppercaseChar() }})")
-            args.add(SETTABLE_FIELD)
+            args.add(settableField(jacksonVersion))
             args.add(rawType(v.typeName))
             args.add(thisClass)
         }
@@ -125,12 +133,13 @@ object UnionGenerator {
     }
 
     private fun buildSerializer(
-        serializerName: String,
+        jacksonVersion: Int,
         thisClass: ClassName,
         variants: List<VariantSpec>,
         mode: String,
     ): TypeSpec {
-        val superClass = ParameterizedTypeName.get(JACKSON2_FANCY_SER, thisClass)
+        val serializerName = "${thisClass.simpleName()}Jackson${jacksonVersion}Serializer"
+        val superClass = ParameterizedTypeName.get(fancySer(jacksonVersion), thisClass)
 
         val constructorBuilder =
             MethodSpec
@@ -151,7 +160,7 @@ object UnionGenerator {
                 formatParts.add(", ")
             }
             formatParts.add($$"new $T<>($T.class, $T::get$${v.fieldName.replaceFirstChar { it.uppercaseChar() }})")
-            args.add(GETTABLE_FIELD)
+            args.add(gettableField(jacksonVersion))
             args.add(rawType(v.typeName))
             args.add(thisClass)
         }

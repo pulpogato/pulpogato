@@ -2,21 +2,22 @@ package io.github.pulpogato.githubfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.pulpogato.githubfiles.releases.GithubReleaseConfig;
 import io.github.pulpogato.githubfiles.releases.GithubReleaseConfigChangelog;
 import io.github.pulpogato.githubfiles.releases.GithubReleaseConfigChangelogCategorie;
 import io.github.pulpogato.githubfiles.releases.GithubReleaseConfigChangelogExclude;
 import java.util.List;
+import java.util.stream.Stream;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class GithubReleaseConfigDeserializationTest {
 
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    static Stream<Mappers.MapperPair> mappers() {
+        return Mappers.mappers();
+    }
 
     @Nested
     class Changelog {
@@ -46,17 +47,19 @@ class GithubReleaseConfigDeserializationTest {
                         - "*"
                 """;
 
-        @Test
-        void deserializesExcludeSection() throws Exception {
-            var config = yamlMapper.readValue(YAML, GithubReleaseConfig.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubReleaseConfigDeserializationTest#mappers")
+        void deserializesExcludeSection(Mappers.MapperPair mp) throws Exception {
+            var config = mp.yamlMapper().readValue(YAML, GithubReleaseConfig.class);
             var exclude = config.getChangelog().getExclude();
             assertThat(exclude.getLabels()).containsExactly("ignore-for-release");
             assertThat(exclude.getAuthors()).containsExactly("octocat");
         }
 
-        @Test
-        void deserializesCategories() throws Exception {
-            var config = yamlMapper.readValue(YAML, GithubReleaseConfig.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubReleaseConfigDeserializationTest#mappers")
+        void deserializesCategories(Mappers.MapperPair mp) throws Exception {
+            var config = mp.yamlMapper().readValue(YAML, GithubReleaseConfig.class);
             var categories = config.getChangelog().getCategories();
             assertThat(categories).hasSize(4);
 
@@ -73,19 +76,21 @@ class GithubReleaseConfigDeserializationTest {
             assertThat(categories.get(3).getLabels()).containsExactly("*");
         }
 
-        @Test
-        void roundTripsViaJson() throws Exception {
-            var config = yamlMapper.readValue(YAML, GithubReleaseConfig.class);
-            var json = jsonMapper.writeValueAsString(config);
-            var roundTripped = jsonMapper.readValue(json, GithubReleaseConfig.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubReleaseConfigDeserializationTest#mappers")
+        void roundTripsViaJson(Mappers.MapperPair mp) throws Exception {
+            var config = mp.yamlMapper().readValue(YAML, GithubReleaseConfig.class);
+            var json = mp.jsonMapper().writeValueAsString(config);
+            var roundTripped = mp.jsonMapper().readValue(json, GithubReleaseConfig.class);
             assertThat(roundTripped).isEqualTo(config);
         }
     }
 
     @Nested
     class BuilderApi {
-        @Test
-        void canBuildAndRoundTripProgrammatically() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubReleaseConfigDeserializationTest#mappers")
+        void canBuildAndRoundTripProgrammatically(Mappers.MapperPair mp) throws Exception {
             var config = GithubReleaseConfig.builder()
                     .changelog(GithubReleaseConfigChangelog.builder()
                             .exclude(GithubReleaseConfigChangelogExclude.builder()
@@ -103,8 +108,8 @@ class GithubReleaseConfigDeserializationTest {
                             .build())
                     .build();
 
-            var json = jsonMapper.writeValueAsString(config);
-            var deserialized = jsonMapper.readValue(json, GithubReleaseConfig.class);
+            var json = mp.jsonMapper().writeValueAsString(config);
+            var deserialized = mp.jsonMapper().readValue(json, GithubReleaseConfig.class);
             assertThat(deserialized).isEqualTo(config);
             assertThat(deserialized.getChangelog().getCategories()).hasSize(2);
         }

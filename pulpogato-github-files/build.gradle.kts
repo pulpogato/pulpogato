@@ -110,6 +110,7 @@ dependencies {
     api(project(":pulpogato-common"))
     api(libs.jackson2Core)
     api(libs.jackson2Time)
+    api(libs.jackson3Core)
 
     compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
@@ -119,6 +120,7 @@ dependencies {
     testImplementation(libs.jetbrainsAnnotations)
     testImplementation(libs.assertj)
     testImplementation(libs.jackson2Yaml)
+    testImplementation(libs.jackson3Yaml)
     testImplementation(libs.junit)
 
     testRuntimeOnly(libs.junitPlatformLauncher)
