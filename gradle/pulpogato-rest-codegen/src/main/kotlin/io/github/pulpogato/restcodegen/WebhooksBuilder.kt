@@ -415,7 +415,6 @@ class WebhooksBuilder {
         MethodSpec
             .methodBuilder(methodName)
             .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
-            .addException(Types.EXCEPTION)
             .returns(
                 ParameterizedTypeName.get(
                     ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
