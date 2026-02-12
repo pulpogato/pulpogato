@@ -2,8 +2,6 @@ package io.github.pulpogato.githubfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.pulpogato.githubfiles.actions.GithubAction;
 import io.github.pulpogato.githubfiles.actions.GithubActionBrandingColor;
 import io.github.pulpogato.githubfiles.actions.GithubActionInputsValue;
@@ -11,14 +9,18 @@ import io.github.pulpogato.githubfiles.actions.GithubActionRuns;
 import io.github.pulpogato.githubfiles.actions.RunsJavascript;
 import io.github.pulpogato.githubfiles.actions.RunsJavascriptUsing;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class GithubActionDeserializationTest {
 
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    static Stream<Mappers.MapperPair> mappers() {
+        return Mappers.mappers();
+    }
 
     @Nested
     class JavascriptAction {
@@ -44,17 +46,19 @@ class GithubActionDeserializationTest {
                   icon: package
                 """;
 
-        @Test
-        void deserializesRootProperties() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesRootProperties(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             assertThat(action.getName()).isEqualTo("Setup Node.js");
             assertThat(action.getAuthor()).isEqualTo("GitHub");
             assertThat(action.getDescription()).isEqualTo("Set up a specific version of Node.js and add it to PATH");
         }
 
-        @Test
-        void deserializesInputsAsTypedMap() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesInputsAsTypedMap(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             assertThat(action.getInputs())
                     .hasSize(2)
                     .containsKey("node-version")
@@ -71,9 +75,10 @@ class GithubActionDeserializationTest {
             assertThat(registryUrl.getIsDefault()).isNull();
         }
 
-        @Test
-        void deserializesRunsAsJavascriptVariant() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesRunsAsJavascriptVariant(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             var runs = action.getRuns();
             assertThat(runs.getRunsJavascript()).isNotNull();
             assertThat(runs.getRunsComposite()).isNull();
@@ -87,17 +92,19 @@ class GithubActionDeserializationTest {
             assertThat(jsRuns.getPre()).isNull();
         }
 
-        @Test
-        void deserializesBranding() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesBranding(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             assertThat(action.getBranding().getColor()).isEqualTo(GithubActionBrandingColor.GREEN);
         }
 
-        @Test
-        void roundTripsViaJson() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
-            var json = jsonMapper.writeValueAsString(action);
-            var roundTripped = jsonMapper.readValue(json, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void roundTripsViaJson(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
+            var json = mp.jsonMapper().writeValueAsString(action);
+            var roundTripped = mp.jsonMapper().readValue(json, GithubAction.class);
             assertThat(roundTripped).isEqualTo(action);
         }
     }
@@ -120,9 +127,10 @@ class GithubActionDeserializationTest {
                       shell: bash
                 """;
 
-        @Test
-        void deserializesRunsAsCompositeVariant() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesRunsAsCompositeVariant(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             var runs = action.getRuns();
             assertThat(runs.getRunsComposite()).isNotNull();
             assertThat(runs.getRunsJavascript()).isNull();
@@ -133,9 +141,10 @@ class GithubActionDeserializationTest {
             assertThat(composite.getSteps()).hasSize(1);
         }
 
-        @Test
-        void deserializesInputsWithRequiredFlag() throws Exception {
-            var action = yamlMapper.readValue(YAML, GithubAction.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesInputsWithRequiredFlag(Mappers.MapperPair mp) throws Exception {
+            var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             assertThat(action.getInputs()).hasSize(1).containsKey("who-to-greet");
 
             var input = action.getInputs().get("who-to-greet");
@@ -146,8 +155,9 @@ class GithubActionDeserializationTest {
 
     @Nested
     class BuilderApi {
-        @Test
-        void canBuildAndRoundTripProgrammatically() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void canBuildAndRoundTripProgrammatically(Mappers.MapperPair mp) throws Exception {
             var action = GithubAction.builder()
                     .name("My Action")
                     .description("Does something")
@@ -165,8 +175,8 @@ class GithubActionDeserializationTest {
                             .build())
                     .build();
 
-            var json = jsonMapper.writeValueAsString(action);
-            var deserialized = jsonMapper.readValue(json, GithubAction.class);
+            var json = mp.jsonMapper().writeValueAsString(action);
+            var deserialized = mp.jsonMapper().readValue(json, GithubAction.class);
             assertThat(deserialized.getName()).isEqualTo("My Action");
             assertThat(deserialized.getInputs()).containsKey("token");
             assertThat(deserialized.getInputs().get("token").getRequired()).isTrue();

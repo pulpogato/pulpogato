@@ -1,8 +1,10 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.Mode;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,12 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
     private static final JsonMapper om = JsonMapper.builder()
             .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
+
+    /**
+     * Tracks types currently being deserialized on this thread to prevent infinite recursion
+     * from self-referential union types (e.g., Permissions containing a Permissions field).
+     */
+    private static final ThreadLocal<Set<Class<?>>> IN_PROGRESS = ThreadLocal.withInitial(HashSet::new);
 
     /**
      * Constructs a deserializer
@@ -69,34 +77,41 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) {
         final var returnValue = initializer.get();
+        var inProgress = IN_PROGRESS.get();
+        var type = handledType();
+        inProgress.add(type);
 
         try {
-            final var map = ctxt.readValue(p, Map.class);
-            final var mapAsString = om.writeValueAsString(map);
-            setAllFields(mapAsString, returnValue);
-        } catch (JacksonException e) {
             try {
-                final var list = ctxt.readValue(p, List.class);
-                final var listAsString = om.writeValueAsString(list);
-                setAllFields(listAsString, returnValue);
-            } catch (JacksonException e1) {
+                final var map = ctxt.readValue(p, Map.class);
+                final var mapAsString = om.writeValueAsString(map);
+                setAllFields(mapAsString, returnValue);
+            } catch (JacksonException e) {
                 try {
-                    final var map = ctxt.readValue(p, String.class);
-                    final var mapAsString = om.writeValueAsString(map);
-                    setAllFields(mapAsString, returnValue);
-                } catch (JacksonException e2) {
+                    final var list = ctxt.readValue(p, List.class);
+                    final var listAsString = om.writeValueAsString(list);
+                    setAllFields(listAsString, returnValue);
+                } catch (JacksonException e1) {
                     try {
-                        final var map = ctxt.readValue(p, Number.class);
+                        final var map = ctxt.readValue(p, String.class);
                         final var mapAsString = om.writeValueAsString(map);
                         setAllFields(mapAsString, returnValue);
-                    } catch (JacksonException e3) {
-                        log.debug("Failed to parse", e3);
-                        return null;
+                    } catch (JacksonException e2) {
+                        try {
+                            final var map = ctxt.readValue(p, Number.class);
+                            final var mapAsString = om.writeValueAsString(map);
+                            setAllFields(mapAsString, returnValue);
+                        } catch (JacksonException e3) {
+                            log.debug("Failed to parse", e3);
+                            return null;
+                        }
                     }
                 }
             }
+            return returnValue;
+        } finally {
+            inProgress.remove(type);
         }
-        return returnValue;
     }
 
     private void setAllFields(String mapAsString, T returnValue) {
@@ -111,6 +126,10 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
     private <X> boolean setField(SettableField<T, X> field, String string, T retval) {
         final var clazz = field.type();
         final var consumer = field.setter();
+
+        if (IN_PROGRESS.get().contains(clazz)) {
+            return false;
+        }
 
         try {
             final X x = om.readValue(string, clazz);

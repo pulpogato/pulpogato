@@ -2,8 +2,6 @@ package io.github.pulpogato.githubfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.pulpogato.githubfiles.workflows.Event;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflow;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflowJobsValue;
@@ -23,8 +21,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class GithubWorkflowDeserializationTest {
 
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    static Stream<Mappers.MapperPair> mappers() {
+        return Mappers.mappers();
+    }
 
     @Nested
     class NormalJobWorkflow {
@@ -52,15 +51,17 @@ class GithubWorkflowDeserializationTest {
                         run: ./gradlew test
                 """;
 
-        @Test
-        void deserializesRootProperties() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesRootProperties(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             assertThat(wf.getName()).isEqualTo("CI");
         }
 
-        @Test
-        void deserializesOnTriggerAsEventMap() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesOnTriggerAsEventMap(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             var on = wf.getOn();
             assertThat(on.getGithubWorkflowOnVariant2()).isNotNull();
 
@@ -71,9 +72,10 @@ class GithubWorkflowDeserializationTest {
             assertThat(variant.getPullRequest().getBranches()).containsExactly("main");
         }
 
-        @Test
-        void deserializesJobsAsTypedMap() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesJobsAsTypedMap(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             assertThat(wf.getJobs()).hasSize(1).containsKey("build");
 
             var buildJob = wf.getJobs().get("build");
@@ -81,9 +83,10 @@ class GithubWorkflowDeserializationTest {
             assertThat(buildJob.getReusableWorkflowCallJob()).isNull();
         }
 
-        @Test
-        void deserializesNormalJobProperties() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesNormalJobProperties(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             var job = wf.getJobs().get("build").getNormalJob();
 
             assertThat(job.getName()).isEqualTo("Build and Test");
@@ -92,18 +95,20 @@ class GithubWorkflowDeserializationTest {
             assertThat(job.getSteps()).hasSize(2);
         }
 
-        @Test
-        void deserializesWorkflowLevelEnv() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesWorkflowLevelEnv(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             var env = wf.getEnv();
             assertThat(env.getMap()).containsEntry("CI", "true").containsEntry("NODE_ENV", "test");
         }
 
-        @Test
-        void roundTripsViaJson() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
-            var json = jsonMapper.writeValueAsString(wf);
-            var roundTripped = jsonMapper.readValue(json, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void roundTripsViaJson(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
+            var json = mp.jsonMapper().writeValueAsString(wf);
+            var roundTripped = mp.jsonMapper().readValue(json, GithubWorkflow.class);
             assertThat(roundTripped).isEqualTo(wf);
         }
     }
@@ -122,16 +127,18 @@ class GithubWorkflowDeserializationTest {
                     secrets: inherit
                 """;
 
-        @Test
-        void deserializesOnTriggerAsSingleEvent() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesOnTriggerAsSingleEvent(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             var on = wf.getOn();
             assertThat(on.getEvent()).isEqualTo(Event.WORKFLOW_DISPATCH);
         }
 
-        @Test
-        void deserializesReusableWorkflowCallJob() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesReusableWorkflowCallJob(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             assertThat(wf.getJobs()).hasSize(1).containsKey("staging");
 
             var staging = wf.getJobs().get("staging");
@@ -142,9 +149,10 @@ class GithubWorkflowDeserializationTest {
             assertThat(callJob.getUses()).isEqualTo("octo-org/octo-repo/.github/workflows/deploy.yml@main");
         }
 
-        @Test
-        void deserializesReusableWorkflowWith() throws Exception {
-            var wf = yamlMapper.readValue(YAML, GithubWorkflow.class);
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesReusableWorkflowWith(Mappers.MapperPair mp) throws Exception {
+            var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             var callJob = wf.getJobs().get("staging").getReusableWorkflowCallJob();
             assertThat(callJob.getWith().getMap()).containsEntry("environment", "staging");
         }
@@ -152,8 +160,9 @@ class GithubWorkflowDeserializationTest {
 
     @Nested
     class BuilderApi {
-        @Test
-        void canBuildWorkflowProgrammatically() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void canBuildWorkflowProgrammatically(Mappers.MapperPair mp) throws Exception {
             var wf = GithubWorkflow.builder()
                     .name("Test")
                     .on(GithubWorkflowOn.builder().event(Event.PUSH).build())
@@ -167,8 +176,8 @@ class GithubWorkflowDeserializationTest {
                                     .build()))
                     .build();
 
-            var json = jsonMapper.writeValueAsString(wf);
-            var deserialized = jsonMapper.readValue(json, GithubWorkflow.class);
+            var json = mp.jsonMapper().writeValueAsString(wf);
+            var deserialized = mp.jsonMapper().readValue(json, GithubWorkflow.class);
             assertThat(deserialized.getName()).isEqualTo("Test");
             assertThat(deserialized.getJobs()).containsKey("test");
             assertThat(deserialized.getJobs().get("test").getNormalJob().getRunsOn())
@@ -178,8 +187,9 @@ class GithubWorkflowDeserializationTest {
 
     @Nested
     class OnTriggerVariants {
-        @Test
-        void deserializesEventList() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesEventList(Mappers.MapperPair mp) throws Exception {
             @Language("yaml")
             var yaml = """
                     name: CI
@@ -191,7 +201,7 @@ class GithubWorkflowDeserializationTest {
                           - run: echo hello
                     """;
 
-            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
             var on = wf.getOn();
             @SuppressWarnings("unchecked")
             var rawList = (List<Object>) (List<?>) on.getList();
@@ -200,8 +210,9 @@ class GithubWorkflowDeserializationTest {
             assertThat(on.getGithubWorkflowOnVariant2()).isNull();
         }
 
-        @Test
-        void deserializesEventMap() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesEventMap(Mappers.MapperPair mp) throws Exception {
             @Language("yaml")
             var yaml = """
                     name: CI
@@ -217,7 +228,7 @@ class GithubWorkflowDeserializationTest {
                           - run: echo hello
                     """;
 
-            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
             var on = wf.getOn();
             assertThat(on.getGithubWorkflowOnVariant2()).isNotNull();
             assertThat(on.getGithubWorkflowOnVariant2().getPush()).isNotNull();
@@ -229,8 +240,9 @@ class GithubWorkflowDeserializationTest {
             assertThat(on.getList()).isNull();
         }
 
-        @Test
-        void deserializesEventMapAsJson() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesEventMapAsJson(Mappers.MapperPair mp) throws Exception {
             @Language("yaml")
             var yaml = """
                     name: CI
@@ -242,7 +254,7 @@ class GithubWorkflowDeserializationTest {
                           - run: echo hello
                     """;
 
-            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
             var on = wf.getOn();
             assertThat(on.getGithubWorkflowOnVariant2()).isNotNull();
             assertThat(on.getGithubWorkflowOnVariant2().getPush()).isNotNull();
@@ -254,8 +266,9 @@ class GithubWorkflowDeserializationTest {
             assertThat(on.getList()).isNull();
         }
 
-        @Test
-        void deserializesSingleEvent() throws Exception {
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesSingleEvent(Mappers.MapperPair mp) throws Exception {
             @Language("yaml")
             var yaml = """
                     name: CI
@@ -267,16 +280,17 @@ class GithubWorkflowDeserializationTest {
                           - run: echo hello
                     """;
 
-            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
             var on = wf.getOn();
             assertThat(on.getEvent()).isEqualTo(Event.PUSH);
             assertThat(on.getList()).isNull();
             assertThat(on.getGithubWorkflowOnVariant2()).isNull();
         }
 
-        @Test
-        void allVariantsRoundTripViaJson() throws Exception {
-            var singleEvent = yamlMapper.readValue(/* language=yaml */ """
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void allVariantsRoundTripViaJson(Mappers.MapperPair mp) throws Exception {
+            var singleEvent = mp.yamlMapper().readValue(/* language=yaml */ """
                     name: A
                     on: push
                     jobs:
@@ -286,7 +300,7 @@ class GithubWorkflowDeserializationTest {
                           - run: echo a
                     """, GithubWorkflow.class);
 
-            var eventList = yamlMapper.readValue(/* language=yaml */ """
+            var eventList = mp.yamlMapper().readValue(/* language=yaml */ """
                     name: B
                     on: [push, pull_request]
                     jobs:
@@ -296,7 +310,7 @@ class GithubWorkflowDeserializationTest {
                           - run: echo b
                     """, GithubWorkflow.class);
 
-            var eventMap = yamlMapper.readValue(/* language=yaml */ """
+            var eventMap = mp.yamlMapper().readValue(/* language=yaml */ """
                     name: C
                     on:
                       push:
@@ -308,7 +322,7 @@ class GithubWorkflowDeserializationTest {
                           - run: echo c
                     """, GithubWorkflow.class);
 
-            var eventMapAsJson = yamlMapper.readValue(/* language=yaml */ """
+            var eventMapAsJson = mp.yamlMapper().readValue(/* language=yaml */ """
                     name: C
                     on: {push:{branches: ["main"]}}
                     jobs:
@@ -319,8 +333,8 @@ class GithubWorkflowDeserializationTest {
                     """, GithubWorkflow.class);
 
             for (var wf : List.of(singleEvent, eventList, eventMap, eventMapAsJson)) {
-                var json = jsonMapper.writeValueAsString(wf);
-                var roundTripped = jsonMapper.readValue(json, GithubWorkflow.class);
+                var json = mp.jsonMapper().writeValueAsString(wf);
+                var roundTripped = mp.jsonMapper().readValue(json, GithubWorkflow.class);
                 assertThat(roundTripped).isEqualTo(wf);
             }
         }
@@ -351,25 +365,39 @@ class GithubWorkflowDeserializationTest {
         @MethodSource("workflowFiles")
         void deserializesFromFile(Path file) throws Exception {
             var yaml = Files.readString(file);
-            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+            for (var mp : Mappers.mappers().toList()) {
+                var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
 
-            assertThat(wf.getName()).isNotNull();
-            assertThat(wf.getOn()).isNotNull();
-            assertThat(wf.getJobs()).isNotEmpty();
+                assertThat(wf.getName())
+                        .as("%s with %s", file.getFileName(), mp)
+                        .isNotNull();
+                assertThat(wf.getOn()).as("%s with %s", file.getFileName(), mp).isNotNull();
+                assertThat(wf.getJobs())
+                        .as("%s with %s", file.getFileName(), mp)
+                        .isNotEmpty();
+            }
         }
 
         @ParameterizedTest
         @MethodSource("workflowFiles")
         void serializesToJsonAndBack(Path file) throws Exception {
             var yaml = Files.readString(file);
-            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+            for (var mp : Mappers.mappers().toList()) {
+                var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
 
-            var json = jsonMapper.writeValueAsString(wf);
-            var roundTripped = jsonMapper.readValue(json, GithubWorkflow.class);
+                var json = mp.jsonMapper().writeValueAsString(wf);
+                var roundTripped = mp.jsonMapper().readValue(json, GithubWorkflow.class);
 
-            assertThat(roundTripped.getName()).isEqualTo(wf.getName());
-            assertThat(roundTripped.getOn()).isEqualTo(wf.getOn());
-            assertThat(roundTripped.getJobs()).hasSameSizeAs(wf.getJobs());
+                assertThat(roundTripped.getName())
+                        .as("%s with %s", file.getFileName(), mp)
+                        .isEqualTo(wf.getName());
+                assertThat(roundTripped.getOn())
+                        .as("%s with %s", file.getFileName(), mp)
+                        .isEqualTo(wf.getOn());
+                assertThat(roundTripped.getJobs())
+                        .as("%s with %s", file.getFileName(), mp)
+                        .hasSameSizeAs(wf.getJobs());
+            }
         }
     }
 }
