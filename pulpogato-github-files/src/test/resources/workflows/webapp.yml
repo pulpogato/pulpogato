@@ -1,0 +1,662 @@
+# Intentionally keeping this name short, sweet, and simple to keep valuable GitHub UI real estate to a minimum
+name: Pre-merge
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
+jobs:
+  generateMetadata:
+    name: Generate metadata variables
+    runs-on: [ self-hosted, self-hosted-ubuntu ]
+    # eslint-disable-next-line @corp-internal/lint/no-invalid-property-access
+    if: (!contains(github.event.pull_request.labels.*.name, 'rerun-failed-e2e-tests') && !contains(github.event.pull_request.labels.*.name, 'rebase-me')) && !((github.event.action == 'labeled') && startsWith(github.event.label.name, 'canary-')) # prevent canary deployments from running pre-merge tests
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    steps:
+      - name: Generate batchGuid
+        id: generate-batch-guid
+        # Script to generate a unique batch identifier with timestamp and random number
+        run: |
+          timestamp=$(date +"%Y-%m-%dT%H:%M:%S.%3N")
+          rand=$(awk -v min=0 -v max=1 'BEGIN{srand(); printf "%.16f\n", min+rand()*(max-min)}')
+          echo "batchGuid=${timestamp}-${rand}"
+          echo "batchGuid=${timestamp}-${rand}" >> "$GITHUB_OUTPUT"
+      - name: Generate additional tests batchGuid
+        id: generate-additional-batch-guid
+        run: |
+          timestamp=$(date +"%Y-%m-%dT%H:%M:%S.%3N")
+          rand=$(awk -v min=0 -v max=1 'BEGIN{srand(); printf "%.16f\n", min+rand()*(max-min)}')
+          echo "additionalBatchGuid=${timestamp}-${rand}"
+          echo "additionalBatchGuid=${timestamp}-${rand}" >> "$GITHUB_OUTPUT"
+      - name: Checkout WebApp PR branch
+        uses: actions/checkout@v4
+        with:
+          # check out the PR merge ref (i.e. the auto-updating branch) so that
+          # we always have the latest stuff from the develop branch, even across re-runs
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          filter: "tree:0"
+      - name: Generate SHAs
+        # Save/output our common SHAs for reference throughout the pipeline
+        # - headSha: This is the HEAD level SHA on the PR itself
+        # - rebasedSha: This is the automatically generated SHA from Github of the HEAD SHA on top of the target branch
+        # - shortRebasedSha: Same thing as `rebasedSha` except a shorter form
+        # - batchGuid: Unique UUID utilized by e2e-runner to identify the test run
+        # - rebasedShaBaseSha: the base commit rebasedSha is based on (sometimes different from github.event.pull_request.base.sha)
+        id: determine-head-sha
+        env:
+          prLabels: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          ENABLE_DTA_RUNNER_VAR: ${{ vars.ENABLE_DTA_RUNNER }}
+        run: |
+          set -x
+          echo "headSha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          echo "rebasedSha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          shortRebasedSha=$(git rev-parse HEAD)
+          shortRebasedSha="${shortRebasedSha:0:6}"
+          echo "shortRebasedSha=$shortRebasedSha" >> "$GITHUB_OUTPUT"
+          echo "rebasedShaBaseSha=$(git rev-parse HEAD^1)" >> "$GITHUB_OUTPUT"
+          
+          labels="$prLabels"
+          matching_labels=()
+          for label in $(echo "${labels}" | jq -r '.[]'); do
+            if [[ $label == e2e-* ]]; then
+              matching_labels+=("$label")
+            fi
+          done
+          runAdditionalTests=false
+          if [[ ${#matching_labels[@]} -gt 0 ]]; then
+            runAdditionalTests=true
+          fi
+          echo "runAdditionalTests=$runAdditionalTests"
+          echo "e2eLabelsCSV=$(IFS=,; echo "${matching_labels[*]}")"
+          echo "runAdditionalTests=$runAdditionalTests" >> "$GITHUB_OUTPUT"
+          echo "e2eLabelsCSV=$(IFS=,; echo "${matching_labels[*]}")" >> "$GITHUB_OUTPUT"
+          # Determine if DTA Runner method should be used (default: false for safe rollout)
+          useDtaRunner=false
+          # Check GitHub repository variable first (can be set in repo Settings > Secrets and variables > Actions > Variables)
+          # Create a variable named ENABLE_DTA_RUNNER with value 'true' to enable globally
+          GITHUB_VAR_ENABLE_DTA="$ENABLE_DTA_RUNNER_VAR"
+          # Convert to lowercase for case-insensitive comparison
+          GITHUB_VAR_ENABLE_DTA_LOWER=$(echo "$GITHUB_VAR_ENABLE_DTA" | tr '[:upper:]' '[:lower:]')
+          if [ "$GITHUB_VAR_ENABLE_DTA_LOWER" = "true" ]; then
+            useDtaRunner=true
+            echo "DTA Runner method enabled via GitHub repository variable ENABLE_DTA_RUNNER=${GITHUB_VAR_ENABLE_DTA}"
+          fi
+          # Check PR label (overrides GitHub variable if set)
+          if echo "${labels}" | jq -e '.[] | select(. == "enable-dta-runner")' > /dev/null; then
+            useDtaRunner=true
+            echo "DTA Runner method enabled via 'enable-dta-runner' label (overrides GitHub variable)"
+          fi
+          if [ "$useDtaRunner" = "false" ]; then
+            echo "Using legacy E2E Runner method (default)"
+          else
+            echo "Using DTA Runner method"
+          fi
+          echo "useDtaRunner=$useDtaRunner"
+          echo "useDtaRunner=$useDtaRunner" >> "$GITHUB_OUTPUT"
+      - name: Clear out of date PR state
+        id: clear-pr-info
+        if: github.event.action != 'opened'
+        uses: ./.github/actions/clear-pr-info
+        with:
+          prNumber: ${{ github.event.number }}
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commitSha: ${{ steps.determine-head-sha.outputs.headSha }}
+          clearPrTestsStatuses: 'true'
+          resetUrls: 'false'
+      - name: Determine if this is a docs-only change # if the PR only touches .md files, we're done!
+        id: doc-only-change
+        uses: ./.github/actions/doc-only-change
+      - name: Set up node and node_modules
+        if: steps.doc-only-change.outputs.result == 'false'
+        uses: AcmeUI/acme-actions/actions/setup-node-environment@release
+        with:
+          install-mode: install-cached
+          build-cache-dir: ""
+          validate-package-lock: false
+      - name: Generate CI Template
+        id: generate-run-template
+        if: steps.doc-only-change.outputs.result == 'false'
+        env:
+          baseBranch: ${{ github.event.pull_request.base.ref }}
+          labels: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          shortRebasedSha: ${{ steps.determine-head-sha.outputs.shortRebasedSha }}
+        run: |
+          set -xe
+          
+          csvLabels=$(echo "$labels" | jq -r @csv)
+          if [ -z "$csvLabels" ]; then
+              csvLabels='""'
+          fi
+          echo "labels=$labels"
+          if echo "$labels" | jq -e '.[] | select(. == "long-running")' > /dev/null; then
+              ttlHours=336
+          else
+              ttlHours=72
+          fi
+          echo "ttlHours=$ttlHours"
+          echo "ttlHours=$ttlHours" >> "$GITHUB_OUTPUT"
+          buildtool runTask --param TASK=ciGenerateCiRunTemplate --param ARGS="--baseBranch $baseBranch --labels $csvLabels --rerouteTestFunctionalChanges true"
+          output_json_string=$(jq -c . ./ciRunTemplate.json)
+          rerouteTestTrafficToDeployedClusters=$(echo "$output_json_string" | jq -r '.rerouteTestTrafficToDeployedClusters')
+          if [[ "$rerouteTestTrafficToDeployedClusters" == "true" ]]; then
+              intUrl="https://develop.int.web.example.com"
+              stageUrl="https://develop.staging.web.example.com"
+          else
+              intUrl=https://premerge-${{github.event.number}}-zz$shortRebasedSha.int.web.example.com
+              stageUrl=https://premerge-${{github.event.number}}-zz$shortRebasedSha.staging.web.example.com
+          fi
+          output_json_string=$(echo "$output_json_string" | jq --arg intClusterUrl "$intUrl" '. + {intClusterUrl: $intClusterUrl}' | jq --arg stageClusterUrl "$stageUrl" '. + {stageClusterUrl: $stageClusterUrl}')
+          
+          output_json_string=$(echo "$output_json_string" | jq -c .)
+          
+          echo "runTemplate=$output_json_string"
+          echo "runTemplate=$output_json_string" >> "$GITHUB_OUTPUT"
+          echo "[Premerge cluster Int URL]($intUrl)" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Premerge cluster Stage URL]($stageUrl)" >> "$GITHUB_STEP_SUMMARY"
+      # Upload the run template as an artifact so it can be reused in pre-merge-deploy-static-clusters.yml
+      - name: Write runTemplate to a file
+        if: steps.doc-only-change.outputs.result == 'false'
+        env:
+          runTemplate: ${{ steps.generate-run-template.outputs.runTemplate }}
+          prNumber: ${{ github.event.number }}
+          headSha: ${{ steps.determine-head-sha.outputs.headSha }}
+          rebasedSha: ${{ steps.determine-head-sha.outputs.rebasedSha }}
+          ttlHours: ${{ steps.generate-run-template.outputs.ttlHours }}
+        run: |
+          echo "$runTemplate" | jq --arg prNumber "$prNumber" --arg headSha "$headSha" --arg rebasedSha "$rebasedSha" --arg ttlHours "$ttlHours"  '. + {prNumber: $prNumber, headSha: $headSha, rebasedSha: $rebasedSha, ttlHours: $ttlHours}' > ciRunTemplate.json
+      - name: Archive runTemplate
+        if: steps.doc-only-change.outputs.result == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: runTemplate-${{ github.run_id }}
+          path: ciRunTemplate.json
+          retention-days: 7
+      - name: Create minimal es-info file for early metrics failure tracking
+        env:
+          prNumber: ${{ github.event.number }}
+          rebasedSha: ${{ steps.determine-head-sha.outputs.rebasedSha }}
+          headSha: ${{ steps.determine-head-sha.outputs.headSha }}
+          batchGuid: ${{ steps.generate-batch-guid.outputs.batchGuid }}
+        run: |
+          cat > es-info-minimal.json << EOF
+          {
+            "prNumber": "$prNumber",
+            "rebasedSha": "$rebasedSha",
+            "headSha": "$headSha",
+            "batchGuid": "$batchGuid",
+            "runId": "${{ github.run_id }}",
+            "workflowStatus": "in_progress"
+          }
+          EOF
+      - name: Upload minimal es-info to DTA (for early failure tracking)
+        uses: AcmeUI/acme-actions/actions/dta-upload-file@release
+        with:
+          sourceFile: es-info-minimal.json
+          destinationFile: gdo/premerge/es-info-${{ github.run_id }}.json
+          expirePolicy: 7d
+      - name: Clear Premerge Tests Status
+        if: fromJson(steps.generate-run-template.outputs.runTemplate || '{}').e2eTests.runTests == false
+        env:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          commitSha: ${{ steps.determine-head-sha.outputs.headSha }}
+        run: |
+          curl -X POST -H "Authorization: token $token" \
+                                  -H "Content-Type: application/json" \
+                                  -d "{
+                                  \"state\": \"success\",
+                                  \"context\": \"Premerge Tests\",
+                                  \"description\": \"Setting to passed as no e2e tests will run\"
+                          }" "https://api.github.com/repos/$repository/statuses/$commitSha"
+    outputs:
+      headSha: ${{ steps.determine-head-sha.outputs.headSha }}
+      rebasedSha: ${{ steps.determine-head-sha.outputs.rebasedSha }}
+      shortRebasedSha: ${{ steps.determine-head-sha.outputs.shortRebasedSha }}
+      rebasedShaBaseSha: ${{ steps.determine-head-sha.outputs.rebasedShaBaseSha }}
+      batchGuid: ${{ steps.generate-batch-guid.outputs.batchGuid }}
+      ttlHours: ${{ steps.generate-run-template.outputs.ttlHours }}
+      runAdditionalTests: ${{ steps.determine-head-sha.outputs.runAdditionalTests }}
+      e2eLabels: ${{ steps.determine-head-sha.outputs.e2eLabelsCSV }}
+      additionalBatchGuid: ${{ steps.generate-additional-batch-guid.outputs.additionalBatchGuid }}
+      docOnlyChange: ${{ steps.doc-only-change.outputs.result == 'true' }}
+      runTemplate: ${{ steps.generate-run-template.outputs.runTemplate }}
+      useDtaRunner: ${{ steps.determine-head-sha.outputs.useDtaRunner }}
+  ceAPITests:
+    name: Run CE API Tests
+    needs: [ generateMetadata ]
+    if: needs.generateMetadata.outputs.docOnlyChange == 'false'
+    runs-on: [ self-hosted, self-hosted-ubuntu ]
+    permissions:
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Set up node, install dependencies
+        uses: AcmeUI/acme-actions/actions/setup-node-environment@release
+        with:
+          install-mode: install-cached
+          build-cache-dir: ""
+          validate-package-lock: false
+      - name: Run turbo build and cache tasks
+        run: buildtool exec npm run build
+      - id: run-tests
+        name: Run Tests
+        uses: AcmeUI/api-endpoint/.github/actions/test-endpoint@main
+        continue-on-error: true
+        with:
+          dtaBuildNumber: ${{ github.event.number }}
+          endpointVersion: '^1.0.0-web'
+          originService: 'WebApp'
+          platform: 'Web'
+          suiteName: 'WebApp Premerge'
+          stack: 'int'
+      - name: Check Test Results
+        if: ${{ steps.run-tests.outputs.exitCode && steps.run-tests.outputs.exitCode > 1 }}
+        run: |
+          echo "Runner failure, check the steps above" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+  publishWebApp:
+    name: Publish WebApp
+    needs: [ generateMetadata ]
+    if: needs.generateMetadata.outputs.docOnlyChange == 'false'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/publish-deploy.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      stack: none
+      deployType: none
+      runTemplate: ${{ needs.generateMetadata.outputs.runTemplate }}
+      deploymentAvenue: internal
+      skipInternals: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').publishDeployApps == false }}
+  # Due to a race condition / limitation, we must wait for the initial `buildtool publish` call to
+  # have enough time to start so other calling pipelines can just wait/block on the initial call
+  publishWait:
+    name: Wait After Publish
+    runs-on: [ self-hosted, self-hosted-ubuntu ]
+    if: needs.generateMetadata.outputs.docOnlyChange == 'false'
+    needs: [ generateMetadata ]
+    steps:
+      - name: Pause for 90 seconds
+        env:
+          publishDeployApps: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').publishDeployApps }}
+        run: |
+          if [[ "$publishDeployApps" == "true" ]]; then
+              echo "Sleeping 90 seconds"
+              sleep 90
+          else
+              echo "publishDeployApps was false, skipping sleep"
+          fi
+  performE2eSetup:
+    name: Performs E2E Runner Setup
+    needs: [ generateMetadata ]
+    if: needs.generateMetadata.outputs.docOnlyChange == 'false'
+    permissions:
+      contents: read
+      statuses: write
+    uses: ./.github/workflows/dta-runner-sync.yaml
+    with:
+      testDir: test/functional
+      type: webapp-web
+      appName: e2e-runner
+      testAuthor: jdoe@example.com
+      runCommand: npm run ciRunWioTests
+      project: ${{ github.repository_owner }}
+      repo: ${{ github.event.repository.name }}
+      branch: ${{ github.head_ref }}
+      username: jdoe
+      email: jdoe@example.com
+      include: ./utils-shared/configurations/stage-regression.json,./utils-shared/configurations/int-regression.json,./utils-shared/configurations/stage-premerge.json,./utils-shared/configurations/int-premerge.json,./utils-shared/configurations/stage-member-regression.json,./utils-shared/configurations/int-member-regression.json,./utils-shared/configurations/stage-nonmember-regression.json,./utils-shared/configurations/int-nonmember-regression.json,./utils-shared/configurations/stage-tudum-regression.json,./utils-shared/configurations/int-tudum-regression.json
+      exclude: ./utils-shared/configurations/stage-regression.json,./utils-shared/configurations/int-regression.json,**/on-demand-screenshot-tests/**/*.{js,ts},**/examples/**.{js,ts}
+
+  publishDeployInt:
+    name: Deploy Int
+    needs: [ generateMetadata, publishWait ]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/publish-deploy.yml
+    with:
+      detail: premerge-${{github.event.number}}-zz${{ needs.generateMetadata.outputs.shortRebasedSha }}
+      deployType: full
+      stack: int
+      regions: 'us-east-1'
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      ttlHours: 72 # Hardcode clusters for automation tests to 3 days
+      runTemplate: ${{ needs.generateMetadata.outputs.runTemplate }}
+      deploymentAvenue: internal
+      memberApiJobName: Deploy Int / Memberapi / Publish-Deploy memberapi
+      attemptNumber: ${{ github.run_attempt }}
+      skipInternals: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').publishDeployApps == false || ( fromJson( needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests == false && needs.generateMetadata.outputs.runAdditionalTests == 'false' )}}
+  publishDeployStage:
+    name: Deploy Stage
+    needs: [ generateMetadata, publishWait ]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/publish-deploy.yml
+    with:
+      detail: premerge-${{github.event.number}}-zz${{ needs.generateMetadata.outputs.shortRebasedSha }}
+      deployType: full
+      stack: staging
+      regions: 'us-west-2'
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      ttlHours: 72 # Hardcode clusters for automation tests to 3 days
+      runTemplate: ${{ needs.generateMetadata.outputs.runTemplate }}
+      deploymentAvenue: internal
+      memberApiJobName: Deploy Stage / Memberapi / Publish-Deploy memberapi
+      attemptNumber: ${{ github.run_attempt }}
+      skipInternals: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').publishDeployApps == false || ( fromJson( needs.generateMetadata.outputs.runTemplate|| '{}').e2eTests.runStageTests == false && needs.generateMetadata.outputs.runAdditionalTests == 'false' ) }}
+  # Run the preprocessor here (vs inside of e2e-run-tests-chrome-useragent.yml), so that we can save a few minutes getting the preprocessor runtime
+  # out of the way while we wait for publish/deploy to complete
+  e2ePreprocessor:
+    name: E2E Runner Preprocessor
+    needs: [ generateMetadata ]
+    if: needs.generateMetadata.outputs.docOnlyChange == 'false' && ( fromJson( needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests || fromJson( needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests )
+    permissions:
+      contents: write
+      statuses: write
+    uses: ./.github/workflows/e2e-preprocessor.yml
+    with:
+      e2eConfig: ./utils-shared/configurations/premerge-preprocessor.json
+      specs: ${{ fromJson( needs.generateMetadata.outputs.runTemplate ||'{}' ).e2eTests.testSpecs }}
+      ref: ${{ needs.generateMetadata.outputs.rebasedSha }}
+  runStageE2eTests:
+    name: Run Stage E2E Tests
+    needs: [ generateMetadata, e2ePreprocessor, publishDeployStage, performE2eSetup ]
+    if: needs.generateMetadata.outputs.useDtaRunner == 'false'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/e2e-run-tests-chrome-useragent.yml
+    with:
+      name: Premerge
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      buildNumber: ${{ github.event.number }}
+      batchGuid: ${{ needs.generateMetadata.outputs.batchGuid }}
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').stageClusterUrl }}
+      apiEnv: STAGE
+      testsE2eConfig: ./utils-shared/configurations/stage-premerge.json
+      specs: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.testSpecs }}
+      retries: 2
+      runType: premerge
+      testQuery: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.inclusionQueryInfo.stage }}
+      preprocessorJson: ${{ needs.e2ePreprocessor.outputs.preprocessorJson }}
+      skipInternals: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests == false }}
+      gridHost: 'grid.corp.example.com'
+
+  # DTA Runner workflow_call jobs (mirrors E2E Runner structure, gated by useDtaRunner flag)
+  runDtaStageTests:
+    name: Run DTA Stage Tests
+    needs: [ generateMetadata, e2ePreprocessor, publishDeployStage, performE2eSetup ]
+    if: needs.generateMetadata.outputs.useDtaRunner == 'true'
+    permissions:
+      contents: write
+      actions: write
+    uses: ./.github/workflows/dta-runner-tests.yml
+    with:
+      name: DTA-Premerge-Stage
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      buildNumber: ${{ github.event.number }}
+      batchId: ${{ needs.generateMetadata.outputs.batchGuid }}
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').stageClusterUrl }}
+      apiEnv: STAGE
+      environment: 'stage'
+      testsE2eConfig: ./test/functional/utils-shared/configurations/stage-premerge.json
+      runType: premerge
+      specs: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.testSpecs }}
+      testQuery: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.inclusionQueryInfo.stage }}
+      preprocessorJson: ${{ needs.e2ePreprocessor.outputs.preprocessorJson }}
+      branch: ${{ github.head_ref }}
+      dtaMetadata: '{"githubRunId":"${{ github.run_id }}","version":"develop"}'
+      batchGuid: ${{ needs.generateMetadata.outputs.batchGuid }}
+      retries: 2
+      prNumber: ${{ github.event.number }}
+      dashboardReporting: true
+      networkLogs: false
+      applitoolsBatchId: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      rerunFailingTests: false
+      rerunAttempts: 0
+      gridHost: 'grid.corp.example.com'
+      skipInternals: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests == false }}
+      APPLITOOLS_BATCH_NAME: ${{ github.head_ref }}-${{ github.event.number }}-AUI_WEB_VISUAL_REGRESSION
+      SAUCE_USERNAME: automation_user
+      SAUCE_BUILD_INFO: ${{ github.event.number }}-STAGE Premerge develop
+    secrets:
+      SAUCE_LABS_ACCESS_KEY: ${{ secrets.SAUCE_LABS_ACCESS_KEY }}
+
+  runIntE2eTests:
+    name: Run Int E2E Tests
+    needs: [ generateMetadata, e2ePreprocessor, publishDeployInt, performE2eSetup ]
+    if: needs.generateMetadata.outputs.useDtaRunner == 'false'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/e2e-run-tests-chrome-useragent.yml
+    with:
+      name: Premerge
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      buildNumber: ${{ github.event.number }}
+      batchGuid: ${{ needs.generateMetadata.outputs.batchGuid }}
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').intClusterUrl }}
+      apiEnv: INT
+      testsE2eConfig: ./utils-shared/configurations/int-premerge.json
+      specs: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.testSpecs }}
+      retries: 2
+      runType: premerge
+      testQuery: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}' ).e2eTests.inclusionQueryInfo.int }}
+      preprocessorJson: ${{ needs.e2ePreprocessor.outputs.preprocessorJson }}
+      skipInternals: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests == false }}
+      gridHost: 'grid.corp.example.com'
+
+  runDtaIntTests:
+    name: Run DTA Int Tests
+    needs: [ generateMetadata, e2ePreprocessor, publishDeployInt, performE2eSetup ]
+    if: needs.generateMetadata.outputs.useDtaRunner == 'true'
+    permissions:
+      contents: write
+      actions: write
+    uses: ./.github/workflows/dta-runner-tests.yml
+    with:
+      name: DTA-Premerge-Int
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      buildNumber: ${{ github.event.number }}
+      batchId: ${{ needs.generateMetadata.outputs.batchGuid }}
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').intClusterUrl }}
+      apiEnv: INT
+      environment: 'int'
+      testsE2eConfig: ./test/functional/utils-shared/configurations/int-premerge.json
+      runType: premerge
+      specs: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.testSpecs }}
+      testQuery: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.inclusionQueryInfo.int }}
+      preprocessorJson: ${{ needs.e2ePreprocessor.outputs.preprocessorJson }}
+      branch: ${{ github.head_ref }}
+      dtaMetadata: '{"githubRunId":"${{ github.run_id }}","version":"develop"}'
+      batchGuid: ${{ needs.generateMetadata.outputs.batchGuid }}
+      retries: 2
+      prNumber: ${{ github.event.number }}
+      dashboardReporting: true
+      networkLogs: false
+      applitoolsBatchId: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      rerunFailingTests: false
+      rerunAttempts: 0
+      gridHost: 'grid.corp.example.com'
+      skipInternals: ${{ fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests == false }}
+      APPLITOOLS_BATCH_NAME: ${{ github.head_ref }}-${{ github.event.number }}-AUI_WEB_VISUAL_REGRESSION
+      SAUCE_USERNAME: automation_user
+      SAUCE_BUILD_INFO: ${{ github.event.number }}-INT Premerge develop
+    secrets:
+      SAUCE_LABS_ACCESS_KEY: ${{ secrets.SAUCE_LABS_ACCESS_KEY }}
+
+  collectIntE2eMetrics:
+    name: Collect INT E2E Metrics
+    needs: [ runIntE2eTests, generateMetadata ]
+    if: |
+      fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests == true &&
+      needs.generateMetadata.outputs.useDtaRunner == 'false'
+    uses: ./.github/workflows/post-dta-metrics.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      runId: ${{ github.run_id }}
+      suite: premerge
+      duration: ${{ needs.runIntE2eTests.outputs.durationMs }}
+      batchId: ${{ needs.generateMetadata.outputs.batchGuid }}
+      environment: int
+      type: e2e_ci
+
+  collectIntDtaMetrics:
+    name: Collect INT DTA Runner Metrics
+    needs: [ runDtaIntTests, generateMetadata ]
+    if: |
+      fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests == true &&
+      needs.generateMetadata.outputs.useDtaRunner == 'true'
+    uses: ./.github/workflows/post-dta-metrics.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      runId: ${{ github.run_id }}
+      suite: premerge
+      duration: ${{ needs.runDtaIntTests.outputs.durationMs }}
+      batchId: ${{ needs.generateMetadata.outputs.batchGuid }}
+      environment: int
+      type: dta_runner
+
+  collectStageE2eMetrics:
+    name: Collect STAGE E2E Metrics
+    needs: [ runStageE2eTests, generateMetadata ]
+    if: |
+      fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests == true &&
+      needs.generateMetadata.outputs.useDtaRunner == 'false'
+    uses: ./.github/workflows/post-dta-metrics.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      runId: ${{ github.run_id }}
+      suite: premerge
+      duration: ${{ needs.runStageE2eTests.outputs.durationMs }}
+      batchId: ${{ needs.generateMetadata.outputs.batchGuid }}
+      environment: stage
+      type: e2e_ci
+
+  collectStageDtaMetrics:
+    name: Collect STAGE DTA Runner Metrics
+    needs: [ runDtaStageTests, generateMetadata ]
+    if: |
+      fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests == true &&
+      needs.generateMetadata.outputs.useDtaRunner == 'true'
+    uses: ./.github/workflows/post-dta-metrics.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      runId: ${{ github.run_id }}
+      suite: premerge
+      duration: ${{ needs.runDtaStageTests.outputs.durationMs }}
+      batchId: ${{ needs.generateMetadata.outputs.batchGuid }}
+      environment: stage
+      type: dta_runner
+
+  # ==================
+  # PLAYWRIGHT PREMERGE TESTS
+  # ==================
+  runPlaywrightPremergeTests:
+    name: Run Playwright Premerge Tests
+    needs: [ generateMetadata, publishDeployStage ]
+    if: needs.generateMetadata.outputs.docOnlyChange == 'false'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/playwright-premerge-tests.yml
+    with:
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').stageClusterUrl }}
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      prNumber: ${{ github.event.number }}
+
+  runAdditionalIntTests:
+    name: Run Additional Int Tests
+    needs: [ generateMetadata, publishDeployInt, performE2eSetup ]
+    permissions:
+      contents: write
+      statuses: write
+      actions: write
+    uses: ./.github/workflows/pre-merge-additional-tests.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').intClusterUrl }}
+      batchGuid: ${{ needs.generateMetadata.outputs.additionalBatchGuid }}
+      e2eLabels: ${{ needs.generateMetadata.outputs.e2eLabels }}
+      buildNumber: ${{ github.event.number }}
+      apiEnv: INT
+      useDtaRunner: ${{ needs.generateMetadata.outputs.useDtaRunner }}
+      skipInternals: ${{ needs.generateMetadata.outputs.runAdditionalTests != 'true' }}
+    secrets:
+      SAUCE_LABS_ACCESS_KEY: ${{ secrets.SAUCE_LABS_ACCESS_KEY }}
+  runAdditionalStageTests:
+    name: Run Additional Stage Tests
+    needs: [ generateMetadata, publishDeployStage, performE2eSetup ]
+    permissions:
+      contents: write
+      statuses: write
+      actions: write
+    uses: ./.github/workflows/pre-merge-additional-tests.yml
+    with:
+      sha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      baseUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').stageClusterUrl }}
+      batchGuid: ${{ needs.generateMetadata.outputs.additionalBatchGuid }}
+      e2eLabels: ${{ needs.generateMetadata.outputs.e2eLabels }}
+      buildNumber: ${{ github.event.number }}
+      apiEnv: STAGE
+      useDtaRunner: ${{ needs.generateMetadata.outputs.useDtaRunner }}
+      skipInternals: ${{ needs.generateMetadata.outputs.runAdditionalTests != 'true' }}
+    secrets:
+      SAUCE_LABS_ACCESS_KEY: ${{ secrets.SAUCE_LABS_ACCESS_KEY }}
+  reportMetadata:
+    name: Report metadata and test results to dashboard
+    if: |
+      always() &&
+      (fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests ||
+       fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests)
+    needs: [ generateMetadata, runIntE2eTests, runStageE2eTests, runDtaIntTests, runDtaStageTests, runAdditionalIntTests, runAdditionalStageTests ]
+    permissions:
+      pull-requests: write
+      contents: write
+      statuses: write
+      checks: read
+    uses: ./.github/workflows/pre-merge-report-metadata.yml
+    with:
+      prNumber: ${{ github.event.number }}
+      rebasedSha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      headSha: ${{ needs.generateMetadata.outputs.headSha }}
+      batchGuid: ${{ needs.generateMetadata.outputs.batchGuid }}
+      additionalBatchGuid: ${{ needs.generateMetadata.outputs.additionalBatchGuid }}
+      runAdditionalTests: ${{ needs.generateMetadata.outputs.runAdditionalTests }}
+      intClusterUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').intClusterUrl }}
+      stageClusterUrl: ${{ fromJson( needs.generateMetadata.outputs.runTemplate || '{}').stageClusterUrl }}
+  reportTestAnalysis:
+    name: Generate test analysis report
+    if: |
+      always() &&
+      (fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runIntTests ||
+       fromJson(needs.generateMetadata.outputs.runTemplate || '{}').e2eTests.runStageTests)
+    needs: [ generateMetadata, runIntE2eTests, runStageE2eTests, runDtaIntTests, runDtaStageTests, runAdditionalIntTests, runAdditionalStageTests ]
+    permissions:
+      pull-requests: write
+      contents: read
+    uses: ./.github/workflows/pre-merge-test-analysis.yml
+    with:
+      prNumber: ${{ github.event.number }}
+      headSha: ${{ needs.generateMetadata.outputs.headSha }}
+      batchGuid: ${{ needs.generateMetadata.outputs.batchGuid }}
+      additionalBatchGuid: ${{ needs.generateMetadata.outputs.additionalBatchGuid }}
+      runAdditionalTests: ${{ needs.generateMetadata.outputs.runAdditionalTests }}
+  diffBundleSizes:
+    name: Compare bundle sizes to develop branch
+    needs: [ generateMetadata, publishWebApp ]
+    if: |
+      github.event.pull_request.base.ref == 'develop' &&
+      needs.generateMetadata.outputs.docOnlyChange == 'false' &&
+      contains(github.event.pull_request.labels.*.name, 'compare-bundle-sizes')
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/compare-bundle-sizes.yml
+    with:
+      rebasedSha: ${{ needs.generateMetadata.outputs.rebasedSha }}
+      baseSha: ${{ needs.generateMetadata.outputs.rebasedShaBaseSha }}
+      appsToCompare: ${{ join(fromJson( needs.generateMetadata.outputs.runTemplate || '{}').appsToPublishDeploy || '') }}

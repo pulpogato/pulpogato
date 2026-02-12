@@ -9,11 +9,17 @@ import io.github.pulpogato.githubfiles.workflows.GithubWorkflow;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflowJobsValue;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflowOn;
 import io.github.pulpogato.githubfiles.workflows.NormalJob;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class GithubWorkflowDeserializationTest {
 
@@ -328,6 +334,42 @@ class GithubWorkflowDeserializationTest {
             assertThat(Event.forValue("pull_request")).isEqualTo(Event.PULL_REQUEST);
             assertThat(Event.forValue("workflow_dispatch")).isEqualTo(Event.WORKFLOW_DISPATCH);
             assertThat(Event.forValue("workflow_call")).isEqualTo(Event.WORKFLOW_CALL);
+        }
+    }
+
+    @Nested
+    class WorkflowFiles {
+        private static final Path WORKFLOWS_DIR = Path.of("src/test/resources/workflows");
+
+        static Stream<Path> workflowFiles() throws IOException {
+            return Files.list(WORKFLOWS_DIR)
+                    .filter(p -> p.toString().endsWith(".yml") || p.toString().endsWith(".yaml"))
+                    .sorted();
+        }
+
+        @ParameterizedTest
+        @MethodSource("workflowFiles")
+        void deserializesFromFile(Path file) throws Exception {
+            var yaml = Files.readString(file);
+            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+
+            assertThat(wf.getName()).isNotNull();
+            assertThat(wf.getOn()).isNotNull();
+            assertThat(wf.getJobs()).isNotEmpty();
+        }
+
+        @ParameterizedTest
+        @MethodSource("workflowFiles")
+        void serializesToJsonAndBack(Path file) throws Exception {
+            var yaml = Files.readString(file);
+            var wf = yamlMapper.readValue(yaml, GithubWorkflow.class);
+
+            var json = jsonMapper.writeValueAsString(wf);
+            var roundTripped = jsonMapper.readValue(json, GithubWorkflow.class);
+
+            assertThat(roundTripped.getName()).isEqualTo(wf.getName());
+            assertThat(roundTripped.getOn()).isEqualTo(wf.getOn());
+            assertThat(roundTripped.getJobs()).hasSameSizeAs(wf.getJobs());
         }
     }
 }
