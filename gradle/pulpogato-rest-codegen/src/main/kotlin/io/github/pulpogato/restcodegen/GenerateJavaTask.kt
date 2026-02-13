@@ -124,9 +124,13 @@ open class GenerateJavaTask : DefaultTask() {
         val javaFiles = getJavaFiles(main)
         val testJavaFiles = getJavaFiles(test)
         val formatter = Formatter.create()
-        (javaFiles + testJavaFiles).parallelStream().forEach { f ->
-            val formatted = formatter.formatSource(f.readText())
-            f.writeText(formatted)
+        try {
+            (javaFiles + testJavaFiles).parallelStream().forEach { f ->
+                val formatted = formatter.formatSource(f.readText())
+                f.writeText(formatted)
+            }
+        } catch (e: IllegalAccessError) {
+            logger.warn("Failed to format Java files: ${e.message}")
         }
 
         // Validate JSON references using the merged spec (includes additions)
