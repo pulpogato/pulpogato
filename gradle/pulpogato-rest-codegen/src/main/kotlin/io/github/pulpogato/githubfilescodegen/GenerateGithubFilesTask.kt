@@ -114,13 +114,17 @@ open class GenerateGithubFilesTask : DefaultTask() {
                 .filter { it.toPath().extension == "java" }
                 .toList()
 
-        javaFiles.parallelStream().forEach { f ->
-            try {
-                val formatted = formatter.formatSource(f.readText())
-                f.writeText(formatted)
-            } catch (e: Exception) {
-                logger.warn("Failed to format ${f.name}: ${e.message}")
+        try {
+            javaFiles.parallelStream().forEach { f ->
+                try {
+                    val formatted = formatter.formatSource(f.readText())
+                    f.writeText(formatted)
+                } catch (e: Exception) {
+                    logger.warn("Failed to format ${f.name}: ${e.message}")
+                }
             }
+        } catch (e: IllegalAccessError) {
+            logger.warn("Failed to format Java files: ${e.message}")
         }
 
         logger.lifecycle("Generated ${javaFiles.size} Java files")
