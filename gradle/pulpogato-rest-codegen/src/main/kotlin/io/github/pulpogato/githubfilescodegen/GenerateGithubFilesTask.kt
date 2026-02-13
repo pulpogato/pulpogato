@@ -1,9 +1,11 @@
 package io.github.pulpogato.githubfilescodegen
 
-import com.palantir.javaformat.java.Formatter
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.JavaFile
+import io.github.pulpogato.restcodegen.JsonRefValidator
+import io.github.pulpogato.restcodegen.collectJavaFiles
 import io.github.pulpogato.restcodegen.ext.pascalCase
+import io.github.pulpogato.restcodegen.formatJavaFiles
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.MapProperty
@@ -18,7 +20,6 @@ import org.gradle.api.tasks.TaskAction
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ObjectNode
 import java.io.File
-import kotlin.io.path.extension
 
 /**
  * Gradle task that generates Java types from JSON Schema files.
@@ -42,11 +43,18 @@ open class GenerateGithubFilesTask : DefaultTask() {
     @TaskAction
     fun generate() {
         val outDir = File(outputDir.get())
+        if (outDir.exists()) {
+            outDir
+                .walkTopDown()
+                .filter { it.isFile && it.extension == "java" }
+                .forEach { it.delete() }
+        }
         outDir.mkdirs()
 
         val mapper = ObjectMapper()
         val mapping = schemaPackageMapping.get()
         val basePackage = packageName.get()
+        val schemas = mutableMapOf<String, ObjectNode>()
 
         schemaFiles.forEach { schemaFile ->
             val subPackage = mapping[schemaFile.name] ?: schemaFile.nameWithoutExtension.pascalCase().lowercase()
@@ -55,11 +63,12 @@ open class GenerateGithubFilesTask : DefaultTask() {
             logger.lifecycle("Generating types from ${schemaFile.name} into $targetPackage")
 
             val rootSchema = mapper.readTree(schemaFile) as ObjectNode
+            schemas[schemaFile.name] = rootSchema
             val ctx =
                 JsonSchemaContext(
                     rootSchema = rootSchema,
-                    packageName = targetPackage,
-                    schemaPath = schemaFile.absolutePath,
+                    sourceFile = schemaFile.name,
+                    schemaStack = listOf("#"),
                 )
 
             // Pre-register all definitions to break cycles
@@ -76,7 +85,7 @@ open class GenerateGithubFilesTask : DefaultTask() {
                 definitions.properties().forEach { (defName, _) ->
                     if (defName !in ctx.resolvedDefinitions) {
                         JsonSchemaTypeResolver.resolveRef(
-                            ctx,
+                            ctx.withSchemaStack("#", "definitions", defName),
                             "#/definitions/$defName",
                             targetPackage,
                         )
@@ -86,7 +95,13 @@ open class GenerateGithubFilesTask : DefaultTask() {
 
             // Second pass: resolve the root type (will use cached definitions)
             val rootClassName = schemaFile.nameWithoutExtension.pascalCase()
-            val rootResolved = JsonSchemaTypeResolver.resolveType(ctx, rootClassName, rootSchema, targetPackage)
+            val rootResolved =
+                JsonSchemaTypeResolver.resolveType(
+                    ctx.withSchemaStack("#"),
+                    rootClassName,
+                    rootSchema,
+                    targetPackage,
+                )
 
             if (rootResolved.typeSpec != null) {
                 val rootClass = ClassName.get(targetPackage, rootClassName)
@@ -106,26 +121,11 @@ open class GenerateGithubFilesTask : DefaultTask() {
         }
 
         // Format generated Java code
-        val formatter = Formatter.create()
-        val javaFiles =
-            outDir
-                .walk()
-                .filter { it.isFile }
-                .filter { it.toPath().extension == "java" }
-                .toList()
+        val javaFiles = collectJavaFiles(outDir)
+        formatJavaFiles(javaFiles, logger, continueOnError = true)
 
-        try {
-            javaFiles.parallelStream().forEach { f ->
-                try {
-                    val formatted = formatter.formatSource(f.readText())
-                    f.writeText(formatted)
-                } catch (e: Exception) {
-                    logger.warn("Failed to format ${f.name}: ${e.message}")
-                }
-            }
-        } catch (e: IllegalAccessError) {
-            logger.warn("Failed to format Java files: ${e.message}")
-        }
+        // Validate all @Generated schema references against their source schema files.
+        JsonRefValidator(0).validate(schemas, javaFiles)
 
         logger.lifecycle("Generated ${javaFiles.size} Java files")
     }

@@ -1,6 +1,5 @@
 package io.github.pulpogato.restcodegen
 
-import com.palantir.javaformat.java.Formatter
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
@@ -16,7 +15,6 @@ import org.gradle.api.tasks.TaskAction
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ObjectNode
 import java.io.File
-import kotlin.io.path.extension
 import kotlin.io.readText
 
 /**
@@ -121,17 +119,9 @@ open class GenerateJavaTask : DefaultTask() {
         EnumConvertersBuilder().buildEnumConverters(context, main, "$packageNamePrefix.rest.api", enumConverters)
 
         // Format generated Java code
-        val javaFiles = getJavaFiles(main)
-        val testJavaFiles = getJavaFiles(test)
-        val formatter = Formatter.create()
-        try {
-            (javaFiles + testJavaFiles).parallelStream().forEach { f ->
-                val formatted = formatter.formatSource(f.readText())
-                f.writeText(formatted)
-            }
-        } catch (e: IllegalAccessError) {
-            logger.warn("Failed to format Java files: ${e.message}")
-        }
+        val javaFiles = collectJavaFiles(main)
+        val testJavaFiles = collectJavaFiles(test)
+        formatJavaFiles(javaFiles + testJavaFiles, logger)
 
         // Validate JSON references using the merged spec (includes additions)
         val mapper = ObjectMapper()
@@ -145,19 +135,6 @@ open class GenerateJavaTask : DefaultTask() {
 
         JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
     }
-
-    /**
-     * Retrieves all Java files in the specified directory and its subdirectories.
-     *
-     * @param dir The directory to search for Java files
-     * @return A list of all Java files found in the directory and its subdirectories
-     */
-    private fun getJavaFiles(dir: File): List<File> =
-        dir
-            .walk()
-            .filter { it.isFile }
-            .filter { it.toPath().extension == "java" }
-            .toList()
 
     /**
      * Finds all schema addition files (*.schema.json) in the specified directory.
