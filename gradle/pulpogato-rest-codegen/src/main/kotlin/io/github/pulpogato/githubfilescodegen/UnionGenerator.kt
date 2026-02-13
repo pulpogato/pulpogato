@@ -24,8 +24,7 @@ object UnionGenerator {
 
     private fun fancySer(jacksonVersion: Int) = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancySerializer")
 
-    private fun settableField(jacksonVersion: Int) =
-        ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancyDeserializer", "SettableField")
+    private fun settableField() = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "FancyDeserializerSupport", "SettableField")
 
     private fun gettableField(jacksonVersion: Int) =
         ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancySerializer", "GettableField")
@@ -115,7 +114,7 @@ object UnionGenerator {
                 formatParts.add(", ")
             }
             formatParts.add($$"new $T<>($T.class, $T::set$${v.fieldName.replaceFirstChar { it.uppercaseChar() }})")
-            args.add(settableField(jacksonVersion))
+            args.add(settableField())
             args.add(rawType(v.typeName))
             args.add(thisClass)
         }

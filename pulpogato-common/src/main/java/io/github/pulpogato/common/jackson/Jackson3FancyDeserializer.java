@@ -1,13 +1,8 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.Mode;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
@@ -16,32 +11,17 @@ import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * A deserializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
+ * A Jackson 3 deserializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
  *
  * @param <T> The type
  */
-@Slf4j
 public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
-
-    /**
-     * A field that can be set on the field
-     *
-     * @param type   The class of the object
-     * @param setter The method that sets the field on the object
-     * @param <T>    The type of the object
-     * @param <X>    The type of the field
-     */
-    public record SettableField<T, X>(Class<X> type, BiConsumer<T, X> setter) {}
 
     private static final JsonMapper om = JsonMapper.builder()
             .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
 
-    /**
-     * Tracks types currently being deserialized on this thread to prevent infinite recursion
-     * from self-referential union types (e.g., Permissions containing a Permissions field).
-     */
-    private static final ThreadLocal<Set<Class<?>>> IN_PROGRESS = ThreadLocal.withInitial(HashSet::new);
+    private final transient FancyDeserializerSupport<T> support;
 
     /**
      * Constructs a deserializer
@@ -52,92 +32,23 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
      * @param fields      The fields that can be set on the class
      */
     public Jackson3FancyDeserializer(
-            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
+            Class<T> vc,
+            Supplier<T> initializer,
+            Mode mode,
+            List<FancyDeserializerSupport.SettableField<T, ?>> fields) {
         super(vc);
-        this.initializer = initializer;
-        this.mode = mode;
-        this.fields = fields;
+        this.support = new FancyDeserializerSupport<>(
+                vc,
+                initializer,
+                mode,
+                fields,
+                om::writeValueAsString,
+                om::readValue,
+                JacksonException.class::isInstance);
     }
-
-    /**
-     * The supplier that creates a new instance of the class
-     */
-    private final transient Supplier<T> initializer;
-
-    /**
-     * The mode of deserialization
-     */
-    private final Mode mode;
-
-    /**
-     * The fields that can be set on the class
-     */
-    private final transient List<SettableField<T, ?>> fields;
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) {
-        final var returnValue = initializer.get();
-        var inProgress = IN_PROGRESS.get();
-        var type = handledType();
-        inProgress.add(type);
-
-        try {
-            try {
-                final var map = ctxt.readValue(p, Map.class);
-                final var mapAsString = om.writeValueAsString(map);
-                setAllFields(mapAsString, returnValue);
-            } catch (JacksonException e) {
-                try {
-                    final var list = ctxt.readValue(p, List.class);
-                    final var listAsString = om.writeValueAsString(list);
-                    setAllFields(listAsString, returnValue);
-                } catch (JacksonException e1) {
-                    try {
-                        final var map = ctxt.readValue(p, String.class);
-                        final var mapAsString = om.writeValueAsString(map);
-                        setAllFields(mapAsString, returnValue);
-                    } catch (JacksonException e2) {
-                        try {
-                            final var map = ctxt.readValue(p, Number.class);
-                            final var mapAsString = om.writeValueAsString(map);
-                            setAllFields(mapAsString, returnValue);
-                        } catch (JacksonException e3) {
-                            log.debug("Failed to parse", e3);
-                            return null;
-                        }
-                    }
-                }
-            }
-            return returnValue;
-        } finally {
-            inProgress.remove(type);
-        }
-    }
-
-    private void setAllFields(String mapAsString, T returnValue) {
-        for (var pair : fields) {
-            final boolean successful = setField(pair, mapAsString, returnValue);
-            if (mode == Mode.ONE_OF && successful) {
-                return;
-            }
-        }
-    }
-
-    private <X> boolean setField(SettableField<T, X> field, String string, T retval) {
-        final var clazz = field.type();
-        final var consumer = field.setter();
-
-        if (IN_PROGRESS.get().contains(clazz)) {
-            return false;
-        }
-
-        try {
-            final X x = om.readValue(string, clazz);
-            consumer.accept(retval, x);
-            return true;
-        } catch (JacksonException e) {
-            log.debug("Failed to parse {} as {}", string, clazz, e);
-            return false;
-        }
+        return support.deserialize(type -> ctxt.readValue(p, type));
     }
 }
