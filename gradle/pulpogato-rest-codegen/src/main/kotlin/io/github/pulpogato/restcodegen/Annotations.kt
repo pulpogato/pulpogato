@@ -3,7 +3,9 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.Nulls
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.TypeSpec
@@ -22,6 +24,12 @@ object Annotations {
         AnnotationSpec
             .builder(ClassName.get(JsonProperty::class.java))
             .addMember("value", $$"$S", property)
+            .build()
+
+    fun jsonSetterNullsAsEmpty(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(JsonSetter::class.java))
+            .addMember("nulls", $$"$T.$L", ClassName.get(Nulls::class.java), Nulls.AS_EMPTY.name)
             .build()
 
     fun serializerAnnotationForJackson3(
@@ -157,6 +165,17 @@ object Annotations {
         AnnotationSpec
             .builder(ClassName.get("$COMMON_PACKAGE.annotations", "TypeGenerated"))
             .addMember("codeRef", $$"$S", codeRef(0))
+            .build()
+
+    fun generatedForGithubFiles(
+        schemaRef: String,
+        sourceFile: String,
+    ): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get("$COMMON_PACKAGE.annotations", "Generated"))
+            .addMember("schemaRef", $$"$S", schemaRef)
+            .addMember("codeRef", $$"$S", codeRef(0))
+            .addMember("sourceFile", $$"$S", sourceFile)
             .build()
 
     private fun codeRef(offset: Int): String {
