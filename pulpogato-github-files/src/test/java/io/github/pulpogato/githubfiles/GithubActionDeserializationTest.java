@@ -6,6 +6,7 @@ import io.github.pulpogato.githubfiles.actions.GithubAction;
 import io.github.pulpogato.githubfiles.actions.GithubActionBrandingColor;
 import io.github.pulpogato.githubfiles.actions.GithubActionInputsValue;
 import io.github.pulpogato.githubfiles.actions.GithubActionRuns;
+import io.github.pulpogato.githubfiles.actions.RunsCompositeStepShell;
 import io.github.pulpogato.githubfiles.actions.RunsJavascript;
 import io.github.pulpogato.githubfiles.actions.RunsJavascriptUsing;
 import java.util.Map;
@@ -94,6 +95,28 @@ class GithubActionDeserializationTest {
 
         @ParameterizedTest
         @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesOutputsForJavascriptAction(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: Setup Node.js
+                    description: Set up Node
+                    outputs:
+                      node-version:
+                        description: The configured Node.js version
+                    runs:
+                      using: node20
+                      main: dist/setup/index.js
+                    """;
+
+            var action = mp.yamlMapper().readValue(yaml, GithubAction.class);
+            var outputs = action.getOutputs();
+            assertThat(outputs).containsKey("node-version");
+            assertThat(outputs.get("node-version").getDescription()).isEqualTo("The configured Node.js version");
+            assertThat(outputs.get("node-version").getValue()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
         void deserializesBranding(Mappers.MapperPair mp) throws Exception {
             var action = mp.yamlMapper().readValue(YAML, GithubAction.class);
             assertThat(action.getBranding().getColor()).isEqualTo(GithubActionBrandingColor.GREEN);
@@ -139,6 +162,7 @@ class GithubActionDeserializationTest {
             var composite = runs.getRunsComposite();
             assertThat(composite.getUsing()).isEqualTo("composite");
             assertThat(composite.getSteps()).hasSize(1);
+            assertThat(composite.getSteps().get(0).getShell()).isEqualTo(RunsCompositeStepShell.BASH);
         }
 
         @ParameterizedTest
@@ -150,6 +174,75 @@ class GithubActionDeserializationTest {
             var input = action.getInputs().get("who-to-greet");
             assertThat(input.getRequired()).isTrue();
             assertThat(input.getIsDefault()).isEqualTo("World");
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesOutputsForCompositeAction(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: Greet Someone
+                    description: Greet someone and record the time
+                    outputs:
+                      random-number:
+                        description: Random number
+                        value: ${{ steps.random-number-generator.outputs.random-id }}
+                    runs:
+                      using: composite
+                      steps:
+                        - run: echo "random-id=$(echo $RANDOM)" >> $GITHUB_OUTPUT
+                          id: random-number-generator
+                          shell: bash
+                    """;
+
+            var action = mp.yamlMapper().readValue(yaml, GithubAction.class);
+            var outputs = action.getOutputs();
+            assertThat(outputs).containsKey("random-number");
+            assertThat(outputs.get("random-number").getDescription()).isEqualTo("Random number");
+            assertThat(outputs.get("random-number").getValue())
+                    .isEqualTo("${{ steps.random-number-generator.outputs.random-id }}");
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesCompositeStepContinueOnErrorAsBoolean(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: Composite with continue-on-error bool
+                    description: Demo
+                    runs:
+                      using: composite
+                      steps:
+                        - run: echo hello
+                          shell: bash
+                          continue-on-error: true
+                    """;
+
+            var action = mp.yamlMapper().readValue(yaml, GithubAction.class);
+            var step = action.getRuns().getRunsComposite().getSteps().get(0);
+            assertThat(step.getContinueOnError().getBoolean_()).isTrue();
+            assertThat(step.getContinueOnError().getString()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubActionDeserializationTest#mappers")
+        void deserializesCompositeStepContinueOnErrorAsExpressionString(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: Composite with continue-on-error expression
+                    description: Demo
+                    runs:
+                      using: composite
+                      steps:
+                        - run: echo hello
+                          shell: bash
+                          continue-on-error: "${{ github.ref != 'refs/heads/main' }}"
+                    """;
+
+            var action = mp.yamlMapper().readValue(yaml, GithubAction.class);
+            var step = action.getRuns().getRunsComposite().getSteps().get(0);
+            assertThat(step.getContinueOnError().getString()).isEqualTo("${{ github.ref != 'refs/heads/main' }}");
+            assertThat(step.getContinueOnError().getBoolean_()).isNull();
         }
     }
 

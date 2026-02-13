@@ -43,6 +43,8 @@ object UnionGenerator {
         variants: List<VariantSpec>,
         description: String?,
         mode: String = "ONE_OF",
+        schemaRef: String,
+        sourceFile: String,
     ): TypeSpec {
         val thisClass = ClassName.bestGuess(className)
 
@@ -55,6 +57,7 @@ object UnionGenerator {
             TypeSpec
                 .classBuilder(className)
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Annotations.generatedForGithubFiles(schemaRef, sourceFile))
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_DATA).build())
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_BUILDER).build())
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_NO_ARGS).build())
@@ -73,6 +76,7 @@ object UnionGenerator {
             builder.addField(
                 FieldSpec
                     .builder(variant.typeName, variant.fieldName, Modifier.PRIVATE)
+                    .addAnnotation(Annotations.generatedForGithubFiles(variant.schemaRef, sourceFile))
                     .build(),
             )
         }
@@ -189,5 +193,6 @@ object UnionGenerator {
     data class VariantSpec(
         val fieldName: String,
         val typeName: TypeName,
+        val schemaRef: String,
     )
 }
