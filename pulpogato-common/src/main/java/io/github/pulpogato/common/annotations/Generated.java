@@ -13,7 +13,7 @@ public @interface Generated {
      * The version of the GitHub API Spec
      * @return The version of the GitHub API Spec
      */
-    String ghVersion();
+    String ghVersion() default "";
     /**
      * The location of the type in the schema
      * @return The location as a JSON reference

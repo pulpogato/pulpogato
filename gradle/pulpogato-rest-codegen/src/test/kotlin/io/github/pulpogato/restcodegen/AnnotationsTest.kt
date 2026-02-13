@@ -89,6 +89,17 @@ class AnnotationsTest {
     }
 
     @Test
+    fun `generatedForGithubFiles creates annotation with expected members`() {
+        val result = Annotations.generatedForGithubFiles("#/definitions/step", "github-workflow.json")
+
+        assertThat(result.type().toString()).contains("Generated")
+        assertThat(result.members()).doesNotContainKey("ghVersion")
+        assertThat(result.members()["schemaRef"].toString()).contains("\"#/definitions/step\"")
+        assertThat(result.members()["sourceFile"].toString()).contains("\"github-workflow.json\"")
+        assertThat(result.members()["codeRef"].toString()).contains("AnnotationsTest.kt:")
+    }
+
+    @Test
     fun `testExtension creates annotation with correct value`() {
         val result = Annotations.testExtension()
 
