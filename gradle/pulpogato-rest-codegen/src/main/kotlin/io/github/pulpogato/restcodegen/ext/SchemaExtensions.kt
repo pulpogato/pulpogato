@@ -475,9 +475,10 @@ private fun buildFancyObject(
     addToCodeMethod(fieldSpecs, theType, classRef)
 
     // Add custom serializers/deserializers (KEEP THIS)
-    val deserializer3 = buildDeserializer(className, fancyObjectType, getSettableFields(fields, className, 3), 3)
+    val settableFields = getSettableFields(fields, className)
+    val deserializer3 = buildDeserializer(className, fancyObjectType, settableFields, 3)
     val serializer3 = buildSerializer(className, fancyObjectType, getGettableFields(fields, className, 3), 3)
-    val deserializer2 = buildDeserializer(className, fancyObjectType, getSettableFields(fields, className, 2), 2)
+    val deserializer2 = buildDeserializer(className, fancyObjectType, settableFields, 2)
     val serializer2 = buildSerializer(className, fancyObjectType, getGettableFields(fields, className, 2), 2)
 
     theType
@@ -704,12 +705,11 @@ private fun getGettableFields(
 private fun getSettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
     className: String?,
-    jacksonVersion: Int,
 ): List<CodeBlock> =
     fields.map { (type, name) ->
         CodeBlock.of(
             $$"new $T<>($T.class, $T::set$$name)",
-            ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancyDeserializer", "SettableField"),
+            ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "FancyDeserializerSupport", "SettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
