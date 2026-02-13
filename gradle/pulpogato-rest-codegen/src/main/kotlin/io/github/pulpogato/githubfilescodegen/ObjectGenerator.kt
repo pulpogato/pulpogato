@@ -27,11 +27,15 @@ object ObjectGenerator {
         name: String,
         properties: List<PropertySpec>,
         description: String?,
+        schemaRef: String,
+        sourceFile: String,
     ): TypeSpec {
+        val nullsAsEmpty = name == "GithubWorkflowOnVariant2"
         val builder =
             TypeSpec
                 .classBuilder(name)
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Annotations.generatedForGithubFiles(schemaRef, sourceFile))
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_DATA).build())
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_BUILDER).build())
                 .addAnnotation(AnnotationSpec.builder(LOMBOK_NO_ARGS).build())
@@ -47,7 +51,11 @@ object ObjectGenerator {
             val fieldBuilder =
                 FieldSpec
                     .builder(prop.typeName, fieldName, Modifier.PRIVATE)
+                    .addAnnotation(Annotations.generatedForGithubFiles(prop.schemaRef, sourceFile))
                     .addAnnotation(Annotations.jsonProperty(prop.jsonName))
+            if (nullsAsEmpty) {
+                fieldBuilder.addAnnotation(Annotations.jsonSetterNullsAsEmpty())
+            }
 
             if (!prop.description.isNullOrBlank()) {
                 fieldBuilder.addJavadoc("\$L", MarkdownHelper.mdToHtml(prop.description))
@@ -63,5 +71,6 @@ object ObjectGenerator {
         val jsonName: String,
         val typeName: TypeName,
         val description: String?,
+        val schemaRef: String,
     )
 }

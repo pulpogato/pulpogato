@@ -2,14 +2,23 @@ package io.github.pulpogato.githubfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.common.annotations.Generated;
+import io.github.pulpogato.githubfiles.workflows.Env;
 import io.github.pulpogato.githubfiles.workflows.Event;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflow;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflowJobsValue;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflowOn;
 import io.github.pulpogato.githubfiles.workflows.NormalJob;
+import io.github.pulpogato.githubfiles.workflows.NormalJobRunsOn;
+import io.github.pulpogato.githubfiles.workflows.Step;
+import io.github.pulpogato.githubfiles.workflows.StepTimeoutMinutes;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.JarURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -23,6 +32,32 @@ class GithubWorkflowDeserializationTest {
 
     static Stream<Mappers.MapperPair> mappers() {
         return Mappers.mappers();
+    }
+
+    @Test
+    void generatedAnnotationsIncludeSchemaRefs() throws Exception {
+        var stepAnnotation = Step.class.getAnnotation(Generated.class);
+        assertThat(stepAnnotation).isNotNull();
+        assertThat(stepAnnotation.schemaRef()).isEqualTo("#/definitions/step");
+
+        var timeoutField = Step.class.getDeclaredField("timeoutMinutes");
+        var timeoutFieldAnnotation = timeoutField.getAnnotation(Generated.class);
+        assertThat(timeoutFieldAnnotation).isNotNull();
+        assertThat(timeoutFieldAnnotation.schemaRef()).isEqualTo("#/definitions/step/properties/timeout-minutes");
+
+        var timeoutTypeAnnotation = StepTimeoutMinutes.class.getAnnotation(Generated.class);
+        assertThat(timeoutTypeAnnotation).isNotNull();
+        assertThat(timeoutTypeAnnotation.schemaRef()).isEqualTo("#/definitions/step/properties/timeout-minutes");
+
+        var envMapField = Env.class.getDeclaredField("map");
+        var envMapFieldAnnotation = envMapField.getAnnotation(Generated.class);
+        assertThat(envMapFieldAnnotation).isNotNull();
+        assertThat(envMapFieldAnnotation.schemaRef()).isEqualTo("#/definitions/env/oneOf/0");
+
+        var envStringField = Env.class.getDeclaredField("string");
+        var envStringFieldAnnotation = envStringField.getAnnotation(Generated.class);
+        assertThat(envStringFieldAnnotation).isNotNull();
+        assertThat(envStringFieldAnnotation.schemaRef()).isEqualTo("#/definitions/env/oneOf/1");
     }
 
     @Nested
@@ -90,9 +125,155 @@ class GithubWorkflowDeserializationTest {
             var job = wf.getJobs().get("build").getNormalJob();
 
             assertThat(job.getName()).isEqualTo("Build and Test");
-            assertThat(job.getRunsOn()).isEqualTo("ubuntu-latest");
-            assertThat(job.getTimeoutMinutes()).isEqualTo(30);
+            assertThat(job.getRunsOn().getString()).isEqualTo("ubuntu-latest");
+            assertThat(job.getTimeoutMinutes().getBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(30));
+            assertThat(job.getTimeoutMinutes().getString()).isNull();
             assertThat(job.getSteps()).hasSize(2);
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesRunsOnList(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on: [self-hosted, linux]
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var runsOn = wf.getJobs().get("build").getNormalJob().getRunsOn();
+            assertThat(runsOn.getList()).containsExactly("self-hosted", "linux");
+            assertThat(runsOn.getString()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesRunsOnRunnerGroupWithSingleLabel(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on:
+                          group: ubuntu-runners
+                          labels: ubuntu-latest
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var runsOn = wf.getJobs().get("build").getNormalJob().getRunsOn();
+            assertThat(runsOn.getNormalJobRunsOnVariant2().getGroup()).isEqualTo("ubuntu-runners");
+            assertThat(runsOn.getNormalJobRunsOnVariant2().getLabels().getString())
+                    .isEqualTo("ubuntu-latest");
+            assertThat(runsOn.getNormalJobRunsOnVariant2().getLabels().getList())
+                    .isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesRunsOnRunnerGroupWithLabelList(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on:
+                          group: ubuntu-runners
+                          labels: [self-hosted, linux]
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var runsOn = wf.getJobs().get("build").getNormalJob().getRunsOn();
+            assertThat(runsOn.getNormalJobRunsOnVariant2().getGroup()).isEqualTo("ubuntu-runners");
+            assertThat(runsOn.getNormalJobRunsOnVariant2().getLabels().getList())
+                    .containsExactly("self-hosted", "linux");
+            assertThat(runsOn.getNormalJobRunsOnVariant2().getLabels().getString())
+                    .isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesStepTimeoutMinutesAsNumber(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        steps:
+                          - run: echo hello
+                            timeout-minutes: 5
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var stepTimeout =
+                    wf.getJobs().get("build").getNormalJob().getSteps().get(0).getTimeoutMinutes();
+            assertThat(stepTimeout.getBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(5));
+            assertThat(stepTimeout.getString()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesStepTimeoutMinutesAsExpressionString(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        steps:
+                          - run: echo hello
+                            timeout-minutes: "${{ fromJSON(vars.STEP_TIMEOUT) }}"
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var stepTimeout =
+                    wf.getJobs().get("build").getNormalJob().getSteps().get(0).getTimeoutMinutes();
+            assertThat(stepTimeout.getString()).isEqualTo("${{ fromJSON(vars.STEP_TIMEOUT) }}");
+            assertThat(stepTimeout.getBigDecimal()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesContainerPortsAsTypedUnion(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        container:
+                          image: node:20
+                          ports: [5432, "8080:80"]
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var ports = wf.getJobs()
+                    .get("build")
+                    .getNormalJob()
+                    .getContainer()
+                    .getContainer()
+                    .getPorts();
+            assertThat(ports).hasSize(2);
+            assertThat(ports.get(0).getBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(5432));
+            assertThat(ports.get(0).getString()).isNull();
+            assertThat(ports.get(1).getString()).isEqualTo("8080:80");
+            assertThat(ports.get(1).getBigDecimal()).isNull();
         }
 
         @ParameterizedTest
@@ -101,6 +282,55 @@ class GithubWorkflowDeserializationTest {
             var wf = mp.yamlMapper().readValue(YAML, GithubWorkflow.class);
             var env = wf.getEnv();
             assertThat(env.getMap()).containsEntry("CI", "true").containsEntry("NODE_ENV", "test");
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesStrategyFailFastAsBoolean(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        strategy:
+                          fail-fast: true
+                          matrix:
+                            java: [21]
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var failFast =
+                    wf.getJobs().get("build").getNormalJob().getStrategy().getFailFast();
+            assertThat(failFast.getBoolean_()).isTrue();
+            assertThat(failFast.getString()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesStrategyFailFastAsExpressionString(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on: push
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        strategy:
+                          fail-fast: "${{ startsWith(github.ref, 'refs/tags/') }}"
+                          matrix:
+                            java: [21]
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var failFast =
+                    wf.getJobs().get("build").getNormalJob().getStrategy().getFailFast();
+            assertThat(failFast.getString()).isEqualTo("${{ startsWith(github.ref, 'refs/tags/') }}");
         }
 
         @ParameterizedTest
@@ -170,8 +400,12 @@ class GithubWorkflowDeserializationTest {
                             "test",
                             GithubWorkflowJobsValue.builder()
                                     .normalJob(NormalJob.builder()
-                                            .runsOn("ubuntu-latest")
-                                            .steps(List.of(Map.of("run", "echo hello")))
+                                            .runsOn(NormalJobRunsOn.builder()
+                                                    .string("ubuntu-latest")
+                                                    .build())
+                                            .steps(List.of(Step.builder()
+                                                    .run("echo hello")
+                                                    .build()))
                                             .build())
                                     .build()))
                     .build();
@@ -180,7 +414,12 @@ class GithubWorkflowDeserializationTest {
             var deserialized = mp.jsonMapper().readValue(json, GithubWorkflow.class);
             assertThat(deserialized.getName()).isEqualTo("Test");
             assertThat(deserialized.getJobs()).containsKey("test");
-            assertThat(deserialized.getJobs().get("test").getNormalJob().getRunsOn())
+            assertThat(deserialized
+                            .getJobs()
+                            .get("test")
+                            .getNormalJob()
+                            .getRunsOn()
+                            .getString())
                     .isEqualTo("ubuntu-latest");
         }
     }
@@ -240,6 +479,32 @@ class GithubWorkflowDeserializationTest {
 
         @ParameterizedTest
         @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesEventMapWithBareKeys(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on:
+                      push:
+                        branches: [main]
+                      pull_request:
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var on = wf.getOn();
+            assertThat(on.getGithubWorkflowOnVariant2()).isNotNull();
+            assertThat(on.getGithubWorkflowOnVariant2().getPush()).isNotNull();
+            assertThat(on.getGithubWorkflowOnVariant2().getPullRequest()).isNotNull();
+            assertThat(on.getEvent()).isNull();
+            assertThat(on.getList()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
         void deserializesEventMapAsJson(Mappers.MapperPair mp) throws Exception {
             @Language("yaml")
             var yaml = """
@@ -262,6 +527,30 @@ class GithubWorkflowDeserializationTest {
                     .containsExactly("main");
             assertThat(on.getEvent()).isNull();
             assertThat(on.getList()).isNull();
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesTypedIssueCommentEventConfig(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on:
+                      issue_comment:
+                        types: [created, edited]
+                    jobs:
+                      build:
+                        runs-on: ubuntu-latest
+                        steps:
+                          - run: echo hello
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var on = wf.getOn().getGithubWorkflowOnVariant2();
+            assertThat(on.getIssueComment()).isNotNull();
+            assertThat(on.getIssueComment().getTypes()).isNotNull();
+            assertThat(on.getIssueComment().getTypes().getList()).containsExactly("created", "edited");
+            assertThat(on.getIssueComment().getTypes().getString()).isNull();
         }
 
         @ParameterizedTest
@@ -351,35 +640,66 @@ class GithubWorkflowDeserializationTest {
 
     @Nested
     class WorkflowFiles {
-        private static final Path WORKFLOWS_DIR = Path.of("src/test/resources/workflows");
-
-        static Stream<Path> workflowFiles() throws IOException {
-            return Files.list(WORKFLOWS_DIR)
-                    .filter(p -> p.toString().endsWith(".yml") || p.toString().endsWith(".yaml"))
-                    .sorted();
+        static Stream<String> workflowResources() {
+            try {
+                var resourceNames = new ArrayList<String>();
+                var urls = WorkflowFiles.class.getClassLoader().getResources("workflows");
+                while (urls.hasMoreElements()) {
+                    var url = urls.nextElement();
+                    if ("file".equals(url.getProtocol())) {
+                        try (var paths = Files.list(Path.of(url.toURI()))) {
+                            paths.filter(path -> path.toString().endsWith(".yml")
+                                            || path.toString().endsWith(".yaml"))
+                                    .map(path -> "workflows/" + path.getFileName())
+                                    .forEach(resourceNames::add);
+                        }
+                        continue;
+                    }
+                    if ("jar".equals(url.getProtocol())) {
+                        var connection = (JarURLConnection) url.openConnection();
+                        var prefix = connection.getEntryName() + "/";
+                        try (var jar = connection.getJarFile()) {
+                            jar.stream()
+                                    .filter(entry -> !entry.isDirectory())
+                                    .map(entry -> entry.getName())
+                                    .filter(name -> name.startsWith(prefix))
+                                    .filter(name -> name.endsWith(".yml") || name.endsWith(".yaml"))
+                                    .forEach(resourceNames::add);
+                        }
+                    }
+                }
+                return resourceNames.stream().distinct().sorted();
+            } catch (Exception e) {
+                throw new IllegalStateException("Unable to list workflow resources", e);
+            }
         }
 
-        @ParameterizedTest
-        @MethodSource("workflowFiles")
-        void deserializesFromFile(Path file) throws Exception {
-            var yaml = Files.readString(file);
-            for (var mp : Mappers.mappers().toList()) {
-                var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
-
-                assertThat(wf.getName())
-                        .as("%s with %s", file.getFileName(), mp)
-                        .isNotNull();
-                assertThat(wf.getOn()).as("%s with %s", file.getFileName(), mp).isNotNull();
-                assertThat(wf.getJobs())
-                        .as("%s with %s", file.getFileName(), mp)
-                        .isNotEmpty();
+        private static String readWorkflowResource(String resourceName) throws IOException {
+            try (var inputStream = WorkflowFiles.class.getClassLoader().getResourceAsStream(resourceName)) {
+                if (inputStream == null) {
+                    throw new IOException("Missing workflow resource: " + resourceName);
+                }
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             }
         }
 
         @ParameterizedTest
-        @MethodSource("workflowFiles")
-        void serializesToJsonAndBack(Path file) throws Exception {
-            var yaml = Files.readString(file);
+        @MethodSource("workflowResources")
+        void deserializesFromResource(String resourceName) throws Exception {
+            var yaml = readWorkflowResource(resourceName);
+            for (var mp : Mappers.mappers().toList()) {
+                var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+
+                assertThat(wf.getName()).as("%s with %s", resourceName, mp).isNotNull();
+                assertThat(wf.getOn()).as("%s with %s", resourceName, mp).isNotNull();
+                assertThat(wf.getJobs()).as("%s with %s", resourceName, mp).isNotEmpty();
+            }
+        }
+
+        @ParameterizedTest
+        @MethodSource("workflowResources")
+        void serializesToJsonAndBack(String resourceName) throws Exception {
+            var yaml = readWorkflowResource(resourceName);
             for (var mp : Mappers.mappers().toList()) {
                 var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
 
@@ -387,13 +707,13 @@ class GithubWorkflowDeserializationTest {
                 var roundTripped = mp.jsonMapper().readValue(json, GithubWorkflow.class);
 
                 assertThat(roundTripped.getName())
-                        .as("%s with %s", file.getFileName(), mp)
+                        .as("%s with %s", resourceName, mp)
                         .isEqualTo(wf.getName());
                 assertThat(roundTripped.getOn())
-                        .as("%s with %s", file.getFileName(), mp)
+                        .as("%s with %s", resourceName, mp)
                         .isEqualTo(wf.getOn());
                 assertThat(roundTripped.getJobs())
-                        .as("%s with %s", file.getFileName(), mp)
+                        .as("%s with %s", resourceName, mp)
                         .hasSameSizeAs(wf.getJobs());
             }
         }

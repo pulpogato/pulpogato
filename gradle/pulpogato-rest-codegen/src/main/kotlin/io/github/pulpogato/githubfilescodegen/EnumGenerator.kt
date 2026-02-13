@@ -22,11 +22,14 @@ object EnumGenerator {
         name: String,
         values: List<String>,
         description: String?,
+        schemaRef: String,
+        sourceFile: String,
     ): TypeSpec {
         val builder =
             TypeSpec
                 .enumBuilder(name)
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Annotations.generatedForGithubFiles(schemaRef, sourceFile))
 
         if (!description.isNullOrBlank()) {
             builder.addJavadoc($$"$L", description)
@@ -36,6 +39,7 @@ object EnumGenerator {
         builder.addField(
             FieldSpec
                 .builder(Types.STRING, "value", Modifier.PRIVATE, Modifier.FINAL)
+                .addAnnotation(Annotations.generatedForGithubFiles(schemaRef, sourceFile))
                 .addAnnotation(Annotations.jsonValue())
                 .build(),
         )
