@@ -24,9 +24,7 @@ data class Context(
     val addedProperties: Map<String, Map<String, String>> = emptyMap(),
 ) {
     // Cached schema stack reference to avoid repeated string operations
-    private val cachedSchemaStackRef: String by lazy {
-        schemaStack.joinToString("/") { it.replace("/", "~1") }
-    }
+    private val cachedSchemaStackRef: String by lazy { schemaStackRef(schemaStack) }
 
     /**
      * Creates a new context with an updated schema stack.
@@ -37,14 +35,7 @@ data class Context(
      * @param elements The elements to add to the schema stack
      * @return A new [Context] instance with the updated schema stack
      */
-    fun withSchemaStack(vararg elements: String): Context {
-        val newStack = schemaStack.toMutableList()
-        if (elements.isNotEmpty() && elements.first() == "#") {
-            newStack.clear()
-        }
-        newStack.addAll(elements)
-        return copy(schemaStack = newStack)
-    }
+    fun withSchemaStack(vararg elements: String): Context = copy(schemaStack = updateSchemaStack(schemaStack, *elements))
 
     /**
      * Gets the schema stack reference as a string with proper escaping.
