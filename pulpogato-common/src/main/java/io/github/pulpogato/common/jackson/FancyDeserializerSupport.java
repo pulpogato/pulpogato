@@ -1,6 +1,7 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.Mode;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ public class FancyDeserializerSupport<T> {
     private final JsonWriter writer;
     private final JsonReader reader;
     private final Predicate<Exception> isParsingException;
+    private final Class<?> enumAlternativeType;
 
     /**
      * Constructs the support instance.
@@ -93,6 +95,7 @@ public class FancyDeserializerSupport<T> {
         this.writer = writer;
         this.reader = reader;
         this.isParsingException = isParsingException;
+        this.enumAlternativeType = detectEnumAlternativeType(fields);
     }
 
     /**
@@ -169,7 +172,8 @@ public class FancyDeserializerSupport<T> {
         }
 
         try {
-            final var x = (X) reader.readValue(string, clazz);
+            final var raw = reader.readValue(string, clazz);
+            final var x = (X) coerceListValuesIfNeeded(clazz, raw);
             consumer.accept(retval, x);
             return true;
         } catch (Exception e) {
@@ -177,5 +181,46 @@ public class FancyDeserializerSupport<T> {
             log.debug("Failed to parse {} as {}", string, clazz, e);
             return false;
         }
+    }
+
+    private static <T> Class<?> detectEnumAlternativeType(List<SettableField<T, ?>> fields) {
+        Class<?> candidate = null;
+        for (var field : fields) {
+            var type = field.type();
+            if (!type.isEnum()) {
+                continue;
+            }
+            if (candidate == null) {
+                candidate = type;
+            } else if (!candidate.equals(type)) {
+                return null;
+            }
+        }
+        return candidate;
+    }
+
+    private Object coerceListValuesIfNeeded(Class<?> clazz, Object value) {
+        if (clazz != List.class || enumAlternativeType == null || !(value instanceof List<?> list) || list.isEmpty()) {
+            return value;
+        }
+
+        final var converted = new ArrayList<>(list.size());
+        for (var item : list) {
+            if (enumAlternativeType.isInstance(item)) {
+                converted.add(item);
+                continue;
+            }
+            if (!(item instanceof String)) {
+                return value;
+            }
+            try {
+                final var itemJson = writer.writeValueAsString(item);
+                converted.add(reader.readValue(itemJson, enumAlternativeType));
+            } catch (Exception e) {
+                ensureParsingException(e);
+                return value;
+            }
+        }
+        return converted;
     }
 }

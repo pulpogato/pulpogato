@@ -203,9 +203,7 @@ class GithubWorkflowDeserializationTest {
 
             var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
             var on = wf.getOn();
-            @SuppressWarnings("unchecked")
-            var rawList = (List<Object>) (List<?>) on.getList();
-            assertThat(rawList).containsExactly("push", "pull_request");
+            assertThat(on.getList()).containsExactly(Event.PUSH, Event.PULL_REQUEST);
             assertThat(on.getEvent()).isNull();
             assertThat(on.getGithubWorkflowOnVariant2()).isNull();
         }
