@@ -39,16 +39,21 @@ class JwtFilterIntegrationTest {
         String githubJwtRetries = System.getenv("GITHUB_JWT_RETRIES");
         int attempts = githubJwtRetries == null ? 1 : Integer.parseInt(githubJwtRetries);
 
-        assumeThat(githubBaseUrl).isNotNull().isNotEmpty();
+        assumeThat(githubBaseUrl).as("GITHUB_BASE_URL is not set").isNotNull().isNotEmpty();
 
-        assumeThat(githubAppIdString).isNotNull().isNotEmpty();
+        assumeThat(githubAppIdString).as("GITHUB_APP_ID is not set").isNotNull().isNotEmpty();
         long githubAppId = Long.parseLong(githubAppIdString);
 
-        assumeThat(githubAppPrivateKeyPath).isNotNull().isNotEmpty();
+        assumeThat(githubAppPrivateKeyPath)
+                .as("GITHUB_APP_PRIVATE_KEY_PATH is not set")
+                .isNotNull()
+                .isNotEmpty();
 
         String privateKeyPem;
         try (var pemStream = new FileInputStream(githubAppPrivateKeyPath)) {
-            assumeThat(pemStream).isNotNull();
+            assumeThat(pemStream)
+                    .as("GITHUB_APP_PRIVATE_KEY_PATH does not exist")
+                    .isNotNull();
             privateKeyPem = new String(pemStream.readAllBytes());
         }
 
