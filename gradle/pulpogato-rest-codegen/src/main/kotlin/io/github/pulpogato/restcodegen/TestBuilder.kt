@@ -73,7 +73,7 @@ object TestBuilder {
                         .addAnnotation(Annotations.generated(1, context))
                         .addException(ClassName.get("java.io", "IOException"))
                         .addStatement($$"var stream = getClass().getClassLoader().getResourceAsStream($S)", fileName)
-                        .addStatement($$"$T.assumeThat(stream).isNotNull();", assumptionsClass)
+                        .addStatement($$"$T.assumeThat(stream).as(\"Could not read stream for file $L\").isNotNull()", assumptionsClass, fileName)
                         .addStatement($$"var input = new $T(stream.readAllBytes(), $T.UTF_8)", String::class.java, standardCharsetsClass)
                         .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                         .addStatement(
