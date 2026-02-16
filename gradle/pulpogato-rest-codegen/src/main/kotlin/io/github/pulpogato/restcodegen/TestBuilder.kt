@@ -66,16 +66,20 @@ object TestBuilder {
 
                     // Generate test that reads from the JSON file
                     val standardCharsetsClass = ClassName.get("java.nio.charset", "StandardCharsets")
-                    val assumptionsClass = ClassName.get("org.assertj.core.api", "Assumptions")
+                    val assertionsClass = ClassName.get("org.assertj.core.api", "Assertions")
                     MethodSpec
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                         .addAnnotation(Annotations.generated(1, context))
                         .addException(ClassName.get("java.io", "IOException"))
                         .addStatement($$"var stream = getClass().getClassLoader().getResourceAsStream($S)", fileName)
-                        .addStatement($$"$T.assumeThat(stream).as(\"Could not read stream for file $L\").isNotNull()", assumptionsClass, fileName)
-                        .addStatement($$"var input = new $T(stream.readAllBytes(), $T.UTF_8)", String::class.java, standardCharsetsClass)
-                        .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
+                        .addStatement($$"$T.assertThat(stream).as(\"Could not read stream for file $L\").isNotNull()", assertionsClass, fileName)
+                        .addStatement(
+                            $$"@$T(\"json\") var input = new $T(stream.readAllBytes(), $T.UTF_8)",
+                            Language::class.java,
+                            String::class.java,
+                            standardCharsetsClass,
+                        ).addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
