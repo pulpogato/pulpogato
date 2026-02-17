@@ -87,6 +87,52 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
 ----
 <1> Set variables for the query
 
+=== GitHub Files Example
+
+`pulpogato-github-files` provides typed models for common GitHub repository files:
+
+* GitHub workflow files (`.github/workflows/*.yml`) as `GithubWorkflow`
+* GitHub Action metadata (`action.yml`) as `GithubAction`
+* Release Drafter config (`.github/release.yml`) as `GithubReleaseConfig`
+
+The module supports both Jackson 2 (`com.fasterxml.jackson`) and Jackson 3 (`tools.jackson`).
+
+Dependency:
+
+[source,kotlin]
+----
+implementation("io.github.pulpogato:pulpogato-github-files:<version>")
+----
+
+Jackson 2 YAML parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-jackson2]
+----
+
+Jackson 3 YAML parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-jackson3]
+----
+
+Release Drafter parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-release]
+----
+
+Many fields in these schemas are unions (for example, `on` in workflows can be a string, list, or object).
+These are represented as typed wrapper objects with one populated field per variant.
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-on-union]
+----
+
 == GitHub App JWT Authentication
 
 Pulpogato provides `JwtFilter` to authenticate as a GitHub App using JSON Web Tokens (JWT).
