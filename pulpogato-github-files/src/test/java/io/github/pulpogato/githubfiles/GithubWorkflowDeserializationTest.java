@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -129,6 +130,37 @@ class GithubWorkflowDeserializationTest {
             assertThat(job.getTimeoutMinutes().getBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(30));
             assertThat(job.getTimeoutMinutes().getString()).isNull();
             assertThat(job.getSteps()).hasSize(2);
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesNormalJobWithUnknownJobLevelKeys(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: CI
+                    on:
+                      pull_request:
+                        branches: [main]
+                    jobs:
+                      test:
+                        runs-on: self-hosted
+                        customField: ignored
+                        steps:
+                          - uses: actions/checkout@v4
+                          - uses: actions/setup-java@v4
+                            with:
+                              java-version: "21"
+                          - run: ./gradlew test
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var job = wf.getJobs().get("test");
+            assertThat(job.getNormalJob()).isNotNull();
+            assertThat(job.getReusableWorkflowCallJob()).isNull();
+            assertThat(job.getNormalJob().getRunsOn().getString()).isEqualTo("self-hosted");
+            assertThat(job.getNormalJob().getSteps())
+                    .extracting(Step::getUses)
+                    .contains("actions/checkout@v4", "actions/setup-java@v4");
         }
 
         @ParameterizedTest
@@ -377,6 +409,27 @@ class GithubWorkflowDeserializationTest {
 
             var callJob = staging.getReusableWorkflowCallJob();
             assertThat(callJob.getUses()).isEqualTo("octo-org/octo-repo/.github/workflows/deploy.yml@main");
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.pulpogato.githubfiles.GithubWorkflowDeserializationTest#mappers")
+        void deserializesReusableWorkflowCallJobWithUnknownJobLevelKeys(Mappers.MapperPair mp) throws Exception {
+            @Language("yaml")
+            var yaml = """
+                    name: Deploy
+                    on: workflow_dispatch
+                    jobs:
+                      staging:
+                        uses: octo-org/octo-repo/.github/workflows/deploy.yml@main
+                        customField: ignored
+                    """;
+
+            var wf = mp.yamlMapper().readValue(yaml, GithubWorkflow.class);
+            var staging = wf.getJobs().get("staging");
+            assertThat(staging.getReusableWorkflowCallJob()).isNotNull();
+            assertThat(staging.getNormalJob()).isNull();
+            assertThat(staging.getReusableWorkflowCallJob().getUses())
+                    .isEqualTo("octo-org/octo-repo/.github/workflows/deploy.yml@main");
         }
 
         @ParameterizedTest
@@ -661,7 +714,7 @@ class GithubWorkflowDeserializationTest {
                         try (var jar = connection.getJarFile()) {
                             jar.stream()
                                     .filter(entry -> !entry.isDirectory())
-                                    .map(entry -> entry.getName())
+                                    .map(ZipEntry::getName)
                                     .filter(name -> name.startsWith(prefix))
                                     .filter(name -> name.endsWith(".yml") || name.endsWith(".yaml"))
                                     .forEach(resourceNames::add);

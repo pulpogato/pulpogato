@@ -113,7 +113,7 @@ public class FancyDeserializerSupport<T> {
             try {
                 final var map = contextReader.readValue(Map.class);
                 final var mapAsString = writer.writeValueAsString(map);
-                setAllFields(mapAsString, returnValue);
+                handleMapValue(map, mapAsString, returnValue);
             } catch (Exception e) {
                 ensureParsingException(e);
                 try {
@@ -146,14 +146,30 @@ public class FancyDeserializerSupport<T> {
         }
     }
 
-    private void ensureParsingException(Exception e) {
+    protected void handleMapValue(Object mapValue, String mapAsString, T returnValue) {
+        setAllFields(mapAsString, returnValue);
+    }
+
+    protected final Mode mode() {
+        return mode;
+    }
+
+    protected final List<SettableField<T, ?>> fields() {
+        return fields;
+    }
+
+    protected final JsonWriter writer() {
+        return writer;
+    }
+
+    protected final void ensureParsingException(Exception e) {
         if (!isParsingException.test(e)) {
             if (e instanceof RuntimeException re) throw re;
             throw new RuntimeException(e);
         }
     }
 
-    private void setAllFields(String mapAsString, T returnValue) {
+    protected final void setAllFields(String mapAsString, T returnValue) {
         for (var pair : fields) {
             final boolean successful = setField(pair, mapAsString, returnValue);
             if (mode == Mode.ONE_OF && successful) {
@@ -162,8 +178,12 @@ public class FancyDeserializerSupport<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <X> boolean setField(SettableField<T, X> field, String string, T retval) {
+    protected final <X> boolean setField(SettableField<T, X> field, String string, T retval) {
+        return setFieldWithReader(field, string, retval, reader);
+    }
+
+    protected final <X> boolean setFieldWithReader(
+            SettableField<T, X> field, String string, T retval, JsonReader activeReader) {
         final var clazz = field.type();
         final var consumer = field.setter();
 
@@ -172,7 +192,8 @@ public class FancyDeserializerSupport<T> {
         }
 
         try {
-            final var raw = reader.readValue(string, clazz);
+            final var raw = activeReader.readValue(string, clazz);
+            @SuppressWarnings("unchecked")
             final var x = (X) coerceListValuesIfNeeded(clazz, raw);
             consumer.accept(retval, x);
             return true;

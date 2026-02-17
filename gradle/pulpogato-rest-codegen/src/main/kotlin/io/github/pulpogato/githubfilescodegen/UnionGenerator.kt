@@ -20,17 +20,17 @@ object UnionGenerator {
 
     private val MODE = ClassName.get(Types.COMMON_PACKAGE, "Mode")
 
-    private fun fancyDeser(jacksonVersion: Int) = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancyDeserializer")
+    private fun fancyDeser(jacksonVersion: Int) = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}LenientFancyDeserializer")
 
     private fun fancySer(jacksonVersion: Int) = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancySerializer")
 
-    private fun settableField() = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "FancyDeserializerSupport", "SettableField")
+    private fun settableField() = ClassName.get("${Types.COMMON_PACKAGE}.jackson", "LenientFancyDeserializerSupport", "SettableField")
 
     private fun gettableField(jacksonVersion: Int) =
         ClassName.get("${Types.COMMON_PACKAGE}.jackson", "Jackson${jacksonVersion}FancySerializer", "GettableField")
 
     /**
-     * Generates a union wrapper class with Jackson2FancyDeserializer/Serializer.
+     * Generates a union wrapper class with lenient Jackson deserializers and standard serializers.
      *
      * @param className The class name for the union type
      * @param variants List of (fieldName, typeName) pairs for each variant
