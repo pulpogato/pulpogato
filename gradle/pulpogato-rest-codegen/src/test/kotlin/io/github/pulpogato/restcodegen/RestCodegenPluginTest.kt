@@ -52,6 +52,7 @@ class RestCodegenPluginTest {
 
         assertThat(mainDir).isEqualTo(task.mainDir.get())
         assertThat(testDir).isEqualTo(task.testDir.get())
+        assertThat(File(testDir.parentFile, "resources")).isEqualTo(task.testResourcesDir.get())
         assertThat(packageName).isEqualTo(task.packageName.get())
     }
 

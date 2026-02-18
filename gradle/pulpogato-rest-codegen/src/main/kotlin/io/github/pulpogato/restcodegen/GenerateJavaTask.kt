@@ -61,6 +61,15 @@ open class GenerateJavaTask : DefaultTask() {
     lateinit var testDir: Provider<File>
 
     /**
+     * The test resources directory where generated JSON fixtures are written.
+     *
+     * These fixtures are consumed by generated tests via classpath resource loading.
+     * Keeping this as an explicit task output ensures it is included in build cache restore.
+     */
+    @OutputDirectory
+    lateinit var testResourcesDir: Provider<File>
+
+    /**
      * The name of the project for version determination.
      *
      * This is automatically set to the project name and used to determine
@@ -91,6 +100,8 @@ open class GenerateJavaTask : DefaultTask() {
         val packageNamePrefix = packageName.get()
         val main = mainDir.get()
         val test = testDir.get()
+        val testResources = testResourcesDir.get()
+        testResources.mkdirs()
 
         val swaggerSpec = schemaFile.readText()
 

@@ -40,11 +40,13 @@ https://central.sonatype.com/repository/maven-snapshots/
 
 The maven group id is `io.github.pulpogato`.
 
-The maven artifact id is `pulpogato-<api-type>-<gh-version>`.
+Most maven artifact ids are `pulpogato-<api-type>-<gh-version>`.
 
 The `api-type` is one of `graphql` or `rest`.
 
 The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
+
+To align versions across all Pulpogato modules, use `io.github.pulpogato:pulpogato-bom`.
 
 .Example in a gradle kotlin build script
 [%collapsible]
@@ -63,8 +65,11 @@ val pulpogatoVersion: String by project.ext
 val netflixDgsVersion: String by project.ext
 
 dependencies {
-    implementation("io.github.pulpogato:pulpogato-rest-${ghVersion}:${pulpogatoVersion}")
-    implementation("io.github.pulpogato:pulpogato-graphql-${ghVersion}:${pulpogatoVersion}")
+    implementation(platform("io.github.pulpogato:pulpogato-bom:${pulpogatoVersion}"))
+    // Use enforcedPlatform(...) instead of platform(...) for strict version enforcement.
+
+    implementation("io.github.pulpogato:pulpogato-rest-${ghVersion}")
+    implementation("io.github.pulpogato:pulpogato-graphql-${ghVersion}")
     implementation("org.springframework.boot:spring-boot-starter-webflux:4.0.2")
     implementation("com.netflix.graphql.dgs:graphql-dgs-client:11.1.0")
     implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"))
@@ -118,6 +123,9 @@ dependencies {
 
 |pulpogato-common
 |{central-prefix}pulpogato-common{central-middle}pulpogato-common{central-suffix} {snapshot-prefix}pulpogato-common{snapshot-middle}pulpogato-common{snapshot-suffix}
+
+|pulpogato-bom
+|{central-prefix}pulpogato-bom{central-middle}pulpogato-bom{central-suffix} {snapshot-prefix}pulpogato-bom{snapshot-middle}pulpogato-bom{snapshot-suffix}
 
 |pulpogato-github-files
 |{central-prefix}pulpogato-github-files{central-middle}pulpogato-github-files{central-suffix} {snapshot-prefix}pulpogato-github-files{snapshot-middle}pulpogato-github-files{snapshot-suffix}
