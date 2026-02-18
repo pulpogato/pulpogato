@@ -32,6 +32,7 @@ private fun createProject(
 }
 
 include("${rootProject.name}-common")
+include("${rootProject.name}-bom")
 include("${rootProject.name}-github-files")
 include("${rootProject.name}-rest-tests")
 

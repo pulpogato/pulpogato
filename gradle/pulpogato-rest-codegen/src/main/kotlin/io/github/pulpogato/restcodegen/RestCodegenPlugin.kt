@@ -32,6 +32,13 @@ class RestCodegenPlugin : Plugin<Project> {
             packageName = DefaultProvider { extension.packageName.get() }
             mainDir = DefaultProvider { extension.mainDir.get().asFile }
             testDir = DefaultProvider { extension.testDir.get().asFile }
+            testResourcesDir =
+                DefaultProvider {
+                    extension.testDir
+                        .get()
+                        .asFile.parentFile
+                        .resolve("resources")
+                }
         }
     }
 }
