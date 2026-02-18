@@ -624,13 +624,16 @@ pre.rouge .gs {
 <p>The maven group id is <code>io.github.pulpogato</code>.</p>
 </div>
 <div class="paragraph">
-<p>The maven artifact id is <code>pulpogato-&lt;api-type&gt;-&lt;gh-version&gt;</code>.</p>
+<p>Most maven artifact ids are <code>pulpogato-&lt;api-type&gt;-&lt;gh-version&gt;</code>.</p>
 </div>
 <div class="paragraph">
 <p>The <code>api-type</code> is one of <code>graphql</code> or <code>rest</code>.</p>
 </div>
 <div class="paragraph">
 <p>The <code>gh-version</code> is one of <code>ghec</code>,<code>fpt</code>, or <code>ghes-&lt;GHES-version&gt;</code>.</p>
+</div>
+<div class="paragraph">
+<p>To align versions across all Pulpogato modules, use <code>io.github.pulpogato:pulpogato-bom</code>.</p>
 </div>
 <details>
 <summary class="title">Example in a gradle kotlin build script</summary>
@@ -649,8 +652,11 @@ pre.rouge .gs {
 <span class="kd">val</span> <span class="py">netflixDgsVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
 
 <span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-rest-${ghVersion}:${pulpogatoVersion}"</span><span class="p">)</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-graphql-${ghVersion}:${pulpogatoVersion}"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="nf">platform</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-bom:${pulpogatoVersion}"</span><span class="p">))</span>
+    <span class="c1">// Use enforcedPlatform(...) instead of platform(...) for strict version enforcement.</span>
+
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-rest-${ghVersion}"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-graphql-${ghVersion}"</span><span class="p">)</span>
     <span class="nf">implementation</span><span class="p">(</span><span class="s">"org.springframework.boot:spring-boot-starter-webflux:4.0.2"</span><span class="p">)</span>
     <span class="nf">implementation</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-client:11.1.0"</span><span class="p">)</span>
     <span class="nf">implementation</span><span class="p">(</span><span class="nf">platform</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"</span><span class="p">))</span>
@@ -737,6 +743,10 @@ pre.rouge .gs {
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pulpogato-common</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><span class="image"><a class="image" href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-common/overview"><img src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-common?style=for-the-badge&amp;label=R&amp;color=green" alt="Maven Central Version" height="30"></a></span> <span class="image"><a class="image" href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-common/maven-metadata.xml"><img src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-common%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" alt="Maven Snapshot" height="30"></a></span></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pulpogato-bom</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><span class="image"><a class="image" href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-bom/overview"><img src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-bom?style=for-the-badge&amp;label=R&amp;color=green" alt="Maven Central Version" height="30"></a></span> <span class="image"><a class="image" href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-bom/maven-metadata.xml"><img src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-bom%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" alt="Maven Snapshot" height="30"></a></span></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pulpogato-github-files</p></td>
