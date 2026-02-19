@@ -216,6 +216,46 @@ open class GenerateJavaTask : DefaultTask() {
             }
         }
 
+        val pathAdditions = schemaAdds["paths"]
+        if (pathAdditions != null && pathAdditions.isObject) {
+            val targetPaths =
+                if (schema["paths"] != null && schema["paths"].isObject) {
+                    schema["paths"] as ObjectNode
+                } else {
+                    schema.putObject("paths")
+                }
+            mergeObjectNodes(targetPaths, pathAdditions as ObjectNode, sourceFileName, "/paths")
+        }
+
         return objectMapper.writeValueAsString(schema)
+    }
+
+    /**
+     * Recursively merges source object fields into a target object.
+     *
+     * Existing primitive/array values in the target are preserved, while nested objects are merged.
+     * Missing fields are copied from source into target.
+     */
+    private fun mergeObjectNodes(
+        target: ObjectNode,
+        source: ObjectNode,
+        sourceFileName: String,
+        path: String,
+    ) {
+        source.properties().forEach { (fieldName, sourceValue) ->
+            val targetValue = target[fieldName]
+            val currentPath = "$path/$fieldName"
+
+            when {
+                targetValue == null -> {
+                    target.set(fieldName, sourceValue.deepCopy())
+                    project.logger.info("Added schema node '$currentPath' from '$sourceFileName'")
+                }
+
+                targetValue is ObjectNode && sourceValue is ObjectNode -> {
+                    mergeObjectNodes(targetValue, sourceValue, sourceFileName, currentPath)
+                }
+            }
+        }
     }
 }
