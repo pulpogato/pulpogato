@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -84,6 +85,7 @@ public class CodeBuilder {
             case PulpogatoType pt -> pt.toCode().indent(2).trim();
             case Enum<?> e -> e.getClass().getName() + "." + e.name();
             case URI u -> "URI.create(\"" + u + "\")";
+            case UUID uuid -> "UUID.fromString(\"" + uuid + "\")";
             case OffsetDateTime odt -> formatDateTime(odt);
             case LocalDate ld -> "LocalDate.parse(\"" + ld + "\")";
             case Map<?, ?> map -> formatMap(map);
