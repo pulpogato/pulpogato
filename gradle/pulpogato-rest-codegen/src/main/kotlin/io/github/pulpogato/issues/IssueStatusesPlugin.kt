@@ -17,6 +17,12 @@ class IssueStatusesPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         target.tasks.register("checkIssueStatuses", CheckIssueStatusesTask::class.java) {
             inputFile.set(target.file("src/main/resources/IgnoredTests.yml"))
+            schemaFiles.from(
+                target.rootProject.fileTree(target.rootProject.projectDir) {
+                    include("pulpogato-common/src/main/resources/**/*.schema.json")
+                    include("pulpogato-rest-*/src/main/resources/**/*.schema.json")
+                },
+            )
             group = "verification"
             description = "Checks the status of ignored tests issues."
         }
