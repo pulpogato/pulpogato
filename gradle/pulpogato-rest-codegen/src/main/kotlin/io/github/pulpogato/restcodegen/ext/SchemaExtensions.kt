@@ -109,10 +109,14 @@ private fun isOnlyForValidation(
 
 fun referenceAndDefinition(
     context: Context,
-    entry: Map.Entry<String, Schema<*>>,
+    entry1: Map.Entry<String, Schema<*>?>,
     prefix: String,
     parentClass: ClassName?,
 ): Pair<TypeName, TypeSpec?>? {
+    if (entry1.value == null) {
+        throw RuntimeException("Schema for \"${entry1.key}\" is null, stack: ${context.getSchemaStackRef()}")
+    }
+    val entry = entry1 as Map.Entry<String, Schema<*>>
     val types =
         entry.value.types
             ?.filterNotNull()
