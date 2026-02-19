@@ -1,0 +1,25 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/pulls/988
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/vnd.github.diff
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/vnd.github.diff; charset=utf-8
+    body: "diff --git a/pulpogato-common/src/main/java/io/github/pulpogato/common/util/CodeBuilder.java\
+      \ b/pulpogato-common/src/main/java/io/github/pulpogato/common/util/CodeBuilder.java\n\
+      index 74e25d89..e7550632 100644\n--- a/pulpogato-common/src/main/java/io/github/pulpogato/common/util/CodeBuilder.java\n\
+      +++ b/pulpogato-common/src/main/java/io/github/pulpogato/common/util/CodeBuilder.java\n\
+      @@ -10,6 +10,7 @@\n import java.util.LinkedHashMap;\n import java.util.List;\n\
+      \ import java.util.Map;\n+import java.util.UUID;\n import org.jspecify.annotations.NonNull;\n\
+      \ \n /**\n@@ -84,6 +85,7 @@ public static String render(Object value) {\n  \
+      \           case PulpogatoType pt -> pt.toCode().indent(2).trim();\n       \
+      \      case Enum<?> e -> e.getClass().getName() + \".\" + e.name();\n      \
+      \       case URI u -> \"URI.create(\\\"\" + u + \"\\\")\";\n+            case\
+      \ UUID uuid -> \"UUID.fromString(\\\"\" + uuid + \"\\\")\";\n             case\
+      \ OffsetDateTime odt -> formatDateTime(odt);\n             case LocalDate ld\
+      \ -> \"LocalDate.parse(\\\"\" + ld + \"\\\")\";\n             case Map<?, ?>\
+      \ map -> formatMap(map);\n"

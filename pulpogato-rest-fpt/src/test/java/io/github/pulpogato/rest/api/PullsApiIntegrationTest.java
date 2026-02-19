@@ -51,4 +51,28 @@ class PullsApiIntegrationTest extends BaseIntegrationTest {
         var pr = response.getBody();
         assertThat(pr.getNumber()).isEqualTo(168);
     }
+
+    @Test
+    void testGetDiff() {
+        var api = new RestClients(webClient).getPullsApi();
+        var response = api.getDiff("pulpogato", "pulpogato", 988L);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+
+        var diff = response.getBody();
+        assertThat(diff).contains("diff --git ").contains("@@");
+    }
+
+    @Test
+    void testGetPatch() {
+        var api = new RestClients(webClient).getPullsApi();
+        var response = api.getPatch("pulpogato", "pulpogato", 988L);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+
+        var patch = response.getBody();
+        assertThat(patch).contains("diff --git ").contains("index ");
+    }
 }
