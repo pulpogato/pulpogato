@@ -1,0 +1,112 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/compare/67fb7bd13ce7094ec06532bdf774b75cfaeec8bc...2667e9ae0adcdbf378fe6273658b57f4e5d24a39
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/vnd.github.patch
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/vnd.github.patch; charset=utf-8
+    body: "From abf094aec2f80256fe3d009b4c6e4f18e8bc6b1e Mon Sep 17 00:00:00 2001\n\
+      From: Rahul Somasunderam <rahul.som@gmail.com>\nDate: Sat, 1 Mar 2025 21:42:30\
+      \ -0800\nSubject: [PATCH] test: Add test for listAppInstallations in an org\n\
+      \nAlso, make proxy controller support GHES.\n---\n .../rest/api/OrgsApiIntegrationTest.java\
+      \      | 25 ++++++\n .../testListInstallations.yml                 | 76 +++++++++++++++++++\n\
+      \ .../pulpogato/test/ProxyController.java       | 20 +++--\n 3 files changed,\
+      \ 114 insertions(+), 7 deletions(-)\n create mode 100644 pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/OrgsApiIntegrationTest.java\n\
+      \ create mode 100644 pulpogato-rest-fpt/src/test/resources/tapes/io/github/pulpogato/rest/api/OrgsApiIntegrationTest/testListInstallations.yml\n\
+      \ndiff --git a/pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/OrgsApiIntegrationTest.java\
+      \ b/pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/OrgsApiIntegrationTest.java\n\
+      new file mode 100644\nindex 00000000..33c67994\n--- /dev/null\n+++ b/pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/OrgsApiIntegrationTest.java\n\
+      @@ -0,0 +1,25 @@\n+package io.github.pulpogato.rest.api;\n+\n+import io.github.pulpogato.test.BaseIntegrationTest;\n\
+      +import org.junit.jupiter.api.Test;\n+\n+import static org.assertj.core.api.Assertions.assertThat;\n\
+      +\n+class OrgsApiIntegrationTest extends BaseIntegrationTest {\n+    @Test\n\
+      +    void testListInstallations() {\n+        OrgsApi api = factory.createClient(OrgsApi.class);\n\
+      +        var response = api.listAppInstallations(\"corp\", 100L, 1L);\n+\n+\
+      \        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();\n\
+      +        assertThat(response.getBody())\n+                .isNotNull();\n+\n\
+      +        var installations = response.getBody();\n+        assertThat(installations.getInstallations()).hasSize(1);\n\
+      +        var installation = installations.getInstallations().getFirst();\n+\
+      \        assertThat(installation.getAccount()).isNotNull();\n+        assertThat(installation.getAccount().getSimpleUser().getLogin()).isEqualTo(\"\
+      pulpogato\");\n+        assertThat(installation.getAppSlug()).isEqualTo(\"renovate\"\
+      );\n+    }\n+}\ndiff --git a/pulpogato-rest-fpt/src/test/resources/tapes/io/github/pulpogato/rest/api/OrgsApiIntegrationTest/testListInstallations.yml\
+      \ b/pulpogato-rest-fpt/src/test/resources/tapes/io/github/pulpogato/rest/api/OrgsApiIntegrationTest/testListInstallations.yml\n\
+      new file mode 100644\nindex 00000000..89da6c9e\n--- /dev/null\n+++ b/pulpogato-rest-fpt/src/test/resources/tapes/io/github/pulpogato/rest/api/OrgsApiIntegrationTest/testListInstallations.yml\n\
+      @@ -0,0 +1,76 @@\n+- request:\n+    method: GET\n+    uri: /orgs/corp/installations\n\
+      +    protocol: HTTP/1.1\n+    headers:\n+      Accept: application/json\n+ \
+      \   body: null\n+  response:\n+    statusCode: 200\n+    headers:\n+      Content-Type:\
+      \ application/json; charset=utf-8\n+    body: |-\n+      {\n+        \"total_count\"\
+      : 1,\n+        \"installations\": [\n+          {\n+            \"id\": 55482842,\n\
+      +            \"client_id\": \"Iv1.9f820358a2aa6747\",\n+            \"account\"\
+      : {\n+              \"login\": \"pulpogato\",\n+              \"id\": 183456368,\n\
+      +              \"node_id\": \"O_kgDOCu9ScA\",\n+              \"avatar_url\"\
+      : \"https://avatars.githubusercontent.com/u/183456368?v=4\",\n+            \
+      \  \"gravatar_id\": \"\",\n+              \"url\": \"https://api.github.com/users/pulpogato\"\
+      ,\n+              \"html_url\": \"https://github.com/pulpogato\",\n+       \
+      \       \"followers_url\": \"https://api.github.com/users/pulpogato/followers\"\
+      ,\n+              \"following_url\": \"https://api.github.com/users/pulpogato/following{/other_user}\"\
+      ,\n+              \"gists_url\": \"https://api.github.com/users/pulpogato/gists{/gist_id}\"\
+      ,\n+              \"starred_url\": \"https://api.github.com/users/pulpogato/starred{/owner}{/repo}\"\
+      ,\n+              \"subscriptions_url\": \"https://api.github.com/users/pulpogato/subscriptions\"\
+      ,\n+              \"organizations_url\": \"https://api.github.com/users/pulpogato/orgs\"\
+      ,\n+              \"repos_url\": \"https://api.github.com/users/pulpogato/repos\"\
+      ,\n+              \"events_url\": \"https://api.github.com/users/pulpogato/events{/privacy}\"\
+      ,\n+              \"received_events_url\": \"https://api.github.com/users/pulpogato/received_events\"\
+      ,\n+              \"type\": \"Organization\",\n+              \"user_view_type\"\
+      : \"public\",\n+              \"site_admin\": false\n+            },\n+    \
+      \        \"repository_selection\": \"all\",\n+            \"access_tokens_url\"\
+      : \"https://api.github.com/app/installations/55482842/access_tokens\",\n+  \
+      \          \"repositories_url\": \"https://api.github.com/installation/repositories\"\
+      ,\n+            \"html_url\": \"https://github.com/organizations/pulpogato/settings/installations/55482842\"\
+      ,\n+            \"app_id\": 2740,\n+            \"app_slug\": \"renovate\",\n\
+      +            \"target_id\": 183456368,\n+            \"target_type\": \"Organization\"\
+      ,\n+            \"permissions\": {\n+              \"checks\": \"write\",\n\
+      +              \"issues\": \"write\",\n+              \"members\": \"read\"\
+      ,\n+              \"contents\": \"write\",\n+              \"metadata\": \"\
+      read\",\n+              \"packages\": \"read\",\n+              \"statuses\"\
+      : \"write\",\n+              \"workflows\": \"write\",\n+              \"pull_requests\"\
+      : \"write\",\n+              \"administration\": \"read\",\n+              \"\
+      vulnerability_alerts\": \"read\"\n+            },\n+            \"events\":\
+      \ [\n+              \"issues\",\n+              \"pull_request\",\n+       \
+      \       \"push\",\n+              \"repository\"\n+            ],\n+       \
+      \     \"created_at\": \"2024-10-01T06:07:46.000-07:00\",\n+            \"updated_at\"\
+      : \"2025-02-16T18:23:21.000-08:00\",\n+            \"single_file_name\": null,\n\
+      +            \"has_multiple_single_files\": false,\n+            \"single_file_paths\"\
+      : [],\n+            \"suspended_by\": null,\n+            \"suspended_at\":\
+      \ null\n+          }\n+        ]\n+      }\ndiff --git a/pulpogato-rest-tests/src/main/java/io/github/pulpogato/test/ProxyController.java\
+      \ b/pulpogato-rest-tests/src/main/java/io/github/pulpogato/test/ProxyController.java\n\
+      index 2dde87f3..5609fa4a 100644\n--- a/pulpogato-rest-tests/src/main/java/io/github/pulpogato/test/ProxyController.java\n\
+      +++ b/pulpogato-rest-tests/src/main/java/io/github/pulpogato/test/ProxyController.java\n\
+      @@ -50,12 +50,10 @@ public ResponseEntity<String> mirrorRest(@RequestBody(required\
+      \ = false) String b\n \n             log.info(\"Fetching live data from server:\
+      \ {}\", request.getRequestURI());\n \n-            URI uri = new URI(\"https\"\
+      , null, server, port, request.getRequestURI(), request.getQueryString(), null);\n\
+      -\n             HttpEntity<String> entity = new HttpEntity<>(body, buildRequestHeaders(request));\n\
+      -\n-            ResponseEntity<String> exchange = getLiveResponse(method, uri,\
+      \ entity);\n+            ResponseEntity<String> exchange = getLiveResponse(method,\
+      \ buildUri(request), entity);\n             Map<String, String> singleValueMap\
+      \ = getInterestingResponseHeaders(exchange);\n+\n             var response =\
+      \ Exchange.Response.builder()\n                     .statusCode(exchange.getStatusCode().value())\n\
+      \                     .headers(singleValueMap)\n@@ -66,6 +64,17 @@ public ResponseEntity<String>\
+      \ mirrorRest(@RequestBody(required = false) String b\n         }\n     }\n \n\
+      +    private static URI buildUri(HttpServletRequest request) throws URISyntaxException\
+      \ {\n+        String githubToken = System.getenv(\"GITHUB_TOKEN\");\n+     \
+      \   String githubHost = Optional.ofNullable(System.getenv(\"GITHUB_HOST\")).orElse(server);\n\
+      +        int githubPort = Integer.parseInt(Optional.ofNullable(System.getenv(\"\
+      GITHUB_PORT\")).orElse(String.valueOf(port)));\n+        if (githubToken ==\
+      \ null) {\n+            throw new IllegalStateException(\"GITHUB_TOKEN is not\
+      \ set and no cached exchange found.\");\n+        }\n+        var prefix = githubHost.equals(server)\
+      \ ? \"\" : \"/api/v3\";\n+        return new URI(\"https\", null, githubHost,\
+      \ githubPort, prefix + request.getRequestURI(), request.getQueryString(), null);\n\
+      +    }\n+\n     private static ResponseEntity<String> getLiveResponse(HttpMethod\
+      \ method, URI uri, HttpEntity<String> entity) {\n         try {\n          \
+      \   return restTemplate.exchange(uri, method, entity, String.class);\n@@ -87,9\
+      \ +96,6 @@ private static HttpHeaders buildRequestHeaders(HttpServletRequest\
+      \ request) {\n                     }\n                 });\n \n-        /*\n\
+      -         * export GITHUB_TOKEN=$(gh auth token)\n-         */\n         String\
+      \ githubToken = Optional.ofNullable(System.getenv(\"GITHUB_TOKEN\"))\n     \
+      \            .orElseThrow(() -> new IllegalStateException(\"GITHUB_TOKEN is\
+      \ not set and no cached exchange found.\"));\n         headers.put(\"Authorization\"\
+      , List.of(\"Bearer \" + githubToken));\n"

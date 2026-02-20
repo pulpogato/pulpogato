@@ -1,0 +1,12 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/commits/2667e9ae0adcdbf378fe6273658b57f4e5d24a39
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/vnd.github.sha
+    body: null
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/vnd.github.sha; charset=utf-8
+    body: 2667e9ae0adcdbf378fe6273658b57f4e5d24a39
