@@ -22,6 +22,10 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
 class ReposApiIntegrationTest extends BaseIntegrationTest {
+    private static final String COMMIT_SHA = "2667e9ae0adcdbf378fe6273658b57f4e5d24a39";
+    private static final String PARENT_COMMIT_SHA = "67fb7bd13ce7094ec06532bdf774b75cfaeec8bc";
+    private static final String BASEHEAD = PARENT_COMMIT_SHA + "..." + COMMIT_SHA;
+
     @Test
     void testListTags() {
         var api = new RestClients(webClient).getReposApi();
@@ -54,11 +58,61 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
     @Test
     void testGetCommit() {
         var api = new RestClients(webClient).getReposApi();
-        var response = api.getCommit("pulpogato", "pulpogato", 1L, 1L, "2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
+        var response = api.getCommit("pulpogato", "pulpogato", 1L, 1L, COMMIT_SHA);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var commit = response.getBody();
-        assertThat(commit.getSha()).isEqualTo("2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
+        assertThat(commit.getSha()).isEqualTo(COMMIT_SHA);
+    }
+
+    @Test
+    void testGetCommitDiff() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.getCommitDiff("pulpogato", "pulpogato", null, null, COMMIT_SHA);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("@@");
+    }
+
+    @Test
+    void testGetCommitPatch() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.getCommitPatch("pulpogato", "pulpogato", null, null, COMMIT_SHA);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("index ");
+    }
+
+    @Test
+    void testGetCommitSha() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.getCommitSha("pulpogato", "pulpogato", null, null, COMMIT_SHA);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().trim()).isEqualTo(COMMIT_SHA);
+    }
+
+    @Test
+    void testCompareCommitsDiff() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.compareCommitsDiff("pulpogato", "pulpogato", null, null, BASEHEAD);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("@@");
+    }
+
+    @Test
+    void testCompareCommitsPatch() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.compareCommitsPatch("pulpogato", "pulpogato", null, null, BASEHEAD);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("index ");
     }
 
     @Test

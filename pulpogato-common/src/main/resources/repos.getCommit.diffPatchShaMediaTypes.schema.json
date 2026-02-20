@@ -1,0 +1,41 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Tracks missing media types for repos/get-commit until upstream spec is updated: https://github.com/github/rest-api-description/issues/6009"
+  },
+  "components": {
+    "schemas": { }
+  },
+  "paths": {
+    "/repos/{owner}/{repo}/commits/{ref}": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.github.diff": {
+                "schema": {
+                  "type": "string",
+                  "description": "https://github.com/github/rest-api-description/issues/6009"
+                }
+              },
+              "application/vnd.github.patch": {
+                "schema": {
+                  "type": "string",
+                  "description": "https://github.com/github/rest-api-description/issues/6009"
+                }
+              },
+              "application/vnd.github.sha": {
+                "schema": {
+                  "type": "string",
+                  "description": "https://github.com/github/rest-api-description/issues/6009"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
