@@ -84,21 +84,18 @@ abstract class CheckIssueStatusesTask : DefaultTask() {
 
         return urls
             .asSequence()
-            .map { ProcessBuilder("gh", "issue", "view", it, "--json", "state,url,number").start() }
-            .onEach { printOutput(it) }
-            .mapNotNull { objectMapper.readValue(it.inputReader(), IssueStatus::class.java) }
-            .toList()
-    }
-
-    /**
-     * Log STDOUT and STDERR from the process
-     *
-     * @param process The process to read output from
-     */
-    private fun printOutput(process: Process) {
-        if (process.waitFor() != 0) {
-            println("STDOUT: ${process.inputReader().readText()}")
-            println("STDERR: ${process.errorReader().readText()}")
-        }
+            .map { url -> Pair(url, ProcessBuilder("gh", "issue", "view", url, "--json", "state,url,number").start()) }
+            .mapNotNull { (url, process) ->
+                if (process.waitFor() == 0) {
+                    val jsonOutput = process.inputReader().readText()
+                    if (jsonOutput.isNotBlank()) {
+                        objectMapper.readValue(jsonOutput, IssueStatus::class.java)
+                    } else {
+                        IssueStatus(number = -1, state = "MISSING", url = url)
+                    }
+                } else {
+                    IssueStatus(number = -1, state = "MISSING", url = url)
+                }
+            }.toList()
     }
 }

@@ -14,5 +14,11 @@ internal class IssueStatus {
     /** The URL of the GitHub issue */
     var url: String? = null
 
+    constructor(number: Int?, state: String?, url: String?) {
+        this.number = number
+        this.state = state
+        this.url = url
+    }
+
     override fun toString(): String = "IssueStatus(number=$number, state=$state, url=$url)"
 }
