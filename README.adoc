@@ -70,6 +70,7 @@ dependencies {
 
     implementation("io.github.pulpogato:pulpogato-rest-${ghVersion}")
     implementation("io.github.pulpogato:pulpogato-graphql-${ghVersion}")
+    implementation("io.github.pulpogato:pulpogato-github-files")
     implementation("org.springframework.boot:spring-boot-starter-webflux:4.0.2")
     implementation("com.netflix.graphql.dgs:graphql-dgs-client:11.1.0")
     implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"))
@@ -79,6 +80,7 @@ dependencies {
 
 == Available versions
 
+[cols="1,1,1"]
 |===
 |GitHub Version |GraphQL |REST
 
@@ -116,26 +118,11 @@ dependencies {
 
 |===
 
-=== Shared modules
-
-|===
-|Module |Version
-
-|pulpogato-common
-|{central-prefix}pulpogato-common{central-middle}pulpogato-common{central-suffix} {snapshot-prefix}pulpogato-common{snapshot-middle}pulpogato-common{snapshot-suffix}
-
-|pulpogato-bom
-|{central-prefix}pulpogato-bom{central-middle}pulpogato-bom{central-suffix} {snapshot-prefix}pulpogato-bom{snapshot-middle}pulpogato-bom{snapshot-suffix}
-
-|pulpogato-github-files
-|{central-prefix}pulpogato-github-files{central-middle}pulpogato-github-files{central-suffix} {snapshot-prefix}pulpogato-github-files{snapshot-middle}pulpogato-github-files{snapshot-suffix}
-
-|===
-
 .EOL Versions
 [%collapsible]
 ====
 
+[cols="1,1,1"]
 |===
 |GitHub Version |GraphQL |REST
 
@@ -158,6 +145,30 @@ dependencies {
 |===
 
 ====
+
+=== Shared modules
+
+[cols="2,1"]
+|===
+|Module |Version
+
+a|*pulpogato-common*
+
+Shared types used by both REST and GraphQL modules, such as common models and utilities.
+|{central-prefix}pulpogato-common{central-middle}pulpogato-common{central-suffix} {snapshot-prefix}pulpogato-common{snapshot-middle}pulpogato-common{snapshot-suffix}
+
+a|*pulpogato-bom*
+
+BOM to align versions across all Pulpogato modules.
+It is recommended to use this BOM in your build system to ensure all Pulpogato modules are on the same version.
+|{central-prefix}pulpogato-bom{central-middle}pulpogato-bom{central-suffix} {snapshot-prefix}pulpogato-bom{snapshot-middle}pulpogato-bom{snapshot-suffix}
+
+a|*pulpogato-github-files*
+
+Supports parsing Actions, Workflows, and Release configuration files.
+|{central-prefix}pulpogato-github-files{central-middle}pulpogato-github-files{central-suffix} {snapshot-prefix}pulpogato-github-files{snapshot-middle}pulpogato-github-files{snapshot-suffix}
+
+|===
 
 // end::installation[]
 
