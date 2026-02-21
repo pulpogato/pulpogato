@@ -87,6 +87,27 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
 ----
 <1> Set variables for the query
 
+This is the same query using a Typed Query Builder
+
+[source,java]
+----
+public class TypedGraphQlExample {
+
+    public static void main(String[] args) {
+        // create a WebClient
+        WebClient graphqlWebClient = WebClient.builder()
+                .baseUrl("https://api.github.com/graphql")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build();
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=execute-typed-query]
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=extract]
+
+    }
+}
+----
+
 === GitHub Files Example
 
 `pulpogato-github-files` provides typed models for common GitHub repository files:
