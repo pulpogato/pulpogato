@@ -437,7 +437,7 @@ object JsonSchemaTypeResolver {
             return false
         }
         val typeNode = element.get("type")
-        if (typeNode == null || !typeNode.isTextual) {
+        if (typeNode == null || !typeNode.isString) {
             return false
         }
         return when (typeNode.asString()) {

@@ -116,7 +116,7 @@ fun referenceAndDefinition(
     if (entry1.value == null) {
         throw RuntimeException("Schema for \"${entry1.key}\" is null, stack: ${context.getSchemaStackRef()}")
     }
-    val entry = entry1 as Map.Entry<String, Schema<*>>
+    val entry = requireValue(entry1)
     val types =
         entry.value.types
             ?.filterNotNull()
@@ -234,6 +234,9 @@ fun referenceAndDefinition(
         }
     }
 }
+
+@Suppress("UNCHECKED_CAST")
+private fun requireValue(entry1: Map.Entry<String, Schema<*>?>): Map.Entry<String, Schema<*>> = entry1 as Map.Entry<String, Schema<*>>
 
 private fun buildReferenceAndDefinitionFromObject(
     context: Context,
