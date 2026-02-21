@@ -4,15 +4,22 @@ import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
+import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
 import io.github.pulpogato.common.util.LinkedHashMapBuilder;
+import io.github.pulpogato.graphql.client.RepositoryGraphQLQuery;
+import io.github.pulpogato.graphql.client.RepositoryProjectionRoot;
 import io.github.pulpogato.graphql.types.AutoMergeRequest;
+import io.github.pulpogato.graphql.types.IssueOrder;
+import io.github.pulpogato.graphql.types.IssueOrderField;
 import io.github.pulpogato.graphql.types.MergeableState;
+import io.github.pulpogato.graphql.types.OrderDirection;
 import io.github.pulpogato.graphql.types.PullRequest;
 import io.github.pulpogato.graphql.types.PullRequestMergeMethod;
 import io.github.pulpogato.graphql.types.Repository;
 import io.github.pulpogato.graphql.types.User;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import java.net.URI;
+import java.util.List;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
@@ -81,6 +88,10 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         var nodes = pullRequests.getNodes();
         assertThat(nodes).isNotNull().hasSize(5);
 
+        assertOnResponse(nodes);
+    }
+
+    private static void assertOnResponse(List<PullRequest> nodes) {
         // PR #769 - renovate/spring-core
         var pr769 = nodes.get(0);
         assertThat(pr769)
@@ -178,5 +189,81 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
                         .url(URI.create("https://github.com/pulpogato/pulpogato/pull/730"))
                         .autoMergeRequest(null)
                         .build());
+    }
+
+    @Test
+    void testFindOpenPullRequestsTypedQuery() {
+        var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
+        // tag::execute-typed-query[]
+        WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
+
+        var query = RepositoryGraphQLQuery.newRequest()
+                .followRenames(false)
+                .owner("pulpogato")
+                .name("pulpogato")
+                .build();
+        var repoProjection = new RepositoryProjectionRoot<>();
+        var prProjection = repoProjection.pullRequests(
+                /*after*/ null,
+                /*baseRefName*/ "main",
+                /*before*/ null,
+                /*first*/ 100,
+                /*headRefName*/ null,
+                /*labels*/ null,
+                /*last*/ null,
+                IssueOrder.newBuilder()
+                        .field(IssueOrderField.UPDATED_AT)
+                        .direction(OrderDirection.DESC)
+                        .build(),
+                /*states*/ null);
+        var nodesProjection = prProjection.totalCount().nodes();
+
+        nodesProjection
+                /* enter */
+                .id()
+                .number()
+                .headRefName()
+                .headRefOid()
+                .baseRefOid()
+                .url()
+                .mergeable();
+
+        nodesProjection
+                /* enter */
+                .author()
+                .__typename()
+                .login();
+        var autoMergeRequest = nodesProjection
+                /* enter */
+                .autoMergeRequest();
+        autoMergeRequest
+                /* enter */
+                .mergeMethod();
+        autoMergeRequest
+                /* enter */
+                .enabledBy()
+                /* enter */
+                .__typename()
+                .login();
+
+        var typedQuery = new GraphQLQueryRequest(query, repoProjection);
+        var response =
+                graphQLClient.reactiveExecuteQuery(typedQuery.serialize()).block();
+        // end::execute-typed-query[]
+
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEmpty();
+
+        var repository = response.extractValueAsObject("repository", Repository.class);
+        assertThat(repository).isNotNull();
+
+        var pullRequests = repository.getPullRequests();
+        assertThat(pullRequests).isNotNull();
+        assertThat(pullRequests.getTotalCount()).isEqualTo(5);
+
+        var nodes = pullRequests.getNodes();
+        assertThat(nodes).isNotNull().hasSize(5);
+
+        assertOnResponse(nodes);
     }
 }

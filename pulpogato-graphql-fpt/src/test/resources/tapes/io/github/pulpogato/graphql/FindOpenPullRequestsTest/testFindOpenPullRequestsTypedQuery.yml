@@ -1,0 +1,118 @@
+- request:
+    method: POST
+    uri: /graphql
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: |-
+      {
+        "query" : "{\n  repository(followRenames: false, name: \"pulpogato\", owner: \"pulpogato\") {\n    pullRequests(after: null, baseRefName: \"main\", before: null, first: 100, headRefName: null, labels: null, last: null, orderBy: {direction : DESC, field : UPDATED_AT}, states: null) {\n      totalCount\n      nodes {\n        id\n        number\n        headRefName\n        headRefOid\n        baseRefOid\n        url\n        mergeable\n        author {\n          __typename\n          login\n        }\n        autoMergeRequest {\n          mergeMethod\n          enabledBy {\n            __typename\n            login\n          }\n        }\n      }\n    }\n  }\n}",
+        "operationName" : null,
+        "variables" : { }
+      }
+  response:
+    statusCode: 200
+    headers:
+      Transfer-Encoding: chunked
+      Content-Type: application/json; charset=utf-8
+    body: |-
+      {
+        "data" : {
+          "repository" : {
+            "pullRequests" : {
+              "totalCount" : 5,
+              "nodes" : [ {
+                "id" : "PR_kwDOMTOTFM64abAF",
+                "number" : 769,
+                "headRefName" : "renovate/spring-core",
+                "headRefOid" : "fbc53e352ab54e24e1e3de5484c713fa3cf319a0",
+                "baseRefOid" : "b585f610fde01343985ad97455a33def33af63be",
+                "mergeable" : "MERGEABLE",
+                "author" : {
+                  "__typename" : "Bot",
+                  "login" : "renovate"
+                },
+                "url" : "https://github.com/pulpogato/pulpogato/pull/769",
+                "autoMergeRequest" : {
+                  "enabledBy" : {
+                    "__typename" : "Bot",
+                    "login" : "renovate"
+                  },
+                  "mergeMethod" : "MERGE"
+                }
+              }, {
+                "id" : "PR_kwDOMTOTFM64OYaG",
+                "number" : 768,
+                "headRefName" : "remove-jackson-split-reference",
+                "headRefOid" : "ca664557f0cc6cdaf96a2b98d200ec05df883329",
+                "baseRefOid" : "b585f610fde01343985ad97455a33def33af63be",
+                "mergeable" : "MERGEABLE",
+                "author" : {
+                  "__typename" : "User",
+                  "login" : "rahulsom"
+                },
+                "url" : "https://github.com/pulpogato/pulpogato/pull/768",
+                "autoMergeRequest" : {
+                  "enabledBy" : {
+                    "__typename" : "User",
+                    "login" : "rahulsom"
+                  },
+                  "mergeMethod" : "MERGE"
+                }
+              }, {
+                "id" : "PR_kwDOMTOTFM64N5J8",
+                "number" : 767,
+                "headRefName" : "renovate/com.gradle.develocity-4.x",
+                "headRefOid" : "a978c20c700e39103864d0eedbdd195ee02134bf",
+                "baseRefOid" : "b585f610fde01343985ad97455a33def33af63be",
+                "mergeable" : "MERGEABLE",
+                "author" : {
+                  "__typename" : "Bot",
+                  "login" : "renovate"
+                },
+                "url" : "https://github.com/pulpogato/pulpogato/pull/767",
+                "autoMergeRequest" : {
+                  "enabledBy" : {
+                    "__typename" : "Bot",
+                    "login" : "renovate"
+                  },
+                  "mergeMethod" : "MERGE"
+                }
+              }, {
+                "id" : "PR_kwDOMTOTFM64N5HO",
+                "number" : 766,
+                "headRefName" : "renovate/dgs",
+                "headRefOid" : "75640d81374341d80e40d4a8716a8c224457985b",
+                "baseRefOid" : "b585f610fde01343985ad97455a33def33af63be",
+                "mergeable" : "MERGEABLE",
+                "author" : {
+                  "__typename" : "Bot",
+                  "login" : "renovate"
+                },
+                "url" : "https://github.com/pulpogato/pulpogato/pull/766",
+                "autoMergeRequest" : {
+                  "enabledBy" : {
+                    "__typename" : "Bot",
+                    "login" : "renovate"
+                  },
+                  "mergeMethod" : "MERGE"
+                }
+              }, {
+                "id" : "PR_kwDOMTOTFM62Jj6D",
+                "number" : 730,
+                "headRefName" : "test-utils-test",
+                "headRefOid" : "0d53e71c027ed068c616cf9e966def858dfa1c41",
+                "baseRefOid" : "caf877eec171597a21b980f51910b7b45a4593cc",
+                "mergeable" : "UNKNOWN",
+                "author" : {
+                  "__typename" : "User",
+                  "login" : "rahulsom"
+                },
+                "url" : "https://github.com/pulpogato/pulpogato/pull/730",
+                "autoMergeRequest" : null
+              } ]
+            }
+          }
+        }
+      }
