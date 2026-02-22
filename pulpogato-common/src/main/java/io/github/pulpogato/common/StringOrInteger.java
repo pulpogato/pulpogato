@@ -128,6 +128,11 @@ public class StringOrInteger implements PulpogatoType {
         }
     }
 
+    /**
+     * A converter that converts a {@link StringOrInteger} to its {@link String} representation.
+     * Returns the string value if present, otherwise returns the string representation of the
+     * integer value, or {@code null} if both are absent.
+     */
     public static class StringConverter implements Converter<StringOrInteger, String> {
         @Override
         public String convert(StringOrInteger source) {

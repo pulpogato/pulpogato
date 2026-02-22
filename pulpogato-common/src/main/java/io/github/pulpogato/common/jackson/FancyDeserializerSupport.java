@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,6 +36,13 @@ public class FancyDeserializerSupport<T> {
      */
     @FunctionalInterface
     public interface ContextReader {
+        /**
+         * Reads a value of the specified type from the JSON input.
+         *
+         * @param type the type to read
+         * @return the deserialized value
+         * @throws Exception if reading fails
+         */
         Object readValue(Class<?> type) throws Exception;
     }
 
@@ -43,6 +51,13 @@ public class FancyDeserializerSupport<T> {
      */
     @FunctionalInterface
     public interface JsonWriter {
+        /**
+         * Writes an object as a JSON string.
+         *
+         * @param value the value to serialize
+         * @return the JSON string representation
+         * @throws Exception if serialization fails
+         */
         String writeValueAsString(Object value) throws Exception;
     }
 
@@ -51,6 +66,14 @@ public class FancyDeserializerSupport<T> {
      */
     @FunctionalInterface
     public interface JsonReader {
+        /**
+         * Reads a JSON string and deserializes it to the specified type.
+         *
+         * @param json the JSON string to deserialize
+         * @param type the target type
+         * @return the deserialized value
+         * @throws Exception if deserialization fails
+         */
         Object readValue(String json, Class<?> type) throws Exception;
     }
 
@@ -62,9 +85,16 @@ public class FancyDeserializerSupport<T> {
 
     private final Class<T> type;
     private final Supplier<T> initializer;
+
+    @Getter
     private final Mode mode;
+
+    @Getter
     private final List<SettableField<T, ?>> fields;
+
+    @Getter
     private final JsonWriter writer;
+
     private final JsonReader reader;
     private final Predicate<Exception> isParsingException;
     private final Class<?> enumAlternativeType;
@@ -146,22 +176,23 @@ public class FancyDeserializerSupport<T> {
         }
     }
 
+    /**
+     * Handles a deserialized map value by converting it to a string and setting all fields.
+     *
+     * @param mapValue    the deserialized map value
+     * @param mapAsString the map serialized as a JSON string
+     * @param returnValue the object being populated
+     */
     protected void handleMapValue(Object mapValue, String mapAsString, T returnValue) {
         setAllFields(mapAsString, returnValue);
     }
 
-    protected final Mode mode() {
-        return mode;
-    }
-
-    protected final List<SettableField<T, ?>> fields() {
-        return fields;
-    }
-
-    protected final JsonWriter writer() {
-        return writer;
-    }
-
+    /**
+     * Ensures that the given exception is a parsing exception. If not, wraps it in a runtime exception.
+     *
+     * @param e the exception to check
+     * @throws RuntimeException if the exception is not a parsing exception
+     */
     protected final void ensureParsingException(Exception e) {
         if (!isParsingException.test(e)) {
             if (e instanceof RuntimeException re) throw re;
@@ -169,6 +200,13 @@ public class FancyDeserializerSupport<T> {
         }
     }
 
+    /**
+     * Sets all available fields on the return value by attempting to deserialize the JSON string.
+     * For {@link Mode#ONE_OF}, returns early after the first successful field set.
+     *
+     * @param mapAsString the JSON string to deserialize
+     * @param returnValue the object being populated
+     */
     protected final void setAllFields(String mapAsString, T returnValue) {
         for (var pair : fields) {
             final boolean successful = setField(pair, mapAsString, returnValue);
@@ -178,10 +216,29 @@ public class FancyDeserializerSupport<T> {
         }
     }
 
+    /**
+     * Attempts to set a single field by deserializing the JSON string.
+     *
+     * @param field the field to set
+     * @param string the JSON string to deserialize
+     * @param retval the object being populated
+     * @param <X> the type of the field
+     * @return true if the field was successfully set, false otherwise
+     */
     protected final <X> boolean setField(SettableField<T, X> field, String string, T retval) {
         return setFieldWithReader(field, string, retval, reader);
     }
 
+    /**
+     * Attempts to set a single field using the specified JSON reader.
+     *
+     * @param field the field to set
+     * @param string the JSON string to deserialize
+     * @param retval the object being populated
+     * @param activeReader the JSON reader to use for deserialization
+     * @param <X> the type of the field
+     * @return true if the field was successfully set, false otherwise
+     */
     protected final <X> boolean setFieldWithReader(
             SettableField<T, X> field, String string, T retval, JsonReader activeReader) {
         final var clazz = field.type();
