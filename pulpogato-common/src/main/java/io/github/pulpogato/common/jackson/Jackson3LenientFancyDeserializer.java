@@ -1,6 +1,7 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.Mode;
+import io.github.pulpogato.common.jackson.FancyDeserializerSupport.SettableField;
 import java.util.List;
 import java.util.function.Supplier;
 import tools.jackson.core.JacksonException;
@@ -35,10 +36,7 @@ public class Jackson3LenientFancyDeserializer<T> extends StdDeserializer<T> {
      * @param fields      The fields that can be set on the class
      */
     public Jackson3LenientFancyDeserializer(
-            Class<T> vc,
-            Supplier<T> initializer,
-            Mode mode,
-            List<LenientFancyDeserializerSupport.SettableField<T, ?>> fields) {
+            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
         super(vc);
         this.support = new LenientFancyDeserializerSupport<>(
                 vc,
