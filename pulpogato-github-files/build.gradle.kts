@@ -74,7 +74,7 @@ val addSchemaInfoToBroker =
                 infoBrokerPlugin.add("Schemastore-$label-SHA256", sha256)
             }
         }
-    }!!
+    }
 
 tasks.withType<GenerateMavenPom>().configureEach {
     dependsOn(addSchemaInfoToBroker)
