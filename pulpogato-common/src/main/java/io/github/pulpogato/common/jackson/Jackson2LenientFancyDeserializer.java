@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.Mode;
+import io.github.pulpogato.common.jackson.FancyDeserializerSupport.SettableField;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -34,10 +35,7 @@ public class Jackson2LenientFancyDeserializer<T> extends StdDeserializer<T> {
      * @param fields      The fields that can be set on the class
      */
     public Jackson2LenientFancyDeserializer(
-            Class<T> vc,
-            Supplier<T> initializer,
-            Mode mode,
-            List<LenientFancyDeserializerSupport.SettableField<T, ?>> fields) {
+            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
         super(vc);
         this.support = new LenientFancyDeserializerSupport<>(
                 vc,
