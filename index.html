@@ -960,6 +960,81 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>This is the same query using a Typed Query Builder</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TypedGraphQlExample</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// create a WebClient</span>
+        <span class="nc">WebClient</span> <span class="n">graphqlWebClient</span> <span class="o">=</span> <span class="nc">WebClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com/graphql"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+        <span class="nc">WebClientGraphQLClient</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">);</span>
+
+        <span class="kt">var</span> <span class="n">query</span> <span class="o">=</span> <span class="nc">RepositoryGraphQLQuery</span><span class="o">.</span><span class="na">newRequest</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">followRenames</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">owner</span><span class="o">(</span><span class="s">"pulpogato"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">name</span><span class="o">(</span><span class="s">"pulpogato"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">repoProjection</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RepositoryProjectionRoot</span><span class="o">&lt;&gt;();</span>
+        <span class="kt">var</span> <span class="n">prProjection</span> <span class="o">=</span> <span class="n">repoProjection</span><span class="o">.</span><span class="na">pullRequests</span><span class="o">(</span>
+                <span class="cm">/*after*/</span> <span class="kc">null</span><span class="o">,</span>
+                <span class="cm">/*baseRefName*/</span> <span class="s">"main"</span><span class="o">,</span>
+                <span class="cm">/*before*/</span> <span class="kc">null</span><span class="o">,</span>
+                <span class="cm">/*first*/</span> <span class="mi">100</span><span class="o">,</span>
+                <span class="cm">/*headRefName*/</span> <span class="kc">null</span><span class="o">,</span>
+                <span class="cm">/*labels*/</span> <span class="kc">null</span><span class="o">,</span>
+                <span class="cm">/*last*/</span> <span class="kc">null</span><span class="o">,</span>
+                <span class="nc">IssueOrder</span><span class="o">.</span><span class="na">newBuilder</span><span class="o">()</span>
+                        <span class="o">.</span><span class="na">field</span><span class="o">(</span><span class="nc">IssueOrderField</span><span class="o">.</span><span class="na">UPDATED_AT</span><span class="o">)</span>
+                        <span class="o">.</span><span class="na">direction</span><span class="o">(</span><span class="nc">OrderDirection</span><span class="o">.</span><span class="na">DESC</span><span class="o">)</span>
+                        <span class="o">.</span><span class="na">build</span><span class="o">(),</span>
+                <span class="cm">/*states*/</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="kt">var</span> <span class="n">nodesProjection</span> <span class="o">=</span> <span class="n">prProjection</span><span class="o">.</span><span class="na">totalCount</span><span class="o">().</span><span class="na">nodes</span><span class="o">();</span>
+
+        <span class="n">nodesProjection</span>
+                <span class="cm">/* enter */</span>
+                <span class="o">.</span><span class="na">id</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">number</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">headRefName</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">headRefOid</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">baseRefOid</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">url</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">mergeable</span><span class="o">();</span>
+
+        <span class="n">nodesProjection</span>
+                <span class="cm">/* enter */</span>
+                <span class="o">.</span><span class="na">author</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">__typename</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">login</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">autoMergeRequest</span> <span class="o">=</span> <span class="n">nodesProjection</span>
+                <span class="cm">/* enter */</span>
+                <span class="o">.</span><span class="na">autoMergeRequest</span><span class="o">();</span>
+        <span class="n">autoMergeRequest</span>
+                <span class="cm">/* enter */</span>
+                <span class="o">.</span><span class="na">mergeMethod</span><span class="o">();</span>
+        <span class="n">autoMergeRequest</span>
+                <span class="cm">/* enter */</span>
+                <span class="o">.</span><span class="na">enabledBy</span><span class="o">()</span>
+                <span class="cm">/* enter */</span>
+                <span class="o">.</span><span class="na">__typename</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">login</span><span class="o">();</span>
+
+        <span class="kt">var</span> <span class="n">typedQuery</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">GraphQLQueryRequest</span><span class="o">(</span><span class="n">query</span><span class="o">,</span> <span class="n">repoProjection</span><span class="o">);</span>
+        <span class="kt">var</span> <span class="n">response</span> <span class="o">=</span>
+                <span class="n">graphQLClient</span><span class="o">.</span><span class="na">reactiveExecuteQuery</span><span class="o">(</span><span class="n">typedQuery</span><span class="o">.</span><span class="na">serialize</span><span class="o">()).</span><span class="na">block</span><span class="o">();</span>
+
+        <span class="kt">var</span> <span class="n">repository</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="na">extractValueAsObject</span><span class="o">(</span><span class="s">"repository"</span><span class="o">,</span> <span class="nc">Repository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_github_files_example">GitHub Files Example</h3>
