@@ -70,7 +70,7 @@ object JsonSchemaTypeResolver {
                     return resolveObject(ctx, name, obj, parentPackage)
                 }
             }
-            return resolveOneOf(ctx, name, oneOf as ArrayNode, parentPackage, obj)
+            return resolveOneOf(ctx, name, oneOf, parentPackage, obj)
         }
 
         // 4. anyOf — typically validation-only; collapse to widest type
@@ -466,8 +466,6 @@ object JsonSchemaTypeResolver {
                 .filter {
                     !(it.value.has("type") && it.value.get("type").asString() == "null")
                 }
-        val elements = indexedElements.map { it.value }
-
         if (indexedElements.isEmpty()) {
             return ResolvedType(Types.OBJECT)
         }
