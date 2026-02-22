@@ -4,13 +4,13 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import lombok.experimental.UtilityClass;
+import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Utility for parsing date-time strings in the various formats returned by the GitHub API.
  */
-@UtilityClass
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class OffsetDateTimeUtil {
     private static final List<DateTimeFormatter> FORMATTERS = List.of(
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSXXX"),

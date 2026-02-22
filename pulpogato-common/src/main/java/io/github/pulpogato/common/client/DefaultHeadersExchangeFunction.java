@@ -37,6 +37,11 @@ public class DefaultHeadersExchangeFunction implements ExchangeFilterFunction {
     private final String pulpogatoVersion;
     private final String githubApiVersion;
 
+    /**
+     * Creates a new instance with default headers loaded from {@code pulpogato-headers.properties}.
+     * The properties file is loaded from the classpath and provides values for
+     * {@code pulpogato.version} and {@code github.api.version}.
+     */
     public DefaultHeadersExchangeFunction() {
         this(loadProperty("pulpogato.version"), loadProperty("github.api.version"));
     }

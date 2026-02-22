@@ -51,7 +51,7 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
 
     @Override
     protected void handleMapValue(Object mapValue, String mapAsString, T returnValue) {
-        if (mode() == Mode.ONE_OF) {
+        if (getMode() == Mode.ONE_OF) {
             setOneOfField(mapValue, mapAsString, returnValue);
             return;
         }
@@ -76,10 +76,10 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
     private List<SettableField<T, ?>> orderOneOfCandidatesByRecognizedKeys(Map<?, ?> inputMap) {
         var inputKeys = stringKeys(inputMap);
         if (inputKeys.isEmpty()) {
-            return fields();
+            return getFields();
         }
 
-        var sorted = new ArrayList<>(fields());
+        var sorted = new ArrayList<>(getFields());
         sorted.sort((left, right) -> {
             var leftScore = countRecognizedKeys(inputKeys, knownJsonProperties(left.type()));
             var rightScore = countRecognizedKeys(inputKeys, knownJsonProperties(right.type()));
@@ -142,7 +142,7 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
         }
 
         try {
-            var filteredAsString = writer().writeValueAsString(filtered);
+            var filteredAsString = getWriter().writeValueAsString(filtered);
             if (super.setField(field, filteredAsString, retval)) {
                 return true;
             }
