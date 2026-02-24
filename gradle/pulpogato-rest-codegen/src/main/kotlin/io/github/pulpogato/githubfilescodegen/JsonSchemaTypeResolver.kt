@@ -666,7 +666,7 @@ object JsonSchemaTypeResolver {
         parentNode: ObjectNode,
         parentPackage: String,
     ): ResolvedType {
-        val values = enumNode.map { it.asString() }
+        val values = enumNode.toList().map { it.asString() }
         val description = parentNode.get("description")?.asString()
         val spec =
             EnumGenerator.generate(
