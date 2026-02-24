@@ -1,7 +1,8 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.Feed;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListPublicEvents() {
         var api = new RestClients(webClient).getActivityApi();
-        var response = api.listPublicEvents(10L, 1L);
+        var response = api.listPublicEvents(10L, 1L).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -30,7 +31,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetFeeds() {
         var api = new RestClients(webClient).getActivityApi();
-        var response = api.getFeeds();
+        var response = api.getFeeds().block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(Feed.class);
@@ -56,7 +57,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     void testListPublicOrgEvents() {
         var api = new RestClients(webClient).getActivityApi();
         // Using GitHub's own organization as an example
-        var response = api.listPublicOrgEvents("github", 5L, 1L);
+        var response = api.listPublicOrgEvents("github", 5L, 1L).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -80,7 +81,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     void testListRepoEvents() {
         var api = new RestClients(webClient).getActivityApi();
         // Using a popular repository as an example
-        var response = api.listRepoEvents("octocat", "Hello-World", 5L, 1L);
+        var response = api.listRepoEvents("octocat", "Hello-World", 5L, 1L).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -99,7 +100,8 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListReposStarredByAuthenticatedUser() {
         var api = new RestClients(webClient).getActivityApi();
-        var response = api.listReposStarredByAuthenticatedUser(null, null, 10L, 1L);
+        var response =
+                api.listReposStarredByAuthenticatedUser(null, null, 10L, 1L).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -119,7 +121,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListWatchedReposForAuthenticatedUser() {
         var api = new RestClients(webClient).getActivityApi();
-        var response = api.listWatchedReposForAuthenticatedUser(10L, 1L);
+        var response = api.listWatchedReposForAuthenticatedUser(10L, 1L).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -139,7 +141,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     void testListPublicEventsForUser() {
         var api = new RestClients(webClient).getActivityApi();
         // Using octocat as a well-known GitHub user
-        var response = api.listPublicEventsForUser("rahulsom", 5L, 1L);
+        var response = api.listPublicEventsForUser("rahulsom", 5L, 1L).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);

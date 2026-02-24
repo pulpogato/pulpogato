@@ -1,7 +1,8 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import org.junit.jupiter.api.Test;
 
 class SearchApiIntegrationTest extends BaseApiIntegrationTest {
@@ -9,7 +10,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testSearchRepositories() {
         var api = new RestClients(webClient).getSearchApi();
-        var response = api.repos("pulpogato", null, null, null, null);
+        var response = api.repos("pulpogato", null, null, null, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Repos200.class);
@@ -30,7 +31,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testSearchRepositoriesWithLanguageFilter() {
         var api = new RestClients(webClient).getSearchApi();
-        var response = api.repos("language:java", null, null, 10L, null);
+        var response = api.repos("language:java", null, null, 10L, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Repos200.class);
@@ -43,7 +44,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testSearchUsers() {
         var api = new RestClients(webClient).getSearchApi();
-        var response = api.users("rahulsom", null, null, null, null);
+        var response = api.users("rahulsom", null, null, null, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Users200.class);
@@ -63,7 +64,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testSearchUsersWithLocationFilter() {
         var api = new RestClients(webClient).getSearchApi();
-        var response = api.users("location:california", null, null, 5L, null);
+        var response = api.users("location:california", null, null, 5L, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Users200.class);
@@ -79,7 +80,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testSearchTopics() {
         var api = new RestClients(webClient).getSearchApi();
-        var response = api.topics("java", null, null);
+        var response = api.topics("java", null, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Topics200.class);
@@ -99,7 +100,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testSearchTopicsPopular() {
         var api = new RestClients(webClient).getSearchApi();
-        var response = api.topics("machine-learning", 10L, null);
+        var response = api.topics("machine-learning", 10L, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(SearchApi.Topics200.class);

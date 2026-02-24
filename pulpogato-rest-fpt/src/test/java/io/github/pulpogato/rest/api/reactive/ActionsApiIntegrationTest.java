@@ -1,9 +1,10 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.common.StringOrInteger;
 import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
 import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetActionsCacheUsage() {
         var api = new RestClients(webClient).getActionsApi();
-        var response = api.getActionsCacheUsage("pulpogato", "pulpogato");
+        var response = api.getActionsCacheUsage("pulpogato", "pulpogato").block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheUsageByRepository.class);
@@ -29,7 +30,8 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetActionsCacheList() {
         var api = new RestClients(webClient).getActionsApi();
-        var response = api.getActionsCacheList("pulpogato", "pulpogato", null, null, null, null, null, null);
+        var response = api.getActionsCacheList("pulpogato", "pulpogato", null, null, null, null, null, null)
+                .block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheList.class);
@@ -42,7 +44,8 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetActionsCacheListWithPagination() {
         var api = new RestClients(webClient).getActionsApi();
-        var response = api.getActionsCacheList("pulpogato", "pulpogato", 10L, 0L, null, null, null, null);
+        var response = api.getActionsCacheList("pulpogato", "pulpogato", 10L, 0L, null, null, null, null)
+                .block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheList.class);
@@ -63,14 +66,15 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
         var api = restClients.getActionsApi();
 
         var response = api.createWorkflowDispatch(
-                "pulpogato",
-                "pulpogato",
-                StringOrInteger.builder()
-                        .stringValue("check-issues-statuses.yml")
-                        .build(),
-                ActionsApi.CreateWorkflowDispatchRequestBody.builder()
-                        .ref("main")
-                        .build());
+                        "pulpogato",
+                        "pulpogato",
+                        StringOrInteger.builder()
+                                .stringValue("check-issues-statuses.yml")
+                                .build(),
+                        ActionsApi.CreateWorkflowDispatchRequestBody.builder()
+                                .ref("main")
+                                .build())
+                .block();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         var body = response.getBody();
@@ -81,21 +85,22 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
     void testListWorkflowRuns() {
         var api = new RestClients(webClient).getActionsApi();
         var response = api.listWorkflowRuns(
-                "pulpogato",
-                "pulpogato",
-                StringOrInteger.builder()
-                        .stringValue("check-issues-statuses.yml")
-                        .build(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                        "pulpogato",
+                        "pulpogato",
+                        StringOrInteger.builder()
+                                .stringValue("check-issues-statuses.yml")
+                                .build(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)
+                .block();
         assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();
@@ -112,21 +117,22 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
                 .build();
         var api = new RestClients(cachingClient).getActionsApi();
         var response = api.listWorkflowRuns(
-                "pulpogato",
-                "pulpogato",
-                StringOrInteger.builder()
-                        .stringValue("check-issues-statuses.yml")
-                        .build(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                        "pulpogato",
+                        "pulpogato",
+                        StringOrInteger.builder()
+                                .stringValue("check-issues-statuses.yml")
+                                .build(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)
+                .block();
         assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();

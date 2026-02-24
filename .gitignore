@@ -25,3 +25,6 @@ gradle-app.setting
 /.attach_pid*
 *.hprof
 .kotlin
+
+# Agent config files
+**/.claude/settings.local.json

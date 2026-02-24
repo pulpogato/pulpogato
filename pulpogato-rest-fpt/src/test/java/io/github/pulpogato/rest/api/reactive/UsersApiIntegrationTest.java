@@ -1,8 +1,9 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.BasicError;
 import io.github.pulpogato.rest.schemas.PrivateUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
@@ -23,7 +24,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         // Get UsersApi
         UsersApi api = restClients.getUsersApi();
         // Call getAuthenticated method
-        var authenticated = api.getAuthenticated();
+        var authenticated = api.getAuthenticated().block();
         // end::getAuthenticatedPublic[]
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
@@ -45,7 +46,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetAuthenticatedPrivate() {
         var api = new RestClients(webClient).getUsersApi();
-        var authenticated = api.getAuthenticated();
+        var authenticated = api.getAuthenticated().block();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
         var body = authenticated.getBody();
@@ -65,7 +66,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         var update = UsersApi.UpdateAuthenticatedRequestBody.builder()
                 .location("San Francisco Bay Area")
                 .build();
-        var authenticated = api.updateAuthenticated(update);
+        var authenticated = api.updateAuthenticated(update).block();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PrivateUser.class);
         var body = authenticated.getBody();
@@ -77,7 +78,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListBlockedEmpty() {
         var api = new RestClients(webClient).getUsersApi();
-        var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
+        var blocked = api.listBlockedByAuthenticatedUser(5L, 0L).block();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNotNull().isInstanceOf(List.class);
         var blockedBody = blocked.getBody();
@@ -87,7 +88,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListBlockedValid() {
         var api = new RestClients(webClient).getUsersApi();
-        var blocked = api.listBlockedByAuthenticatedUser(5L, 0L);
+        var blocked = api.listBlockedByAuthenticatedUser(5L, 0L).block();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNotNull().isInstanceOf(List.class);
         var blockedBody = blocked.getBody();
@@ -100,7 +101,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testCheckBlocked() {
         var api = new RestClients(webClient).getUsersApi();
-        var blocked = api.checkBlocked("some-blocked-user");
+        var blocked = api.checkBlocked("some-blocked-user").block();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNull();
     }
@@ -108,7 +109,8 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testCheckNotBlocked() {
         var api = new RestClients(webClient).getUsersApi();
-        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.checkBlocked("gooduser"));
+        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.checkBlocked("gooduser")
+                .block());
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().is4xxClientError()).isTrue();
@@ -118,7 +120,8 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testBlockUserFailed() {
         var api = new RestClients(webClient).getUsersApi();
-        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.block("some-blocked-user"));
+        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.block("some-blocked-user")
+                .block());
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().value()).isEqualTo(422);
@@ -136,7 +139,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testBlockUserSuccess() {
         var api = new RestClients(webClient).getUsersApi();
-        var blocked = api.block("gooduser");
+        var blocked = api.block("gooduser").block();
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNull();
@@ -145,7 +148,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testUnblockUserSuccess() {
         var api = new RestClients(webClient).getUsersApi();
-        var blocked = api.unblock("gooduser");
+        var blocked = api.unblock("gooduser").block();
 
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNull();
@@ -154,7 +157,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListFollowers() {
         var api = new RestClients(webClient).getUsersApi();
-        var followers = api.listFollowersForAuthenticatedUser(5L, 0L);
+        var followers = api.listFollowersForAuthenticatedUser(5L, 0L).block();
         assertThat(followers.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(followers.getBody()).isNotNull().isInstanceOf(List.class);
         var followersBody = followers.getBody();
@@ -167,7 +170,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListGpgKeysForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
-        var gpgKeys = api.listGpgKeysForAuthenticatedUser(5L, 0L);
+        var gpgKeys = api.listGpgKeysForAuthenticatedUser(5L, 0L).block();
         assertThat(gpgKeys.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(gpgKeys.getBody()).isNotNull().isInstanceOf(List.class);
         var gpgKeysBody = gpgKeys.getBody();
@@ -181,7 +184,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetGpgKeyForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
-        var gpgKey = api.getGpgKeyForAuthenticatedUser(175109L);
+        var gpgKey = api.getGpgKeyForAuthenticatedUser(175109L).block();
         assertThat(gpgKey.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(gpgKey.getBody()).isNotNull();
         var gpgKeyBody = gpgKey.getBody();
@@ -193,7 +196,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListPublicEmailsForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
-        var response = api.listPublicEmailsForAuthenticatedUser(5L, 0L);
+        var response = api.listPublicEmailsForAuthenticatedUser(5L, 0L).block();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
         var emails = response.getBody();
@@ -215,7 +218,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListEmailsForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
-        var response = api.listEmailsForAuthenticatedUser(5L, 0L);
+        var response = api.listEmailsForAuthenticatedUser(5L, 0L).block();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
         var emails = response.getBody();
@@ -244,7 +247,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListSocialAccountsForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var response = api.listSocialAccountsForAuthenticatedUser(5L, 0L);
+        var response = api.listSocialAccountsForAuthenticatedUser(5L, 0L).block();
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -261,7 +264,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetById() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var response = api.getById(230004L);
+        var response = api.getById(230004L).block();
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -289,7 +292,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetByUsername() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var response = api.getByUsername("sghill");
+        var response = api.getByUsername("sghill").block();
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -317,7 +320,8 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetByUsername404() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.getByUsername("rahulsom1"));
+        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.getByUsername("rahulsom1")
+                .block());
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().value()).isEqualTo(404);
@@ -335,7 +339,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListFollowersForUser() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var response = api.listFollowersForUser("sghill", 5L, 0L);
+        var response = api.listFollowersForUser("sghill", 5L, 0L).block();
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -356,7 +360,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListFollowingForUser() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var response = api.listFollowingForUser("sghill", 5L, 0L);
+        var response = api.listFollowingForUser("sghill", 5L, 0L).block();
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
