@@ -55,6 +55,14 @@ abstract class DownloadSchemaTask : DefaultTask() {
     abstract val apiRepository: Property<String>
 
     /**
+     * The project version for the headers properties file.
+     *
+     * This property specifies the version to write to the headers file.
+     */
+    @get:Input
+    abstract val projectVersion: Property<String>
+
+    /**
      * The output file where the downloaded schema will be saved.
      *
      * This property specifies the destination file for the downloaded schema.
@@ -76,10 +84,11 @@ abstract class DownloadSchemaTask : DefaultTask() {
     fun download() {
         val variant = projectVariant.get()
         val commit = apiCommit.get()
-        val apiVersion = apiVersion.get()
+        val apiVersionValue = apiVersion.get()
         val outputFile = schemaFile.get().asFile
+        val version = projectVersion.get()
 
-        val url = buildSchemaUrl(variant, commit, apiVersion)
+        val url = buildSchemaUrl(variant, commit, apiVersionValue)
         logger.info("Downloading schema from: $url")
 
         outputFile.parentFile.mkdirs()
@@ -89,16 +98,14 @@ abstract class DownloadSchemaTask : DefaultTask() {
 
         // Write the headers properties file alongside the schema
         val propertiesFile = outputFile.parentFile.resolve("pulpogato-headers.properties")
-        val projectVersion = project.version.toString()
         propertiesFile.writeText(
             """# Pulpogato Headers Properties
-pulpogato.version=$projectVersion
-github.api.version=$apiVersion
+pulpogato.version=$version
+github.api.version=$apiVersionValue
 """,
         )
 
         val sha256 = calculateSha256(schemaBytes)
-        project.extensions.extraProperties["github.api.sha256"] = sha256
         logger.info("Downloaded schema with SHA256: $sha256")
 
         if (!outputFile.exists()) {

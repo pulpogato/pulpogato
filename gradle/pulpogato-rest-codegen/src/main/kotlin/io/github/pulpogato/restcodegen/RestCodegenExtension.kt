@@ -76,4 +76,11 @@ open class RestCodegenExtension(
      * from which OpenAPI schemas will be downloaded.
      */
     var apiRepository: Property<String> = project.objects.property(String::class.java)
+
+    /**
+     * The project version for the headers properties file.
+     *
+     * This property specifies the version to write to the headers file.
+     */
+    var projectVersion: Property<String> = project.objects.property(String::class.java)
 }
