@@ -8,6 +8,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -15,7 +16,6 @@ import org.gradle.api.tasks.TaskAction
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ObjectNode
 import java.io.File
-import kotlin.io.readText
 
 /**
  * Gradle task to generate Java classes from OpenAPI schema.
@@ -78,6 +78,32 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     val projectName: Property<String> = project.objects.property(String::class.java)
 
+    /**
+     * The root project directory for finding common resources.
+     */
+    @Input
+    val rootProjectDir: Property<File> = project.objects.property(File::class.java)
+
+    /**
+     * The project directory for finding module resources.
+     */
+    @Input
+    val projectDir: Property<File> = project.objects.property(File::class.java)
+
+    /**
+     * The common resources directory for schema additions.
+     */
+    @Input
+    @Optional
+    val commonResourcesDir: Property<File> = project.objects.property(File::class.java)
+
+    /**
+     * The module resources directory for schema additions.
+     */
+    @Input
+    @Optional
+    val moduleResourcesDir: Property<File> = project.objects.property(File::class.java)
+
     init {
         projectName.set(project.name)
     }
@@ -106,9 +132,11 @@ open class GenerateJavaTask : DefaultTask() {
         val swaggerSpec = schemaFile.readText()
 
         // Check for *.schema.json in pulpogato-common and the module's resources directory
-        val commonResourcesDir = project.rootProject.projectDir.resolve("pulpogato-common/src/main/resources")
-        val moduleResourcesDir = project.projectDir.resolve("src/main/resources")
-        val schemaAdditionsFiles = findSchemaFiles(commonResourcesDir) + findSchemaFiles(moduleResourcesDir)
+        val commonResourcesDirVal = commonResourcesDir.orNull
+        val moduleResourcesDirVal = moduleResourcesDir.orNull
+        val schemaAdditionsFiles =
+            (if (commonResourcesDirVal != null) findSchemaFiles(commonResourcesDirVal) else emptyList()) +
+                (if (moduleResourcesDirVal != null) findSchemaFiles(moduleResourcesDirVal) else emptyList())
 
         val addedProperties = mutableMapOf<String, MutableMap<String, String>>()
         var mergedSpec = swaggerSpec
@@ -197,7 +225,7 @@ open class GenerateJavaTask : DefaultTask() {
                     // Schema doesn't exist - add it as a new schema
                     val schemasNode = schema.at("/components/schemas") as ObjectNode
                     schemasNode.set(schemaName, schemaAddition)
-                    project.logger.info("Added new schema '$schemaName' from '$sourceFileName'")
+                    logger.info("Added new schema '$schemaName' from '$sourceFileName'")
                 } else {
                     // Schema exists - merge properties
                     val properties = schemaAddition["properties"]
@@ -209,7 +237,7 @@ open class GenerateJavaTask : DefaultTask() {
                         properties.properties().forEach { (propertyName, propertySpec) ->
                             targetProperties.putIfAbsent(propertyName, propertySpec)
                             propertyNames[propertyName] = sourceFileName
-                            project.logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
+                            logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
                         }
                     }
                 }
@@ -249,7 +277,7 @@ open class GenerateJavaTask : DefaultTask() {
             when {
                 targetValue == null -> {
                     target.set(fieldName, sourceValue.deepCopy())
-                    project.logger.info("Added schema node '$currentPath' from '$sourceFileName'")
+                    logger.info("Added schema node '$currentPath' from '$sourceFileName'")
                 }
 
                 targetValue is ObjectNode && sourceValue is ObjectNode -> {
