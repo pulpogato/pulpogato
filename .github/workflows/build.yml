@@ -60,7 +60,7 @@ jobs:
 
       - name: Build Main Project
         if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-        run: ./gradlew build --max-workers=$MAX_WORKERS --continue
+        run: ./gradlew build asciidoctorDocs --max-workers=$MAX_WORKERS --continue
 
       - name: Run Pitest (Renovate PRs Only)
         if: github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
@@ -74,16 +74,6 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
         run: ./gradlew build snapshot --max-workers=$MAX_WORKERS
-
-      - name: Generate AsciiDoc documentation
-        uses: tonynv/asciidoctor-action@master
-        with:
-          program: |-
-            asciidoctor \
-                --destination-dir pulpogato-docs/build \
-                --backend=html5 \
-                --out-file index.html \
-                pulpogato-docs/src/index.adoc
 
       - name: Deploy docs to ghpages
         uses: peaceiris/actions-gh-pages@v4

@@ -181,3 +181,33 @@ tasks.register("pitest") {
     group = "verification"
     dependsOn(pitestPlugin)
 }
+
+val dockerExecutable =
+    providers.environmentVariable("DOCKER_BIN").orNull?.takeIf { it.isNotBlank() }
+        ?: listOf("/usr/local/bin/docker", "/opt/homebrew/bin/docker", "/usr/bin/docker")
+            .firstOrNull { candidate -> rootProject.file(candidate).canExecute() }
+        ?: "docker"
+
+tasks.register<Exec>("asciidoctorDocs") {
+    description = "Generate Asciidoctor HTML docs in Docker"
+    group = "documentation"
+    commandLine(
+        dockerExecutable,
+        "run",
+        "--rm",
+        "-v",
+        "${rootProject.projectDir.absolutePath}:/documents",
+        "asciidoctor/docker-asciidoctor:main",
+        "asciidoctor",
+        "--destination-dir",
+        "pulpogato-docs/build",
+        "--backend=html5",
+        "--failure-level",
+        "WARN",
+        "--out-file",
+        "index.html",
+        "pulpogato-docs/src/index.adoc",
+    )
+    inputs.file(layout.projectDirectory.file("pulpogato-docs/src/index.adoc"))
+    outputs.file(layout.projectDirectory.file("pulpogato-docs/build/index.html"))
+}
