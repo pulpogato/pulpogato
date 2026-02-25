@@ -40,6 +40,10 @@ class RestCodegenPlugin : Plugin<Project> {
                         .asFile.parentFile
                         .resolve("resources")
                 }
+            rootProjectDir.set(target.rootProject.projectDir)
+            projectDir.set(target.projectDir)
+            commonResourcesDir.set(target.rootProject.projectDir.resolve("pulpogato-common/src/main/resources"))
+            moduleResourcesDir.set(target.projectDir.resolve("src/main/resources"))
         }
     }
 }
