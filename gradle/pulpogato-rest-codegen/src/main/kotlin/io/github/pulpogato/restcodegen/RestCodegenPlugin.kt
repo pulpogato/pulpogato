@@ -15,6 +15,7 @@ class RestCodegenPlugin : Plugin<Project> {
             apiVersion.set(extension.apiVersion)
             projectVariant.set(extension.projectVariant)
             apiRepository.set(extension.apiRepository)
+            projectVersion.set(extension.projectVersion)
             schemaFile.set(target.layout.buildDirectory.file("generated-src/main/resources/github.schema.json"))
         }
 

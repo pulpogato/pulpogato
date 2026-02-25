@@ -44,6 +44,7 @@ codegen {
     apiVersion.set(project.ext.get("gh.api.version").toString())
     apiRepository.set(project.ext.get("gh.api.repo").toString())
     projectVariant.set(variant)
+    projectVersion.set(project.version.toString())
 }
 
 sourceSets {
