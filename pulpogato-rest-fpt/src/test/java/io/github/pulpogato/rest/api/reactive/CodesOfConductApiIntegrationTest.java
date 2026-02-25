@@ -1,7 +1,8 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.CodeOfConduct;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ class CodesOfConductApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetAllCodesOfConduct() {
         var api = new RestClients(webClient).getCodesOfConductApi();
-        var response = api.getAllCodesOfConduct();
+        var response = api.getAllCodesOfConduct().block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -35,7 +36,7 @@ class CodesOfConductApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetContributorCovenantCodeOfConduct() {
         var api = new RestClients(webClient).getCodesOfConductApi();
-        var response = api.getConductCode("contributor_covenant");
+        var response = api.getConductCode("contributor_covenant").block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(CodeOfConduct.class);
@@ -51,7 +52,7 @@ class CodesOfConductApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetCitizenCodeOfConduct() {
         var api = new RestClients(webClient).getCodesOfConductApi();
-        var response = api.getConductCode("citizen_code_of_conduct");
+        var response = api.getConductCode("citizen_code_of_conduct").block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(CodeOfConduct.class);

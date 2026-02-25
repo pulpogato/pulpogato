@@ -1,7 +1,9 @@
 package io.github.pulpogato.test;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +33,19 @@ public class BaseIntegrationTest {
 
     @BeforeEach
     void setUp(TestInfo testInfo) {
-        String classPart = testInfo.getTestClass()
-                .map(Class::getName)
+
+        final var packagePart = getTestResourceRootPackage()
+                .or(() -> testInfo.getTestClass().map(Class::getPackage))
+                .map(Package::getName)
+                .map(name1 -> name1.replace(".", "/"))
+                .orElseThrow();
+        String classNamePart = testInfo.getTestClass()
+                .map(Class::getSimpleName)
                 .map(name -> name.replace(".", "/"))
                 .orElseThrow();
         String methodPart = testInfo.getTestMethod().map(Method::getName).orElseThrow();
 
+        String tapeName = packagePart + "/" + classNamePart + "/" + methodPart;
         var mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         var strategies = ExchangeStrategies.builder()
@@ -46,9 +55,13 @@ public class BaseIntegrationTest {
         webClient = WebClient.builder()
                 .exchangeStrategies(strategies)
                 .clientConnector(new MockMvcHttpConnector(mockMvc))
-                .defaultHeader("TapeName", classPart + "/" + methodPart)
+                .defaultHeader("TapeName", tapeName)
                 .build();
 
         log.info("");
+    }
+
+    protected @NonNull Optional<Package> getTestResourceRootPackage() {
+        return Optional.empty();
     }
 }

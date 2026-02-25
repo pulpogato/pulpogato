@@ -74,7 +74,9 @@ class PathsBuilder {
         mainDir: File,
         testDir: File,
         packageName: String,
+        enumConvertersPackageName: String,
         enumConverters: MutableSet<ClassName>,
+        reactiveReturnTypes: Boolean,
     ) {
         // Create the test resources directory for large JSON examples
         val testResourcesDir = File(testDir.parentFile, "resources")
@@ -182,6 +184,7 @@ class PathsBuilder {
                         testClass,
                         enumConverters,
                         testResourcesDir,
+                        reactiveReturnTypes,
                     )
                 }
 
@@ -236,7 +239,7 @@ class PathsBuilder {
                     ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
                 ).addStatement(
                     $$"new $T().getConverters().forEach(conversionService::addConverter)",
-                    ClassName.get(packageName, "EnumConverters"),
+                    ClassName.get(enumConvertersPackageName, "EnumConverters"),
                 ).addStatement(
                     $$"conversionService.addConverter(new $T())",
                     ClassName.get("io.github.pulpogato.common", "StringOrInteger", "StringConverter"),
@@ -322,6 +325,7 @@ class PathsBuilder {
         testClass: TypeSpec.Builder,
         enumConverters: MutableSet<ClassName>,
         testResourcesDir: File,
+        reactiveReturnTypes: Boolean,
     ) {
         val parameters = getParameters(context, atomicMethod, typeDef, typeRef, testClass, enumConverters, testResourcesDir)
 
@@ -344,7 +348,7 @@ class PathsBuilder {
         val successResponse = successResponses.entries.minByOrNull { it.key }
 
         if (successResponse == null || successResponse.value.content == null) {
-            typeDef.addMethod(buildVoidMethod(context, atomicMethod, javadoc, parameters))
+            typeDef.addMethod(buildVoidMethod(context, atomicMethod, javadoc, parameters, reactiveReturnTypes))
         } else {
             successResponse.value.content.forEach { (contentType, details) ->
                 val rad =
@@ -378,7 +382,7 @@ class PathsBuilder {
                                 .build(),
                         )
                     }
-                    typeDef.addMethod(buildNonVoidMethod(context, methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef))
+                    typeDef.addMethod(buildNonVoidMethod(context, methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef, reactiveReturnTypes))
                 }
             }
         }
@@ -478,6 +482,7 @@ class PathsBuilder {
         contentType: String,
         parameterSpecs: List<ParameterSpec>,
         respRef: TypeName,
+        reactiveReturnTypes: Boolean,
     ): MethodSpec {
         val suitableAnnotations =
             respRef.annotations().filter {
@@ -502,10 +507,20 @@ class PathsBuilder {
             .addAnnotation(nonNull())
             .addParameters(parameterSpecs)
             .returns(
-                ParameterizedTypeName.get(
-                    ClassName.get("org.springframework.http", "ResponseEntity"),
-                    respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
-                ),
+                if (reactiveReturnTypes) {
+                    ParameterizedTypeName.get(
+                        ClassName.get("reactor.core.publisher", "Mono"),
+                        ParameterizedTypeName.get(
+                            ClassName.get("org.springframework.http", "ResponseEntity"),
+                            respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
+                        ),
+                    )
+                } else {
+                    ParameterizedTypeName.get(
+                        ClassName.get("org.springframework.http", "ResponseEntity"),
+                        respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
+                    )
+                },
             ).build()
     }
 
@@ -527,6 +542,7 @@ class PathsBuilder {
         atomicMethod: AtomicMethod,
         javadoc: String,
         parameters: List<Pair<Parameter, ParameterSpec>>,
+        reactiveReturnTypes: Boolean,
     ): MethodSpec =
         MethodSpec
             .methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
@@ -546,7 +562,20 @@ class PathsBuilder {
             ).addAnnotation(generated(0, context))
             .addParameters(parameters.map { it.second })
             .returns(
-                ParameterizedTypeName.get(ClassName.get("org.springframework.http", "ResponseEntity"), ClassName.get("java.lang", "Void").annotated(nonNull())),
+                if (reactiveReturnTypes) {
+                    ParameterizedTypeName.get(
+                        ClassName.get("reactor.core.publisher", "Mono"),
+                        ParameterizedTypeName.get(
+                            ClassName.get("org.springframework.http", "ResponseEntity"),
+                            ClassName.get("java.lang", "Void").annotated(nonNull()),
+                        ),
+                    )
+                } else {
+                    ParameterizedTypeName.get(
+                        ClassName.get("org.springframework.http", "ResponseEntity"),
+                        ClassName.get("java.lang", "Void").annotated(nonNull()),
+                    )
+                },
             ).build()
 
     /**

@@ -1,7 +1,8 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.RateLimitOverview;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +11,7 @@ class RateLimitApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGet() {
         var api = new RestClients(webClient).getRateLimitApi();
-        var response = api.get();
+        var response = api.get().block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(RateLimitOverview.class);

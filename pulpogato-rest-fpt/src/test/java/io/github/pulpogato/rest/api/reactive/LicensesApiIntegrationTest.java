@@ -1,7 +1,8 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.License;
 import io.github.pulpogato.rest.schemas.LicenseSimple;
 import java.util.List;
@@ -12,7 +13,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetAllCommonlyUsed() {
         var api = new RestClients(webClient).getLicensesApi();
-        var response = api.getAllCommonlyUsed(null, null, null);
+        var response = api.getAllCommonlyUsed(null, null, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -36,7 +37,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetMitLicense() {
         var api = new RestClients(webClient).getLicensesApi();
-        var response = api.get("mit");
+        var response = api.get("mit").block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(License.class);
@@ -56,7 +57,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetApacheLicense() {
         var api = new RestClients(webClient).getLicensesApi();
-        var response = api.get("apache-2.0");
+        var response = api.get("apache-2.0").block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(License.class);
@@ -71,7 +72,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetFeaturedLicenses() {
         var api = new RestClients(webClient).getLicensesApi();
-        var response = api.getAllCommonlyUsed(true, null, null);
+        var response = api.getAllCommonlyUsed(true, null, null).block();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
