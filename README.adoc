@@ -263,13 +263,11 @@ The property will be available as `suspendedAt` in the generated Java code.
 
 === Asciidoctor docs
 
-To run asciidoctor locally, run this command
+To run asciidoctor locally, run this command.
 
 [source, bash]
 ----
-docker run --rm -v $(pwd):/documents asciidoctor/docker-asciidoctor:main asciidoctor \
-    --destination-dir pulpogato-docs/build \
-    --backend=html5 \
-    --out-file index.html \
-    pulpogato-docs/src/index.adoc
+./gradlew asciidoctorDocs
 ----
+
+This task uses `asciidoctor/docker-asciidoctor:main` and writes output to `pulpogato-docs/build/index.html`.
