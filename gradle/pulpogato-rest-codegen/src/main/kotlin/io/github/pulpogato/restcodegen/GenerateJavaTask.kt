@@ -21,8 +21,8 @@ import java.io.File
  * Gradle task to generate Java classes from OpenAPI schema.
  *
  * This task reads an OpenAPI schema file, processes it to generate Java classes
- * for APIs, webhooks, and schemas. It supports schema additions through optional
- * `*.schema.json` files and formats the generated code using Palantir Java Format.
+ * for APIs, webhooks, and schemas. It supports schema additions/overrides through
+ * optional `*.schema.json` files and formats the generated code using Palantir Java Format.
  * It also validates JSON references in the generated code.
  */
 @CacheableTask
@@ -113,7 +113,7 @@ open class GenerateJavaTask : DefaultTask() {
      *
      * This method performs the following steps:
      * 1. Reads and parses the OpenAPI schema
-     * 2. Checks for and merges optional schema additions
+     * 2. Checks for and merges optional schema additions/overrides
      * 3. Generates API classes, webhook classes, and schema classes
      * 4. Creates an enum converters registry
      * 5. Formats the generated Java code
@@ -121,13 +121,14 @@ open class GenerateJavaTask : DefaultTask() {
      */
     @TaskAction
     fun generate() {
-        mainDir.get().mkdirs()
         val schemaFile = schema.get()
         val packageNamePrefix = packageName.get()
         val main = mainDir.get()
         val test = testDir.get()
         val testResources = testResourcesDir.get()
-        testResources.mkdirs()
+        prepareOutputDirectory(main)
+        prepareOutputDirectory(test)
+        prepareOutputDirectory(testResources)
 
         val swaggerSpec = schemaFile.readText()
 
@@ -178,6 +179,20 @@ open class GenerateJavaTask : DefaultTask() {
     }
 
     /**
+     * Ensures the output directory is clean before generation.
+     *
+     * This allows schema deletions to remove stale generated artifacts from prior runs.
+     */
+    private fun prepareOutputDirectory(dir: File) {
+        if (dir.exists() && !dir.deleteRecursively()) {
+            error("Failed to clean generated output directory: ${dir.absolutePath}")
+        }
+        if (!dir.mkdirs() && !dir.exists()) {
+            error("Failed to create generated output directory: ${dir.absolutePath}")
+        }
+    }
+
+    /**
      * Finds all schema addition files (*.schema.json) in the specified directory.
      *
      * @param dir The directory to search for schema files
@@ -197,9 +212,10 @@ open class GenerateJavaTask : DefaultTask() {
      * Merges schema additions from an addition file into the main schema.
      *
      * This method looks for additional schema definitions in the additions file
-     * and merges them into the main OpenAPI specification. It supports both:
+     * and merges them into the main OpenAPI specification. It supports:
      * - Adding new properties to existing schemas
      * - Adding entirely new schemas that don't exist in the main spec
+     * - Deleting existing nodes by setting the override value to null
      *
      * It also tracks which additional properties were added so they can be
      * properly handled during code generation.
@@ -221,25 +237,56 @@ open class GenerateJavaTask : DefaultTask() {
 
         val additions = schemaAdds["components"]?.get("schemas")
         if (additions != null && additions.isObject) {
+            val targetSchemas = schema.at("/components/schemas") as ObjectNode
             additions.properties().forEach { (schemaName, schemaAddition) ->
-                val targetSchema = schema.at("/components/schemas/$schemaName")
-                if (targetSchema.isMissingNode) {
-                    // Schema doesn't exist - add it as a new schema
-                    val schemasNode = schema.at("/components/schemas") as ObjectNode
-                    schemasNode.set(schemaName, schemaAddition)
-                    logger.info("Added new schema '$schemaName' from '$sourceFileName'")
-                } else {
-                    // Schema exists - merge properties
-                    val properties = schemaAddition["properties"]
-                    if (properties != null && properties.isObject) {
-                        val targetProperties =
-                            (targetSchema as ObjectNode)["properties"] as ObjectNode
+                val targetSchema = targetSchemas[schemaName]
 
-                        val propertyNames = addedProperties.getOrPut(schemaName) { mutableMapOf() }
-                        properties.properties().forEach { (propertyName, propertySpec) ->
-                            targetProperties.putIfAbsent(propertyName, propertySpec)
-                            propertyNames[propertyName] = sourceFileName
-                            logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
+                when {
+                    schemaAddition.isNull -> {
+                        if (targetSchema != null) {
+                            targetSchemas.remove(schemaName)
+                            addedProperties.remove(schemaName)
+                            logger.info("Removed schema '$schemaName' from '$sourceFileName'")
+                        }
+                    }
+
+                    targetSchema == null -> {
+                        // Schema doesn't exist - add it as a new schema
+                        targetSchemas.set(schemaName, schemaAddition.deepCopy())
+                        logger.info("Added new schema '$schemaName' from '$sourceFileName'")
+                    }
+
+                    targetSchema is ObjectNode && schemaAddition is ObjectNode -> {
+                        // Schema exists - merge properties
+                        val properties = schemaAddition["properties"]
+                        if (properties != null && properties.isObject) {
+                            val targetProperties =
+                                if (targetSchema["properties"] is ObjectNode) {
+                                    targetSchema["properties"] as ObjectNode
+                                } else {
+                                    targetSchema.putObject("properties")
+                                }
+                            val propertyNames = addedProperties.getOrPut(schemaName) { mutableMapOf() }
+                            properties.properties().forEach { (propertyName, propertySpec) ->
+                                if (propertySpec.isNull) {
+                                    if (targetProperties.has(propertyName)) {
+                                        targetProperties.remove(propertyName)
+                                        propertyNames.remove(propertyName)
+                                        logger.info(
+                                            "Removed property '$propertyName' from schema '$schemaName' from '$sourceFileName'",
+                                        )
+                                    }
+                                } else if (!targetProperties.has(propertyName)) {
+                                    targetProperties.set(propertyName, propertySpec.deepCopy())
+                                    propertyNames[propertyName] = sourceFileName
+                                    logger.info(
+                                        "Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'",
+                                    )
+                                }
+                            }
+                            if (propertyNames.isEmpty()) {
+                                addedProperties.remove(schemaName)
+                            }
                         }
                     }
                 }
@@ -277,6 +324,13 @@ open class GenerateJavaTask : DefaultTask() {
             val currentPath = "$path/$fieldName"
 
             when {
+                sourceValue.isNull -> {
+                    if (targetValue != null) {
+                        target.remove(fieldName)
+                        logger.info("Removed schema node '$currentPath' from '$sourceFileName'")
+                    }
+                }
+
                 targetValue == null -> {
                     target.set(fieldName, sourceValue.deepCopy())
                     logger.info("Added schema node '$currentPath' from '$sourceFileName'")

@@ -224,10 +224,11 @@ Schema additions are loaded from two locations:
 1. `pulpogato-common/src/main/resources/` - additions that apply to all REST modules
 2. `pulpogato-rest-<version>/src/main/resources/` - additions specific to a single version
 
-The files follow the OpenAPI 3.1.0 format and are merged additively:
+The files follow the OpenAPI 3.1.0 format and are merged additively with optional deletion markers:
 
 * `components.schemas` entries can add new schemas or new properties to existing schemas.
 * `paths` entries can add missing endpoint details (for example additional response media types).
+* Setting any override node to `null` deletes the corresponding node from the base schema.
 
 .Example: `user.suspendedAt.schema.json`
 [%collapsible]
