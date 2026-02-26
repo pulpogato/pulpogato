@@ -30,6 +30,10 @@ If you're supporting multiple GitHub Apps or sites, you would export a factory b
 
 [source,java]
 ----
+
+import io.github.pulpogato.rest.api.RestClients;
+import io.github.pulpogato.rest.api.UsersApi;
+
 public class RestExample {
     public static void main(String[] args) {
         // create a WebClient
@@ -47,6 +51,32 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/Use
 }
 ----
 
+=== Reactive REST Client Example
+
+This shows how to create a REST client that returns a https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html[Mono] reactive type.
+
+[source,java]
+----
+
+import io.github.pulpogato.rest.api.reactive.RestClients;
+import io.github.pulpogato.rest.api.reactive.UsersApi;
+
+public class ReactiveRestExample {
+    public static void main(String[] args) {
+        // create a WebClient
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build();
+
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/reactive/UsersApiIntegrationTest.java[tags=getAuthenticatedPublic]
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/reactive/UsersApiIntegrationTest.java[tags=getBody]
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/reactive/UsersApiIntegrationTest.java[tags=getUser]
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/reactive/UsersApiIntegrationTest.java[tags=getLogin]
+
+    }
+}
+----
 === Webhook Example
 
 This shows how to create a Webhook handler that listens for ping events.
