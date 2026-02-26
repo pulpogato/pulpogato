@@ -7,6 +7,7 @@ import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
 import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
 import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
+import java.net.URI;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.http.HttpStatus;
@@ -79,6 +80,35 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         var body = response.getBody();
         assertThat(body).isNull();
+    }
+
+    @Test
+    void testCreateWorkflowDispatchWithResponse() {
+        RestClients restClients = new RestClients(webClient);
+        // Next statement was for testing if converters can be added in user-land.
+        // restClients.getConversionService().addConverter(new StringOrInteger.StringConverter());
+        var api = restClients.getActionsApi();
+
+        var response = api.createWorkflowDispatch(
+                        "pulpogato",
+                        "pulpogato",
+                        StringOrInteger.builder()
+                                .stringValue("check-issues-statuses.yml")
+                                .build(),
+                        ActionsApi.CreateWorkflowDispatchRequestBody.builder()
+                                .ref("main")
+                                .returnRunDetails(true)
+                                .build())
+                .block();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        var body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getWorkflowRunId()).isEqualTo(22420419990L);
+        assertThat(body.getRunUrl())
+                .isEqualTo(URI.create("https://api.github.com/repos/pulpogato/pulpogato/actions/runs/22420419990"));
+        assertThat(body.getHtmlUrl())
+                .isEqualTo(URI.create("https://github.com/pulpogato/pulpogato/actions/runs/22420419990"));
     }
 
     @Test

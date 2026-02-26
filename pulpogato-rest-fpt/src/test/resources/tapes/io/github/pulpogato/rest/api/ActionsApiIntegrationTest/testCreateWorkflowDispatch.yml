@@ -3,6 +3,7 @@
     uri: /repos/pulpogato/pulpogato/actions/workflows/check-issues-statuses.yml/dispatches
     protocol: HTTP/1.1
     headers:
+      Accept: application/json
       Content-Type: application/json
     body: |-
       {
@@ -10,7 +11,5 @@
       }
   response:
     statusCode: 204
-    headers:
-      Content-Type: application/json; charset=utf-8
-      Transfer-Encoding: chunked
-    body: "{}"
+    headers: {}
+    body: null

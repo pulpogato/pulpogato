@@ -1,0 +1,23 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Removes invalid requestBody entries from GET repo APIs until upstream spec is fixed: https://github.com/github/rest-api-description/issues/5995"
+  },
+  "components": {
+    "schemas": { }
+  },
+  "paths": {
+    "/repos/{owner}/{repo}/contents/{path}": {
+      "get": {
+        "requestBody": null
+      }
+    },
+    "/repos/{owner}/{repo}/issues/{issue_number}": {
+      "get": {
+        "requestBody": null
+      }
+    }
+  }
+}

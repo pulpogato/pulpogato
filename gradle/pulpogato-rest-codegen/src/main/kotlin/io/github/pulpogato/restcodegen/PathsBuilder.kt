@@ -232,8 +232,9 @@ class PathsBuilder {
                         ).addAnnotation(nonNull())
                         .build(),
                 ).addStatement(
-                    $$"this.restWebClient = restWebClient.mutate().filter(new $T()).build()",
+                    $$"this.restWebClient = restWebClient.mutate().filter(new $T()).filter(new $T()).build()",
                     ClassName.get("io.github.pulpogato.common.client", "DefaultHeadersExchangeFunction"),
+                    ClassName.get("io.github.pulpogato.common.client", "NoContentExchangeFunction"),
                 ).addStatement(
                     $$"this.conversionService = new $T()",
                     ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
@@ -334,6 +335,10 @@ class PathsBuilder {
                 .filter { (responseCode, apiResponse) ->
                     !apiResponse.content.isNullOrEmpty() && responseCode.startsWith("2")
                 }.toMutableMap()
+        val hasNoContent204Success =
+            atomicMethod.operation.responses.any { (responseCode, apiResponse) ->
+                responseCode == "204" && apiResponse.content.isNullOrEmpty()
+            }
 
         if (successResponses.size > 1 && successResponses.containsKey("204")) {
             successResponses.remove("204")
@@ -382,7 +387,19 @@ class PathsBuilder {
                                 .build(),
                         )
                     }
-                    typeDef.addMethod(buildNonVoidMethod(context, methodName, javadoc, atomicMethod, contentType, parameterSpecs, respRef, reactiveReturnTypes))
+                    typeDef.addMethod(
+                        buildNonVoidMethod(
+                            context,
+                            methodName,
+                            javadoc,
+                            atomicMethod,
+                            contentType,
+                            parameterSpecs,
+                            respRef,
+                            reactiveReturnTypes,
+                            responseBodyNullable = hasNoContent204Success,
+                        ),
+                    )
                 }
             }
         }
@@ -483,11 +500,13 @@ class PathsBuilder {
         parameterSpecs: List<ParameterSpec>,
         respRef: TypeName,
         reactiveReturnTypes: Boolean,
+        responseBodyNullable: Boolean = false,
     ): MethodSpec {
         val suitableAnnotations =
             respRef.annotations().filter {
                 (it.type() as ClassName).simpleName() != "JsonFormat"
             }
+        val bodyNullabilityAnnotation = if (responseBodyNullable) nullable() else nonNull()
         val exchangeAnnotation =
             atomicMethod.method.name
                 .lowercase()
@@ -518,7 +537,7 @@ class PathsBuilder {
                 } else {
                     ParameterizedTypeName.get(
                         ClassName.get("org.springframework.http", "ResponseEntity"),
-                        respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
+                        respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(bodyNullabilityAnnotation),
                     )
                 },
             ).build()
