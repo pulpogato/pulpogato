@@ -46,6 +46,7 @@ val allVersions =
         "ghes-3.17",
         "ghes-3.18",
         "ghes-3.19",
+        "ghes-3.20",
     )
 
 allVersions.forEach { ghVersion ->
