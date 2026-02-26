@@ -9,6 +9,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/protected-branch-pull-request-review/value"
   reason: "TODO: GitHub example has org data where schema expects SimpleUser/Enterprise"
   versions:
@@ -20,6 +21,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/paths/~1scim~1v2~1organizations~1{org}~1Users~1{scim_user_id}/patch/requestBody/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/5874"
   versions:
@@ -33,6 +35,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/paths/~1repos~1{owner}~1{repo}~1security-advisories~1{ghsa_id}/patch/requestBody/content/application~1json/examples/update_vvrs/value"
   reason: "https://github.com/github/rest-api-description/issues/5056"
   versions:
@@ -48,6 +51,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/paths/~1versions/get/responses/200/content/application~1json/examples/default/value"
   reason: "The API returns a List of LocalDate that cannot be serialized and compared."
   versions:
@@ -64,6 +68,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/classroom-assignment/value"
   reason: "https://github.com/github/rest-api-description/issues/5480"
   versions:
@@ -102,6 +107,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/ghes-license-info/value"
   reason: "https://github.com/github/rest-api-description/issues/5516"
   versions:
@@ -111,11 +117,13 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/organization-simple/value"
   reason: "https://github.com/github/rest-api-description/issues/5542"
   versions:
     - fpt
     - ghec
+    - ghes-3.20
 - example: "#/components/examples/ghes-license-check/value"
   reason: "https://github.com/github/rest-api-description/issues/5546"
   versions:
@@ -125,6 +133,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/ghes-get-maintenance/value"
   reason: "https://github.com/github/rest-api-description/issues/5547"
   versions:
@@ -134,6 +143,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/list-attestations-bulk/value"
   reason: "https://github.com/github/rest-api-description/issues/5861"
   versions:
@@ -145,12 +155,14 @@
     - fpt
     - ghec
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/projects-v2-item-with-content/value"
   reason: "https://github.com/github/rest-api-description/issues/5601"
   versions:
     - fpt
     - ghec
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/org-ruleset-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5602"
   versions:
@@ -162,6 +174,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/org-ruleset-version-with-state/value"
   reason: "https://github.com/github/rest-api-description/issues/5860"
   versions:
@@ -177,6 +190,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/dependabot-alert-open/value"
   reason: "https://github.com/github/rest-api-description/issues/5628"
   versions:
@@ -186,6 +200,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/environments/value"
   reason: "https://github.com/github/rest-api-description/issues/5629"
   versions:
@@ -195,6 +210,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/custom-deployment-protection-rule-apps/value"
   reason: "https://github.com/github/rest-api-description/issues/5630"
   versions:
@@ -206,6 +222,7 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
 - example: "#/components/examples/deploy-key-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5633"
   versions:
@@ -222,3 +239,4 @@
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
+    - ghes-3.20
