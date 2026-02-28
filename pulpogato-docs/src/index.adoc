@@ -6,7 +6,7 @@
 :snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=S[alt=Maven Snapshot,height=30,link="https://central.sonatype.com/repository/maven-snapshots/{package-path}/
 :snapshot-suffix: /maven-metadata.xml"]
 :central-prefix: image:https://img.shields.io/maven-central/v/{package}/
-:central-middle: ?style=for-the-badge&label=R&color=green[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
+:central-middle: ?strategy=highestVersion&filter=!*-rc*&style=for-the-badge&label=R&color=green[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
 :central-suffix: /overview"]
 :deprecated-middle: ?style=for-the-badge&label=R&color=lightgrey[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
 :nofooter:
