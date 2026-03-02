@@ -23,7 +23,7 @@ object JsonSchemaTypeResolver {
      * @param name The name to use for any generated class
      * @param node The JSON Schema node
      * @param parentPackage The package to place generated types in
-     * @return A pair of (Java TypeName, optional generated TypeSpec)
+     * @return The resolved Java type, and any newly generated TypeSpec
      */
     fun resolveType(
         ctx: JsonSchemaContext,
@@ -32,102 +32,134 @@ object JsonSchemaTypeResolver {
         parentPackage: String,
     ): ResolvedType {
         if (!node.isObject) {
-            // Bare type like `true` or `false` in additionalProperties
+            // Bare value like `true` or `false` (e.g., in additionalProperties)
             return ResolvedType(Types.OBJECT)
         }
-
         val obj = node as ObjectNode
+        return tryResolveRef(ctx, name, obj, parentPackage)
+            ?: tryResolvePatternProperties(ctx, name, obj, parentPackage)
+            ?: tryResolveOneOf(ctx, name, obj, parentPackage)
+            ?: tryResolveAnyOf(ctx, name, obj, parentPackage)
+            ?: tryResolveAllOf(ctx, name, obj, parentPackage)
+            ?: tryResolveEnum(ctx, name, obj, parentPackage)
+            ?: tryResolveConst(obj)
+            ?: tryResolveByType(ctx, name, obj, parentPackage)
+            ?: tryResolveProperties(ctx, name, obj, parentPackage)
+            ?: tryResolveAdditionalProperties(ctx, name, obj, parentPackage)
+            ?: ResolvedType(Types.OBJECT)
+    }
 
-        // 1. $ref — look up definition
-        val ref = obj.get("\$ref")
-        if (ref != null) {
-            val resolvedFromSiblings = resolveRefWithSiblings(ctx, name, obj, parentPackage)
-            if (resolvedFromSiblings != null) {
-                return resolvedFromSiblings
-            }
-            return resolveRef(ctx, ref.asString(), parentPackage)
+    private fun tryResolveRef(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val ref = obj.get("\$ref") ?: return null
+        return resolveRefWithSiblings(ctx, name, obj, parentPackage)
+            ?: resolveRef(ctx, ref.asString(), parentPackage)
+    }
+
+    private fun tryResolvePatternProperties(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val patternProps = obj.get("patternProperties")?.takeIf { it.isObject } ?: return null
+        return resolvePatternProperties(ctx, name, patternProps as ObjectNode, parentPackage)
+    }
+
+    private fun tryResolveOneOf(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val oneOf = obj.get("oneOf")?.takeIf { it.isArray } as? ArrayNode? ?: return null
+        if (isValidationOnlyOneOf(oneOf)) {
+            // oneOf is only a validation constraint (e.g., required-field sets); dispatch on the real type instead
+            val dispatched =
+                tryResolveByType(ctx, name, obj, parentPackage)
+                    ?: tryResolveProperties(ctx, name, obj, parentPackage)
+            if (dispatched != null) return dispatched
         }
+        return resolveOneOf(ctx, name, oneOf, parentPackage, obj)
+    }
 
-        // 2. patternProperties — Map<String, T>
-        val patternProps = obj.get("patternProperties")
-        if (patternProps != null && patternProps.isObject) {
-            return resolvePatternProperties(ctx, name, patternProps as ObjectNode, parentPackage)
-        }
-
-        // 3. oneOf with $ref variants → union type
-        val oneOf = obj.get("oneOf")
-        if (oneOf != null && oneOf.isArray) {
-            if (isValidationOnlyOneOf(oneOf as ArrayNode)) {
-                val typeNode = obj.get("type")
-                if (typeNode != null) {
-                    if (typeNode.isArray) {
-                        return resolveTypeArrayUnion(ctx, name, typeNode as ArrayNode, obj, parentPackage)
-                    }
-                    return resolveByType(ctx, name, typeNode.asString(), obj, parentPackage)
-                }
-                val properties = obj.get("properties")
-                if (properties != null && properties.isObject) {
-                    return resolveObject(ctx, name, obj, parentPackage)
-                }
-            }
-            return resolveOneOf(ctx, name, oneOf, parentPackage, obj)
-        }
-
-        // 4. anyOf — typically validation-only; collapse to widest type
-        val anyOf = obj.get("anyOf")
-        if (anyOf != null && anyOf.isArray) {
-            val typeNode = obj.get("type")
-            if (typeNode != null && typeNode.asString() == "array") {
-                return resolveByType(ctx, name, "array", obj, parentPackage)
-            }
-            return resolveAnyOf(ctx, name, anyOf as ArrayNode, parentPackage, obj)
-        }
-
-        // 5. allOf — merge all sub-schema properties
-        val allOf = obj.get("allOf")
-        if (allOf != null && allOf.isArray) {
-            return resolveAllOf(ctx, name, allOf as ArrayNode, parentPackage, obj)
-        }
-
-        // 6. enum
-        val enumNode = obj.get("enum")
-        if (enumNode != null && enumNode.isArray) {
-            return resolveEnum(ctx, name, enumNode as ArrayNode, obj, parentPackage)
-        }
-
-        // 7. const — just a string constraint
-        val constNode = obj.get("const")
-        if (constNode != null) {
-            return ResolvedType(Types.STRING)
-        }
-
-        // 8. type-based dispatch
+    private fun tryResolveAnyOf(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val anyOf = obj.get("anyOf")?.takeIf { it.isArray } ?: return null
+        // When explicit type is "array", treat as typed array regardless of anyOf variants
         val typeNode = obj.get("type")
-        if (typeNode != null) {
-            if (typeNode.isArray) {
-                return resolveTypeArrayUnion(ctx, name, typeNode as ArrayNode, obj, parentPackage)
-            }
-            return resolveByType(ctx, name, typeNode.asString(), obj, parentPackage)
+        if (typeNode != null && typeNode.asString() == "array") {
+            return resolveByType(ctx, name, "array", obj, parentPackage)
         }
+        return resolveAnyOf(ctx, name, anyOf as ArrayNode, parentPackage, obj)
+    }
 
-        // 9. object with properties but no explicit type
-        val properties = obj.get("properties")
-        if (properties != null && properties.isObject) {
-            return resolveObject(ctx, name, obj, parentPackage)
+    private fun tryResolveAllOf(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val allOf = obj.get("allOf")?.takeIf { it.isArray } ?: return null
+        return resolveAllOf(ctx, name, allOf as ArrayNode, parentPackage, obj)
+    }
+
+    private fun tryResolveEnum(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val enumNode = obj.get("enum")?.takeIf { it.isArray } ?: return null
+        return resolveEnum(ctx, name, enumNode as ArrayNode, obj, parentPackage)
+    }
+
+    private fun tryResolveConst(obj: ObjectNode): ResolvedType? = if (obj.has("const")) ResolvedType(Types.STRING) else null
+
+    private fun tryResolveByType(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val typeNode = obj.get("type") ?: return null
+        return if (typeNode.isArray) {
+            resolveTypeArrayUnion(ctx, name, typeNode as ArrayNode, obj, parentPackage)
+        } else {
+            resolveByType(ctx, name, typeNode.asString(), obj, parentPackage)
         }
+    }
 
-        // 10. additionalProperties with $ref
-        val additionalProps = obj.get("additionalProperties")
-        if (additionalProps != null && additionalProps.isObject) {
-            val valueType = resolveType(ctx.withSchemaStack("additionalProperties"), "${name}Value", additionalProps, parentPackage)
-            return ResolvedType(
-                ParameterizedTypeName.get(Types.MAP, Types.STRING, valueType.typeName),
-                valueType.typeSpec,
-            )
-        }
+    private fun tryResolveProperties(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        if (obj.get("properties")?.isObject != true) return null
+        return resolveObject(ctx, name, obj, parentPackage)
+    }
 
-        // Fallback
-        return ResolvedType(Types.OBJECT)
+    private fun tryResolveAdditionalProperties(
+        ctx: JsonSchemaContext,
+        name: String,
+        obj: ObjectNode,
+        parentPackage: String,
+    ): ResolvedType? {
+        val additionalProps = obj.get("additionalProperties")?.takeIf { it.isObject } ?: return null
+        val valueType = resolveType(ctx.withSchemaStack("additionalProperties"), "${name}Value", additionalProps, parentPackage)
+        return ResolvedType(
+            ParameterizedTypeName.get(Types.MAP, Types.STRING, valueType.typeName),
+            valueType.typeSpec,
+        )
     }
 
     private fun resolveRefWithSiblings(
