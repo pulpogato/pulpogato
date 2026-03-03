@@ -580,103 +580,148 @@ object JsonSchemaTypeResolver {
         parentNode: ObjectNode,
     ): ResolvedType {
         val mergedProps = mutableListOf<ObjectGenerator.PropertySpec>()
+        collectParentProperties(ctx, name, parentNode, parentPackage, mergedProps)
+        val singleRef = collectAllOfElementProperties(ctx, name, allOf, parentPackage, mergedProps)
+        if (singleRef != null) return singleRef
+        if (mergedProps.isEmpty()) return ResolvedType(Types.OBJECT)
+        return generateMergedObjectType(ctx, name, parentNode, parentPackage, mergedProps)
+    }
 
-        fun mergeProperty(
-            propName: String,
-            propSchema: JsonNode,
-            propCtx: JsonSchemaContext,
-        ) {
-            val propResolved = resolveType(propCtx, "${name}${propName.pascalCase()}", propSchema, parentPackage)
-            val propDescription = propSchema.get("description")?.asString()
-            val existingIndex = mergedProps.indexOfFirst { it.jsonName == propName }
-            if (existingIndex < 0) {
-                mergedProps.add(
-                    ObjectGenerator.PropertySpec(
-                        propName,
-                        propResolved.typeName,
-                        propDescription,
-                        generatedSchemaRef(propCtx),
-                    ),
-                )
-            } else {
-                val existing = mergedProps[existingIndex]
-                val mergedType =
-                    mergeDuplicatePropertyType(
-                        ctx,
-                        name,
-                        propName,
-                        existing.typeName,
-                        propResolved.typeName,
-                        parentPackage,
-                        existing.description ?: propDescription,
-                    )
-                mergedProps[existingIndex] =
-                    ObjectGenerator.PropertySpec(
-                        propName,
-                        mergedType,
-                        existing.description ?: propDescription,
-                        existing.schemaRef,
-                    )
-            }
-        }
-
+    private fun collectParentProperties(
+        ctx: JsonSchemaContext,
+        name: String,
+        parentNode: ObjectNode,
+        parentPackage: String,
+        mergedProps: MutableList<ObjectGenerator.PropertySpec>,
+    ) {
         val parentProps = parentNode.get("properties")
         if (parentProps != null && parentProps.isObject) {
             (parentProps as ObjectNode).properties().forEach { (propName, propSchema) ->
-                mergeProperty(propName, propSchema, ctx.withSchemaStack("properties", propName))
+                mergeProperty(ctx, name, parentPackage, mergedProps, propName, propSchema, ctx.withSchemaStack("properties", propName))
             }
         }
-        val parentConditionalProps = mutableListOf<Pair<ObjectNode, List<String>>>()
-        gatherConditionalProperties(parentNode, parentConditionalProps)
-        parentConditionalProps.forEach { (propsNode, pathPrefix) ->
+        val conditionalProps = mutableListOf<Pair<ObjectNode, List<String>>>()
+        gatherConditionalProperties(parentNode, conditionalProps)
+        conditionalProps.forEach { (propsNode, pathPrefix) ->
             propsNode.properties().forEach { (propName, propSchema) ->
-                mergeProperty(propName, propSchema, ctx.withSchemaStack(*pathPrefix.toTypedArray(), propName))
+                mergeProperty(ctx, name, parentPackage, mergedProps, propName, propSchema, ctx.withSchemaStack(*pathPrefix.toTypedArray(), propName))
             }
         }
+    }
 
+    /** Returns a [ResolvedType] only when allOf contains exactly one bare `$ref` and no merged properties yet. */
+    private fun collectAllOfElementProperties(
+        ctx: JsonSchemaContext,
+        name: String,
+        allOf: ArrayNode,
+        parentPackage: String,
+        mergedProps: MutableList<ObjectGenerator.PropertySpec>,
+    ): ResolvedType? {
         allOf.forEachIndexed { index, element ->
             if (element is ObjectNode) {
                 val props = element.get("properties")
                 if (props != null && props.isObject) {
                     (props as ObjectNode).properties().forEach { (propName, propSchema) ->
                         mergeProperty(
+                            ctx,
+                            name,
+                            parentPackage,
+                            mergedProps,
                             propName,
                             propSchema,
                             ctx.withSchemaStack("allOf", index.toString(), "properties", propName),
                         )
                     }
                 }
+                collectAllOfBranchProperties(ctx, name, element, index, parentPackage, mergedProps)
+            }
+            if (element.has("\$ref")) {
+                val resolved = resolveType(ctx.withSchemaStack("allOf", index.toString()), name, element, parentPackage)
+                if (mergedProps.isEmpty() && allOf.size() == 1) return resolved
+            }
+        }
+        return null
+    }
 
-                listOf("then", "else").forEach { branch ->
-                    val branchNode = element.get(branch)
-                    if (branchNode != null && branchNode.isObject) {
-                        val branchProps = branchNode.get("properties")
-                        if (branchProps != null && branchProps.isObject) {
-                            (branchProps as ObjectNode).properties().forEach { (propName, propSchema) ->
-                                mergeProperty(
-                                    propName,
-                                    propSchema,
-                                    ctx.withSchemaStack("allOf", index.toString(), branch, "properties", propName),
-                                )
-                            }
-                        }
+    private fun collectAllOfBranchProperties(
+        ctx: JsonSchemaContext,
+        name: String,
+        element: ObjectNode,
+        allOfIndex: Int,
+        parentPackage: String,
+        mergedProps: MutableList<ObjectGenerator.PropertySpec>,
+    ) {
+        listOf("then", "else").forEach { branch ->
+            val branchNode = element.get(branch)
+            if (branchNode != null && branchNode.isObject) {
+                val branchProps = branchNode.get("properties")
+                if (branchProps != null && branchProps.isObject) {
+                    (branchProps as ObjectNode).properties().forEach { (propName, propSchema) ->
+                        mergeProperty(
+                            ctx,
+                            name,
+                            parentPackage,
+                            mergedProps,
+                            propName,
+                            propSchema,
+                            ctx.withSchemaStack("allOf", allOfIndex.toString(), branch, "properties", propName),
+                        )
                     }
                 }
             }
-
-            if (element.has("\$ref")) {
-                // Resolve the ref and keep it if allOf only wraps this single ref.
-                val resolved = resolveType(ctx.withSchemaStack("allOf", index.toString()), name, element, parentPackage)
-                if (mergedProps.isEmpty() && allOf.size() == 1) {
-                    return resolved
-                }
-            }
         }
+    }
 
-        if (mergedProps.isEmpty()) {
-            return ResolvedType(Types.OBJECT)
+    private fun mergeProperty(
+        ctx: JsonSchemaContext,
+        name: String,
+        parentPackage: String,
+        mergedProps: MutableList<ObjectGenerator.PropertySpec>,
+        propName: String,
+        propSchema: JsonNode,
+        propCtx: JsonSchemaContext,
+    ) {
+        val propResolved = resolveType(propCtx, "${name}${propName.pascalCase()}", propSchema, parentPackage)
+        val propDescription = propSchema.get("description")?.asString()
+        val existingIndex = mergedProps.indexOfFirst { it.jsonName == propName }
+        if (existingIndex < 0) {
+            mergedProps.add(
+                ObjectGenerator.PropertySpec(
+                    propName,
+                    propResolved.typeName,
+                    propDescription,
+                    generatedSchemaRef(propCtx),
+                ),
+            )
+        } else {
+            val existing = mergedProps[existingIndex]
+            val mergedType =
+                mergeDuplicatePropertyType(
+                    ctx,
+                    name,
+                    propName,
+                    existing.typeName,
+                    propResolved.typeName,
+                    parentPackage,
+                    existing.description ?: propDescription,
+                )
+            mergedProps[existingIndex] =
+                ObjectGenerator.PropertySpec(
+                    propName,
+                    mergedType,
+                    existing.description ?: propDescription,
+                    existing.schemaRef,
+                )
         }
+    }
 
+    private fun generateMergedObjectType(
+        ctx: JsonSchemaContext,
+        name: String,
+        parentNode: ObjectNode,
+        parentPackage: String,
+        mergedProps: List<ObjectGenerator.PropertySpec>,
+    ): ResolvedType {
         val description = parentNode.get("description")?.asString()
         val spec =
             ObjectGenerator.generate(
