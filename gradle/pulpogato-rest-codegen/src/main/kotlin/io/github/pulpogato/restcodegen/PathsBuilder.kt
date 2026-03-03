@@ -26,6 +26,10 @@ import io.swagger.v3.oas.models.responses.ApiResponse
 import java.io.File
 import javax.lang.model.element.Modifier
 
+private const val PACKAGE_SPRING_FORMAT_SUPPORT = "org.springframework.format.support"
+private const val PACKAGE_SPRING_WEBCLIENT = "org.springframework.web.reactive.function.client"
+private const val PACKAGE_SPRING_HTTP = "org.springframework.http"
+
 /**
  * A builder class that generates REST API client code based on OpenAPI specifications.
  *
@@ -93,7 +97,7 @@ class PathsBuilder {
                 .addField(
                     FieldSpec
                         .builder(
-                            ClassName.get("org.springframework.format.support", "FormattingConversionService"),
+                            ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"),
                             "conversionService",
                             Modifier.PRIVATE,
                             Modifier.FINAL,
@@ -111,7 +115,7 @@ class PathsBuilder {
                 ).addField(
                     FieldSpec
                         .builder(
-                            ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
+                            ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
                             "restWebClient",
                             Modifier.PRIVATE,
                             Modifier.FINAL,
@@ -122,7 +126,7 @@ class PathsBuilder {
                         .methodBuilder("getConversionService")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(nonNull())
-                        .returns(ClassName.get("org.springframework.format.support", "FormattingConversionService"))
+                        .returns(ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"))
                         .addStatement("return this.conversionService")
                         .addJavadoc("Returns the conversion service used for parameter conversion.")
                         .build(),
@@ -131,7 +135,7 @@ class PathsBuilder {
                         .methodBuilder("getRestWebClient")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(nonNull())
-                        .returns(ClassName.get("org.springframework.web.reactive.function.client", "WebClient"))
+                        .returns(ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"))
                         .addStatement("return this.restWebClient")
                         .addJavadoc("Returns the WebClient used for REST API calls.")
                         .build(),
@@ -227,7 +231,7 @@ class PathsBuilder {
                 .addParameter(
                     ParameterSpec
                         .builder(
-                            ClassName.get("org.springframework.web.reactive.function.client", "WebClient"),
+                            ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
                             "restWebClient",
                         ).addAnnotation(nonNull())
                         .build(),
@@ -237,7 +241,7 @@ class PathsBuilder {
                     ClassName.get("io.github.pulpogato.common.client", "NoContentExchangeFunction"),
                 ).addStatement(
                     $$"this.conversionService = new $T()",
-                    ClassName.get("org.springframework.format.support", "DefaultFormattingConversionService"),
+                    ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "DefaultFormattingConversionService"),
                 ).addStatement(
                     $$"new $T().getConverters().forEach(conversionService::addConverter)",
                     ClassName.get(enumConvertersPackageName, "EnumConverters"),
@@ -530,13 +534,13 @@ class PathsBuilder {
                     ParameterizedTypeName.get(
                         ClassName.get("reactor.core.publisher", "Mono"),
                         ParameterizedTypeName.get(
-                            ClassName.get("org.springframework.http", "ResponseEntity"),
+                            ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
                             respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
                         ),
                     )
                 } else {
                     ParameterizedTypeName.get(
-                        ClassName.get("org.springframework.http", "ResponseEntity"),
+                        ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
                         respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(bodyNullabilityAnnotation),
                     )
                 },
@@ -585,13 +589,13 @@ class PathsBuilder {
                     ParameterizedTypeName.get(
                         ClassName.get("reactor.core.publisher", "Mono"),
                         ParameterizedTypeName.get(
-                            ClassName.get("org.springframework.http", "ResponseEntity"),
+                            ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
                             ClassName.get("java.lang", "Void").annotated(nonNull()),
                         ),
                     )
                 } else {
                     ParameterizedTypeName.get(
-                        ClassName.get("org.springframework.http", "ResponseEntity"),
+                        ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
                         ClassName.get("java.lang", "Void").annotated(nonNull()),
                     )
                 },

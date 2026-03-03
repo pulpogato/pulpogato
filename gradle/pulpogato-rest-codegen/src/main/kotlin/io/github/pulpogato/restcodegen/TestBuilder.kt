@@ -16,6 +16,7 @@ import kotlin.collections.get
 
 object TestBuilder {
     private const val MAX_STRING_LENGTH = 60_000
+    private const val PACKAGE_ASSERTJ = "org.assertj.core.api"
 
     fun buildTest(
         context: Context,
@@ -66,7 +67,7 @@ object TestBuilder {
 
                     // Generate test that reads from the JSON file
                     val standardCharsetsClass = ClassName.get("java.nio.charset", "StandardCharsets")
-                    val assertionsClass = ClassName.get("org.assertj.core.api", "Assertions")
+                    val assertionsClass = ClassName.get(PACKAGE_ASSERTJ, "Assertions")
                     MethodSpec
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
@@ -79,7 +80,7 @@ object TestBuilder {
                             Language::class.java,
                             String::class.java,
                             standardCharsetsClass,
-                        ).addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
+                        ).addStatement($$"var softly = new $T()", ClassName.get(PACKAGE_ASSERTJ, "SoftAssertions"))
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
@@ -100,7 +101,7 @@ object TestBuilder {
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
                         .addAnnotation(Annotations.generated(1, context))
                         .addStatement($$"@$T(\"json\") $T input = $L", Language::class.java, String::class.java, formatted.blockQuote())
-                        .addStatement($$"var softly = new $T()", ClassName.get("org.assertj.core.api", "SoftAssertions"))
+                        .addStatement($$"var softly = new $T()", ClassName.get(PACKAGE_ASSERTJ, "SoftAssertions"))
                         .addStatement(
                             $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
                             testUtilsClass,
