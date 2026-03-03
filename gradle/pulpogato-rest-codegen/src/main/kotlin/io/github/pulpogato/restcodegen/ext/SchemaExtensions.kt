@@ -33,6 +33,7 @@ import io.swagger.v3.oas.models.media.Schema
 import javax.lang.model.element.Modifier
 
 private const val PACKAGE_PULPOGATO_COMMON = "io.github.pulpogato.common"
+private const val PACKAGE_COMMONS_LANG3_BUILDER = "org.apache.commons.lang3.builder"
 
 fun Map.Entry<String, Schema<*>>.className() = key.pascalCase()
 
@@ -967,7 +968,7 @@ private fun generateToString(): MethodSpec =
         .methodBuilder("toString")
         .addModifiers(Modifier.PUBLIC)
         .returns(String::class.java)
-        .addStatement($$"return $T.reflectionToString(this)", ClassName.get("org.apache.commons.lang3.builder", "ToStringBuilder"))
+        .addStatement($$"return $T.reflectionToString(this)", ClassName.get(PACKAGE_COMMONS_LANG3_BUILDER, "ToStringBuilder"))
         .build()
 
 /**
@@ -979,7 +980,7 @@ private fun generateEquals(): MethodSpec =
         .addModifiers(Modifier.PUBLIC)
         .returns(TypeName.BOOLEAN)
         .addParameter(ParameterSpec.builder(Types.OBJECT, "o").build())
-        .addStatement($$"return $T.reflectionEquals(this, o, false)", ClassName.get("org.apache.commons.lang3.builder", "EqualsBuilder"))
+        .addStatement($$"return $T.reflectionEquals(this, o, false)", ClassName.get(PACKAGE_COMMONS_LANG3_BUILDER, "EqualsBuilder"))
         .build()
 
 /**
@@ -991,7 +992,7 @@ private fun generateHashCode(): MethodSpec =
         .addModifiers(Modifier.PUBLIC)
         .returns(
             TypeName.INT,
-        ).addStatement($$"return $T.reflectionHashCode(this, false)", ClassName.get("org.apache.commons.lang3.builder", "HashCodeBuilder"))
+        ).addStatement($$"return $T.reflectionHashCode(this, false)", ClassName.get(PACKAGE_COMMONS_LANG3_BUILDER, "HashCodeBuilder"))
         .build()
 
 /**
