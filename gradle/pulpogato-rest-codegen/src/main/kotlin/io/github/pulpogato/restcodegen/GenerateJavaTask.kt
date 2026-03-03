@@ -13,6 +13,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ObjectNode
 import java.io.File
@@ -211,14 +212,8 @@ open class GenerateJavaTask : DefaultTask() {
     /**
      * Merges schema additions from an addition file into the main schema.
      *
-     * This method looks for additional schema definitions in the additions file
-     * and merges them into the main OpenAPI specification. It supports:
-     * - Adding new properties to existing schemas
-     * - Adding entirely new schemas that don't exist in the main spec
-     * - Deleting existing nodes by setting the override value to null
-     *
-     * It also tracks which additional properties were added so they can be
-     * properly handled during code generation.
+     * Supports adding/removing schemas under `components.schemas` and paths under `paths`.
+     * Also tracks which additional properties were added so they can be handled during code generation.
      *
      * @param swaggerSpec The original OpenAPI specification as a JSON string
      * @param schemaAddsJson The additions schema as a JSON string
@@ -239,72 +234,92 @@ open class GenerateJavaTask : DefaultTask() {
         if (additions != null && additions.isObject) {
             val targetSchemas = schema.at("/components/schemas") as ObjectNode
             additions.properties().forEach { (schemaName, schemaAddition) ->
-                val targetSchema = targetSchemas[schemaName]
-
-                when {
-                    schemaAddition.isNull -> {
-                        if (targetSchema != null) {
-                            targetSchemas.remove(schemaName)
-                            addedProperties.remove(schemaName)
-                            logger.info("Removed schema '$schemaName' from '$sourceFileName'")
-                        }
-                    }
-
-                    targetSchema == null -> {
-                        // Schema doesn't exist - add it as a new schema
-                        targetSchemas.set(schemaName, schemaAddition.deepCopy())
-                        logger.info("Added new schema '$schemaName' from '$sourceFileName'")
-                    }
-
-                    targetSchema is ObjectNode && schemaAddition is ObjectNode -> {
-                        // Schema exists - merge properties
-                        val properties = schemaAddition["properties"]
-                        if (properties != null && properties.isObject) {
-                            val targetProperties =
-                                if (targetSchema["properties"] is ObjectNode) {
-                                    targetSchema["properties"] as ObjectNode
-                                } else {
-                                    targetSchema.putObject("properties")
-                                }
-                            val propertyNames = addedProperties.getOrPut(schemaName) { mutableMapOf() }
-                            properties.properties().forEach { (propertyName, propertySpec) ->
-                                if (propertySpec.isNull) {
-                                    if (targetProperties.has(propertyName)) {
-                                        targetProperties.remove(propertyName)
-                                        propertyNames.remove(propertyName)
-                                        logger.info(
-                                            "Removed property '$propertyName' from schema '$schemaName' from '$sourceFileName'",
-                                        )
-                                    }
-                                } else if (!targetProperties.has(propertyName)) {
-                                    targetProperties.set(propertyName, propertySpec.deepCopy())
-                                    propertyNames[propertyName] = sourceFileName
-                                    logger.info(
-                                        "Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'",
-                                    )
-                                }
-                            }
-                            if (propertyNames.isEmpty()) {
-                                addedProperties.remove(schemaName)
-                            }
-                        }
-                    }
-                }
+                mergeSchemaEntry(targetSchemas, schemaName, schemaAddition, sourceFileName, addedProperties)
             }
         }
 
         val pathAdditions = schemaAdds["paths"]
         if (pathAdditions != null && pathAdditions.isObject) {
-            val targetPaths =
-                if (schema["paths"] != null && schema["paths"].isObject) {
-                    schema["paths"] as ObjectNode
-                } else {
-                    schema.putObject("paths")
-                }
-            mergeObjectNodes(targetPaths, pathAdditions as ObjectNode, sourceFileName, "/paths")
+            mergePathAdditions(schema, pathAdditions as ObjectNode, sourceFileName)
         }
 
         return objectMapper.writeValueAsString(schema)
+    }
+
+    private fun mergeSchemaEntry(
+        targetSchemas: ObjectNode,
+        schemaName: String,
+        schemaAddition: JsonNode,
+        sourceFileName: String,
+        addedProperties: MutableMap<String, MutableMap<String, String>>,
+    ) {
+        val targetSchema = targetSchemas[schemaName]
+        when {
+            schemaAddition.isNull -> {
+                if (targetSchema != null) {
+                    targetSchemas.remove(schemaName)
+                    addedProperties.remove(schemaName)
+                    logger.info("Removed schema '$schemaName' from '$sourceFileName'")
+                }
+            }
+
+            targetSchema == null -> {
+                targetSchemas.set(schemaName, schemaAddition.deepCopy())
+                logger.info("Added new schema '$schemaName' from '$sourceFileName'")
+            }
+
+            targetSchema is ObjectNode && schemaAddition is ObjectNode -> {
+                mergeSchemaProperties(targetSchema, schemaAddition, schemaName, sourceFileName, addedProperties)
+            }
+        }
+    }
+
+    private fun mergeSchemaProperties(
+        targetSchema: ObjectNode,
+        schemaAddition: ObjectNode,
+        schemaName: String,
+        sourceFileName: String,
+        addedProperties: MutableMap<String, MutableMap<String, String>>,
+    ) {
+        val properties = schemaAddition["properties"]
+        if (properties == null || !properties.isObject) return
+        val targetProperties =
+            if (targetSchema["properties"] is ObjectNode) {
+                targetSchema["properties"] as ObjectNode
+            } else {
+                targetSchema.putObject("properties")
+            }
+        val propertyNames = addedProperties.getOrPut(schemaName) { mutableMapOf() }
+        properties.properties().forEach { (propertyName, propertySpec) ->
+            if (propertySpec.isNull) {
+                if (targetProperties.has(propertyName)) {
+                    targetProperties.remove(propertyName)
+                    propertyNames.remove(propertyName)
+                    logger.info("Removed property '$propertyName' from schema '$schemaName' from '$sourceFileName'")
+                }
+            } else if (!targetProperties.has(propertyName)) {
+                targetProperties.set(propertyName, propertySpec.deepCopy())
+                propertyNames[propertyName] = sourceFileName
+                logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
+            }
+        }
+        if (propertyNames.isEmpty()) {
+            addedProperties.remove(schemaName)
+        }
+    }
+
+    private fun mergePathAdditions(
+        schema: ObjectNode,
+        pathAdditions: ObjectNode,
+        sourceFileName: String,
+    ) {
+        val targetPaths =
+            if (schema["paths"] != null && schema["paths"].isObject) {
+                schema["paths"] as ObjectNode
+            } else {
+                schema.putObject("paths")
+            }
+        mergeObjectNodes(targetPaths, pathAdditions, sourceFileName, "/paths")
     }
 
     /**
