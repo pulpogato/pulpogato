@@ -90,7 +90,7 @@ open class GenerateGithubFilesTask : DefaultTask() {
                 schemaStack = listOf("#"),
             )
 
-        val definitions = rootSchema.get("definitions")
+        val definitions = rootSchema["definitions"]
         preRegisterDefinitions(ctx, definitions, targetPackage)
         resolveDefinitions(ctx, definitions, targetPackage)
         resolveRootType(ctx, schemaFile, rootSchema, targetPackage)

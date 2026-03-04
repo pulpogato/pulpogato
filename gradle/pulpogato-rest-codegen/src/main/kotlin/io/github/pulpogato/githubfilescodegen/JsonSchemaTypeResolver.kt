@@ -55,7 +55,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val ref = obj.get("\$ref") ?: return null
+        val ref = obj[$$"$ref"] ?: return null
         return resolveRefWithSiblings(ctx, name, obj, parentPackage)
             ?: resolveRef(ctx, ref.asString(), parentPackage)
     }
@@ -66,7 +66,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val patternProps = obj.get("patternProperties")?.takeIf { it.isObject } ?: return null
+        val patternProps = obj["patternProperties"]?.takeIf { it.isObject } ?: return null
         return resolvePatternProperties(ctx, name, patternProps as ObjectNode, parentPackage)
     }
 
@@ -76,7 +76,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val oneOf = obj.get("oneOf")?.takeIf { it.isArray } as? ArrayNode? ?: return null
+        val oneOf = obj["oneOf"]?.takeIf { it.isArray } as? ArrayNode? ?: return null
         if (isValidationOnlyOneOf(oneOf)) {
             // oneOf is only a validation constraint (e.g., required-field sets); dispatch on the real type instead
             val dispatched =
@@ -93,9 +93,9 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val anyOf = obj.get("anyOf")?.takeIf { it.isArray } ?: return null
+        val anyOf = obj["anyOf"]?.takeIf { it.isArray } ?: return null
         // When explicit type is "array", treat as typed array regardless of anyOf variants
-        val typeNode = obj.get("type")
+        val typeNode = obj["type"]
         if (typeNode != null && typeNode.asString() == "array") {
             return resolveByType(ctx, name, "array", obj, parentPackage)
         }
@@ -108,7 +108,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val allOf = obj.get("allOf")?.takeIf { it.isArray } ?: return null
+        val allOf = obj["allOf"]?.takeIf { it.isArray } ?: return null
         return resolveAllOf(ctx, name, allOf as ArrayNode, parentPackage, obj)
     }
 
@@ -118,7 +118,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val enumNode = obj.get("enum")?.takeIf { it.isArray } ?: return null
+        val enumNode = obj["enum"]?.takeIf { it.isArray } ?: return null
         return resolveEnum(ctx, name, enumNode as ArrayNode, obj, parentPackage)
     }
 
@@ -130,7 +130,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val typeNode = obj.get("type") ?: return null
+        val typeNode = obj["type"] ?: return null
         return if (typeNode.isArray) {
             resolveTypeArrayUnion(ctx, name, typeNode as ArrayNode, obj, parentPackage)
         } else {
@@ -144,7 +144,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        if (obj.get("properties")?.isObject != true) return null
+        if (obj["properties"]?.isObject != true) return null
         return resolveObject(ctx, name, obj, parentPackage)
     }
 
@@ -154,7 +154,7 @@ object JsonSchemaTypeResolver {
         obj: ObjectNode,
         parentPackage: String,
     ): ResolvedType? {
-        val additionalProps = obj.get("additionalProperties")?.takeIf { it.isObject } ?: return null
+        val additionalProps = obj["additionalProperties"]?.takeIf { it.isObject } ?: return null
         val valueType = resolveType(ctx.withSchemaStack("additionalProperties"), "${name}Value", additionalProps, parentPackage)
         return ResolvedType(
             ParameterizedTypeName.get(Types.MAP, Types.STRING, valueType.typeName),
@@ -173,7 +173,7 @@ object JsonSchemaTypeResolver {
         }
 
         val overlayNode = node.deepCopy()
-        overlayNode.remove("\$ref")
+        overlayNode.remove($$"$ref")
         val overlayResolved = resolveType(ctx, name, overlayNode, parentPackage)
         return if (overlayResolved.typeSpec != null || overlayResolved.typeName != Types.OBJECT) {
             overlayResolved
@@ -224,8 +224,8 @@ object JsonSchemaTypeResolver {
             // Mark as "being resolved" to detect cycles
             ctx.resolvedDefinitions.add(defName)
 
-            val definitions = ctx.rootSchema.get("definitions") ?: return ResolvedType(registered)
-            val defNode = definitions.get(defName) ?: return ResolvedType(registered)
+            val definitions = ctx.rootSchema["definitions"] ?: return ResolvedType(registered)
+            val defNode = definitions[defName] ?: return ResolvedType(registered)
 
             val resolved =
                 resolveType(
@@ -254,8 +254,8 @@ object JsonSchemaTypeResolver {
         ctx.definitionRegistry[defName] = className
         ctx.resolvedDefinitions.add(defName)
 
-        val definitions = ctx.rootSchema.get("definitions") ?: return ResolvedType(Types.OBJECT)
-        val defNode = definitions.get(defName) ?: return ResolvedType(Types.OBJECT)
+        val definitions = ctx.rootSchema["definitions"] ?: return ResolvedType(Types.OBJECT)
+        val defNode = definitions[defName] ?: return ResolvedType(Types.OBJECT)
 
         val resolved =
             resolveType(
@@ -308,7 +308,7 @@ object JsonSchemaTypeResolver {
                 .withIndex()
                 .filterNot { isMetadataOnlySchemaElement(it.value) }
                 .filter {
-                    !(it.value.has("type") && it.value.get("type").asString() == "null")
+                    !(it.value.has("type") && it.value["type"].asString() == "null")
                 }
         val elements = indexedElements.map { it.value }
 
@@ -336,7 +336,7 @@ object JsonSchemaTypeResolver {
                 val resolved =
                     if (element.has($$"$ref")) {
                         resolveType(elementCtx, name, element, parentPackage)
-                    } else if (element.has("type") && element.get("type").asString() == "object" && element.has("properties")) {
+                    } else if (element.has("type") && element["type"].asString() == "object" && element.has("properties")) {
                         val variantName = "${name}Variant$filteredIndex"
                         resolveType(elementCtx, variantName, element, parentPackage)
                     } else if (element.has("type")) {
@@ -357,7 +357,7 @@ object JsonSchemaTypeResolver {
             return ResolvedType(variants[0].typeName)
         }
 
-        val description = parentNode.get("description")?.asString()
+        val description = parentNode["description"]?.asString()
         val unionSpec =
             UnionGenerator.generate(
                 name,
@@ -407,7 +407,7 @@ object JsonSchemaTypeResolver {
         return elements.all { element ->
             element.isObject &&
                 element.has("required") &&
-                element.get("required").isArray &&
+                element["required"].isArray &&
                 element.size() == 1
         }
     }
@@ -418,7 +418,7 @@ object JsonSchemaTypeResolver {
         }
         val informativeKeys =
             setOf(
-                "\$ref",
+                $$"$ref",
                 "type",
                 "properties",
                 "patternProperties",
@@ -453,7 +453,7 @@ object JsonSchemaTypeResolver {
     private fun isScalarOnlyOneOf(oneOf: ArrayNode): Boolean =
         isScalarOnlyOneOf(
             oneOf.toList().filter {
-                !(it.has("type") && it.get("type").asString() == "null")
+                !(it.has("type") && it["type"].asString() == "null")
             },
         )
 
@@ -468,7 +468,7 @@ object JsonSchemaTypeResolver {
         if (!element.isObject) {
             return false
         }
-        val typeNode = element.get("type")
+        val typeNode = element["type"]
         if (typeNode == null || !typeNode.isString) {
             return false
         }
@@ -496,7 +496,7 @@ object JsonSchemaTypeResolver {
                 .withIndex()
                 .filterNot { isMetadataOnlySchemaElement(it.value) }
                 .filter {
-                    !(it.value.has("type") && it.value.get("type").asString() == "null")
+                    !(it.value.has("type") && it.value["type"].asString() == "null")
                 }
         if (indexedElements.isEmpty()) {
             return ResolvedType(Types.OBJECT)
@@ -513,12 +513,12 @@ object JsonSchemaTypeResolver {
                 val elementCtx = ctx.withSchemaStack("anyOf", indexedElement.index.toString())
                 val resolved =
                     when {
-                        element.has("\$ref") -> {
+                        element.has($$"$ref") -> {
                             resolveType(elementCtx, name, element, parentPackage)
                         }
 
                         element.has("type") &&
-                            element.get("type").asString() == "object" &&
+                            element["type"].asString() == "object" &&
                             element.has("properties") -> {
                             resolveType(elementCtx, "${name}Variant$filteredIndex", element, parentPackage)
                         }
@@ -557,7 +557,7 @@ object JsonSchemaTypeResolver {
             return ResolvedType(variants[0].typeName)
         }
 
-        val description = parentNode.get("description")?.asString()
+        val description = parentNode["description"]?.asString()
         val unionSpec =
             UnionGenerator.generate(
                 name,
@@ -594,7 +594,7 @@ object JsonSchemaTypeResolver {
         parentPackage: String,
         mergedProps: MutableList<ObjectGenerator.PropertySpec>,
     ) {
-        val parentProps = parentNode.get("properties")
+        val parentProps = parentNode["properties"]
         if (parentProps != null && parentProps.isObject) {
             (parentProps as ObjectNode).properties().forEach { (propName, propSchema) ->
                 mergeProperty(ctx, name, parentPackage, mergedProps, propName, propSchema, ctx.withSchemaStack("properties", propName))
@@ -619,7 +619,7 @@ object JsonSchemaTypeResolver {
     ): ResolvedType? {
         allOf.forEachIndexed { index, element ->
             if (element is ObjectNode) {
-                val props = element.get("properties")
+                val props = element["properties"]
                 if (props != null && props.isObject) {
                     (props as ObjectNode).properties().forEach { (propName, propSchema) ->
                         mergeProperty(
@@ -635,7 +635,7 @@ object JsonSchemaTypeResolver {
                 }
                 collectAllOfBranchProperties(ctx, name, element, index, parentPackage, mergedProps)
             }
-            if (element.has("\$ref")) {
+            if (element.has($$"$ref")) {
                 val resolved = resolveType(ctx.withSchemaStack("allOf", index.toString()), name, element, parentPackage)
                 if (mergedProps.isEmpty() && allOf.size() == 1) return resolved
             }
@@ -652,9 +652,9 @@ object JsonSchemaTypeResolver {
         mergedProps: MutableList<ObjectGenerator.PropertySpec>,
     ) {
         listOf("then", "else").forEach { branch ->
-            val branchNode = element.get(branch)
+            val branchNode = element[branch]
             if (branchNode != null && branchNode.isObject) {
-                val branchProps = branchNode.get("properties")
+                val branchProps = branchNode["properties"]
                 if (branchProps != null && branchProps.isObject) {
                     (branchProps as ObjectNode).properties().forEach { (propName, propSchema) ->
                         mergeProperty(
@@ -682,7 +682,7 @@ object JsonSchemaTypeResolver {
         propCtx: JsonSchemaContext,
     ) {
         val propResolved = resolveType(propCtx, "${name}${propName.pascalCase()}", propSchema, parentPackage)
-        val propDescription = propSchema.get("description")?.asString()
+        val propDescription = propSchema["description"]?.asString()
         val existingIndex = mergedProps.indexOfFirst { it.jsonName == propName }
         if (existingIndex < 0) {
             mergedProps.add(
@@ -722,7 +722,7 @@ object JsonSchemaTypeResolver {
         parentPackage: String,
         mergedProps: List<ObjectGenerator.PropertySpec>,
     ): ResolvedType {
-        val description = parentNode.get("description")?.asString()
+        val description = parentNode["description"]?.asString()
         val spec =
             ObjectGenerator.generate(
                 name,
@@ -744,7 +744,7 @@ object JsonSchemaTypeResolver {
         parentPackage: String,
     ): ResolvedType {
         val values = enumNode.toList().map { it.asString() }
-        val description = parentNode.get("description")?.asString()
+        val description = parentNode["description"]?.asString()
         val spec =
             EnumGenerator.generate(
                 name,
@@ -799,7 +799,7 @@ object JsonSchemaTypeResolver {
             return ResolvedType(variants.first().typeName)
         }
 
-        val description = node.get("description")?.asString()
+        val description = node["description"]?.asString()
         val unionSpec =
             UnionGenerator.generate(
                 name,
@@ -823,7 +823,7 @@ object JsonSchemaTypeResolver {
     ): ResolvedType =
         when (type) {
             "string" -> {
-                val format = node.get("format")?.asString()
+                val format = node["format"]?.asString()
                 when (format) {
                     "date-time" -> ResolvedType(ClassName.get(java.time.OffsetDateTime::class.java))
                     else -> ResolvedType(Types.STRING)
@@ -831,7 +831,7 @@ object JsonSchemaTypeResolver {
             }
 
             "integer" -> {
-                val format = node.get("format")?.asString()
+                val format = node["format"]?.asString()
                 when (format) {
                     "int32" -> ResolvedType(Types.INTEGER)
                     else -> ResolvedType(Types.LONG)
@@ -870,7 +870,7 @@ object JsonSchemaTypeResolver {
             val itemName = name.removeSuffix("s").removeSuffix("S").ifEmpty { "${name}Item" }
             val itemResolved =
                 if (itemSchema is ObjectNode) {
-                    val itemOneOf = itemSchema.get("oneOf")
+                    val itemOneOf = itemSchema["oneOf"]
                     if (itemOneOf != null && itemOneOf.isArray && isScalarOnlyOneOf(itemOneOf as ArrayNode)) {
                         resolveOneOf(
                             ctx.withSchemaStack("items"),
@@ -893,16 +893,16 @@ object JsonSchemaTypeResolver {
     }
 
     private fun extractArrayItemSchema(node: ObjectNode): JsonNode? {
-        val directItems = node.get("items")
+        val directItems = node["items"]
         if (directItems != null) {
-            return normalizeItemsNode(directItems, node.get("additionalItems"))
+            return normalizeItemsNode(directItems, node["additionalItems"])
         }
 
-        val anyOf = node.get("anyOf")
+        val anyOf = node["anyOf"]
         if (anyOf != null && anyOf.isArray) {
             anyOf.forEach { element ->
                 if (element is ObjectNode) {
-                    val normalized = normalizeItemsNode(element.get("items"), element.get("additionalItems"))
+                    val normalized = normalizeItemsNode(element["items"], element["additionalItems"])
                     if (normalized != null) {
                         return normalized
                     }
@@ -936,11 +936,11 @@ object JsonSchemaTypeResolver {
         node: ObjectNode,
         parentPackage: String,
     ): ResolvedType {
-        val properties = node.get("properties")
+        val properties = node["properties"]
 
         // Object with additionalProperties and no fixed properties → Map<String, T>
         if ((properties == null || !properties.isObject || properties.isEmpty) && node.has("additionalProperties")) {
-            val additionalProps = node.get("additionalProperties")
+            val additionalProps = node["additionalProperties"]
             if (additionalProps.isObject) {
                 val valueType = resolveType(ctx.withSchemaStack("additionalProperties"), "${name}Value", additionalProps, parentPackage)
                 return ResolvedType(
@@ -954,7 +954,7 @@ object JsonSchemaTypeResolver {
         }
 
         // Object with patternProperties → Map
-        val patternProps = node.get("patternProperties")
+        val patternProps = node["patternProperties"]
         if (patternProps != null && patternProps.isObject) {
             return resolvePatternProperties(ctx, name, patternProps as ObjectNode, parentPackage)
         }
@@ -976,7 +976,7 @@ object JsonSchemaTypeResolver {
                 val propTypeName = propName.pascalCase()
                 val propCtx = ctx.withSchemaStack(*pathPrefix.toTypedArray(), propName)
                 val propResolved = resolveType(propCtx, "${name}$propTypeName", propSchema, parentPackage)
-                val propDescription = propSchema.get("description")?.asString()
+                val propDescription = propSchema["description"]?.asString()
                 val existingIndex = propSpecs.indexOfFirst { it.jsonName == propName }
                 if (existingIndex < 0) {
                     propSpecs.add(
@@ -1010,7 +1010,7 @@ object JsonSchemaTypeResolver {
             }
         }
 
-        val description = node.get("description")?.asString()
+        val description = node["description"]?.asString()
         val spec =
             ObjectGenerator.generate(
                 name,
@@ -1032,9 +1032,9 @@ object JsonSchemaTypeResolver {
         propertyNodes: MutableList<Pair<ObjectNode, List<String>>>,
     ) {
         listOf("then", "else").forEach { branch ->
-            val branchNode = node.get(branch)
+            val branchNode = node[branch]
             if (branchNode != null && branchNode.isObject) {
-                val branchProps = branchNode.get("properties")
+                val branchProps = branchNode["properties"]
                 if (branchProps != null && branchProps.isObject) {
                     val branchPropsObj = branchProps as ObjectNode
                     // For each property in the branch, check if it has actual schema content
@@ -1194,7 +1194,7 @@ object JsonSchemaTypeResolver {
         }
 
         val obj = element as ObjectNode
-        val typeNode = obj.get("type")
+        val typeNode = obj["type"]
         if (typeNode != null && typeNode.isString && typeNode.asString() == "string") {
             return true
         }
@@ -1202,12 +1202,12 @@ object JsonSchemaTypeResolver {
             return typeNode == null || (typeNode.isString && typeNode.asString() == "string")
         }
 
-        val ref = obj.get("\$ref")
+        val ref = obj[$$"$ref"]
         if (ref != null) {
             val defName = ref.asString().substringAfterLast("/")
-            val definitions = ctx.rootSchema.get("definitions")
+            val definitions = ctx.rootSchema["definitions"]
             if (definitions != null && definitions.isObject) {
-                val refNode = definitions.get(defName)
+                val refNode = definitions[defName]
                 if (refNode != null) {
                     return isStringLikeAnyOfElement(ctx, refNode, typeName)
                 }
