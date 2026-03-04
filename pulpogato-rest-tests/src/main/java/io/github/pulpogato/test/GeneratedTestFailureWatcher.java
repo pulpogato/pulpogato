@@ -16,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 public class GeneratedTestFailureWatcher implements TestWatcher {
 
     private static final List<GeneratedTestFailure> failures = new ArrayList<>();
+    public static final String UNKNOWN = "unknown";
 
     @Override
     public void testFailed(ExtensionContext context, Throwable cause) {
@@ -98,9 +99,9 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
         var message = failure.getFieldMessage();
         var snippet = failure.getSnippet();
         return Map.ofEntries(
-                Map.entry("ghVersion", failure.ghVersion != null ? failure.ghVersion : "unknown"),
-                Map.entry("exampleRef", failure.exampleRef() != null ? failure.exampleRef() : "unknown"),
-                Map.entry("schemaRef", failure.getSchemaRef() != null ? failure.getSchemaRef() : "unknown"),
+                Map.entry("ghVersion", failure.ghVersion != null ? failure.ghVersion : UNKNOWN),
+                Map.entry("exampleRef", failure.exampleRef() != null ? failure.exampleRef() : UNKNOWN),
+                Map.entry("schemaRef", failure.getSchemaRef() != null ? failure.getSchemaRef() : UNKNOWN),
                 Map.entry("message", message != null ? message : "No message available"),
                 Map.entry("snippet", snippet != null ? snippet : "No snippet available"));
     }
@@ -127,7 +128,7 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
                     throw new GeneratedTestFailedException(e);
                 }
             }
-            return "unknown";
+            return UNKNOWN;
         }
 
         public String getSnippet() {
