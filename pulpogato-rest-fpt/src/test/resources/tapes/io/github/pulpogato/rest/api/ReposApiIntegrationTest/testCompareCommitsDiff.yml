@@ -4,7 +4,6 @@
     protocol: HTTP/1.1
     headers:
       Accept: application/vnd.github.diff
-    body: null
   response:
     statusCode: 200
     headers:

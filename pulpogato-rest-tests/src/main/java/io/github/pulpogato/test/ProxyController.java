@@ -4,8 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,7 +45,7 @@ public class ProxyController {
 
     @RequestMapping("/**")
     @SuppressWarnings("unused")
-    public ResponseEntity<@NonNull String> mirrorRest(
+    public ResponseEntity<byte[]> mirrorRest(
             @RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request)
             throws URISyntaxException, IOException {
         try (Tape tape = Tape.getTape(request.getHeader("TapeName"))) {
@@ -60,35 +63,88 @@ public class ProxyController {
         }
     }
 
-    private ResponseEntity<@NonNull String> getLiveResponse(
+    private ResponseEntity<byte[]> getLiveResponse(
             String body, HttpMethod method, HttpServletRequest request, Tape tape, Exchange.Request exchangeRequest)
             throws URISyntaxException {
         log.info("Fetching live data from server: {}", request.getRequestURI());
 
         HttpEntity<@NonNull String> entity = new HttpEntity<>(body, buildRequestHeaders(request));
-        ResponseEntity<@NonNull String> exchange = getLiveResponse(method, buildUri(request), entity);
+        ResponseEntity<byte[]> exchange = getLiveResponseBytes(method, buildUri(request), entity);
         Map<String, String> singleValueMap = getInterestingResponseHeaders(exchange);
+
+        byte[] bodyBytes = exchange.getBody();
+        String bodyForTape;
+        Boolean bodyIsBinary = null;
+        byte[] responseBodyBytes;
+
+        if (bodyBytes == null || bodyBytes.length == 0) {
+            bodyForTape = null;
+            responseBodyBytes = new byte[0];
+        } else if (isBinary(bodyBytes)) {
+            bodyForTape = toHexDump(bodyBytes);
+            bodyIsBinary = true;
+            responseBodyBytes = bodyBytes;
+        } else {
+            String decoded = new String(bodyBytes, StandardCharsets.UTF_8);
+            bodyForTape = prettifyBody(decoded);
+            bodyIsBinary = false;
+            responseBodyBytes = bodyBytes;
+        }
 
         var response = Exchange.Response.builder()
                 .statusCode(exchange.getStatusCode().value())
                 .headers(singleValueMap)
-                .body(prettifyBody(exchange.getBody()));
+                .bodyIsBinary(bodyIsBinary)
+                .body(bodyForTape);
 
         tape.getExchanges()
                 .add(Exchange.builder()
                         .request(exchangeRequest)
                         .response(response.build())
                         .build());
-        return exchange;
+        return ResponseEntity.status(exchange.getStatusCode())
+                .headers(exchange.getHeaders())
+                .body(responseBodyBytes != null ? responseBodyBytes : new byte[0]);
     }
 
-    private static ResponseEntity<@NonNull String> getCachedResponse(Tape tape, Exchange exchange) {
+    /** Format bytes as a hexdump string (lowercase hex, 16 bytes per line). */
+    private static String toHexDump(byte[] bytes) {
+        String hex = HexFormat.of().formatHex(bytes);
+        StringBuilder sb = new StringBuilder(hex.length() + (hex.length() / 32));
+        for (int i = 0; i < hex.length(); i += 32) {
+            if (i > 0) sb.append('\n');
+            sb.append(hex, i, Math.min(i + 32, hex.length()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns true if the bytes are not valid UTF-8 or lose information in a UTF-8 round-trip
+     * (e.g. binary content).
+     */
+    private static boolean isBinary(byte[] bytes) {
+        try {
+            String decoded = new String(bytes, StandardCharsets.UTF_8);
+            return !Arrays.equals(decoded.getBytes(StandardCharsets.UTF_8), bytes);
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    private static ResponseEntity<byte[]> getCachedResponse(Tape tape, Exchange exchange) {
         log.info("Found exchange in tape: {}", tape);
         var headers = new HttpHeaders();
         exchange.getResponse().getHeaders().forEach(headers::add);
+        String body = exchange.getResponse().getBody();
+        byte[] bodyBytes;
+        if (Boolean.TRUE.equals(exchange.getResponse().getBodyIsBinary()) && body != null) {
+            bodyBytes = HexFormat.of().parseHex(body.replaceAll("\\s", ""));
+        } else {
+            bodyBytes = body != null ? body.getBytes(StandardCharsets.UTF_8) : new byte[0];
+        }
         return ResponseEntity.status(exchange.getResponse().getStatusCode())
                 .headers(headers)
-                .body(exchange.getResponse().getBody());
+                .body(bodyBytes);
     }
 
     private static URI buildUri(HttpServletRequest request) throws URISyntaxException {
@@ -110,14 +166,15 @@ public class ProxyController {
                 null);
     }
 
-    private ResponseEntity<@NonNull String> getLiveResponse(
+    private ResponseEntity<byte[]> getLiveResponseBytes(
             HttpMethod method, URI uri, HttpEntity<@NonNull String> entity) {
         try {
-            return restTemplate.exchange(uri, method, entity, String.class);
+            return restTemplate.exchange(uri, method, entity, byte[].class);
         } catch (HttpClientErrorException e) {
+            byte[] errorBody = e.getResponseBodyAsByteArray();
             return ResponseEntity.status(e.getStatusCode())
                     .headers(e.getResponseHeaders())
-                    .body(e.getResponseBodyAsString());
+                    .body(errorBody != null ? errorBody : new byte[0]);
         }
     }
 
@@ -169,7 +226,7 @@ public class ProxyController {
         return null;
     }
 
-    private static Map<String, String> getInterestingResponseHeaders(ResponseEntity<@NonNull String> exchange) {
+    private static Map<String, String> getInterestingResponseHeaders(ResponseEntity<byte[]> exchange) {
         Map<String, String> singleValueMap = new HashMap<>(exchange.getHeaders().toSingleValueMap());
         var removeHeaders = List.of(
                 "Access-Control-.+",

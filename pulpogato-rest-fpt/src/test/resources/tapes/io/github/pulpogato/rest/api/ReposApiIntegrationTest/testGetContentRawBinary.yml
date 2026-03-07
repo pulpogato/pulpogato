@@ -1,0 +1,26 @@
+- request:
+    method: GET
+    uri: /repos/rahulsom/lgtmin/contents/.appcfg_oauth2_tokens_java.enc
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/vnd.github.raw+json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/vnd.github.raw+json; charset=utf-8
+    bodyIsBinary: true
+    body: |-
+      3d3f58273f5e4d3f6e27443f3f3f3f3f
+      3f3f3f3f1c703f543f433f6b3f573f29
+      523f4e3f3f3f3f052d6b4f143f093f73
+      3f3f073f3f0c3f2d3f08322a1d3f4b00
+      3f3f1f3f3f3f3f3a3f3f253f3f603f62
+      7e36315b4e523f243f563c013f3f3f3f
+      073f3d3f3f3f08363f35233f3f16461c
+      5e473f3f3f153f2e667d3f4d3f653f49
+      4e653f5f3f3f3f255d3f3f6b3f2a353f
+      3f3f3f44493f003f3f5d64581d3a3f63
+      534154353f433f083f2e443f3f3f633f
+      3f013f2c3f673f3f3f3f2c743f3f3f11
+      70543f68003f66083f3f664d3a3f3f16
+      5d3f4904463f

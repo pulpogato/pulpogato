@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.commons.util.ToStringBuilder;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.yaml.YAMLFactory;
 import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
@@ -69,9 +72,39 @@ public class Tape implements Closeable {
             return;
         }
         log.info("Saving {} exchanges to tape: {}", exchanges.size(), fileName);
-        var string = OBJECT_MAPPER.writeValueAsString(exchanges);
+        var string = serializeExchanges(exchanges);
         try (FileWriter writer = new FileWriter(fileName)) {
             writer.write(string);
+        }
+    }
+
+    /**
+     * Serializes exchanges to YAML, omitting null values so fields like bodyIsBinary do not appear
+     * when null. Used by {@link #close()} and by tests.
+     */
+    public static String serializeExchanges(List<Exchange> exchanges) {
+        JsonNode tree = OBJECT_MAPPER.valueToTree(exchanges);
+        removeNullValues(tree);
+        return OBJECT_MAPPER.writeValueAsString(tree);
+    }
+
+    /** Removes object properties whose value is null so they are omitted from the written YAML. */
+    private static void removeNullValues(JsonNode node) {
+        if (node.isObject()) {
+            ObjectNode obj = (ObjectNode) node;
+            new ArrayList<>(obj.propertyNames()).forEach(name -> {
+                JsonNode value = obj.get(name);
+                if (value.isNull()) {
+                    obj.remove(name);
+                } else {
+                    removeNullValues(value);
+                }
+            });
+        } else if (node.isArray()) {
+            ArrayNode arr = (ArrayNode) node;
+            for (int i = 0; i < arr.size(); i++) {
+                removeNullValues(arr.get(i));
+            }
         }
     }
 
