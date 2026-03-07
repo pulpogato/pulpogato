@@ -3,8 +3,6 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -15,8 +13,6 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -29,8 +25,6 @@
 - example: "#/paths/~1repos~1{owner}~1{repo}~1replicas~1caches/get/responses/200/content/application~1json/examples/default/value"
   reason: "https://github.com/github/rest-api-description/issues/4590"
   versions:
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -45,8 +39,6 @@
   reason: "https://github.com/github/rest-api-description/issues/4470"
   versions:
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -62,8 +54,6 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -111,8 +101,6 @@
 - example: "#/components/examples/ghes-license-info/value"
   reason: "https://github.com/github/rest-api-description/issues/5516"
   versions:
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -127,8 +115,6 @@
 - example: "#/components/examples/ghes-license-check/value"
   reason: "https://github.com/github/rest-api-description/issues/5546"
   versions:
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -137,8 +123,6 @@
 - example: "#/components/examples/ghes-get-maintenance/value"
   reason: "https://github.com/github/rest-api-description/issues/5547"
   versions:
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -168,8 +152,6 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -204,8 +186,6 @@
 - example: "#/components/examples/environments/value"
   reason: "https://github.com/github/rest-api-description/issues/5629"
   versions:
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
@@ -216,25 +196,16 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
     - ghes-3.19
     - ghes-3.20
-- example: "#/components/examples/deploy-key-items/value"
-  reason: "https://github.com/github/rest-api-description/issues/5633"
-  versions:
-    - ghes-3.14
-    - ghes-3.15
 - example: "#/components/examples/repository-ruleset-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5641"
   versions:
     - fpt
     - ghec
-    - ghes-3.14
-    - ghes-3.15
     - ghes-3.16
     - ghes-3.17
     - ghes-3.18
