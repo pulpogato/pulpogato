@@ -3,8 +3,6 @@
     uri: /user/blocks/gooduser
     protocol: HTTP/1.1
     headers: {}
-    body: null
   response:
     statusCode: 204
     headers: {}
-    body: null

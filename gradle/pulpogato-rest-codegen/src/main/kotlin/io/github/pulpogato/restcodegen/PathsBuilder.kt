@@ -618,6 +618,8 @@ class PathsBuilder {
             "application/json" -> ""
             "application/vnd.github.v3.star+json" -> "Star"
             "application/vnd.github.object" -> "Object"
+            "application/vnd.github.raw+json" -> "Raw"
+            "application/vnd.github.html+json" -> "Html"
             "application/json+sarif", "application/sarif+json" -> "Sarif"
             "application/vnd.github.diff" -> "Diff"
             "application/vnd.github.patch" -> "Patch"

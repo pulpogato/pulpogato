@@ -1,0 +1,289 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/contents/README.adoc
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/vnd.github.raw+json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/vnd.github.raw+json; charset=utf-8
+    body: |-
+      = Pulpogato
+      :package: io.github.pulpogato
+      :package-path: io/github/pulpogato
+      :package-path-encoded: io%2Fgithub%2Fpulpogato
+      :snapshot-prefix: image:https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2F{package-path-encoded}%2F
+      :snapshot-middle: %2Fmaven-metadata.xml&style=for-the-badge&label=S[alt=Maven Snapshot,height=30,link="https://central.sonatype.com/repository/maven-snapshots/{package-path}/
+      :snapshot-suffix: /maven-metadata.xml"]
+      :central-prefix: image:https://img.shields.io/maven-central/v/{package}/
+      :central-middle: ?strategy=highestVersion&filter=!*-rc*&style=for-the-badge&label=R&color=green[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
+      :central-suffix: /overview"]
+      :deprecated-middle: ?style=for-the-badge&label=R&color=lightgrey[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
+
+      Pulpogato is a java client for GitHub.
+
+      image:images/Pulpogato.png[alt=Pulpogato logo. An octocat in the style of Pablo Picasso.,width=300]
+
+      &nbsp;
+
+      image:https://img.shields.io/github/commits-since/pulpogato/pulpogato/latest?style=for-the-badge[GitHub commits since latest release, link="https://github.com/pulpogato/pulpogato/releases/new"]
+      &nbsp;
+      image:https://img.shields.io/github/actions/workflow/status/pulpogato/pulpogato/check-issues-statuses.yml?style=for-the-badge&label=Issues%20Statuses[Issues Statuses, link="https://github.com/pulpogato/pulpogato/actions/workflows/check-issues-statuses.yml"]
+
+      == Usage
+
+      // tag::installation[]
+
+      For releases, use mavenCentral.
+
+      [source]
+      ----
+      https://repo.maven.apache.org/maven2/
+      ----
+
+      For snapshots, use this url.
+
+      [source]
+      ----
+      https://central.sonatype.com/repository/maven-snapshots/
+      ----
+
+      The maven group id is `io.github.pulpogato`.
+
+      Most maven artifact ids are `pulpogato-<api-type>-<gh-version>`.
+
+      The `api-type` is one of `graphql` or `rest`.
+
+      The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
+
+      To align versions across all Pulpogato modules, use `io.github.pulpogato:pulpogato-bom`.
+
+      .Example in a gradle kotlin build script
+      [%collapsible]
+      ====
+      [source,kotlin]
+      ----
+      // These properties can also be set in gradle.properties
+      ext {
+          set("netflixDgsVersion", "9.1.2")
+          set("ghVersion", "fpt")
+          set("pulpogatoVersion", "2.8.0")
+      }
+
+      val ghVersion: String by project.ext
+      val pulpogatoVersion: String by project.ext
+      val netflixDgsVersion: String by project.ext
+
+      dependencies {
+          implementation(platform("io.github.pulpogato:pulpogato-bom:${pulpogatoVersion}"))
+          // Use enforcedPlatform(...) instead of platform(...) for strict version enforcement.
+
+          implementation("io.github.pulpogato:pulpogato-rest-${ghVersion}")
+          implementation("io.github.pulpogato:pulpogato-graphql-${ghVersion}")
+          implementation("io.github.pulpogato:pulpogato-github-files")
+          implementation("org.springframework.boot:spring-boot-starter-webflux:4.0.2")
+          implementation("com.netflix.graphql.dgs:graphql-dgs-client:11.1.0")
+          implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"))
+      }
+      ----
+      ====
+
+      == Available versions
+
+      [cols="1,1,1"]
+      |===
+      |GitHub Version |GraphQL |REST
+
+      |https://docs.github.com/en[FPT]
+      |{central-prefix}pulpogato-graphql-fpt{central-middle}pulpogato-graphql-fpt{central-suffix} {snapshot-prefix}pulpogato-graphql-fpt{snapshot-middle}pulpogato-graphql-fpt{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-fpt{central-middle}pulpogato-rest-fpt{central-suffix} {snapshot-prefix}pulpogato-rest-fpt{snapshot-middle}pulpogato-rest-fpt{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-cloud@latest[GHEC]
+      |{central-prefix}pulpogato-graphql-ghec{central-middle}pulpogato-graphql-ghec{central-suffix} {snapshot-prefix}pulpogato-graphql-ghec{snapshot-middle}pulpogato-graphql-ghec{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghec{central-middle}pulpogato-rest-ghec{central-suffix} {snapshot-prefix}pulpogato-rest-ghec{snapshot-middle}pulpogato-rest-ghec{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.20[GHES-3.20]
+      |{central-prefix}pulpogato-graphql-ghes-3.20{central-middle}pulpogato-graphql-ghes-3.20{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.20{snapshot-middle}pulpogato-graphql-ghes-3.20{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.20{central-middle}pulpogato-rest-ghes-3.20{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.20{snapshot-middle}pulpogato-rest-ghes-3.20{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.19[GHES-3.19]
+      |{central-prefix}pulpogato-graphql-ghes-3.19{central-middle}pulpogato-graphql-ghes-3.19{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.19{snapshot-middle}pulpogato-graphql-ghes-3.19{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.19{central-middle}pulpogato-rest-ghes-3.19{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.19{snapshot-middle}pulpogato-rest-ghes-3.19{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.18[GHES-3.18]
+      |{central-prefix}pulpogato-graphql-ghes-3.18{central-middle}pulpogato-graphql-ghes-3.18{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.18{snapshot-middle}pulpogato-graphql-ghes-3.18{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.18{central-middle}pulpogato-rest-ghes-3.18{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.18{snapshot-middle}pulpogato-rest-ghes-3.18{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.17[GHES-3.17]
+      |{central-prefix}pulpogato-graphql-ghes-3.17{central-middle}pulpogato-graphql-ghes-3.17{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.17{snapshot-middle}pulpogato-graphql-ghes-3.17{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.17{central-middle}pulpogato-rest-ghes-3.17{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.17{snapshot-middle}pulpogato-rest-ghes-3.17{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.16[GHES-3.16]
+      |{central-prefix}pulpogato-graphql-ghes-3.16{central-middle}pulpogato-graphql-ghes-3.16{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.16{snapshot-middle}pulpogato-graphql-ghes-3.16{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.16{central-middle}pulpogato-rest-ghes-3.16{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.16{snapshot-middle}pulpogato-rest-ghes-3.16{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.15[GHES-3.15]
+      |{central-prefix}pulpogato-graphql-ghes-3.15{central-middle}pulpogato-graphql-ghes-3.15{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.15{snapshot-middle}pulpogato-graphql-ghes-3.15{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.15{central-middle}pulpogato-rest-ghes-3.15{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.15{snapshot-middle}pulpogato-rest-ghes-3.15{snapshot-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.14[GHES-3.14]
+      |{central-prefix}pulpogato-graphql-ghes-3.14{central-middle}pulpogato-graphql-ghes-3.14{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.14{snapshot-middle}pulpogato-graphql-ghes-3.14{snapshot-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.14{central-middle}pulpogato-rest-ghes-3.14{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.14{snapshot-middle}pulpogato-rest-ghes-3.14{snapshot-suffix}
+
+      |===
+
+      .EOL Versions
+      [%collapsible]
+      ====
+
+      [cols="1,1,1"]
+      |===
+      |GitHub Version |GraphQL |REST
+
+      |https://docs.github.com/en/enterprise-server@3.13[GHES-3.13]
+      |{central-prefix}pulpogato-graphql-ghes-3.13{deprecated-middle}pulpogato-graphql-ghes-3.13{central-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.13{deprecated-middle}pulpogato-rest-ghes-3.13{central-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.12[GHES-3.12]
+      |{central-prefix}pulpogato-graphql-ghes-3.12{deprecated-middle}pulpogato-graphql-ghes-3.12{central-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.12{deprecated-middle}pulpogato-rest-ghes-3.12{central-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.11[GHES-3.11]
+      |{central-prefix}pulpogato-graphql-ghes-3.11{deprecated-middle}pulpogato-graphql-ghes-3.11{central-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.11{deprecated-middle}pulpogato-rest-ghes-3.11{central-suffix}
+
+      |https://docs.github.com/en/enterprise-server@3.10[GHES-3.10]
+      |{central-prefix}pulpogato-graphql-ghes-3.10{deprecated-middle}pulpogato-graphql-ghes-3.10{central-suffix}
+      |{central-prefix}pulpogato-rest-ghes-3.10{deprecated-middle}pulpogato-rest-ghes-3.10{central-suffix}
+
+      |===
+
+      ====
+
+      === Shared modules
+
+      [cols="2,1"]
+      |===
+      |Module |Version
+
+      a|*pulpogato-common*
+
+      Shared types used by both REST and GraphQL modules, such as common models and utilities.
+      |{central-prefix}pulpogato-common{central-middle}pulpogato-common{central-suffix} {snapshot-prefix}pulpogato-common{snapshot-middle}pulpogato-common{snapshot-suffix}
+
+      a|*pulpogato-bom*
+
+      BOM to align versions across all Pulpogato modules.
+      It is recommended to use this BOM in your build system to ensure all Pulpogato modules are on the same version.
+      |{central-prefix}pulpogato-bom{central-middle}pulpogato-bom{central-suffix} {snapshot-prefix}pulpogato-bom{snapshot-middle}pulpogato-bom{snapshot-suffix}
+
+      a|*pulpogato-github-files*
+
+      Supports parsing Actions, Workflows, and Release configuration files.
+      |{central-prefix}pulpogato-github-files{central-middle}pulpogato-github-files{central-suffix} {snapshot-prefix}pulpogato-github-files{snapshot-middle}pulpogato-github-files{snapshot-suffix}
+
+      |===
+
+      // end::installation[]
+
+      == Development
+
+      Install JDK 21 first.
+
+      To build, run `./gradlew build`.
+      If you have low memory or CPU, you can customize parallelism with `--max-workers`.
+
+      === Automatically generated tests
+
+      When the REST schema contains examples, they are automatically converted to tests in the generated test sources directory.
+
+      === Integration tests
+
+      To contribute a test for the REST API or GraphQL API:
+
+      1. Write a test like the ones in `UserApiIntegrationTest`.
+      2. Then set up the environment variable `GITHUB_TOKEN`.
+      3. **If you're running a test against a GitHub Enterprise** instance, set up `GITHUB_HOST` and `GITHUB_PORT` as well.
+      4. Run a command like `./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest`.
+      +
+      [source, bash]
+      ----
+      GITHUB_TOKEN=$(gh auth token) \
+          ./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest
+      ----
+      Or if you're using GHES:
+      +
+      [source, bash]
+      ----
+      GITHUB_TOKEN=$(gh auth token) GITHUB_HOST=ghes.example.com GITHUB_PORT=8443 \
+          ./gradlew :pulpogato-rest-ghes-3.17:test --tests AppsApiIntegrationTest
+      ----
+      5. That generates a yaml file in `src/test/resources`. If it needs cleaning up for sensitive data, do so.
+
+      === REST Webhook tests
+
+      To contribute a Webhook test:
+
+      1. Capture the HTTP request from the webhook using any tool. If you're looking at public data, something like RequestBin is useful.
+      2. Clean up the data and place it in `pulpogato-rest-tests/src/main/resources/webhooks/` under the right directory based on the `x-github-event` header.
+      3. Verify the tests work.
+
+      === Schema additions
+
+      GitHub's OpenAPI schema may sometimes be incomplete or missing properties that exist in the actual API responses.
+      Pulpogato supports extending OpenAPI documents through `*.schema.json` files.
+
+      Schema additions are loaded from two locations:
+
+      1. `pulpogato-common/src/main/resources/` - additions that apply to all REST modules
+      2. `pulpogato-rest-<version>/src/main/resources/` - additions specific to a single version
+
+      The files follow the OpenAPI 3.1.0 format and are merged additively with optional deletion markers:
+
+      * `components.schemas` entries can add new schemas or new properties to existing schemas.
+      * `paths` entries can add missing endpoint details (for example additional response media types).
+      * Setting any override node to `null` deletes the corresponding node from the base schema.
+
+      .Example: `user.suspendedAt.schema.json`
+      [%collapsible]
+      ====
+      [source,json]
+      ----
+      {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Additions Schema",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "public-user": {
+              "properties": {
+                "suspended_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time",
+                  "description": "https://github.com/github/rest-api-description/issues/5667"
+                }
+              }
+            }
+          }
+        },
+        "paths": {}
+      }
+      ----
+      ====
+
+      This adds the `suspended_at` property to the `public-user` schema.
+      The property will be available as `suspendedAt` in the generated Java code.
+
+      === Asciidoctor docs
+
+      To run asciidoctor locally, run this command.
+
+      [source, bash]
+      ----
+      ./gradlew asciidoctorDocs
+      ----
+
+      This task uses `asciidoctor/docker-asciidoctor:main` and writes output to `pulpogato-docs/build/index.html`.

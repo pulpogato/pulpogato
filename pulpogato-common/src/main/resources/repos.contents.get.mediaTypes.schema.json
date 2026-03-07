@@ -1,0 +1,36 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Tracks missing response media types for repos/contents get until upstream spec is updated: https://github.com/github/rest-api-description/issues/6089"
+  },
+  "components": {
+    "schemas": { }
+  },
+  "paths": {
+    "/repos/{owner}/{repo}/contents/{path}": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.github.raw+json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "https://github.com/github/rest-api-description/issues/6089"
+                }
+              },
+              "application/vnd.github.html+json": {
+                "schema": {
+                  "type": "string",
+                  "description": "https://github.com/github/rest-api-description/issues/6089"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

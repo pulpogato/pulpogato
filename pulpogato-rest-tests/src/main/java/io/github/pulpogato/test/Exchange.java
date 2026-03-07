@@ -37,10 +37,16 @@ public class Exchange {
     @NoArgsConstructor
     @Setter
     @AllArgsConstructor
-    @JsonPropertyOrder({"statusCode", "headers", "body"})
+    @JsonPropertyOrder({"statusCode", "headers", "bodyIsBinary", "body"})
     public static class Response {
         private int statusCode;
         private Map<String, String> headers;
+        /**
+         * When true, {@link #body} is a hexdump of the raw response bytes. When replaying, the hex is
+         * decoded to bytes and exposed as a string (ISO-8859-1) so the original bytes are preserved.
+         */
+        private Boolean bodyIsBinary;
+
         private String body;
     }
 

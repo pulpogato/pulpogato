@@ -9,6 +9,7 @@ import io.github.pulpogato.rest.schemas.ContentFile;
 import io.github.pulpogato.rest.schemas.CustomPropertyValue;
 import io.github.pulpogato.rest.schemas.FullRepository;
 import io.github.pulpogato.rest.schemas.SecurityAndAnalysis;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -146,6 +147,35 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(content).isNotNull();
         var decoded = new String(Base64.getDecoder().decode(content));
         assertThat(decoded).startsWith("= Pulpogato");
+    }
+
+    @Test
+    void testGetContentRaw() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.getContentRaw("pulpogato", "pulpogato", "README.adoc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        String stringRepresentation = new String(response.getBody(), StandardCharsets.UTF_8);
+        assertThat(stringRepresentation).startsWith("= Pulpogato");
+    }
+
+    @Test
+    void testGetContentHtml() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.getContentHtml("pulpogato", "pulpogato", "README.adoc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains("<");
+        assertThat(response.getBody()).containsIgnoringCase("Pulpogato");
+    }
+
+    @Test
+    void testGetContentRawBinary() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.getContentRaw("rahulsom", "lgtmin", ".appcfg_oauth2_tokens_java.enc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().length).isEqualTo(214);
     }
 
     @Test

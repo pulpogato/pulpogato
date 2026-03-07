@@ -1,0 +1,453 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/contents/README.adoc
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/vnd.github.html+json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/vnd.github.html+json; charset=utf-8
+    body: |-
+      <div id="file" class="adoc" data-path="README.adoc"><article class="markdown-body entry-content container-lg" itemprop="text"><div class="markdown-heading" dir="auto"><h1 class="heading-element" dir="auto">Pulpogato</h1><a id="user-content-pulpogato" class="anchor" aria-label="Permalink: Pulpogato" href="#pulpogato"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div id="user-content-preamble" dir="auto">
+      <div dir="auto">
+      <div dir="auto">
+      <p dir="auto">Pulpogato is a java client for GitHub.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto"><span><a target="_blank" rel="noopener noreferrer" href="images/Pulpogato.png"><img src="images/Pulpogato.png" alt="Pulpogato logo. An octocat in the style of Pablo Picasso." width="300" style="max-width: 100%;"></a></span></p>
+      </div>
+      <div dir="auto">
+      <p dir="auto"> </p>
+      </div>
+      <div dir="auto">
+      <p dir="auto"><span><a href="https://github.com/pulpogato/pulpogato/releases/new"><img src="https://camo.githubusercontent.com/bdb4e4180dbcfa605d94b678fad373e814a808b0fa18db24f76004b2f78759d3/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f636f6d6d6974732d73696e63652f70756c706f6761746f2f70756c706f6761746f2f6c61746573743f7374796c653d666f722d7468652d6261646765" alt="GitHub commits since latest release" data-canonical-src="https://img.shields.io/github/commits-since/pulpogato/pulpogato/latest?style=for-the-badge" style="max-width: 100%;"></a></span>
+       
+      <span><a href="https://github.com/pulpogato/pulpogato/actions/workflows/check-issues-statuses.yml"><img src="https://camo.githubusercontent.com/389193e98d6e29037b740abc707924964a2b926034e25f16f27503e8fbc2785d/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f616374696f6e732f776f726b666c6f772f7374617475732f70756c706f6761746f2f70756c706f6761746f2f636865636b2d6973737565732d73746174757365732e796d6c3f7374796c653d666f722d7468652d6261646765266c6162656c3d4973737565732532305374617475736573" alt="Issues Statuses" data-canonical-src="https://img.shields.io/github/actions/workflow/status/pulpogato/pulpogato/check-issues-statuses.yml?style=for-the-badge&amp;label=Issues%20Statuses" style="max-width: 100%;"></a></span></p>
+      </div>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h2 id="user-content-usage" class="heading-element" dir="auto">Usage</h2><a id="user-content-usage" class="anchor" aria-label="Permalink: Usage" href="#usage"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <div dir="auto">
+      <p dir="auto">For releases, use mavenCentral.</p>
+      </div>
+      <div dir="auto">
+      <div dir="auto">
+      <div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="https://repo.maven.apache.org/maven2/"><pre class="notranslate"><code>https://repo.maven.apache.org/maven2/</code></pre></div>
+      </div>
+      </div>
+      <div dir="auto">
+      <p dir="auto">For snapshots, use this url.</p>
+      </div>
+      <div dir="auto">
+      <div dir="auto">
+      <div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="https://central.sonatype.com/repository/maven-snapshots/"><pre class="notranslate"><code>https://central.sonatype.com/repository/maven-snapshots/</code></pre></div>
+      </div>
+      </div>
+      <div dir="auto">
+      <p dir="auto">The maven group id is <code>io.github.pulpogato</code>.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">Most maven artifact ids are <code>pulpogato-&lt;api-type&gt;-&lt;gh-version&gt;</code>.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">The <code>api-type</code> is one of <code>graphql</code> or <code>rest</code>.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">The <code>gh-version</code> is one of <code>ghec</code>,<code>fpt</code>, or <code>ghes-&lt;GHES-version&gt;</code>.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">To align versions across all Pulpogato modules, use <code>io.github.pulpogato:pulpogato-bom</code>.</p>
+      </div>
+      <details>
+      <summary>Example in a gradle kotlin build script</summary>
+      <div dir="auto">
+      <div dir="auto">
+      <div dir="auto">
+      <div class="highlight highlight-source-kotlin notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="// These properties can also be set in gradle.properties
+      ext {
+          set(&quot;netflixDgsVersion&quot;, &quot;9.1.2&quot;)
+          set(&quot;ghVersion&quot;, &quot;fpt&quot;)
+          set(&quot;pulpogatoVersion&quot;, &quot;2.8.0&quot;)
+      }
+
+      val ghVersion: String by project.ext
+      val pulpogatoVersion: String by project.ext
+      val netflixDgsVersion: String by project.ext
+
+      dependencies {
+          implementation(platform(&quot;io.github.pulpogato:pulpogato-bom:${pulpogatoVersion}&quot;))
+          // Use enforcedPlatform(...) instead of platform(...) for strict version enforcement.
+
+          implementation(&quot;io.github.pulpogato:pulpogato-rest-${ghVersion}&quot;)
+          implementation(&quot;io.github.pulpogato:pulpogato-graphql-${ghVersion}&quot;)
+          implementation(&quot;io.github.pulpogato:pulpogato-github-files&quot;)
+          implementation(&quot;org.springframework.boot:spring-boot-starter-webflux:4.0.2&quot;)
+          implementation(&quot;com.netflix.graphql.dgs:graphql-dgs-client:11.1.0&quot;)
+          implementation(platform(&quot;com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}&quot;))
+      }"><pre><span class="pl-c"><span class="pl-c">//</span> These properties can also be set in gradle.properties</span>
+      ext {
+          set(<span class="pl-s"><span class="pl-pds">"</span>netflixDgsVersion<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>9.1.2<span class="pl-pds">"</span></span>)
+          set(<span class="pl-s"><span class="pl-pds">"</span>ghVersion<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>fpt<span class="pl-pds">"</span></span>)
+          set(<span class="pl-s"><span class="pl-pds">"</span>pulpogatoVersion<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>2.8.0<span class="pl-pds">"</span></span>)
+      }
+
+      <span class="pl-k">val</span> ghVersion<span class="pl-k">:</span> <span class="pl-c1">String</span> by project.ext
+      <span class="pl-k">val</span> pulpogatoVersion<span class="pl-k">:</span> <span class="pl-c1">String</span> by project.ext
+      <span class="pl-k">val</span> netflixDgsVersion<span class="pl-k">:</span> <span class="pl-c1">String</span> by project.ext
+
+      dependencies {
+          implementation(platform(<span class="pl-s"><span class="pl-pds">"</span>io.github.pulpogato:pulpogato-bom:<span class="pl-e">${pulpogatoVersion}</span><span class="pl-pds">"</span></span>))
+          <span class="pl-c"><span class="pl-c">//</span> Use enforcedPlatform(...) instead of platform(...) for strict version enforcement.</span>
+
+          implementation(<span class="pl-s"><span class="pl-pds">"</span>io.github.pulpogato:pulpogato-rest-<span class="pl-e">${ghVersion}</span><span class="pl-pds">"</span></span>)
+          implementation(<span class="pl-s"><span class="pl-pds">"</span>io.github.pulpogato:pulpogato-graphql-<span class="pl-e">${ghVersion}</span><span class="pl-pds">"</span></span>)
+          implementation(<span class="pl-s"><span class="pl-pds">"</span>io.github.pulpogato:pulpogato-github-files<span class="pl-pds">"</span></span>)
+          implementation(<span class="pl-s"><span class="pl-pds">"</span>org.springframework.boot:spring-boot-starter-webflux:4.0.2<span class="pl-pds">"</span></span>)
+          implementation(<span class="pl-s"><span class="pl-pds">"</span>com.netflix.graphql.dgs:graphql-dgs-client:11.1.0<span class="pl-pds">"</span></span>)
+          implementation(platform(<span class="pl-s"><span class="pl-pds">"</span>com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:<span class="pl-e">${netflixDgsVersion}</span><span class="pl-pds">"</span></span>))
+      }</pre></div>
+      </div>
+      </div>
+      </div>
+      </details>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h2 id="user-content-available-versions" class="heading-element" dir="auto">Available versions</h2><a id="user-content-available-versions" class="anchor" aria-label="Permalink: Available versions" href="#available-versions"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <markdown-accessiblity-table><table>
+
+
+
+
+
+      <thead>
+      <tr>
+      <th>GitHub Version</th>
+      <th>GraphQL</th>
+      <th>REST</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en">FPT</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-fpt/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/58afe8152029a59a1a3d60c07788bf593e8187337f28f9daa2efcfb64e6ce0c2/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d6670743f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-fpt?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-fpt/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/1f41e1c466e0f8cf6c5458ffb015917fb8f25f6d23a139a4247e555a11623f18/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d6670742532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-fpt%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-fpt/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/b6d2e8e091ba544b6e207e3dedc50f341a6ae0717f200bf8b8e668560610f5fc/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d6670743f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-fpt?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-fpt/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/13006a28af9b8f964132d1a19ce6a48db160e8841aec8b7acbded0119f9a840c/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d6670742532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-fpt%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-cloud@latest">GHEC</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghec/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/f7d4c627e86b64a678c2f77bdf71eaeed501d437c5488ddf0454a14ddcd2472f/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865633f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghec?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghec/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/47ed076a097a2fa246191bc70da58bf70914aa336d317dc70674195cea3d8979/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865632532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghec%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghec/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/6f3324b83a47cc6ddf84679224ea2518966096837071d00873a7ed694d21655b/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865633f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghec?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghec/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/06863aea2bd68031c3ba83ecdac30d7795bcea858b78b9edc9107ef7063cfa07/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865632532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghec%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.20">GHES-3.20</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.20/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/a1390d5bcdf9e56e34f3f0ae7527745bcfeee7dec408df2df131a09293414f4f/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e32303f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.20?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.20/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/52ad3fe60a331918d7a3adaa9d9716ae0c8c2dffd6f477f40df1f89fedd851fe/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e32302532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.20%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.20/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/ba828714cf41c556277bf44b92259abe11e94c785d0de7373f41282874d86a64/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e32303f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.20?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.20/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/47b169634553c43938d987ff55e78201789cc6cb2985c6e98a5d46a46b5f9c0b/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e32302532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.20%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.19">GHES-3.19</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.19/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/24e111402d82f9446951c94254eb49a72d1ceffbd9800630f0af7b2c934c573e/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31393f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.19?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.19/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/46c3d1fcae54b80176b1f8ba1814d390c1ec82b17428d083dfbe36d200e05110/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e31392532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.19%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.19/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/0c5595d0d07305ef71224fc4f64f7f7436638a6fd5e1178dac58afbfae740234/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31393f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.19?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.19/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/1b63e47d6d195b64b8431a3846983b67a8b9714d186d557d834e0521e1767965/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e31392532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.19%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.18">GHES-3.18</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.18/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/2b7d74ceec77cf5f30c923773316862ec3055820f7f3aeb481471d4e434c763b/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31383f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.18?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.18/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/f0cf13ce8b47c85b1e4a5f0187d41e7729a56918063b4df1e4963d0135f92574/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e31382532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.18%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.18/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/85535bf7049b3baceeaf0f15c252acdec68fe939971e6bf110e2aadf689c2865/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31383f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.18?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.18/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/91e0406c6d749f3b2017d6b309f631d06b9bc5a0bb706d18ed369483c36ad8fe/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e31382532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.18%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.17">GHES-3.17</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.17/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/bae5042edbfb777fd52d4f49ff425f8b7498e125c7260493e7cd71ef580f0934/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31373f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.17?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.17/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/a7354df6878f6539ddb4eabfe55b0e6bf3c94be9264b30b2e46b38953b475ee4/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e31372532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.17%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.17/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/5cdac18bef81e49fc33aef481a260aceecdf75e0973754f143720bd424159d82/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31373f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.17?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.17/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/8d2f7108ba0efbc251efe84f79c616d3ccf2c8c74c245edf97d2f99e8096fffe/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e31372532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.17%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.16">GHES-3.16</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.16/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/3bc327230a8f96a2393c1665246151b578f764ba02b4c34884897f9f3afee630/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31363f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.16?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.16/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/a14692e5d3a7817688a41d0c0402525ed692dd7382f7d16317828fdb0c39c98f/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e31362532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.16%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.16/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/fea24c5a8f946f464c4410d0ce1b80c03f2da734461c5ed27d9ea40d352a3ed6/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31363f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.16?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.16/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/a744466e169e493cab90ec201c8713b96eb64fbaa0ba76eca0b976d1a184aae2/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e31362532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.16%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.15">GHES-3.15</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.15/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/790ec989217163871906d4280394b0a8610c8b3d51e0bff16bde1b06f1eef454/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31353f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.15?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.15/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/63de7adf79478321944a1a6efb9f6376bbfed1481d92b21555a8fc93d1fef0e0/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e31352532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.15%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.15/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/5ef03ed8c76cb886c4957cc85a0cbfe95432d0cc295af96650b29133393a5fa3/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31353f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.15?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.15/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/090f50398f5bca76604b61d5ebd5a0ae098598f8ba8cf1c5fad368058ce80d33/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e31352532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.15%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.14">GHES-3.14</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.14/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/6493a081632f3a67158b3f4d36e52f925b91193090d3e386f55e7127e3e3a668/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31343f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.14?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-graphql-ghes-3.14/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/688764b72e36572e581181d1e4fd30a171f860efe825914243c723ee34ae19a9/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6772617068716c2d676865732d332e31342532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-graphql-ghes-3.14%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.14/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/515a55a8d7c2ed245312a682176c1de3a5fe7e171ab2edd9a95e0faa536b8d32/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31343f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.14?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-rest-ghes-3.14/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/28e93870e69b258d7ae0022be644bcbeb22476f0f66ff5c15e161f725113d9d9/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d726573742d676865732d332e31342532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-rest-ghes-3.14%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      </tbody>
+      </table></markdown-accessiblity-table>
+      <details>
+      <summary>EOL Versions</summary>
+      <div dir="auto">
+      <markdown-accessiblity-table><table>
+
+
+
+
+
+      <thead>
+      <tr>
+      <th>GitHub Version</th>
+      <th>GraphQL</th>
+      <th>REST</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.13">GHES-3.13</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.13/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/2619b43f0eb391b394e9146ee55c00dbf42087e76810c90c202a0af288407586/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31333f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.13?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.13/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/ab5d290bf07c199ae2f8ad8caf48ecfa8a44e0f19a2405f0f2c40661a66891f5/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31333f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.13?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.12">GHES-3.12</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.12/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/3dec2e6abe3c2bcb4ee97c90a37dd1d92bf8494b0e87f43250722f102877decc/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31323f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.12?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.12/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/7d73d723a7f913d734ef497ef69666cb3bf9b768aa9474c6a15825c516672a7b/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31323f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.12?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.11">GHES-3.11</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.11/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/02d7810c6cd2476ca08e2150719aa0e37ec21058c6c69905cab5cb45bc19ab5f/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31313f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.11?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.11/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/7658ab5f8b953275718ca7c4363263bbe15e56cf9c1abac2102978ba931d2168/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31313f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.11?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><p dir="auto"><a href="https://docs.github.com/en/enterprise-server@3.10">GHES-3.10</a></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-graphql-ghes-3.10/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/3054fe3e634fd8d4ed2777ce37746197ffcc6cdafc4efeb5c6271090f53ae24b/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6772617068716c2d676865732d332e31303f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-graphql-ghes-3.10?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-rest-ghes-3.10/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/99993c89b0b8e040f610ba7d9e485f9cb9491c88f0397d8fd3f1c94a9a4e3f07/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d726573742d676865732d332e31303f7374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d6c6967687467726579" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-rest-ghes-3.10?style=for-the-badge&amp;label=R&amp;color=lightgrey" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      </tbody>
+      </table></markdown-accessiblity-table>
+      </div>
+      </details>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h3 id="user-content-shared-modules" class="heading-element" dir="auto">Shared modules</h3><a id="user-content-shared-modules" class="anchor" aria-label="Permalink: Shared modules" href="#shared-modules"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <markdown-accessiblity-table><table>
+
+
+
+
+      <thead>
+      <tr>
+      <th>Module</th>
+      <th>Version</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+      <td><div dir="auto"><div dir="auto">
+      <p dir="auto"><strong>pulpogato-common</strong></p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">Shared types used by both REST and GraphQL modules, such as common models and utilities.</p>
+      </div></div></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-common/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/d786df7882ff09d4585646a1cac119afb3b95015eb00ba6a40b5aede886e23bb/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d636f6d6d6f6e3f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-common?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-common/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/5ce4c11fc38e39531918cf7dbfc3c60a759537ed8423c10910899e909b868536/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d636f6d6d6f6e2532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-common%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><div dir="auto"><div dir="auto">
+      <p dir="auto"><strong>pulpogato-bom</strong></p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">BOM to align versions across all Pulpogato modules.
+      It is recommended to use this BOM in your build system to ensure all Pulpogato modules are on the same version.</p>
+      </div></div></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-bom/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/26ec03460feab18abf5363410b439f9855fce0fcb7c2e1ace4a351f3efe4b9d5/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d626f6d3f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-bom?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-bom/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/39618d7a9b8b14a842a789e619c0b03bb5faea9cbbaa2acd964e457e0b01529b/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d626f6d2532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-bom%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      <tr>
+      <td><div dir="auto"><div dir="auto">
+      <p dir="auto"><strong>pulpogato-github-files</strong></p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">Supports parsing Actions, Workflows, and Release configuration files.</p>
+      </div></div></td>
+      <td><p dir="auto"><span><a href="https://central.sonatype.com/artifact/io.github.pulpogato/pulpogato-github-files/overview" rel="nofollow"><img src="https://camo.githubusercontent.com/259597d743d0da9ecb597549adae732010b21e3127a33a479eeb77bc61aca053/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d63656e7472616c2f762f696f2e6769746875622e70756c706f6761746f2f70756c706f6761746f2d6769746875622d66696c65733f73747261746567793d6869676865737456657273696f6e2666696c7465723d212a2d72632a267374796c653d666f722d7468652d6261646765266c6162656c3d5226636f6c6f723d677265656e" alt="Maven Central Version" height="30" data-canonical-src="https://img.shields.io/maven-central/v/io.github.pulpogato/pulpogato-github-files?strategy=highestVersion&amp;filter=!*-rc*&amp;style=for-the-badge&amp;label=R&amp;color=green" style="max-width: 100%; height: auto; max-height: 30px;"></a></span> <span><a href="https://central.sonatype.com/repository/maven-snapshots/io/github/pulpogato/pulpogato-github-files/maven-metadata.xml" rel="nofollow"><img src="https://camo.githubusercontent.com/042e2c8bac33179984904d07868b1e18e5610284661bccc905f05df42948d6d4/68747470733a2f2f696d672e736869656c64732e696f2f6d6176656e2d6d657461646174612f763f6d6574616461746155726c3d687474707325334125324625324663656e7472616c2e736f6e61747970652e636f6d2532467265706f7369746f72792532466d6176656e2d736e617073686f7473253246696f25324667697468756225324670756c706f6761746f25324670756c706f6761746f2d6769746875622d66696c65732532466d6176656e2d6d657461646174612e786d6c267374796c653d666f722d7468652d6261646765266c6162656c3d53" alt="Maven Snapshot" height="30" data-canonical-src="https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Fpulpogato%2Fpulpogato-github-files%2Fmaven-metadata.xml&amp;style=for-the-badge&amp;label=S" style="max-width: 100%; height: auto; max-height: 30px;"></a></span></p></td>
+      </tr>
+      </tbody>
+      </table></markdown-accessiblity-table>
+      </div>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h2 id="user-content-development" class="heading-element" dir="auto">Development</h2><a id="user-content-development" class="anchor" aria-label="Permalink: Development" href="#development"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <div dir="auto">
+      <p dir="auto">Install JDK 21 first.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">To build, run <code>./gradlew build</code>.
+      If you have low memory or CPU, you can customize parallelism with <code>--max-workers</code>.</p>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h3 id="user-content-automatically-generated-tests" class="heading-element" dir="auto">Automatically generated tests</h3><a id="user-content-automatically-generated-tests" class="anchor" aria-label="Permalink: Automatically generated tests" href="#automatically-generated-tests"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <p dir="auto">When the REST schema contains examples, they are automatically converted to tests in the generated test sources directory.</p>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h3 id="user-content-integration-tests" class="heading-element" dir="auto">Integration tests</h3><a id="user-content-integration-tests" class="anchor" aria-label="Permalink: Integration tests" href="#integration-tests"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <p dir="auto">To contribute a test for the REST API or GraphQL API:</p>
+      </div>
+      <div dir="auto">
+      <ol dir="auto">
+      <li>
+      <p dir="auto">Write a test like the ones in <code>UserApiIntegrationTest</code>.</p>
+      </li>
+      <li>
+      <p dir="auto">Then set up the environment variable <code>GITHUB_TOKEN</code>.</p>
+      </li>
+      <li>
+      <p dir="auto"><strong>If you’re running a test against a GitHub Enterprise</strong> instance, set up <code>GITHUB_HOST</code> and <code>GITHUB_PORT</code> as well.</p>
+      </li>
+      <li>
+      <p dir="auto">Run a command like <code>./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest</code>.</p>
+      <div dir="auto">
+      <div dir="auto">
+      <div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="GITHUB_TOKEN=$(gh auth token) \
+          ./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest"><pre>GITHUB_TOKEN=<span class="pl-s"><span class="pl-pds">$(</span>gh auth token<span class="pl-pds">)</span></span> \
+          ./gradlew :pulpogato-rest-fpt:test --tests AppsApiIntegrationTest</pre></div>
+      </div>
+      </div>
+      <div dir="auto">
+      <p dir="auto">Or if you’re using GHES:</p>
+      </div>
+      <div dir="auto">
+      <div dir="auto">
+      <div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="GITHUB_TOKEN=$(gh auth token) GITHUB_HOST=ghes.example.com GITHUB_PORT=8443 \
+          ./gradlew :pulpogato-rest-ghes-3.17:test --tests AppsApiIntegrationTest"><pre>GITHUB_TOKEN=<span class="pl-s"><span class="pl-pds">$(</span>gh auth token<span class="pl-pds">)</span></span> GITHUB_HOST=ghes.example.com GITHUB_PORT=8443 \
+          ./gradlew :pulpogato-rest-ghes-3.17:test --tests AppsApiIntegrationTest</pre></div>
+      </div>
+      </div>
+      </li>
+      <li>
+      <p dir="auto">That generates a yaml file in <code>src/test/resources</code>. If it needs cleaning up for sensitive data, do so.</p>
+      </li>
+      </ol>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h3 id="user-content-rest-webhook-tests" class="heading-element" dir="auto">REST Webhook tests</h3><a id="user-content-rest-webhook-tests" class="anchor" aria-label="Permalink: REST Webhook tests" href="#rest-webhook-tests"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <p dir="auto">To contribute a Webhook test:</p>
+      </div>
+      <div dir="auto">
+      <ol dir="auto">
+      <li>
+      <p dir="auto">Capture the HTTP request from the webhook using any tool. If you’re looking at public data, something like RequestBin is useful.</p>
+      </li>
+      <li>
+      <p dir="auto">Clean up the data and place it in <code>pulpogato-rest-tests/src/main/resources/webhooks/</code> under the right directory based on the <code>x-github-event</code> header.</p>
+      </li>
+      <li>
+      <p dir="auto">Verify the tests work.</p>
+      </li>
+      </ol>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h3 id="user-content-schema-additions" class="heading-element" dir="auto">Schema additions</h3><a id="user-content-schema-additions" class="anchor" aria-label="Permalink: Schema additions" href="#schema-additions"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <p dir="auto">GitHub’s OpenAPI schema may sometimes be incomplete or missing properties that exist in the actual API responses.
+      Pulpogato supports extending OpenAPI documents through <code>*.schema.json</code> files.</p>
+      </div>
+      <div dir="auto">
+      <p dir="auto">Schema additions are loaded from two locations:</p>
+      </div>
+      <div dir="auto">
+      <ol dir="auto">
+      <li>
+      <p dir="auto"><code>pulpogato-common/src/main/resources/</code> - additions that apply to all REST modules</p>
+      </li>
+      <li>
+      <p dir="auto"><code>pulpogato-rest-&lt;version&gt;/src/main/resources/</code> - additions specific to a single version</p>
+      </li>
+      </ol>
+      </div>
+      <div dir="auto">
+      <p dir="auto">The files follow the OpenAPI 3.1.0 format and are merged additively with optional deletion markers:</p>
+      </div>
+      <div dir="auto">
+      <ul dir="auto">
+      <li>
+      <p dir="auto"><code>components.schemas</code> entries can add new schemas or new properties to existing schemas.</p>
+      </li>
+      <li>
+      <p dir="auto"><code>paths</code> entries can add missing endpoint details (for example additional response media types).</p>
+      </li>
+      <li>
+      <p dir="auto">Setting any override node to <code>null</code> deletes the corresponding node from the base schema.</p>
+      </li>
+      </ul>
+      </div>
+      <details>
+      <summary>Example: <code>user.suspendedAt.schema.json</code></summary>
+      <div dir="auto">
+      <div dir="auto">
+      <div dir="auto">
+      <div class="highlight highlight-source-json notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="{
+        &quot;openapi&quot;: &quot;3.1.0&quot;,
+        &quot;info&quot;: {
+          &quot;title&quot;: &quot;Additions Schema&quot;,
+          &quot;version&quot;: &quot;1.0.0&quot;
+        },
+        &quot;components&quot;: {
+          &quot;schemas&quot;: {
+            &quot;public-user&quot;: {
+              &quot;properties&quot;: {
+                &quot;suspended_at&quot;: {
+                  &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+                  &quot;format&quot;: &quot;date-time&quot;,
+                  &quot;description&quot;: &quot;https://github.com/github/rest-api-description/issues/5667&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;paths&quot;: {}
+      }"><pre>{
+        <span class="pl-ent">"openapi"</span>: <span class="pl-s"><span class="pl-pds">"</span>3.1.0<span class="pl-pds">"</span></span>,
+        <span class="pl-ent">"info"</span>: {
+          <span class="pl-ent">"title"</span>: <span class="pl-s"><span class="pl-pds">"</span>Additions Schema<span class="pl-pds">"</span></span>,
+          <span class="pl-ent">"version"</span>: <span class="pl-s"><span class="pl-pds">"</span>1.0.0<span class="pl-pds">"</span></span>
+        },
+        <span class="pl-ent">"components"</span>: {
+          <span class="pl-ent">"schemas"</span>: {
+            <span class="pl-ent">"public-user"</span>: {
+              <span class="pl-ent">"properties"</span>: {
+                <span class="pl-ent">"suspended_at"</span>: {
+                  <span class="pl-ent">"type"</span>: [<span class="pl-s"><span class="pl-pds">"</span>string<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>null<span class="pl-pds">"</span></span>],
+                  <span class="pl-ent">"format"</span>: <span class="pl-s"><span class="pl-pds">"</span>date-time<span class="pl-pds">"</span></span>,
+                  <span class="pl-ent">"description"</span>: <span class="pl-s"><span class="pl-pds">"</span>https://github.com/github/rest-api-description/issues/5667<span class="pl-pds">"</span></span>
+                }
+              }
+            }
+          }
+        },
+        <span class="pl-ent">"paths"</span>: {}
+      }</pre></div>
+      </div>
+      </div>
+      </div>
+      </details>
+      <div dir="auto">
+      <p dir="auto">This adds the <code>suspended_at</code> property to the <code>public-user</code> schema.
+      The property will be available as <code>suspendedAt</code> in the generated Java code.</p>
+      </div>
+      </div>
+      <div dir="auto">
+      <div class="markdown-heading" dir="auto"><h3 id="user-content-asciidoctor-docs" class="heading-element" dir="auto">Asciidoctor docs</h3><a id="user-content-asciidoctor-docs" class="anchor" aria-label="Permalink: Asciidoctor docs" href="#asciidoctor-docs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+      <div dir="auto">
+      <p dir="auto">To run asciidoctor locally, run this command.</p>
+      </div>
+      <div dir="auto">
+      <div dir="auto">
+      <div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="./gradlew asciidoctorDocs"><pre>./gradlew asciidoctorDocs</pre></div>
+      </div>
+      </div>
+      <div dir="auto">
+      <p dir="auto">This task uses <code>asciidoctor/docker-asciidoctor:main</code> and writes output to <code>pulpogato-docs/build/index.html</code>.</p>
+      </div>
+      </div>
+      </div>
+      </div></article></div>
