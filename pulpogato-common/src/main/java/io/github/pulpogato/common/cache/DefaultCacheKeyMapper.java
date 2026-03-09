@@ -12,9 +12,22 @@ public class DefaultCacheKeyMapper implements CacheKeyMapper {
         final var url = request.url();
         final var hostHeader = request.headers().getFirst("Host");
         final var host = hostHeader != null ? hostHeader : url.getHost();
-        final var port = url.getPort() != -1 ? ":" + url.getPort() : "";
-        final var query = url.getRawQuery() != null ? "?" + url.getRawQuery() : "";
-        final var pathAndQuery = url.getRawPath() + query;
-        return request.method().name() + " " + host + port + " " + pathAndQuery;
+
+        // Optimized with StringBuilder to reduce object allocations in hot path
+        final var sb = new StringBuilder();
+        sb.append(request.method().name()).append(' ').append(host);
+
+        if (url.getPort() != -1) {
+            sb.append(':').append(url.getPort());
+        }
+
+        sb.append(' ').append(url.getRawPath());
+
+        final var query = url.getRawQuery();
+        if (query != null) {
+            sb.append('?').append(query);
+        }
+
+        return sb.toString();
     }
 }
