@@ -1,7 +1,5 @@
 package io.github.pulpogato.common.cache;
 
-import java.text.MessageFormat;
-import java.util.Optional;
 import org.springframework.web.reactive.function.client.ClientRequest;
 
 /**
@@ -12,11 +10,11 @@ public class DefaultCacheKeyMapper implements CacheKeyMapper {
     @Override
     public String apply(ClientRequest request) {
         final var url = request.url();
-        final var host = Optional.ofNullable(request.headers().getFirst("Host"))
-                .orElse(url.getHost() + (url.getPort() != -1 ? ":" + url.getPort() : ""));
-        final var pathAndQuery = MessageFormat.format(
-                "{0}{1}",
-                url.getRawPath(), url.getRawQuery() != null ? MessageFormat.format("?{0}", url.getRawQuery()) : "");
-        return MessageFormat.format("{0} {1} {2}", request.method().name(), host, pathAndQuery);
+        final var hostHeader = request.headers().getFirst("Host");
+        final var host = hostHeader != null ? hostHeader : url.getHost();
+        final var port = url.getPort() != -1 ? ":" + url.getPort() : "";
+        final var query = url.getRawQuery() != null ? "?" + url.getRawQuery() : "";
+        final var pathAndQuery = url.getRawPath() + query;
+        return request.method().name() + " " + host + port + " " + pathAndQuery;
     }
 }

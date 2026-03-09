@@ -3,7 +3,6 @@ package io.github.pulpogato.common.util;
 import io.github.pulpogato.common.PulpogatoType;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,6 +16,10 @@ import org.jspecify.annotations.NonNull;
  * A builder class for constructing code representations of objects with properties.
  */
 public class CodeBuilder {
+
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+
     /**
      * The type of the object being built.
      */
@@ -109,9 +112,8 @@ public class CodeBuilder {
     }
 
     private static @NonNull String formatDateTime(OffsetDateTime odt) {
-        return MessageFormat.format(
-                "OffsetDateTime.parse(\"{0}\")",
-                odt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")));
+        final var formattedDate = odt.format(DATE_TIME_FORMATTER);
+        return "OffsetDateTime.parse(\"" + formattedDate + "\")";
     }
 
     private static @NonNull String formatList(List<?> list) {
