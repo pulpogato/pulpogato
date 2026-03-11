@@ -54,7 +54,7 @@ jobs:
 
       - name: Run unignore script
         run: |-
-          uv run unignore.py ${{ inputs.mode || '1' }}
+          uv run scripts/unignore.py ${{ inputs.mode || '1' }}
 
       - name: Check for changes
         run: |

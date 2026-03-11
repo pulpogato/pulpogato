@@ -42,4 +42,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |-
-          ./update-schema-version.sh
+          ./scripts/update-schema-version.sh
