@@ -3,7 +3,6 @@ package io.github.pulpogato.common.jackson;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
@@ -22,6 +21,9 @@ public class OffsetDateTimeUtil {
     /**
      * Parses a date-time string by trying each supported format in order.
      *
+     * <p>Optimized with a for-loop instead of a Stream pipeline to reduce allocation overhead
+     * and improve throughput in this hot path, where many dates are parsed from API responses.
+     *
      * @param text the date-time string to parse, or {@code null}
      * @return the parsed {@link OffsetDateTime}, or {@code null} if the input is {@code null} or
      *     cannot be parsed by any supported format
@@ -31,16 +33,14 @@ public class OffsetDateTimeUtil {
         if (text == null) {
             return null;
         }
-        return OffsetDateTimeUtil.FORMATTERS.stream()
-                .map(formatter -> {
-                    try {
-                        return OffsetDateTime.parse(text, formatter);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        // Use for-loop to avoid Stream overhead in performance-critical path
+        for (final var formatter : FORMATTERS) {
+            try {
+                return OffsetDateTime.parse(text, formatter);
+            } catch (Exception ignored) {
+                // Try next formatter
+            }
+        }
+        return null;
     }
 }
