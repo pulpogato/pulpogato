@@ -51,7 +51,7 @@ Code generation is core to the project:
 
 ### Update GitHub API schema version
 ```bash
-./update-schema-version.sh
+./scripts/update-schema-version.sh
 ```
 
 ### Integration test requirements
