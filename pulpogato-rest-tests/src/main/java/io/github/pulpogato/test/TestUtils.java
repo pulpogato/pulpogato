@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.PulpogatoType;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -209,17 +208,16 @@ public class TestUtils {
         }
     }
 
+    /**
+     * Formats a structured diff between expected and actual JSON values.
+     *
+     * <p>Optimized with string concatenation instead of MessageFormat.format to avoid
+     * redundant pattern parsing and improve performance during test failures.
+     */
     private static String formatStructuredDiff(String op, String path, JsonValue oldValue, JsonValue newValue) {
-        return MessageFormat.format("""
-
-                Difference at path: {0}
-                Operation: {1}
-
-                Expected (from input):
-                {2}
-
-                Actual (after roundtrip):
-                {3}""", path, op, indent(prettyPrint(oldValue)), indent(prettyPrint(newValue)));
+        return "\nDifference at path: " + path + "\n" + "Operation: " + op + "\n\n" + "Expected (from input):\n"
+                + indent(prettyPrint(oldValue)) + "\n\n" + "Actual (after roundtrip):\n"
+                + indent(prettyPrint(newValue));
     }
 
     private static String prettyPrint(JsonValue value) {
