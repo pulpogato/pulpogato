@@ -213,8 +213,9 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
             return Mono.just(response);
         }
 
-        // Copy headers to a plain Map for serialization
-        var headerMap = new HashMap<String, List<String>>();
+        // Copy headers to a plain Map for serialization.
+        // Optimized with pre-allocated HashMap to avoid resizing.
+        var headerMap = HashMap.<String, List<String>>newHashMap(headers.size());
         headers.forEach((key, values) -> headerMap.put(key, new ArrayList<>(values)));
 
         // Buffer the response body and check size
