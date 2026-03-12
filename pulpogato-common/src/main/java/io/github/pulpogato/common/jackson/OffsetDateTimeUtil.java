@@ -2,7 +2,8 @@ package io.github.pulpogato.common.jackson;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
@@ -11,36 +12,42 @@ import org.jspecify.annotations.Nullable;
  */
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class OffsetDateTimeUtil {
-    private static final List<DateTimeFormatter> FORMATTERS = List.of(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSXXX"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mmXXX"),
-            DateTimeFormatter.ISO_INSTANT);
+    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ISO_LOCAL_DATE)
+            .appendLiteral('T')
+            .appendValue(ChronoField.HOUR_OF_DAY, 2)
+            .appendLiteral(':')
+            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+            .optionalStart()
+            .appendLiteral(':')
+            .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+            .optionalStart()
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+            .optionalEnd()
+            .optionalEnd()
+            .appendOffsetId()
+            .toFormatter();
 
     /**
-     * Parses a date-time string by trying each supported format in order.
+     * Parses a date-time string by using a flexible formatter.
      *
-     * <p>Optimized with a for-loop instead of a Stream pipeline to reduce allocation overhead
-     * and improve throughput in this hot path, where many dates are parsed from API responses.
+     * <p>Optimized with a single DateTimeFormatter using optional blocks instead of multiple formatters
+     * in a loop with try-catch blocks to significantly improve performance and reduce exception overhead
+     * in this hot path, where many dates are parsed from API responses.
      *
      * @param text the date-time string to parse, or {@code null}
      * @return the parsed {@link OffsetDateTime}, or {@code null} if the input is {@code null} or
-     *     cannot be parsed by any supported format
+     *     cannot be parsed
      */
     @Nullable
     public static OffsetDateTime parseStringDateTime(@Nullable String text) {
         if (text == null) {
             return null;
         }
-        // Use for-loop to avoid Stream overhead in performance-critical path
-        for (final var formatter : FORMATTERS) {
-            try {
-                return OffsetDateTime.parse(text, formatter);
-            } catch (Exception ignored) {
-                // Try next formatter
-            }
+        try {
+            return OffsetDateTime.parse(text, FORMATTER);
+        } catch (Exception e) {
+            return null;
         }
-        return null;
     }
 }
