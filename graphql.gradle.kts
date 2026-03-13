@@ -1,13 +1,17 @@
 import com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask
 import de.undercouch.gradle.tasks.download.Download
+import io.github.pulpogato.buildsupport.PatchDgsGeneratedSourcesAction
+import io.github.pulpogato.buildsupport.PropertiesFileValueClosure
+import io.github.pulpogato.buildsupport.TransformGraphqlSchemaTask
+import io.github.pulpogato.buildsupport.WriteInfoPropertiesTask
 import nebula.plugin.info.InfoBrokerPlugin
-import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.dgs)
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.download)
+    id("io.github.pulpogato.build-support")
 }
 
 dependencies {
@@ -52,63 +56,34 @@ val downloadSchema =
         tempAndMove(true)
         useETag("all")
         quiet(true)
-        notCompatibleWithConfigurationCache("Uses a script-defined Download task that captures Gradle script state.")
 
         inputs.property("url", getUrl(projectVariant))
         outputs.file(originalSchemaLocation)
-
-        doLast {
-            if (!originalSchemaLocation.get().asFile.exists()) {
-                throw GradleException("Failed to download schema from ${getUrl(projectVariant)}")
-            }
-        }
     }
 
 val transformSchema =
-    tasks.register<Sync>("transformSchema") {
+    tasks.register<TransformGraphqlSchemaTask>("transformSchema") {
         dependsOn(downloadSchema)
-        dependsOn(tasks.processResources)
-        notCompatibleWithConfigurationCache("Uses a script filter action that captures Gradle script state.")
-
-        from(originalSchemaLocation)
-        into(transformedSchemaLocation.map { thePath -> thePath.asFile.parentFile })
-        rename { transformedSchemaLocation.get().asFile.name }
-
-        filter { currentLine ->
-            currentLine
-                .replace(Regex("<(https?:.+?)>")) { match ->
-                    "<a href=\"${match.groupValues[1]}\">${match.groupValues[1]}</a>"
-                }.replace("< ", "&lt; ")
-                .replace("> ", "&gt; ")
-                .replace("<= ", "&lt;= ")
-                .replace(">= ", "&gt;= ")
-                .replace("Query implements Node", "Query")
-        }
+        inputSchema.set(originalSchemaLocation)
+        outputSchema.set(transformedSchemaLocation)
     }
 
-val checksumFile = project.layout.buildDirectory.file("schema.sha256")
+val schemaInfoFile = project.layout.buildDirectory.file("reports/schema-info.properties")
 
 val calculateSchemaChecksum =
-    tasks.register("calculateSchemaChecksum") {
+    tasks.register<WriteInfoPropertiesTask>("calculateSchemaChecksum") {
         dependsOn(downloadSchema)
         dependsOn(tasks.processResources)
-        inputs.files(downloadSchema)
-        outputs.file(checksumFile)
-        notCompatibleWithConfigurationCache("Uses the InfoBroker plugin from a doLast action.")
-
-        doLast {
-            val schemaBytes = originalSchemaLocation.get().asFile.readBytes()
-            val digest = MessageDigest.getInstance("SHA-256")
-            val hashBytes = digest.digest(schemaBytes)
-            val sha256 = hashBytes.joinToString("") { theByte -> "%02x".format(theByte) }
-            checksumFile.get().asFile.writeText(sha256)
-            project.plugins.getPlugin(InfoBrokerPlugin::class.java).add("GitHub-Schema-SHA256", sha256)
-        }
+        checksumFiles.from(originalSchemaLocation)
+        checksumEntriesByFilename.put("schema.graphqls", "GitHub-Schema-SHA256")
+        outputFile.set(schemaInfoFile)
     }
+
+val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
+infoBrokerPlugin.add("GitHub-Schema-SHA256", PropertiesFileValueClosure(schemaInfoFile.get().asFile, "GitHub-Schema-SHA256"))
 
 tasks.named<GenerateJavaTask>("generateJava") {
     dependsOn(transformSchema)
-    notCompatibleWithConfigurationCache("Uses a third-party task type configured from the build script and patched in a doLast action.")
 
     schemaPaths = mutableListOf(transformedSchemaLocation.get().asFile)
     packageName = "io.github.pulpogato.graphql"
@@ -134,22 +109,14 @@ tasks.named<GenerateJavaTask>("generateJava") {
             "URI" to "java.net.URI",
             "X509Certificate" to "java.lang.String",
         )
-
-    doLast {
-        delete(
-            fileTree(layout.buildDirectory.dir("generated/sources/dgs-codegen")) {
-                include("**/DgsConstants.java")
-            },
-        )
-        // TODO: Remove next statement after https://github.com/Netflix/dgs-codegen/pull/911 is released
-        fileTree(layout.buildDirectory.dir("generated/sources/dgs-codegen"))
-            .matching { include("**/*.java") }
-            .forEach { file ->
-                val content = file.readText()
-                file.writeText(content.replace(" package,", " _package,"))
-            }
-    }
-    notCompatibleWithConfigurationCache("Uses a script doLast action to rewrite generated sources after codegen.")
+    doLast(
+        PatchDgsGeneratedSourcesAction(
+            layout.buildDirectory
+                .dir("generated/sources/dgs-codegen")
+                .get()
+                .asFile,
+        ),
+    )
 }
 
 java {
@@ -164,6 +131,10 @@ tasks.withType<Test> {
 
 tasks.processResources {
     dependsOn(downloadSchema)
+}
+
+tasks.withType<Jar>().configureEach {
+    dependsOn(calculateSchemaChecksum)
 }
 
 tasks.withType<Javadoc>().configureEach {
