@@ -29,6 +29,7 @@ class IssueStatusesPlugin : Plugin<Project> {
         target.tasks.register("createIssues", CreateIssuesTask::class.java) {
             group = "verification"
             description = "Creates issues for ignored tests."
+            notCompatibleWithConfigurationCache("Prompts for console input, scans all projects, and appends to source files.")
         }
     }
 }

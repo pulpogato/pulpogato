@@ -142,6 +142,7 @@ val addSchemaInfoToBroker =
         dependsOn(downloadSchema)
         val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { theTask -> theTask.schemaFile }
         inputs.file(schemaFile)
+        notCompatibleWithConfigurationCache("Uses the InfoBroker plugin and project extensions from a doLast action.")
 
         doLast {
             val schemaBytes = schemaFile.get().asFile.readBytes()

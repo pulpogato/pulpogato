@@ -100,6 +100,7 @@ waena {
 tasks.register("updateRestSchemaVersion") {
     description = "Update Rest Schema Version from GitHub Rest API Descriptions"
     group = "maintenance"
+    notCompatibleWithConfigurationCache("Updates gradle.properties during task execution.")
     doLast {
         val repo = project.ext["gh.api.repo"]
         val connection = uri("https://api.github.com/repos/$repo/branches/main").toURL().openConnection()
@@ -125,6 +126,7 @@ tasks.register("updateRestSchemaVersion") {
 tasks.register("updateSchemastoreVersion") {
     description = "Update Schemastore Version from schemastore/schemastore"
     group = "maintenance"
+    notCompatibleWithConfigurationCache("Updates gradle.properties during task execution.")
     doLast {
         val repo = project.ext["schemastore.repo"]
         val connection = uri("https://api.github.com/repos/$repo/branches/master").toURL().openConnection()
@@ -151,6 +153,7 @@ val checkPlugin =
     tasks.register("checkPlugin", Exec::class) {
         description = "Run check on plugin code"
         group = "verification"
+        notCompatibleWithConfigurationCache("Invokes a separate Gradle build for the included plugin project.")
         commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
     }
 
@@ -158,6 +161,7 @@ val spotlessApplyPlugin =
     tasks.register("spotlessApplyPlugin", Exec::class) {
         description = "Run spotlessApply on plugin code"
         group = "verification"
+        notCompatibleWithConfigurationCache("Invokes a separate Gradle build for the included plugin project.")
         commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "spotlessApply")
     }
 
@@ -173,12 +177,14 @@ val pitestPlugin =
     tasks.register("pitestPlugin", Exec::class) {
         description = "Run pitest on plugin code"
         group = "verification"
+        notCompatibleWithConfigurationCache("Invokes a separate Gradle build for the included plugin project.")
         commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "pitest")
     }
 
 tasks.register("pitest") {
     description = "Run pitest from plugin"
     group = "verification"
+    notCompatibleWithConfigurationCache("Delegates to a task that invokes a separate Gradle build.")
     dependsOn(pitestPlugin)
 }
 
@@ -191,6 +197,7 @@ val dockerExecutable =
 tasks.register<Exec>("asciidoctorDocs") {
     description = "Generate Asciidoctor HTML docs in Docker"
     group = "documentation"
+    notCompatibleWithConfigurationCache("Runs documentation generation in Docker via an external process.")
     commandLine(
         dockerExecutable,
         "run",
