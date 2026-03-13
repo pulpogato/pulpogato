@@ -55,6 +55,7 @@ val addSchemaInfoToBroker =
         schemas.forEach { spec ->
             inputs.file(project.layout.buildDirectory.file("generated-src/main/resources/${spec.filename}"))
         }
+        notCompatibleWithConfigurationCache("Uses the InfoBroker plugin from a doLast action.")
 
         doLast {
             val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)

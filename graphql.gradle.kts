@@ -52,6 +52,7 @@ val downloadSchema =
         tempAndMove(true)
         useETag("all")
         quiet(true)
+        notCompatibleWithConfigurationCache("Uses a script-defined Download task that captures Gradle script state.")
 
         inputs.property("url", getUrl(projectVariant))
         outputs.file(originalSchemaLocation)
@@ -67,6 +68,7 @@ val transformSchema =
     tasks.register<Sync>("transformSchema") {
         dependsOn(downloadSchema)
         dependsOn(tasks.processResources)
+        notCompatibleWithConfigurationCache("Uses a script filter action that captures Gradle script state.")
 
         from(originalSchemaLocation)
         into(transformedSchemaLocation.map { thePath -> thePath.asFile.parentFile })
@@ -92,6 +94,7 @@ val calculateSchemaChecksum =
         dependsOn(tasks.processResources)
         inputs.files(downloadSchema)
         outputs.file(checksumFile)
+        notCompatibleWithConfigurationCache("Uses the InfoBroker plugin from a doLast action.")
 
         doLast {
             val schemaBytes = originalSchemaLocation.get().asFile.readBytes()
@@ -105,6 +108,7 @@ val calculateSchemaChecksum =
 
 tasks.named<GenerateJavaTask>("generateJava") {
     dependsOn(transformSchema)
+    notCompatibleWithConfigurationCache("Uses a third-party task type configured from the build script and patched in a doLast action.")
 
     schemaPaths = mutableListOf(transformedSchemaLocation.get().asFile)
     packageName = "io.github.pulpogato.graphql"
@@ -145,6 +149,7 @@ tasks.named<GenerateJavaTask>("generateJava") {
                 file.writeText(content.replace(" package,", " _package,"))
             }
     }
+    notCompatibleWithConfigurationCache("Uses a script doLast action to rewrite generated sources after codegen.")
 }
 
 java {
