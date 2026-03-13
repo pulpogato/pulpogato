@@ -13,8 +13,9 @@ public class DefaultCacheKeyMapper implements CacheKeyMapper {
         final var hostHeader = request.headers().getFirst("Host");
         final var host = hostHeader != null ? hostHeader : url.getHost();
 
-        // Optimized with StringBuilder to reduce object allocations in hot path
-        final var sb = new StringBuilder();
+        // Optimized with StringBuilder to reduce object allocations in hot path.
+        // Initial capacity of 128 characters avoids resizing for typical GitHub API URLs.
+        final var sb = new StringBuilder(128);
         sb.append(request.method().name()).append(' ').append(host);
 
         if (url.getPort() != -1) {

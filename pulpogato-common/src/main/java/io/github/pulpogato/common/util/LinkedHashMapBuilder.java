@@ -24,7 +24,7 @@ public class LinkedHashMapBuilder {
      */
     @SafeVarargs
     public static <K, V> Map<K, V> of(Map.Entry<K, V>... entries) {
-        var map = new LinkedHashMap<K, V>();
+        var map = LinkedHashMap.<K, V>newLinkedHashMap(entries.length);
         for (var entry : entries) {
             map.put(entry.getKey(), entry.getValue());
         }
