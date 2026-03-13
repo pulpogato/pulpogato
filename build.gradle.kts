@@ -1,8 +1,7 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rahulsom.waena.WaenaExtension
+import io.github.pulpogato.buildsupport.UpdateRepositoryBranchPropertyTask
 import nebula.plugin.contacts.ContactsExtension
-import java.net.HttpURLConnection
 
 buildscript {
     repositories {
@@ -41,6 +40,7 @@ plugins {
     alias(libs.plugins.dgs).apply(false)
     alias(libs.plugins.download).apply(false)
     alias(libs.plugins.spotless).apply(false)
+    id("io.github.pulpogato.build-support")
 }
 
 repositories {
@@ -97,56 +97,24 @@ waena {
     publishMode.set(WaenaExtension.PublishMode.Central)
 }
 
-tasks.register("updateRestSchemaVersion") {
+tasks.register<UpdateRepositoryBranchPropertyTask>("updateRestSchemaVersion") {
     description = "Update Rest Schema Version from GitHub Rest API Descriptions"
     group = "maintenance"
-    notCompatibleWithConfigurationCache("Updates gradle.properties during task execution.")
-    doLast {
-        val repo = project.ext["gh.api.repo"]
-        val connection = uri("https://api.github.com/repos/$repo/branches/main").toURL().openConnection()
-        val gitHubToken = System.getenv("GITHUB_TOKEN")
-        if (gitHubToken != null) {
-            (connection as HttpURLConnection).addRequestProperty("Authentication", "token $gitHubToken")
-        }
-        val branches = connection.getInputStream().bufferedReader().readText()
-        val json = ObjectMapper().readTree(branches)
-        val sha =
-            json["commit"]["sha"].asText().take(7)
-        val oldProps = project.file("gradle.properties").readText()
-        val newProps = oldProps.replace(Regex("gh.api.commit=.*"), "gh.api.commit=$sha")
-        project.file("gradle.properties").writeText(newProps)
-        if (project.ext["gh.api.commit"] != sha) {
-            println("Updated gh.api.commit from ${project.ext["gh.api.commit"]} to $sha")
-        } else {
-            println("gh.api.commit is already up to date")
-        }
-    }
+    repository.set(project.ext["gh.api.repo"].toString())
+    branch.set("main")
+    propertyName.set("gh.api.commit")
+    propertiesFile.set(layout.projectDirectory.file("gradle.properties"))
+    gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
 }
 
-tasks.register("updateSchemastoreVersion") {
+tasks.register<UpdateRepositoryBranchPropertyTask>("updateSchemastoreVersion") {
     description = "Update Schemastore Version from schemastore/schemastore"
     group = "maintenance"
-    notCompatibleWithConfigurationCache("Updates gradle.properties during task execution.")
-    doLast {
-        val repo = project.ext["schemastore.repo"]
-        val connection = uri("https://api.github.com/repos/$repo/branches/master").toURL().openConnection()
-        val gitHubToken = System.getenv("GITHUB_TOKEN")
-        if (gitHubToken != null) {
-            (connection as HttpURLConnection).addRequestProperty("Authentication", "token $gitHubToken")
-        }
-        val branches = connection.getInputStream().bufferedReader().readText()
-        val json = ObjectMapper().readTree(branches)
-        val sha =
-            json["commit"]["sha"].asText().take(7)
-        val oldProps = project.file("gradle.properties").readText()
-        val newProps = oldProps.replace(Regex("schemastore.commit=.*"), "schemastore.commit=$sha")
-        project.file("gradle.properties").writeText(newProps)
-        if (project.ext["schemastore.commit"] != sha) {
-            println("Updated schemastore.commit from ${project.ext["schemastore.commit"]} to $sha")
-        } else {
-            println("schemastore.commit is already up to date")
-        }
-    }
+    repository.set(project.ext["schemastore.repo"].toString())
+    branch.set("master")
+    propertyName.set("schemastore.commit")
+    propertiesFile.set(layout.projectDirectory.file("gradle.properties"))
+    gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
 }
 
 val checkPlugin =

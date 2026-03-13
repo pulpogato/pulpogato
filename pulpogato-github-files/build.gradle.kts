@@ -1,7 +1,8 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import de.undercouch.gradle.tasks.download.Download
+import io.github.pulpogato.buildsupport.PropertiesFileValueClosure
+import io.github.pulpogato.buildsupport.WriteInfoPropertiesTask
 import nebula.plugin.info.InfoBrokerPlugin
-import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.javaLibrary)
@@ -50,32 +51,31 @@ schemas.forEach { spec ->
 }
 
 val addSchemaInfoToBroker =
-    tasks.register("addSchemaInfoToBroker") {
+    tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
         dependsOn(downloadAllSchemas)
+        staticEntries.put("Schemastore-Commit", schemastoreCommit)
         schemas.forEach { spec ->
-            inputs.file(project.layout.buildDirectory.file("generated-src/main/resources/${spec.filename}"))
+            checksumFiles.from(project.layout.buildDirectory.file("generated-src/main/resources/${spec.filename}"))
+            val label = spec.subpackage.replaceFirstChar { it.uppercase() }
+            checksumEntriesByFilename.put(spec.filename, "Schemastore-$label-SHA256")
         }
-        notCompatibleWithConfigurationCache("Uses the InfoBroker plugin from a doLast action.")
-
-        doLast {
-            val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
-            infoBrokerPlugin.add("Schemastore-Commit", schemastoreCommit)
-
-            schemas.forEach { spec ->
-                val schemaBytes =
-                    project.layout.buildDirectory
-                        .file("generated-src/main/resources/${spec.filename}")
-                        .get()
-                        .asFile
-                        .readBytes()
-                val digest = MessageDigest.getInstance("SHA-256")
-                val hashBytes = digest.digest(schemaBytes)
-                val sha256 = hashBytes.joinToString("") { theByte -> "%02x".format(theByte) }
-                val label = spec.subpackage.replaceFirstChar { it.uppercase() }
-                infoBrokerPlugin.add("Schemastore-$label-SHA256", sha256)
-            }
-        }
+        outputFile.set(layout.buildDirectory.file("reports/schema-info.properties"))
     }
+
+val infoPropertiesFile = addSchemaInfoToBroker.flatMap { it.outputFile }
+val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
+infoBrokerPlugin.add("Schemastore-Commit", PropertiesFileValueClosure(infoPropertiesFile.get().asFile, "Schemastore-Commit"))
+schemas.forEach { spec ->
+    val label = spec.subpackage.replaceFirstChar { it.uppercase() }
+    infoBrokerPlugin.add(
+        "Schemastore-$label-SHA256",
+        PropertiesFileValueClosure(infoPropertiesFile.get().asFile, "Schemastore-$label-SHA256"),
+    )
+}
+
+tasks.withType<Jar>().configureEach {
+    dependsOn(addSchemaInfoToBroker)
+}
 
 tasks.withType<GenerateMavenPom>().configureEach {
     dependsOn(addSchemaInfoToBroker)
