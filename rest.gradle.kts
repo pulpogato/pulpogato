@@ -1,7 +1,8 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import io.github.pulpogato.buildsupport.PropertiesFileValueClosure
+import io.github.pulpogato.buildsupport.WriteInfoPropertiesTask
 import io.github.pulpogato.restcodegen.DownloadSchemaTask
 import nebula.plugin.info.InfoBrokerPlugin
-import java.security.MessageDigest
 import kotlin.jvm.java
 
 plugins {
@@ -138,25 +139,35 @@ tasks.withType<JavaCompile> {
 }
 
 val addSchemaInfoToBroker =
-    tasks.register("addSchemaInfoToBroker") {
+    tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
         dependsOn(downloadSchema)
         val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { theTask -> theTask.schemaFile }
-        inputs.file(schemaFile)
-        notCompatibleWithConfigurationCache("Uses the InfoBroker plugin and project extensions from a doLast action.")
-
-        doLast {
-            val schemaBytes = schemaFile.get().asFile.readBytes()
-            val digest = MessageDigest.getInstance("SHA-256")
-            val hashBytes = digest.digest(schemaBytes)
-            val sha256 = hashBytes.joinToString("") { theByte -> "%02x".format(theByte) }
-
-            val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
-            infoBrokerPlugin.add("GitHub-API-Repo", project.ext.get("gh.api.repo").toString())
-            infoBrokerPlugin.add("GitHub-API-Commit", project.ext.get("gh.api.commit").toString())
-            infoBrokerPlugin.add("GitHub-API-Version", project.ext.get("gh.api.version").toString())
-            infoBrokerPlugin.add("GitHub-API-SHA256", sha256)
-        }
+        checksumFiles.from(schemaFile)
+        checksumEntriesByFilename.put("github.schema.json", "GitHub-API-SHA256")
+        staticEntries.put(
+            "GitHub-API-Repo",
+            project.ext.get("gh.api.repo").toString(),
+        )
+        staticEntries.put(
+            "GitHub-API-Commit",
+            project.ext.get("gh.api.commit").toString(),
+        )
+        staticEntries.put(
+            "GitHub-API-Version",
+            project.ext.get("gh.api.version").toString(),
+        )
+        outputFile.set(layout.buildDirectory.file("reports/schema-info.properties"))
     }
+
+val infoPropertiesFile = addSchemaInfoToBroker.flatMap { it.outputFile }
+val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
+listOf("GitHub-API-Repo", "GitHub-API-Commit", "GitHub-API-Version", "GitHub-API-SHA256").forEach { key ->
+    infoBrokerPlugin.add(key, PropertiesFileValueClosure(infoPropertiesFile.get().asFile, key))
+}
+
+tasks.withType<Jar>().configureEach {
+    dependsOn(addSchemaInfoToBroker)
+}
 
 tasks.withType<GenerateMavenPom>().configureEach {
     dependsOn(addSchemaInfoToBroker)

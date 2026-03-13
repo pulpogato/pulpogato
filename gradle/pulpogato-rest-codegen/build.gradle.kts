@@ -39,6 +39,10 @@ java {
 }
 
 gradlePlugin {
+    val buildSupport by plugins.creating {
+        id = "io.github.pulpogato.build-support"
+        implementationClass = "io.github.pulpogato.buildsupport.BuildSupportPlugin"
+    }
     val restCodegen by plugins.creating {
         id = "io.github.pulpogato.rest-codegen"
         implementationClass = "io.github.pulpogato.restcodegen.RestCodegenPlugin"
