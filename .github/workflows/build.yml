@@ -2,7 +2,6 @@ name: Gradle Build
 
 on:
   pull_request:
-    branches: ["*"]
   push:
     branches: ["*"]
     tags:
