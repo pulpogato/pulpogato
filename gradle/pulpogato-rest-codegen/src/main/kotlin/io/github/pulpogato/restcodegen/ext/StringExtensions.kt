@@ -1,7 +1,9 @@
 package io.github.pulpogato.restcodegen.ext
 
-private var pascalCaseCache = mutableMapOf<String, String>()
-private var trainCaseCache = mutableMapOf<String, String>()
+import java.util.concurrent.ConcurrentHashMap
+
+private val pascalCaseCache = ConcurrentHashMap<String, String>()
+private val trainCaseCache = ConcurrentHashMap<String, String>()
 
 /**
  * Converts a string to PascalCase.

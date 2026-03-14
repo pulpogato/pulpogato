@@ -131,7 +131,8 @@ open class GenerateJavaTask : DefaultTask() {
         prepareOutputDirectory(test)
         prepareOutputDirectory(testResources)
 
-        val swaggerSpec = schemaFile.readText()
+        val mapper = ObjectMapper()
+        val schemaNode = mapper.readTree(schemaFile) as ObjectNode
 
         // Check for *.schema.json in pulpogato-common and the module's resources directory
         val commonResourcesDirVal = commonResourcesDir.orNull
@@ -141,11 +142,15 @@ open class GenerateJavaTask : DefaultTask() {
                 (if (moduleResourcesDirVal != null) findSchemaFiles(moduleResourcesDirVal) else emptyList())
 
         val addedProperties = mutableMapOf<String, MutableMap<String, String>>()
-        var mergedSpec = swaggerSpec
+        val schemas = mutableMapOf<String, JsonNode>("schema.json" to schemaNode)
+
         schemaAdditionsFiles.forEach { schemaAddsFile ->
-            mergedSpec = mergeSchemaAdditions(mergedSpec, schemaAddsFile.readText(), schemaAddsFile.name, addedProperties)
+            val additionsNode = mapper.readTree(schemaAddsFile)
+            schemas[schemaAddsFile.name] = additionsNode
+            mergeSchemaAdditions(schemaNode, additionsNode, schemaAddsFile.name, addedProperties)
         }
 
+        val mergedSpec = mapper.writeValueAsString(schemaNode)
         val parseOptions = ParseOptions()
         val result = OpenAPIParser().readContents(mergedSpec, listOf(), parseOptions)
 
@@ -167,15 +172,6 @@ open class GenerateJavaTask : DefaultTask() {
         formatJavaFiles(javaFiles + testJavaFiles, logger)
 
         // Validate JSON references using the merged spec (includes additions)
-        val mapper = ObjectMapper()
-        val schemas = mutableMapOf("schema.json" to mapper.readTree(mergedSpec))
-
-        // Add additions schemas if they exist (for refs that explicitly reference them)
-        schemaAdditionsFiles.forEach { schemaAddsFile ->
-            val additionsJson = mapper.readTree(schemaAddsFile.readText())
-            schemas[schemaAddsFile.name] = additionsJson
-        }
-
         JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
     }
 
@@ -210,26 +206,22 @@ open class GenerateJavaTask : DefaultTask() {
         }
 
     /**
-     * Merges schema additions from an addition file into the main schema.
+     * Merges schema additions from an addition node into the main schema node.
      *
      * Supports adding/removing schemas under `components.schemas` and paths under `paths`.
      * Also tracks which additional properties were added so they can be handled during code generation.
      *
-     * @param swaggerSpec The original OpenAPI specification as a JSON string
-     * @param schemaAddsJson The additions schema as a JSON string
+     * @param schema The original OpenAPI specification as an ObjectNode
+     * @param schemaAdds The additions schema as a JsonNode
+     * @param sourceFileName The name of the addition file
      * @param addedProperties A mutable map to store information about which properties were added from the additions
-     * @return The merged OpenAPI specification as a JSON string
      */
     private fun mergeSchemaAdditions(
-        swaggerSpec: String,
-        schemaAddsJson: String,
+        schema: ObjectNode,
+        schemaAdds: JsonNode,
         sourceFileName: String,
         addedProperties: MutableMap<String, MutableMap<String, String>>,
-    ): String {
-        val objectMapper = ObjectMapper()
-        val schema = objectMapper.readTree(swaggerSpec) as ObjectNode
-        val schemaAdds = objectMapper.readTree(schemaAddsJson)
-
+    ) {
         val additions = schemaAdds["components"]?.get("schemas")
         if (additions != null && additions.isObject) {
             val targetSchemas = schema.at("/components/schemas") as ObjectNode
@@ -242,8 +234,6 @@ open class GenerateJavaTask : DefaultTask() {
         if (pathAdditions != null && pathAdditions.isObject) {
             mergePathAdditions(schema, pathAdditions as ObjectNode, sourceFileName)
         }
-
-        return objectMapper.writeValueAsString(schema)
     }
 
     private fun mergeSchemaEntry(
