@@ -563,7 +563,14 @@ private fun copyTypeSpecToBuilderWithFilteredTypes(
     typeSpecFilter: (TypeSpec) -> Boolean = { true },
     methodFilter: (MethodSpec) -> Boolean = { true },
 ): TypeSpec.Builder {
-    val builder = TypeSpec.classBuilder(original.name())
+    val builder =
+        if (original.kind() == TypeSpec.Kind.ENUM) {
+            val enumBuilder = TypeSpec.enumBuilder(original.name())
+            original.enumConstants().forEach { (name, typeSpec) -> enumBuilder.addEnumConstant(name, typeSpec) }
+            enumBuilder
+        } else {
+            TypeSpec.classBuilder(original.name())
+        }
     original.annotations().forEach { builder.addAnnotation(it) }
     original.modifiers().forEach { builder.addModifiers(it) }
     original.superinterfaces().forEach { builder.addSuperinterface(it) }
