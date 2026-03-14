@@ -26,7 +26,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: 1784694
