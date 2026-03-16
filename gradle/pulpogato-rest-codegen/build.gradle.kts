@@ -39,21 +39,23 @@ java {
 }
 
 gradlePlugin {
-    val buildSupport by plugins.creating {
-        id = "io.github.pulpogato.build-support"
-        implementationClass = "io.github.pulpogato.buildsupport.BuildSupportPlugin"
-    }
-    val restCodegen by plugins.creating {
-        id = "io.github.pulpogato.rest-codegen"
-        implementationClass = "io.github.pulpogato.restcodegen.RestCodegenPlugin"
-    }
-    val issueStatuses by plugins.creating {
-        id = "io.github.pulpogato.issue-statuses"
-        implementationClass = "io.github.pulpogato.issues.IssueStatusesPlugin"
-    }
-    val githubFilesCodegen by plugins.creating {
-        id = "io.github.pulpogato.github-files-codegen"
-        implementationClass = "io.github.pulpogato.githubfilescodegen.GithubFilesCodegenPlugin"
+    plugins {
+        create("buildSupport") {
+            id = "io.github.pulpogato.build-support"
+            implementationClass = "io.github.pulpogato.buildsupport.BuildSupportPlugin"
+        }
+        create("restCodegen") {
+            id = "io.github.pulpogato.rest-codegen"
+            implementationClass = "io.github.pulpogato.restcodegen.RestCodegenPlugin"
+        }
+        create("issueStatuses") {
+            id = "io.github.pulpogato.issue-statuses"
+            implementationClass = "io.github.pulpogato.issues.IssueStatusesPlugin"
+        }
+        create("githubFilesCodegen") {
+            id = "io.github.pulpogato.github-files-codegen"
+            implementationClass = "io.github.pulpogato.githubfilescodegen.GithubFilesCodegenPlugin"
+        }
     }
 }
 
