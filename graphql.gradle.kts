@@ -132,10 +132,6 @@ java {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 tasks.processResources {
     dependsOn(downloadSchema)
 }

@@ -25,8 +25,13 @@ data class SchemaSpec(
 val schemas =
     listOf(
         SchemaSpec("github-action.json", "actions"),
-        SchemaSpec("github-workflow.json", "workflows"),
+        SchemaSpec("github-discussion.json", "discussion"),
+        SchemaSpec("github-funding.json", "funding"),
+        SchemaSpec("github-issue-config.json", "issueconfig"),
+        SchemaSpec("github-issue-forms.json", "issueforms"),
         SchemaSpec("github-release-config.json", "releases"),
+        SchemaSpec("github-workflow.json", "workflows"),
+        SchemaSpec("github-workflow-template-properties.json", "workflowtemplates"),
     )
 
 val downloadAllSchemas =
@@ -52,6 +57,8 @@ schemas.forEach { spec ->
 
 val addSchemaInfoToBroker =
     tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
+        group = "publishing"
+        description = "Adds the GitHub configuration file schema information to the info broker."
         dependsOn(downloadAllSchemas)
         staticEntries.put("Schemastore-Commit", schemastoreCommit)
         schemas.forEach { spec ->
@@ -139,10 +146,6 @@ java {
 
 tasks.withType<JavaCompile> {
     options.isIncremental = true
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 tasks.withType<Javadoc>().configureEach {

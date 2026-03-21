@@ -140,11 +140,16 @@ include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/F
 
 === GitHub Files Example
 
-`pulpogato-github-files` provides typed models for common GitHub repository files:
+`pulpogato-github-files` provides typed models for common repository files:
 
-* GitHub workflow files (`.github/workflows/*.yml`) as `GithubWorkflow`
-* GitHub Action metadata (`action.yml`) as `GithubAction`
+* Action metadata (`action.yml`) as `GithubAction`
+* Discussion forms (`.github/DISCUSSION_TEMPLATE/*.yml`) as `GithubDiscussion`
+* Funding configuration (`.github/FUNDING.yml`) as `GithubFunding`
+* Issue Template Chooser config (`.github/ISSUE_TEMPLATE/config.yml`) as `GithubIssueConfig`
+* Issue forms (`.github/ISSUE_TEMPLATE/*.yml`) as `GithubIssueForms`
 * Release Drafter config (`.github/release.yml`) as `GithubReleaseConfig`
+* Workflow files (`.github/workflows/*.yml`) as `GithubWorkflow`
+* Workflow template properties (`.github/workflow-templates/*.properties.json`) as `GithubWorkflowTemplateProperties`
 
 The module supports both Jackson 2 (`com.fasterxml.jackson`) and Jackson 3 (`tools.jackson`).
 
@@ -169,11 +174,46 @@ Jackson 3 YAML parsing example:
 include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-jackson3]
 ----
 
+Funding parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-funding]
+----
+
+Issue forms parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-issue-forms]
+----
+
 Release Drafter parsing example:
 
 [source,java,indent=0]
 ----
 include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-release]
+----
+
+Discussion form parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-discussion]
+----
+
+Issue Template Chooser parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-issue-config]
+----
+
+Workflow template properties parsing example:
+
+[source,java,indent=0]
+----
+include::../../pulpogato-github-files/src/test/java/io/github/pulpogato/githubfiles/DocumentationIntegrationTest.java[tags=github-files-workflow-template-properties]
 ----
 
 Many fields in these schemas are unions (for example, `on` in workflows can be a string, list, or object).

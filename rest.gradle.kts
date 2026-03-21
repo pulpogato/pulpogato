@@ -98,10 +98,6 @@ java {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 testlogger {
     theme = if (System.getProperty("idea.active") == "true") ThemeType.PLAIN_PARALLEL else ThemeType.MOCHA_PARALLEL
     slowThreshold = 5000
@@ -140,6 +136,8 @@ tasks.withType<JavaCompile> {
 
 val addSchemaInfoToBroker =
     tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
+        group = "publishing"
+        description = "Adds the GitHub REST schema information to the info broker."
         dependsOn(downloadSchema)
         val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { theTask -> theTask.schemaFile }
         checksumFiles.from(schemaFile)

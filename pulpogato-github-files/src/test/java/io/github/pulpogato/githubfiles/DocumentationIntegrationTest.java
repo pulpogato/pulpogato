@@ -3,9 +3,12 @@ package io.github.pulpogato.githubfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.githubfiles.actions.GithubAction;
+import io.github.pulpogato.githubfiles.funding.GithubFunding;
+import io.github.pulpogato.githubfiles.issueforms.GithubIssueForms;
 import io.github.pulpogato.githubfiles.releases.GithubReleaseConfig;
 import io.github.pulpogato.githubfiles.workflows.Event;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflow;
+import io.github.pulpogato.githubfiles.workflowtemplates.GithubWorkflowTemplateProperties;
 import org.junit.jupiter.api.Test;
 
 class DocumentationIntegrationTest {
@@ -100,5 +103,111 @@ class DocumentationIntegrationTest {
             assertThat(on.getGithubWorkflowOnVariant2()).isNotNull();
         }
         // end::github-files-on-union[]
+    }
+
+    @Test
+    void discussionExample() throws Exception {
+        // tag::github-files-discussion[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var discussionYaml = """
+                title: New Feature Idea
+                body:
+                  - type: input
+                    attributes:
+                      label: Idea name
+                      placeholder: My cool idea
+                """;
+
+        var discussion =
+                yamlMapper.readValue(discussionYaml, io.github.pulpogato.githubfiles.discussion.GithubDiscussion.class);
+        var title = discussion.getTitle();
+        // end::github-files-discussion[]
+
+        assertThat(title).isEqualTo("New Feature Idea");
+    }
+
+    @Test
+    void issueConfigExample() throws Exception {
+        // tag::github-files-issue-config[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var issueConfigYaml = """
+                blank_issues_enabled: false
+                contact_links:
+                  - name: Community Support
+                    url: https://community.example.com
+                    about: Get help here
+                """;
+
+        var issueConfig = yamlMapper.readValue(
+                issueConfigYaml, io.github.pulpogato.githubfiles.issueconfig.GithubIssueConfig.class);
+        var enabled = issueConfig.getBlankIssuesEnabled();
+        // end::github-files-issue-config[]
+
+        assertThat(enabled).isFalse();
+    }
+
+    @Test
+    void fundingExample() throws Exception {
+        // tag::github-files-funding[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var fundingYaml = """
+                github: [octocat, hubot]
+                patreon: octocat
+                """;
+
+        var funding = yamlMapper.readValue(fundingYaml, GithubFunding.class);
+        var githubSponsors = funding.getGithub().getList();
+        // end::github-files-funding[]
+
+        assertThat(githubSponsors).containsExactly("octocat", "hubot");
+    }
+
+    @Test
+    void issueFormsExample() throws Exception {
+        // tag::github-files-issue-forms[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var issueFormsYaml = """
+                name: Bug Report
+                description: File a bug report
+                body:
+                  - type: input
+                    id: version
+                    attributes:
+                      label: Version
+                """;
+
+        var issueForms = yamlMapper.readValue(issueFormsYaml, GithubIssueForms.class);
+        var name = issueForms.getName();
+        // end::github-files-issue-forms[]
+
+        assertThat(name).isEqualTo("Bug Report");
+    }
+
+    @Test
+    void workflowTemplatePropertiesExample() throws Exception {
+        // tag::github-files-workflow-template-properties[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var templatePropertiesYaml = """
+                name: Java CI
+                description: Java CI with Gradle
+                iconName: java
+                categories: [Java]
+                """;
+
+        var templateProperties = yamlMapper.readValue(templatePropertiesYaml, GithubWorkflowTemplateProperties.class);
+        var iconName = templateProperties.getIconName();
+        // end::github-files-workflow-template-properties[]
+
+        assertThat(iconName).isEqualTo("java");
     }
 }
