@@ -1097,6 +1097,12 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 <li>
 <p>Release Drafter config (<code>.github/release.yml</code>) as <code>GithubReleaseConfig</code></p>
 </li>
+<li>
+<p>GitHub Discussion forms (<code>.github/DISCUSSION_TEMPLATE/*.yml</code>) as <code>GithubDiscussion</code></p>
+</li>
+<li>
+<p>GitHub Issue Template Chooser config (<code>.github/ISSUE_TEMPLATE/config.yml</code>) as <code>GithubIssueConfig</code></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -1168,6 +1174,49 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 
 <span class="kt">var</span> <span class="n">releaseConfig</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">releaseYaml</span><span class="o">,</span> <span class="nc">GithubReleaseConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
 <span class="kt">var</span> <span class="n">firstCategory</span> <span class="o">=</span> <span class="n">releaseConfig</span><span class="o">.</span><span class="na">getChangelog</span><span class="o">().</span><span class="na">getCategories</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">).</span><span class="na">getTitle</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Discussion form parsing example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">yamlMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">databind</span><span class="o">.</span><span class="na">ObjectMapper</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">dataformat</span><span class="o">.</span><span class="na">yaml</span><span class="o">.</span><span class="na">YAMLFactory</span><span class="o">());</span>
+
+<span class="kt">var</span> <span class="n">discussionYaml</span> <span class="o">=</span> <span class="sh">"""
+        title: New Feature Idea
+        body:
+          - type: input
+            attributes:
+              label: Idea name
+              placeholder: My cool idea
+        """</span><span class="o">;</span>
+
+<span class="kt">var</span> <span class="n">discussion</span> <span class="o">=</span>
+        <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">discussionYaml</span><span class="o">,</span> <span class="n">io</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">pulpogato</span><span class="o">.</span><span class="na">githubfiles</span><span class="o">.</span><span class="na">discussion</span><span class="o">.</span><span class="na">GithubDiscussion</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="kt">var</span> <span class="n">title</span> <span class="o">=</span> <span class="n">discussion</span><span class="o">.</span><span class="na">getTitle</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Issue Template Chooser parsing example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">yamlMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">databind</span><span class="o">.</span><span class="na">ObjectMapper</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">dataformat</span><span class="o">.</span><span class="na">yaml</span><span class="o">.</span><span class="na">YAMLFactory</span><span class="o">());</span>
+
+<span class="kt">var</span> <span class="n">issueConfigYaml</span> <span class="o">=</span> <span class="sh">"""
+        blank_issues_enabled: false
+        contact_links:
+          - name: Community Support
+            url: https://community.example.com
+            about: Get help here
+        """</span><span class="o">;</span>
+
+<span class="kt">var</span> <span class="n">issueConfig</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span>
+        <span class="n">issueConfigYaml</span><span class="o">,</span> <span class="n">io</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">pulpogato</span><span class="o">.</span><span class="na">githubfiles</span><span class="o">.</span><span class="na">issueconfig</span><span class="o">.</span><span class="na">GithubIssueConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="kt">var</span> <span class="n">enabled</span> <span class="o">=</span> <span class="n">issueConfig</span><span class="o">.</span><span class="na">getBlankIssuesEnabled</span><span class="o">();</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
