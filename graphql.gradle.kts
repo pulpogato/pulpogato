@@ -50,6 +50,8 @@ val transformedSchemaLocation = layout.buildDirectory.file("schema/transformed/s
 
 val downloadSchema =
     tasks.register<Download>("downloadSchema") {
+        description = "Downloads the GitHub GraphQL schema from the documentation"
+        group = "code generation"
         src(getUrl(projectVariant))
         dest(originalSchemaLocation)
         onlyIfModified(true)
@@ -63,6 +65,8 @@ val downloadSchema =
 
 val transformSchema =
     tasks.register<TransformGraphqlSchemaTask>("transformSchema") {
+        description = "Transforms the downloaded GraphQL schema to remove incompatible types"
+        group = "code generation"
         dependsOn(downloadSchema)
         inputSchema.set(originalSchemaLocation)
         outputSchema.set(transformedSchemaLocation)
@@ -72,6 +76,8 @@ val schemaInfoFile = project.layout.buildDirectory.file("reports/schema-info.pro
 
 val calculateSchemaChecksum =
     tasks.register<WriteInfoPropertiesTask>("calculateSchemaChecksum") {
+        description = "Calculates the SHA256 checksum of the GraphQL schema and writes it to info.properties"
+        group = "build setup"
         dependsOn(downloadSchema)
         dependsOn(tasks.processResources)
         checksumFiles.from(originalSchemaLocation)
