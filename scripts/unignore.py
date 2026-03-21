@@ -6,18 +6,20 @@
 # ///
 
 import io
+import json
 import sys
 import subprocess
 import copy
 from pathlib import Path
 from ruamel.yaml import YAML
 
+GRADLE_CMD = ["./gradlew", "check", "--max-workers=3", "--continue"]
+
 
 def run_gradle_check():
     """Run the gradle check command and return True if it passes, False otherwise."""
-    print("Running ./gradlew check --max-workers=3...")
-    result = subprocess.run(["./gradlew", "check", "--max-workers=3"],
-                          capture_output=True, text=True)
+    print(f"Running {' '.join(GRADLE_CMD)}...")
+    result = subprocess.run(GRADLE_CMD, capture_output=True, text=True)
     success = result.returncode == 0
     if not success:
         print("Gradle check failed:")
@@ -38,28 +40,94 @@ def end_group():
     print("::endgroup::")
 
 
-def remove_root_level_entry(data, index):
-    """Remove a root-level entry from the data."""
-    if index < len(data):
-        removed_entry = data.pop(index)
-        print(f"Removed entry: {removed_entry['example']}")
-        return removed_entry
-    return None
+def clear_failure_reports():
+    """Delete stale generated test failure reports before a new gradle run."""
+    for report in Path(".").rglob("generated-test-failures.jsonl"):
+        print(f"Deleting stale report: {report}")
+        report.unlink()
 
 
-def remove_version_from_entry(data, entry_index, version_index):
-    """Remove a version from a specific entry."""
-    if entry_index < len(data):
-        entry = data[entry_index]
-        if 'versions' in entry and version_index < len(entry['versions']):
-            removed_version = entry['versions'].pop(version_index)
-            print(f"Removed version '{removed_version}' from entry: {entry['example']}")
-            # If no versions left, remove the entire entry
-            if not entry['versions']:
-                print("No versions left, removing entire entry")
-                data.pop(entry_index)
-            return removed_version
-    return None
+def read_failure_reports():
+    """Read generated test failure reports emitted by the JUnit watcher."""
+    failures = []
+    for report in sorted(Path(".").rglob("generated-test-failures.jsonl")):
+        print(f"Reading generated failure report: {report}")
+        with open(report, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    failures.append(json.loads(line))
+    return failures
+
+
+def flatten_pairs(data):
+    """Flatten YAML entries into (example, version) pairs."""
+    pairs = set()
+    for entry in data:
+        example = entry["example"]
+        for version in entry.get("versions", []):
+            pairs.add((example, version))
+    return pairs
+
+
+def validate_examples_are_unique(data):
+    """Ensure every example appears in at most one YAML entry."""
+    seen = set()
+    duplicates = set()
+    for entry in data:
+        example = entry["example"]
+        if example in seen:
+            duplicates.add(example)
+        seen.add(example)
+    if duplicates:
+        print("IgnoredTests.yml contains duplicate examples, which smart mode cannot disambiguate:")
+        for example in sorted(duplicates):
+            print(f"  - {example}")
+        sys.exit(1)
+
+
+def build_data_from_pairs(original_data, pairs_to_keep):
+    """Rebuild the YAML structure while preserving entry order and reasons."""
+    rebuilt = []
+    for entry in original_data:
+        versions = [version for version in entry.get("versions", []) if (entry["example"], version) in pairs_to_keep]
+        if versions:
+            new_entry = copy.deepcopy(entry)
+            new_entry["versions"] = versions
+            rebuilt.append(new_entry)
+    return rebuilt
+
+
+def extract_failing_pairs(failures, original_pairs):
+    """Extract the ignored (example, version) pairs that are still failing."""
+    failing_pairs = set()
+    unexpected_failures = []
+    for failure in failures:
+        example = failure.get("exampleRef")
+        version = failure.get("ghVersion")
+        if not example or not version:
+            continue
+        pair = (example, version)
+        if pair in original_pairs:
+            failing_pairs.add(pair)
+        else:
+            unexpected_failures.append(pair)
+
+    if unexpected_failures:
+        print("Generated failures not present in IgnoredTests.yml:")
+        for example, version in sorted(set(unexpected_failures)):
+            print(f"  - {version}: {example}")
+
+    return failing_pairs
+
+
+def run_check_with_data(yaml, data, yaml_file):
+    """Write a candidate YAML file, run gradle, and return (success, failures)."""
+    save_yaml(yaml, data, yaml_file)
+    clear_failure_reports()
+    success = run_gradle_check()
+    failures = read_failure_reports()
+    return success, failures
 
 
 def save_yaml(yaml, data, file_path):
@@ -81,14 +149,57 @@ def save_yaml(yaml, data, file_path):
         f.write('\n'.join(fixed_lines))
 
 
-def main():
-    if len(sys.argv) != 2 or sys.argv[1] not in ['1', '2']:
-        print("Usage: python unignore.py [1|2]")
-        print("1: Remove one root-level entry at a time")
-        print("2: Remove one version at a time from entries")
-        sys.exit(1)
+def smart_unignore(yaml, original_data, yaml_file):
+    """Batch-remove ignored pairs, then restore only the pairs that still fail."""
+    validate_examples_are_unique(original_data)
+    original_pairs = flatten_pairs(original_data)
+    retained_pairs = set()
+    iteration = 0
 
-    mode = int(sys.argv[1])
+    while True:
+        iteration += 1
+        candidate_data = build_data_from_pairs(original_data, retained_pairs)
+        removed_count = len(original_pairs) - len(retained_pairs)
+        start_group(
+            f"Smart iteration {iteration}: testing {removed_count} unignored pair(s), "
+            f"retaining {len(retained_pairs)} known failing pair(s)"
+        )
+        success, failures = run_check_with_data(yaml, candidate_data, yaml_file)
+
+        if success:
+            end_group()
+            print(f"Smart mode completed after {iteration} iteration(s).")
+            print(f"Unignored {removed_count} pair(s).")
+            return
+
+        failing_pairs = extract_failing_pairs(failures, original_pairs)
+        if not failing_pairs:
+            end_group()
+            print("Gradle failed, but no generated test failure reports were found.")
+            print("Restoring the original IgnoredTests.yml to avoid dropping valid ignores.")
+            save_yaml(yaml, original_data, yaml_file)
+            sys.exit(2)
+
+        updated_retained_pairs = retained_pairs | failing_pairs
+        newly_retained = updated_retained_pairs - retained_pairs
+        print(f"Detected {len(failing_pairs)} failing ignored pair(s).")
+        print(f"Restoring {len(newly_retained)} pair(s) for the next iteration.")
+
+        if updated_retained_pairs == retained_pairs:
+            end_group()
+            print("Smart mode did not make further progress.")
+            print("Keeping the latest reconstructed IgnoredTests.yml and exiting with an error.")
+            sys.exit(2)
+
+        retained_pairs = updated_retained_pairs
+        end_group()
+
+
+def main():
+    if len(sys.argv) != 1:
+        print("Usage: python unignore.py")
+        print("Batch-remove ignored (example, version) pairs and restore only failing pairs")
+        sys.exit(1)
     yaml_file = Path("pulpogato-rest-tests/src/main/resources/IgnoredTests.yml")
     
     if not yaml_file.exists():
@@ -108,76 +219,7 @@ def main():
         print("YAML file is empty or invalid")
         sys.exit(1)
 
-    # Work on a copy of the data
-    working_data = copy.deepcopy(original_data)
-    
-    if mode == 1:
-        # Remove one root-level entry at a time
-        i = 0
-        iteration = 0
-        while i < len(working_data):
-            iteration += 1
-            entry_name = working_data[i].get('example', f'entry {i}')
-            start_group(f"Iteration {iteration}: Testing removal of '{entry_name}'")
-
-            # Create a temporary copy to test
-            test_data = copy.deepcopy(working_data)
-            removed_entry = remove_root_level_entry(test_data, i)
-
-            # Save the test data temporarily
-            save_yaml(yaml, test_data, yaml_file)
-
-            # Run gradle check
-            if run_gradle_check():
-                # If check passes, keep the change and continue
-                remove_root_level_entry(working_data, i)
-                end_group()
-                print(f"  Successfully removed '{entry_name}'")
-                # Don't increment i since we removed an item
-            else:
-                # If check fails, revert the change
-                end_group()
-                print("  Reverting change...")
-                save_yaml(yaml, working_data, yaml_file)
-                i += 1  # Move to next item
-
-    elif mode == 2:
-        # Remove one version at a time
-        entry_idx = 0
-        iteration = 0
-        while entry_idx < len(working_data):
-            if 'versions' in working_data[entry_idx] and len(working_data[entry_idx]['versions']) > 0:
-                version_idx = 0
-                while version_idx < len(working_data[entry_idx]['versions']):
-                    iteration += 1
-                    entry_name = working_data[entry_idx].get('example', f'entry {entry_idx}')
-                    version_name = working_data[entry_idx]['versions'][version_idx]
-                    start_group(f"Iteration {iteration}: Testing removal of version '{version_name}' from '{entry_name}'")
-
-                    # Create a temporary copy to test
-                    test_data = copy.deepcopy(working_data)
-                    removed_version = remove_version_from_entry(test_data, entry_idx, version_idx)
-
-                    # Save the test data temporarily
-                    save_yaml(yaml, test_data, yaml_file)
-
-                    # Run gradle check
-                    if run_gradle_check():
-                        # If check passes, keep the change
-                        remove_version_from_entry(working_data, entry_idx, version_idx)
-                        end_group()
-                        print(f"  Successfully removed version '{version_name}' from '{entry_name}'")
-                        # Don't increment version_idx since we removed an item
-                    else:
-                        # If check fails, revert the change
-                        end_group()
-                        print("  Reverting change...")
-                        save_yaml(yaml, working_data, yaml_file)
-                        version_idx += 1  # Move to next version
-
-                entry_idx += 1  # Move to next entry after processing all versions
-            else:
-                entry_idx += 1  # Move to next entry if no versions to process
+    smart_unignore(yaml, original_data, yaml_file)
 
     print("Processing complete!")
 
