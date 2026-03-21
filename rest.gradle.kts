@@ -169,6 +169,10 @@ tasks.withType<Jar>().configureEach {
     dependsOn(addSchemaInfoToBroker)
 }
 
+tasks.named("writeManifestProperties").configure {
+    dependsOn(addSchemaInfoToBroker)
+}
+
 tasks.withType<GenerateMavenPom>().configureEach {
     dependsOn(addSchemaInfoToBroker)
 }
