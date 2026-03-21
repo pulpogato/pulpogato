@@ -136,6 +136,8 @@ tasks.withType<JavaCompile> {
 
 val addSchemaInfoToBroker =
     tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
+        description = "Writes schema metadata (checksum, repo, commit, version) to info.properties for the info broker plugin"
+        group = "build setup"
         dependsOn(downloadSchema)
         val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { theTask -> theTask.schemaFile }
         checksumFiles.from(schemaFile)
