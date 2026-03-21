@@ -1084,24 +1084,33 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 <div class="sect2">
 <h3 id="_github_files_example">GitHub Files Example</h3>
 <div class="paragraph">
-<p><code>pulpogato-github-files</code> provides typed models for common GitHub repository files:</p>
+<p><code>pulpogato-github-files</code> provides typed models for common repository files:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>GitHub workflow files (<code>.github/workflows/*.yml</code>) as <code>GithubWorkflow</code></p>
+<p>Action metadata (<code>action.yml</code>) as <code>GithubAction</code></p>
 </li>
 <li>
-<p>GitHub Action metadata (<code>action.yml</code>) as <code>GithubAction</code></p>
+<p>Discussion forms (<code>.github/DISCUSSION_TEMPLATE/*.yml</code>) as <code>GithubDiscussion</code></p>
+</li>
+<li>
+<p>Funding configuration (<code>.github/FUNDING.yml</code>) as <code>GithubFunding</code></p>
+</li>
+<li>
+<p>Issue Template Chooser config (<code>.github/ISSUE_TEMPLATE/config.yml</code>) as <code>GithubIssueConfig</code></p>
+</li>
+<li>
+<p>Issue forms (<code>.github/ISSUE_TEMPLATE/*.yml</code>) as <code>GithubIssueForms</code></p>
 </li>
 <li>
 <p>Release Drafter config (<code>.github/release.yml</code>) as <code>GithubReleaseConfig</code></p>
 </li>
 <li>
-<p>GitHub Discussion forms (<code>.github/DISCUSSION_TEMPLATE/*.yml</code>) as <code>GithubDiscussion</code></p>
+<p>Workflow files (<code>.github/workflows/*.yml</code>) as <code>GithubWorkflow</code></p>
 </li>
 <li>
-<p>GitHub Issue Template Chooser config (<code>.github/ISSUE_TEMPLATE/config.yml</code>) as <code>GithubIssueConfig</code></p>
+<p>Workflow template properties (<code>.github/workflow-templates/*.properties.json</code>) as <code>GithubWorkflowTemplateProperties</code></p>
 </li>
 </ul>
 </div>
@@ -1155,6 +1164,45 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 
 <span class="kt">var</span> <span class="n">action</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">actionYaml</span><span class="o">,</span> <span class="nc">GithubAction</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
 <span class="kt">var</span> <span class="n">actionName</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Funding parsing example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">yamlMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">databind</span><span class="o">.</span><span class="na">ObjectMapper</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">dataformat</span><span class="o">.</span><span class="na">yaml</span><span class="o">.</span><span class="na">YAMLFactory</span><span class="o">());</span>
+
+<span class="kt">var</span> <span class="n">fundingYaml</span> <span class="o">=</span> <span class="sh">"""
+        github: [octocat, hubot]
+        patreon: octocat
+        """</span><span class="o">;</span>
+
+<span class="kt">var</span> <span class="n">funding</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">fundingYaml</span><span class="o">,</span> <span class="nc">GithubFunding</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="kt">var</span> <span class="n">githubSponsors</span> <span class="o">=</span> <span class="n">funding</span><span class="o">.</span><span class="na">getGithub</span><span class="o">().</span><span class="na">getList</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Issue forms parsing example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">yamlMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">databind</span><span class="o">.</span><span class="na">ObjectMapper</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">dataformat</span><span class="o">.</span><span class="na">yaml</span><span class="o">.</span><span class="na">YAMLFactory</span><span class="o">());</span>
+
+<span class="kt">var</span> <span class="n">issueFormsYaml</span> <span class="o">=</span> <span class="sh">"""
+        name: Bug Report
+        description: File a bug report
+        body:
+          - type: input
+            id: version
+            attributes:
+              label: Version
+        """</span><span class="o">;</span>
+
+<span class="kt">var</span> <span class="n">issueForms</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">issueFormsYaml</span><span class="o">,</span> <span class="nc">GithubIssueForms</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="kt">var</span> <span class="n">name</span> <span class="o">=</span> <span class="n">issueForms</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1217,6 +1265,25 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 <span class="kt">var</span> <span class="n">issueConfig</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span>
         <span class="n">issueConfigYaml</span><span class="o">,</span> <span class="n">io</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">pulpogato</span><span class="o">.</span><span class="na">githubfiles</span><span class="o">.</span><span class="na">issueconfig</span><span class="o">.</span><span class="na">GithubIssueConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
 <span class="kt">var</span> <span class="n">enabled</span> <span class="o">=</span> <span class="n">issueConfig</span><span class="o">.</span><span class="na">getBlankIssuesEnabled</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Workflow template properties parsing example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">yamlMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">databind</span><span class="o">.</span><span class="na">ObjectMapper</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">fasterxml</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">dataformat</span><span class="o">.</span><span class="na">yaml</span><span class="o">.</span><span class="na">YAMLFactory</span><span class="o">());</span>
+
+<span class="kt">var</span> <span class="n">templatePropertiesYaml</span> <span class="o">=</span> <span class="sh">"""
+        name: Java CI
+        description: Java CI with Gradle
+        iconName: java
+        categories: [Java]
+        """</span><span class="o">;</span>
+
+<span class="kt">var</span> <span class="n">templateProperties</span> <span class="o">=</span> <span class="n">yamlMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">templatePropertiesYaml</span><span class="o">,</span> <span class="nc">GithubWorkflowTemplateProperties</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="kt">var</span> <span class="n">iconName</span> <span class="o">=</span> <span class="n">templateProperties</span><span class="o">.</span><span class="na">getIconName</span><span class="o">();</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
