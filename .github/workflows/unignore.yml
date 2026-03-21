@@ -65,4 +65,4 @@ jobs:
           git add .
           git commit -m "Unignore tests"
           git push --force origin unignore-tests
-          gh pr create --base main
+          gh pr create --base main --fill
