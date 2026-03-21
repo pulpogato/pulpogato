@@ -137,6 +137,10 @@ tasks.withType<Jar>().configureEach {
     dependsOn(calculateSchemaChecksum)
 }
 
+tasks.named("writeManifestProperties").configure {
+    dependsOn(calculateSchemaChecksum)
+}
+
 tasks.withType<Javadoc>().configureEach {
     isFailOnError = false
     (options as StandardJavadocDocletOptions).apply {
