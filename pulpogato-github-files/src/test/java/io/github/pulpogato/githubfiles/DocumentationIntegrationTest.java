@@ -101,4 +101,49 @@ class DocumentationIntegrationTest {
         }
         // end::github-files-on-union[]
     }
+
+    @Test
+    void discussionExample() throws Exception {
+        // tag::github-files-discussion[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var discussionYaml = """
+                title: New Feature Idea
+                body:
+                  - type: input
+                    attributes:
+                      label: Idea name
+                      placeholder: My cool idea
+                """;
+
+        var discussion =
+                yamlMapper.readValue(discussionYaml, io.github.pulpogato.githubfiles.discussion.GithubDiscussion.class);
+        var title = discussion.getTitle();
+        // end::github-files-discussion[]
+
+        assertThat(title).isEqualTo("New Feature Idea");
+    }
+
+    @Test
+    void issueConfigExample() throws Exception {
+        // tag::github-files-issue-config[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var issueConfigYaml = """
+                blank_issues_enabled: false
+                contact_links:
+                  - name: Community Support
+                    url: https://community.example.com
+                    about: Get help here
+                """;
+
+        var issueConfig = yamlMapper.readValue(
+                issueConfigYaml, io.github.pulpogato.githubfiles.issueconfig.GithubIssueConfig.class);
+        var enabled = issueConfig.getBlankIssuesEnabled();
+        // end::github-files-issue-config[]
+
+        assertThat(enabled).isFalse();
+    }
 }

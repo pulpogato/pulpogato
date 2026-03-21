@@ -25,6 +25,8 @@ data class SchemaSpec(
 val schemas =
     listOf(
         SchemaSpec("github-action.json", "actions"),
+        SchemaSpec("github-discussion.json", "discussion"),
+        SchemaSpec("github-issue-config.json", "issueconfig"),
         SchemaSpec("github-release-config.json", "releases"),
         SchemaSpec("github-workflow.json", "workflows"),
     )
