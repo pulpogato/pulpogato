@@ -3,9 +3,12 @@ package io.github.pulpogato.githubfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.githubfiles.actions.GithubAction;
+import io.github.pulpogato.githubfiles.funding.GithubFunding;
+import io.github.pulpogato.githubfiles.issueforms.GithubIssueForms;
 import io.github.pulpogato.githubfiles.releases.GithubReleaseConfig;
 import io.github.pulpogato.githubfiles.workflows.Event;
 import io.github.pulpogato.githubfiles.workflows.GithubWorkflow;
+import io.github.pulpogato.githubfiles.workflowtemplates.GithubWorkflowTemplateProperties;
 import org.junit.jupiter.api.Test;
 
 class DocumentationIntegrationTest {
@@ -145,5 +148,66 @@ class DocumentationIntegrationTest {
         // end::github-files-issue-config[]
 
         assertThat(enabled).isFalse();
+    }
+
+    @Test
+    void fundingExample() throws Exception {
+        // tag::github-files-funding[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var fundingYaml = """
+                github: [octocat, hubot]
+                patreon: octocat
+                """;
+
+        var funding = yamlMapper.readValue(fundingYaml, GithubFunding.class);
+        var githubSponsors = funding.getGithub().getList();
+        // end::github-files-funding[]
+
+        assertThat(githubSponsors).containsExactly("octocat", "hubot");
+    }
+
+    @Test
+    void issueFormsExample() throws Exception {
+        // tag::github-files-issue-forms[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var issueFormsYaml = """
+                name: Bug Report
+                description: File a bug report
+                body:
+                  - type: input
+                    id: version
+                    attributes:
+                      label: Version
+                """;
+
+        var issueForms = yamlMapper.readValue(issueFormsYaml, GithubIssueForms.class);
+        var name = issueForms.getName();
+        // end::github-files-issue-forms[]
+
+        assertThat(name).isEqualTo("Bug Report");
+    }
+
+    @Test
+    void workflowTemplatePropertiesExample() throws Exception {
+        // tag::github-files-workflow-template-properties[]
+        var yamlMapper = new com.fasterxml.jackson.databind.ObjectMapper(
+                new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
+        var templatePropertiesYaml = """
+                name: Java CI
+                description: Java CI with Gradle
+                iconName: java
+                categories: [Java]
+                """;
+
+        var templateProperties = yamlMapper.readValue(templatePropertiesYaml, GithubWorkflowTemplateProperties.class);
+        var iconName = templateProperties.getIconName();
+        // end::github-files-workflow-template-properties[]
+
+        assertThat(iconName).isEqualTo("java");
     }
 }

@@ -42,6 +42,11 @@ fun String.trainCase() =
             .replace(" ", "-")
             .replace(":", "-")
             .replace("/", "-")
+            .replace("#", "SHARP")
+            .replace("+", "PLUS")
+            .replace("*", "STAR")
+            .replace("(", "_")
+            .replace(")", "_")
             .replace(multipleHyphens, "-")
             .split('-')
             .joinToString("_") { it.uppercase() }

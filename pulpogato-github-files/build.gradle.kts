@@ -26,9 +26,12 @@ val schemas =
     listOf(
         SchemaSpec("github-action.json", "actions"),
         SchemaSpec("github-discussion.json", "discussion"),
+        SchemaSpec("github-funding.json", "funding"),
         SchemaSpec("github-issue-config.json", "issueconfig"),
+        SchemaSpec("github-issue-forms.json", "issueforms"),
         SchemaSpec("github-release-config.json", "releases"),
         SchemaSpec("github-workflow.json", "workflows"),
+        SchemaSpec("github-workflow-template-properties.json", "workflowtemplates"),
     )
 
 val downloadAllSchemas =
