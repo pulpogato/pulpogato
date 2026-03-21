@@ -141,10 +141,6 @@ tasks.withType<JavaCompile> {
     options.isIncremental = true
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 tasks.withType<Javadoc>().configureEach {
     isFailOnError = false
     (options as StandardJavadocDocletOptions).apply {

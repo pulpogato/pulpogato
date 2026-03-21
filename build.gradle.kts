@@ -91,6 +91,9 @@ subprojects {
         isPreserveFileTimestamps = false
         isReproducibleFileOrder = true
     }
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 waena {
