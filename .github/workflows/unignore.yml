@@ -67,6 +67,8 @@ jobs:
           fi
 
       - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |-
           git checkout -b unignore-tests
           git add .
