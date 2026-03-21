@@ -50,6 +50,8 @@ val transformedSchemaLocation = layout.buildDirectory.file("schema/transformed/s
 
 val downloadSchema =
     tasks.register<Download>("downloadSchema") {
+        group = "code generation"
+        description = "Downloads the GitHub GraphQL schema."
         src(getUrl(projectVariant))
         dest(originalSchemaLocation)
         onlyIfModified(true)
@@ -63,6 +65,8 @@ val downloadSchema =
 
 val transformSchema =
     tasks.register<TransformGraphqlSchemaTask>("transformSchema") {
+        group = "code generation"
+        description = "Transforms the GitHub GraphQL schema for code generation."
         dependsOn(downloadSchema)
         inputSchema.set(originalSchemaLocation)
         outputSchema.set(transformedSchemaLocation)
@@ -72,6 +76,8 @@ val schemaInfoFile = project.layout.buildDirectory.file("reports/schema-info.pro
 
 val calculateSchemaChecksum =
     tasks.register<WriteInfoPropertiesTask>("calculateSchemaChecksum") {
+        group = "publishing"
+        description = "Calculates the checksum of the GitHub GraphQL schema."
         dependsOn(downloadSchema)
         dependsOn(tasks.processResources)
         checksumFiles.from(originalSchemaLocation)
@@ -83,6 +89,7 @@ val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
 infoBrokerPlugin.add("GitHub-Schema-SHA256", PropertiesFileValueClosure(schemaInfoFile.get().asFile, "GitHub-Schema-SHA256"))
 
 tasks.named<GenerateJavaTask>("generateJava") {
+    description = "Generates Java code from the GitHub GraphQL schema."
     dependsOn(transformSchema)
 
     schemaPaths = mutableListOf(transformedSchemaLocation.get().asFile)

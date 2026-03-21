@@ -10,6 +10,8 @@ class GithubFilesCodegenPlugin : Plugin<Project> {
 
         val generateTask = target.tasks.register("generateGithubFilesTypes", GenerateGithubFilesTask::class.java)
         generateTask.configure {
+            group = "code generation"
+            description = "Generates Java code from GitHub configuration file schemas."
             schemaFiles.from(extension.schemaFiles)
             packageName.set(extension.packageName)
             outputDir.set(extension.outputDir)

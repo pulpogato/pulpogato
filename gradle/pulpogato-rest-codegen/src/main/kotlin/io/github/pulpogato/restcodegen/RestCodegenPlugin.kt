@@ -11,6 +11,8 @@ class RestCodegenPlugin : Plugin<Project> {
 
         val downloadSchema = target.tasks.register("downloadSchema", DownloadSchemaTask::class.java)
         downloadSchema.configure {
+            group = "code generation"
+            description = "Downloads the GitHub REST API schema."
             apiCommit.set(extension.apiCommit)
             apiVersion.set(extension.apiVersion)
             projectVariant.set(extension.projectVariant)
@@ -21,6 +23,8 @@ class RestCodegenPlugin : Plugin<Project> {
 
         val generateJava = target.tasks.register("generateJava", GenerateJavaTask::class.java)
         generateJava.configure {
+            group = "code generation"
+            description = "Generates Java code from the GitHub REST API schema."
             dependsOn(downloadSchema)
             schema =
                 DefaultProvider {
