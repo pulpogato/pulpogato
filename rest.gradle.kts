@@ -140,8 +140,6 @@ tasks.withType<JavaCompile> {
 
 val addSchemaInfoToBroker =
     tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
-        group = "publishing"
-        description = "Adds the GitHub REST schema information to the info broker."
         dependsOn(downloadSchema)
         val schemaFile = tasks.named<DownloadSchemaTask>("downloadSchema").flatMap { theTask -> theTask.schemaFile }
         checksumFiles.from(schemaFile)

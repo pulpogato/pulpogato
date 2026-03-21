@@ -52,8 +52,6 @@ schemas.forEach { spec ->
 
 val addSchemaInfoToBroker =
     tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
-        group = "publishing"
-        description = "Adds the GitHub configuration file schema information to the info broker."
         dependsOn(downloadAllSchemas)
         staticEntries.put("Schemastore-Commit", schemastoreCommit)
         schemas.forEach { spec ->

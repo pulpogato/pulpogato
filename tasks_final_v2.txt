@@ -1,0 +1,1342 @@
+Calculating task graph as configuration cache cannot be reused because file 'build.gradle.kts' has changed.
+> Task :pulpogato-rest-codegen:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :pulpogato-rest-codegen:compileKotlin UP-TO-DATE
+> Task :pulpogato-rest-codegen:compileJava NO-SOURCE
+> Task :pulpogato-rest-codegen:pluginDescriptors UP-TO-DATE
+> Task :pulpogato-rest-codegen:processResources UP-TO-DATE
+> Task :pulpogato-rest-codegen:classes UP-TO-DATE
+> Task :pulpogato-rest-codegen:jar UP-TO-DATE
+
+> Configure project :
+Inferred project: pulpogato, version: 0.1.0-dev.1.uncommitted+jules.14124745025304560692.64db83a3.381ad37
+found.git at /app/.git
+
+> Configure project :pulpogato-bom
+found.git at /app/.git
+
+> Configure project :pulpogato-common
+found.git at /app/.git
+
+> Configure project :pulpogato-github-files
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-fpt
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-ghec
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-ghes-3.16
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-ghes-3.17
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-ghes-3.18
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-ghes-3.19
+found.git at /app/.git
+
+> Configure project :pulpogato-graphql-ghes-3.20
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-fpt
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-ghec
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-ghes-3.16
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-ghes-3.17
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-ghes-3.18
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-ghes-3.19
+found.git at /app/.git
+
+> Configure project :pulpogato-rest-ghes-3.20
+found.git at /app/.git
+
+> Task :tasks
+
+------------------------------------------------------------
+Tasks runnable from root project 'pulpogato'
+------------------------------------------------------------
+
+Build tasks
+-----------
+assemble - Assembles the outputs of this project.
+pulpogato-bom:assemble - Assembles the outputs of this project.
+pulpogato-common:assemble - Assembles the outputs of this project.
+pulpogato-github-files:assemble - Assembles the outputs of this project.
+pulpogato-graphql-fpt:assemble - Assembles the outputs of this project.
+pulpogato-graphql-ghec:assemble - Assembles the outputs of this project.
+pulpogato-graphql-ghes-3.16:assemble - Assembles the outputs of this project.
+pulpogato-graphql-ghes-3.17:assemble - Assembles the outputs of this project.
+pulpogato-graphql-ghes-3.18:assemble - Assembles the outputs of this project.
+pulpogato-graphql-ghes-3.19:assemble - Assembles the outputs of this project.
+pulpogato-graphql-ghes-3.20:assemble - Assembles the outputs of this project.
+pulpogato-rest-fpt:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghec:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghes-3.16:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghes-3.17:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghes-3.18:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghes-3.19:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghes-3.20:assemble - Assembles the outputs of this project.
+pulpogato-rest-ghestest:assemble - Assembles the outputs of this project.
+pulpogato-rest-tests:assemble - Assembles the outputs of this project.
+build - Assembles and tests this project.
+pulpogato-bom:build - Assembles and tests this project.
+pulpogato-common:build - Assembles and tests this project.
+pulpogato-github-files:build - Assembles and tests this project.
+pulpogato-graphql-fpt:build - Assembles and tests this project.
+pulpogato-graphql-ghec:build - Assembles and tests this project.
+pulpogato-graphql-ghes-3.16:build - Assembles and tests this project.
+pulpogato-graphql-ghes-3.17:build - Assembles and tests this project.
+pulpogato-graphql-ghes-3.18:build - Assembles and tests this project.
+pulpogato-graphql-ghes-3.19:build - Assembles and tests this project.
+pulpogato-graphql-ghes-3.20:build - Assembles and tests this project.
+pulpogato-rest-fpt:build - Assembles and tests this project.
+pulpogato-rest-ghec:build - Assembles and tests this project.
+pulpogato-rest-ghes-3.16:build - Assembles and tests this project.
+pulpogato-rest-ghes-3.17:build - Assembles and tests this project.
+pulpogato-rest-ghes-3.18:build - Assembles and tests this project.
+pulpogato-rest-ghes-3.19:build - Assembles and tests this project.
+pulpogato-rest-ghes-3.20:build - Assembles and tests this project.
+pulpogato-rest-ghestest:build - Assembles and tests this project.
+pulpogato-rest-tests:build - Assembles and tests this project.
+pulpogato-common:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-github-files:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-fpt:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-ghec:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-ghes-3.16:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-ghes-3.17:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-ghes-3.18:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-ghes-3.19:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-graphql-ghes-3.20:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-fpt:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghec:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghes-3.16:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghes-3.17:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghes-3.18:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghes-3.19:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghes-3.20:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-ghestest:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-rest-tests:buildDependents - Assembles and tests this project and all projects that depend on it.
+pulpogato-common:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-github-files:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-fpt:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-ghec:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-ghes-3.16:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-ghes-3.17:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-ghes-3.18:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-ghes-3.19:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-graphql-ghes-3.20:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-fpt:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghec:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghes-3.16:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghes-3.17:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghes-3.18:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghes-3.19:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghes-3.20:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-ghestest:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-rest-tests:buildNeeded - Assembles and tests this project and all projects it depends on.
+pulpogato-common:classes - Assembles main classes.
+pulpogato-github-files:classes - Assembles main classes.
+pulpogato-graphql-fpt:classes - Assembles main classes.
+pulpogato-graphql-ghec:classes - Assembles main classes.
+pulpogato-graphql-ghes-3.16:classes - Assembles main classes.
+pulpogato-graphql-ghes-3.17:classes - Assembles main classes.
+pulpogato-graphql-ghes-3.18:classes - Assembles main classes.
+pulpogato-graphql-ghes-3.19:classes - Assembles main classes.
+pulpogato-graphql-ghes-3.20:classes - Assembles main classes.
+pulpogato-rest-fpt:classes - Assembles main classes.
+pulpogato-rest-ghec:classes - Assembles main classes.
+pulpogato-rest-ghes-3.16:classes - Assembles main classes.
+pulpogato-rest-ghes-3.17:classes - Assembles main classes.
+pulpogato-rest-ghes-3.18:classes - Assembles main classes.
+pulpogato-rest-ghes-3.19:classes - Assembles main classes.
+pulpogato-rest-ghes-3.20:classes - Assembles main classes.
+pulpogato-rest-ghestest:classes - Assembles main classes.
+pulpogato-rest-tests:classes - Assembles main classes.
+clean - Deletes the build directory.
+pulpogato-bom:clean - Deletes the build directory.
+pulpogato-common:clean - Deletes the build directory.
+pulpogato-github-files:clean - Deletes the build directory.
+pulpogato-graphql-fpt:clean - Deletes the build directory.
+pulpogato-graphql-ghec:clean - Deletes the build directory.
+pulpogato-graphql-ghes-3.16:clean - Deletes the build directory.
+pulpogato-graphql-ghes-3.17:clean - Deletes the build directory.
+pulpogato-graphql-ghes-3.18:clean - Deletes the build directory.
+pulpogato-graphql-ghes-3.19:clean - Deletes the build directory.
+pulpogato-graphql-ghes-3.20:clean - Deletes the build directory.
+pulpogato-rest-fpt:clean - Deletes the build directory.
+pulpogato-rest-ghec:clean - Deletes the build directory.
+pulpogato-rest-ghes-3.16:clean - Deletes the build directory.
+pulpogato-rest-ghes-3.17:clean - Deletes the build directory.
+pulpogato-rest-ghes-3.18:clean - Deletes the build directory.
+pulpogato-rest-ghes-3.19:clean - Deletes the build directory.
+pulpogato-rest-ghes-3.20:clean - Deletes the build directory.
+pulpogato-rest-ghestest:clean - Deletes the build directory.
+pulpogato-rest-tests:clean - Deletes the build directory.
+pulpogato-common:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-github-files:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-fpt:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-ghec:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-ghes-3.16:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-ghes-3.17:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-ghes-3.18:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-ghes-3.19:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-graphql-ghes-3.20:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-fpt:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghec:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghes-3.16:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghes-3.17:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghes-3.18:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghes-3.19:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghes-3.20:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-ghestest:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-rest-tests:jar - Assembles a jar archive containing the classes of the 'main' feature.
+pulpogato-common:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-github-files:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-fpt:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-ghec:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-ghes-3.16:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-ghes-3.17:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-ghes-3.18:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-ghes-3.19:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-graphql-ghes-3.20:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-fpt:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-ghec:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-ghes-3.16:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-ghes-3.17:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-ghes-3.18:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-ghes-3.19:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-rest-ghes-3.20:javadocJar - Assembles a jar archive containing the main javadoc.
+pulpogato-common:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-github-files:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-fpt:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-ghec:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-ghes-3.16:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-ghes-3.17:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-ghes-3.18:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-ghes-3.19:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-graphql-ghes-3.20:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-fpt:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-ghec:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-ghes-3.16:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-ghes-3.17:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-ghes-3.18:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-ghes-3.19:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-rest-ghes-3.20:sourcesJar - Assembles a jar archive containing the main sources.
+pulpogato-common:testClasses - Assembles test classes.
+pulpogato-github-files:testClasses - Assembles test classes.
+pulpogato-graphql-fpt:testClasses - Assembles test classes.
+pulpogato-graphql-ghec:testClasses - Assembles test classes.
+pulpogato-graphql-ghes-3.16:testClasses - Assembles test classes.
+pulpogato-graphql-ghes-3.17:testClasses - Assembles test classes.
+pulpogato-graphql-ghes-3.18:testClasses - Assembles test classes.
+pulpogato-graphql-ghes-3.19:testClasses - Assembles test classes.
+pulpogato-graphql-ghes-3.20:testClasses - Assembles test classes.
+pulpogato-rest-fpt:testClasses - Assembles test classes.
+pulpogato-rest-ghec:testClasses - Assembles test classes.
+pulpogato-rest-ghes-3.16:testClasses - Assembles test classes.
+pulpogato-rest-ghes-3.17:testClasses - Assembles test classes.
+pulpogato-rest-ghes-3.18:testClasses - Assembles test classes.
+pulpogato-rest-ghes-3.19:testClasses - Assembles test classes.
+pulpogato-rest-ghes-3.20:testClasses - Assembles test classes.
+pulpogato-rest-ghestest:testClasses - Assembles test classes.
+pulpogato-rest-tests:testClasses - Assembles test classes.
+
+Build Setup tasks
+-----------------
+init - Initializes a new Gradle build.
+spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-bom:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-common:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-github-files:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-fpt:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-ghec:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-ghes-3.16:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-ghes-3.17:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-ghes-3.18:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-ghes-3.19:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-graphql-ghes-3.20:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-fpt:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghec:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghes-3.16:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghes-3.17:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghes-3.18:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghes-3.19:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghes-3.20:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-ghestest:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+pulpogato-rest-tests:spotlessInstallGitPrePushHook - Installs Spotless Git pre-push hook.
+updateDaemonJvm - Generates or updates the Gradle Daemon JVM criteria.
+wrapper - Generates Gradle wrapper files.
+
+Code generation tasks
+---------------------
+pulpogato-github-files:downloadAllSchemas - Download all schemastore JSON schemas
+pulpogato-graphql-fpt:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-graphql-ghec:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.16:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.17:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.18:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.19:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.20:downloadSchema - Downloads the GitHub GraphQL schema.
+pulpogato-rest-fpt:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-rest-ghec:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-rest-ghes-3.16:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-rest-ghes-3.17:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-rest-ghes-3.18:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-rest-ghes-3.19:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-rest-ghes-3.20:downloadSchema - Downloads the GitHub REST API schema.
+pulpogato-github-files:downloadSchemaActions - Download github-action.json from schemastore
+pulpogato-github-files:downloadSchemaReleases - Download github-release-config.json from schemastore
+pulpogato-github-files:downloadSchemaWorkflows - Download github-workflow.json from schemastore
+pulpogato-github-files:generateGithubFilesTypes - Generates Java code from GitHub configuration file schemas.
+pulpogato-rest-fpt:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-rest-ghec:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-rest-ghes-3.16:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-rest-ghes-3.17:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-rest-ghes-3.18:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-rest-ghes-3.19:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-rest-ghes-3.20:generateJava - Generates Java code from the GitHub REST API schema.
+pulpogato-graphql-fpt:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+pulpogato-graphql-ghec:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+pulpogato-graphql-ghes-3.16:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+pulpogato-graphql-ghes-3.17:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+pulpogato-graphql-ghes-3.18:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+pulpogato-graphql-ghes-3.19:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+pulpogato-graphql-ghes-3.20:transformSchema - Transforms the GitHub GraphQL schema for code generation.
+
+Develocity tasks
+----------------
+buildScanPublishPrevious - Publishes the data captured by the last build.
+provisionDevelocityAccessKey - Provisions a new access key for this build environment.
+
+DGS GraphQL Codegen tasks
+-------------------------
+pulpogato-graphql-fpt:generateJava - Generates Java code from the GitHub GraphQL schema.
+pulpogato-graphql-ghec:generateJava - Generates Java code from the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.16:generateJava - Generates Java code from the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.17:generateJava - Generates Java code from the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.18:generateJava - Generates Java code from the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.19:generateJava - Generates Java code from the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.20:generateJava - Generates Java code from the GitHub GraphQL schema.
+
+Documentation tasks
+-------------------
+asciidoctorDocs - Generate Asciidoctor HTML docs in Docker
+pulpogato-common:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-github-files:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-fpt:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-ghec:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-ghes-3.16:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-ghes-3.17:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-ghes-3.18:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-ghes-3.19:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-graphql-ghes-3.20:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-fpt:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghec:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghes-3.16:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghes-3.17:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghes-3.18:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghes-3.19:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghes-3.20:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-ghestest:javadoc - Generates Javadoc API documentation for the 'main' feature.
+pulpogato-rest-tests:javadoc - Generates Javadoc API documentation for the 'main' feature.
+
+Help tasks
+----------
+artifactTransforms - Displays the Artifact Transforms that can be executed in root project 'pulpogato'.
+pulpogato-bom:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-bom'.
+pulpogato-common:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-common'.
+pulpogato-github-files:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:artifactTransforms - Displays the Artifact Transforms that can be executed in project ':pulpogato-rest-tests'.
+buildEnvironment - Displays all buildscript dependencies declared in root project 'pulpogato'.
+pulpogato-bom:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-bom'.
+pulpogato-common:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-common'.
+pulpogato-github-files:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:buildEnvironment - Displays all buildscript dependencies declared in project ':pulpogato-rest-tests'.
+dependencies - Displays all dependencies declared in root project 'pulpogato'.
+pulpogato-bom:dependencies - Displays all dependencies declared in project ':pulpogato-bom'.
+pulpogato-common:dependencies - Displays all dependencies declared in project ':pulpogato-common'.
+pulpogato-github-files:dependencies - Displays all dependencies declared in project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:dependencies - Displays all dependencies declared in project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:dependencies - Displays all dependencies declared in project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:dependencies - Displays all dependencies declared in project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:dependencies - Displays all dependencies declared in project ':pulpogato-rest-tests'.
+dependencyInsight - Displays the insight into a specific dependency in root project 'pulpogato'.
+pulpogato-bom:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-bom'.
+pulpogato-common:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-common'.
+pulpogato-github-files:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:dependencyInsight - Displays the insight into a specific dependency in project ':pulpogato-rest-tests'.
+help - Displays a help message.
+pulpogato-bom:help - Displays a help message.
+pulpogato-common:help - Displays a help message.
+pulpogato-github-files:help - Displays a help message.
+pulpogato-graphql-fpt:help - Displays a help message.
+pulpogato-graphql-ghec:help - Displays a help message.
+pulpogato-graphql-ghes-3.16:help - Displays a help message.
+pulpogato-graphql-ghes-3.17:help - Displays a help message.
+pulpogato-graphql-ghes-3.18:help - Displays a help message.
+pulpogato-graphql-ghes-3.19:help - Displays a help message.
+pulpogato-graphql-ghes-3.20:help - Displays a help message.
+pulpogato-rest-fpt:help - Displays a help message.
+pulpogato-rest-ghec:help - Displays a help message.
+pulpogato-rest-ghes-3.16:help - Displays a help message.
+pulpogato-rest-ghes-3.17:help - Displays a help message.
+pulpogato-rest-ghes-3.18:help - Displays a help message.
+pulpogato-rest-ghes-3.19:help - Displays a help message.
+pulpogato-rest-ghes-3.20:help - Displays a help message.
+pulpogato-rest-ghestest:help - Displays a help message.
+pulpogato-rest-tests:help - Displays a help message.
+javaToolchains - Displays the detected java toolchains.
+pulpogato-bom:javaToolchains - Displays the detected java toolchains.
+pulpogato-common:javaToolchains - Displays the detected java toolchains.
+pulpogato-github-files:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-fpt:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-ghec:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-ghes-3.16:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-ghes-3.17:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-ghes-3.18:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-ghes-3.19:javaToolchains - Displays the detected java toolchains.
+pulpogato-graphql-ghes-3.20:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-fpt:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghec:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghes-3.16:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghes-3.17:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghes-3.18:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghes-3.19:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghes-3.20:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-ghestest:javaToolchains - Displays the detected java toolchains.
+pulpogato-rest-tests:javaToolchains - Displays the detected java toolchains.
+kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-bom:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-common:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-github-files:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-fpt:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-ghec:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-ghes-3.16:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-ghes-3.17:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-ghes-3.18:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-ghes-3.19:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-graphql-ghes-3.20:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-fpt:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghec:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghes-3.16:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghes-3.17:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghes-3.18:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghes-3.19:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghes-3.20:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-ghestest:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+pulpogato-rest-tests:kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+outgoingVariants - Displays the outgoing variants of root project 'pulpogato'.
+pulpogato-bom:outgoingVariants - Displays the outgoing variants of project ':pulpogato-bom'.
+pulpogato-common:outgoingVariants - Displays the outgoing variants of project ':pulpogato-common'.
+pulpogato-github-files:outgoingVariants - Displays the outgoing variants of project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:outgoingVariants - Displays the outgoing variants of project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:outgoingVariants - Displays the outgoing variants of project ':pulpogato-rest-tests'.
+projects - Displays the sub-projects of root project 'pulpogato'.
+pulpogato-bom:projects - Displays the sub-projects of project ':pulpogato-bom'.
+pulpogato-common:projects - Displays the sub-projects of project ':pulpogato-common'.
+pulpogato-github-files:projects - Displays the sub-projects of project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:projects - Displays the sub-projects of project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:projects - Displays the sub-projects of project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:projects - Displays the sub-projects of project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:projects - Displays the sub-projects of project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:projects - Displays the sub-projects of project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:projects - Displays the sub-projects of project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:projects - Displays the sub-projects of project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:projects - Displays the sub-projects of project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:projects - Displays the sub-projects of project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:projects - Displays the sub-projects of project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:projects - Displays the sub-projects of project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:projects - Displays the sub-projects of project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:projects - Displays the sub-projects of project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:projects - Displays the sub-projects of project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:projects - Displays the sub-projects of project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:projects - Displays the sub-projects of project ':pulpogato-rest-tests'.
+properties - Displays the properties of root project 'pulpogato'.
+pulpogato-bom:properties - Displays the properties of project ':pulpogato-bom'.
+pulpogato-common:properties - Displays the properties of project ':pulpogato-common'.
+pulpogato-github-files:properties - Displays the properties of project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:properties - Displays the properties of project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:properties - Displays the properties of project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:properties - Displays the properties of project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:properties - Displays the properties of project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:properties - Displays the properties of project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:properties - Displays the properties of project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:properties - Displays the properties of project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:properties - Displays the properties of project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:properties - Displays the properties of project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:properties - Displays the properties of project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:properties - Displays the properties of project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:properties - Displays the properties of project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:properties - Displays the properties of project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:properties - Displays the properties of project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:properties - Displays the properties of project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:properties - Displays the properties of project ':pulpogato-rest-tests'.
+resolvableConfigurations - Displays the configurations that can be resolved in root project 'pulpogato'.
+pulpogato-bom:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-bom'.
+pulpogato-common:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-common'.
+pulpogato-github-files:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:resolvableConfigurations - Displays the configurations that can be resolved in project ':pulpogato-rest-tests'.
+tasks - Displays the tasks runnable from root project 'pulpogato' (some of the displayed tasks may belong to subprojects).
+pulpogato-bom:tasks - Displays the tasks runnable from project ':pulpogato-bom'.
+pulpogato-common:tasks - Displays the tasks runnable from project ':pulpogato-common'.
+pulpogato-github-files:tasks - Displays the tasks runnable from project ':pulpogato-github-files'.
+pulpogato-graphql-fpt:tasks - Displays the tasks runnable from project ':pulpogato-graphql-fpt'.
+pulpogato-graphql-ghec:tasks - Displays the tasks runnable from project ':pulpogato-graphql-ghec'.
+pulpogato-graphql-ghes-3.16:tasks - Displays the tasks runnable from project ':pulpogato-graphql-ghes-3.16'.
+pulpogato-graphql-ghes-3.17:tasks - Displays the tasks runnable from project ':pulpogato-graphql-ghes-3.17'.
+pulpogato-graphql-ghes-3.18:tasks - Displays the tasks runnable from project ':pulpogato-graphql-ghes-3.18'.
+pulpogato-graphql-ghes-3.19:tasks - Displays the tasks runnable from project ':pulpogato-graphql-ghes-3.19'.
+pulpogato-graphql-ghes-3.20:tasks - Displays the tasks runnable from project ':pulpogato-graphql-ghes-3.20'.
+pulpogato-rest-fpt:tasks - Displays the tasks runnable from project ':pulpogato-rest-fpt'.
+pulpogato-rest-ghec:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghec'.
+pulpogato-rest-ghes-3.16:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghes-3.16'.
+pulpogato-rest-ghes-3.17:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghes-3.17'.
+pulpogato-rest-ghes-3.18:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghes-3.18'.
+pulpogato-rest-ghes-3.19:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghes-3.19'.
+pulpogato-rest-ghes-3.20:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghes-3.20'.
+pulpogato-rest-ghestest:tasks - Displays the tasks runnable from project ':pulpogato-rest-ghestest'.
+pulpogato-rest-tests:tasks - Displays the tasks runnable from project ':pulpogato-rest-tests'.
+taskTree - Prints task dependency tree.
+pulpogato-bom:taskTree - Prints task dependency tree.
+pulpogato-common:taskTree - Prints task dependency tree.
+pulpogato-github-files:taskTree - Prints task dependency tree.
+pulpogato-graphql-fpt:taskTree - Prints task dependency tree.
+pulpogato-graphql-ghec:taskTree - Prints task dependency tree.
+pulpogato-graphql-ghes-3.16:taskTree - Prints task dependency tree.
+pulpogato-graphql-ghes-3.17:taskTree - Prints task dependency tree.
+pulpogato-graphql-ghes-3.18:taskTree - Prints task dependency tree.
+pulpogato-graphql-ghes-3.19:taskTree - Prints task dependency tree.
+pulpogato-graphql-ghes-3.20:taskTree - Prints task dependency tree.
+pulpogato-rest-fpt:taskTree - Prints task dependency tree.
+pulpogato-rest-ghec:taskTree - Prints task dependency tree.
+pulpogato-rest-ghes-3.16:taskTree - Prints task dependency tree.
+pulpogato-rest-ghes-3.17:taskTree - Prints task dependency tree.
+pulpogato-rest-ghes-3.18:taskTree - Prints task dependency tree.
+pulpogato-rest-ghes-3.19:taskTree - Prints task dependency tree.
+pulpogato-rest-ghes-3.20:taskTree - Prints task dependency tree.
+pulpogato-rest-ghestest:taskTree - Prints task dependency tree.
+pulpogato-rest-tests:taskTree - Prints task dependency tree.
+
+Maintenance tasks
+-----------------
+updateRestSchemaVersion - Update Rest Schema Version from GitHub Rest API Descriptions
+updateSchemastoreVersion - Update Schemastore Version from schemastore/schemastore
+
+Nebula Release tasks
+--------------------
+candidate
+candidateSetup
+devSnapshot
+devSnapshotSetup
+final
+finalSetup
+immutableSnapshot
+immutableSnapshotSetup
+postRelease
+releaseCheck
+snapshot
+snapshotSetup
+
+Publishing tasks
+----------------
+pulpogato-graphql-fpt:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-graphql-ghec:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.16:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.17:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.18:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.19:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-graphql-ghes-3.20:calculateSchemaChecksum - Calculates the checksum of the GitHub GraphQL schema.
+pulpogato-bom:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-common:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-github-files:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-fpt:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-ghec:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-ghes-3.16:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-ghes-3.17:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-ghes-3.18:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-ghes-3.19:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-graphql-ghes-3.20:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-fpt:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-ghec:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-ghes-3.16:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-ghes-3.17:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-ghes-3.18:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-ghes-3.19:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-rest-ghes-3.20:generateMetadataFileForNebulaPublication - Generates the Gradle metadata file for publication 'nebula'.
+pulpogato-bom:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-common:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-github-files:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-fpt:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-ghec:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-ghes-3.16:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-ghes-3.17:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-ghes-3.18:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-ghes-3.19:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-graphql-ghes-3.20:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-fpt:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-ghec:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-ghes-3.16:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-ghes-3.17:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-ghes-3.18:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-ghes-3.19:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-rest-ghes-3.20:generatePomFileForNebulaPublication - Generates the Maven POM file for publication 'nebula'.
+pulpogato-bom:publish - Publishes all publications produced by this project.
+pulpogato-common:publish - Publishes all publications produced by this project.
+pulpogato-github-files:publish - Publishes all publications produced by this project.
+pulpogato-graphql-fpt:publish - Publishes all publications produced by this project.
+pulpogato-graphql-ghec:publish - Publishes all publications produced by this project.
+pulpogato-graphql-ghes-3.16:publish - Publishes all publications produced by this project.
+pulpogato-graphql-ghes-3.17:publish - Publishes all publications produced by this project.
+pulpogato-graphql-ghes-3.18:publish - Publishes all publications produced by this project.
+pulpogato-graphql-ghes-3.19:publish - Publishes all publications produced by this project.
+pulpogato-graphql-ghes-3.20:publish - Publishes all publications produced by this project.
+pulpogato-rest-fpt:publish - Publishes all publications produced by this project.
+pulpogato-rest-ghec:publish - Publishes all publications produced by this project.
+pulpogato-rest-ghes-3.16:publish - Publishes all publications produced by this project.
+pulpogato-rest-ghes-3.17:publish - Publishes all publications produced by this project.
+pulpogato-rest-ghes-3.18:publish - Publishes all publications produced by this project.
+pulpogato-rest-ghes-3.19:publish - Publishes all publications produced by this project.
+pulpogato-rest-ghes-3.20:publish - Publishes all publications produced by this project.
+pulpogato-bom:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-common:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-github-files:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-fpt:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-ghec:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-ghes-3.16:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-ghes-3.17:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-ghes-3.18:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-ghes-3.19:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-graphql-ghes-3.20:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-fpt:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-ghec:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-ghes-3.16:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-ghes-3.17:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-ghes-3.18:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-ghes-3.19:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-rest-ghes-3.20:publishAllPublicationsToLocalRepository - Publishes all Maven publications produced by this project to the local repository.
+pulpogato-bom:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-common:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-github-files:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-fpt:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-ghec:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-ghes-3.16:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-ghes-3.17:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-ghes-3.18:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-ghes-3.19:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-graphql-ghes-3.20:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-fpt:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-ghec:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-ghes-3.16:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-ghes-3.17:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-ghes-3.18:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-ghes-3.19:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-rest-ghes-3.20:publishNebulaPublicationToLocalRepository - Publishes Maven publication 'nebula' to Maven repository 'local'.
+pulpogato-bom:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-common:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-github-files:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-fpt:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-ghec:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-ghes-3.16:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-ghes-3.17:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-ghes-3.18:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-ghes-3.19:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-graphql-ghes-3.20:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-fpt:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-ghec:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-ghes-3.16:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-ghes-3.17:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-ghes-3.18:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-ghes-3.19:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-rest-ghes-3.20:publishNebulaPublicationToMavenLocal - Publishes Maven publication 'nebula' to the local Maven repository.
+pulpogato-bom:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-common:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-github-files:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-fpt:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-ghec:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-ghes-3.16:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-ghes-3.17:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-ghes-3.18:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-ghes-3.19:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-graphql-ghes-3.20:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-fpt:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-ghec:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-ghes-3.16:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-ghes-3.17:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-ghes-3.18:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-ghes-3.19:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+pulpogato-rest-ghes-3.20:publishToMavenLocal - Publishes all Maven publications produced by this project to the local Maven cache.
+
+Verification tasks
+------------------
+check - Runs all checks.
+pulpogato-bom:check - Runs all checks.
+pulpogato-common:check - Runs all checks.
+pulpogato-github-files:check - Runs all checks.
+pulpogato-graphql-fpt:check - Runs all checks.
+pulpogato-graphql-ghec:check - Runs all checks.
+pulpogato-graphql-ghes-3.16:check - Runs all checks.
+pulpogato-graphql-ghes-3.17:check - Runs all checks.
+pulpogato-graphql-ghes-3.18:check - Runs all checks.
+pulpogato-graphql-ghes-3.19:check - Runs all checks.
+pulpogato-graphql-ghes-3.20:check - Runs all checks.
+pulpogato-rest-fpt:check - Runs all checks.
+pulpogato-rest-ghec:check - Runs all checks.
+pulpogato-rest-ghes-3.16:check - Runs all checks.
+pulpogato-rest-ghes-3.17:check - Runs all checks.
+pulpogato-rest-ghes-3.18:check - Runs all checks.
+pulpogato-rest-ghes-3.19:check - Runs all checks.
+pulpogato-rest-ghes-3.20:check - Runs all checks.
+pulpogato-rest-ghestest:check - Runs all checks.
+pulpogato-rest-tests:check - Runs all checks.
+pulpogato-rest-tests:checkIssueStatuses - Checks the status of ignored tests issues.
+checkPlugin - Run check on plugin code
+pulpogato-rest-tests:createIssues - Creates issues for ignored tests.
+pulpogato-rest-fpt:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-ghec:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-ghes-3.16:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-ghes-3.17:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-ghes-3.18:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-ghes-3.19:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-ghes-3.20:jacocoTestCoverageVerification - Verifies code coverage metrics based on specified rules for the test task.
+pulpogato-rest-fpt:jacocoTestReport - Generates code coverage report for the test task.
+pulpogato-rest-ghec:jacocoTestReport - Generates code coverage report for the test task.
+pulpogato-rest-ghes-3.16:jacocoTestReport - Generates code coverage report for the test task.
+pulpogato-rest-ghes-3.17:jacocoTestReport - Generates code coverage report for the test task.
+pulpogato-rest-ghes-3.18:jacocoTestReport - Generates code coverage report for the test task.
+pulpogato-rest-ghes-3.19:jacocoTestReport - Generates code coverage report for the test task.
+pulpogato-rest-ghes-3.20:jacocoTestReport - Generates code coverage report for the test task.
+pitest - Run pitest from plugin
+pulpogato-common:pitest - Run PIT analysis for java classes
+pitestPlugin - Run pitest on plugin code
+spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-bom:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-common:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-github-files:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-fpt:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-ghec:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-ghes-3.16:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-ghes-3.17:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-ghes-3.18:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-ghes-3.19:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-graphql-ghes-3.20:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-fpt:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghec:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghes-3.16:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghes-3.17:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghes-3.18:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghes-3.19:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghes-3.20:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-ghestest:spotlessApply - Applies code formatting steps to sourcecode in-place.
+pulpogato-rest-tests:spotlessApply - Applies code formatting steps to sourcecode in-place.
+spotlessApplyPlugin - Run spotlessApply on plugin code
+spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-bom:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-common:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-github-files:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-fpt:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-ghec:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-ghes-3.16:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-ghes-3.17:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-ghes-3.18:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-ghes-3.19:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-graphql-ghes-3.20:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-fpt:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghec:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghes-3.16:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghes-3.17:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghes-3.18:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghes-3.19:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghes-3.20:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-ghestest:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+pulpogato-rest-tests:spotlessCheck - Checks that sourcecode satisfies formatting steps.
+spotlessDiagnose
+pulpogato-bom:spotlessDiagnose
+pulpogato-common:spotlessDiagnose
+pulpogato-github-files:spotlessDiagnose
+pulpogato-graphql-fpt:spotlessDiagnose
+pulpogato-graphql-ghec:spotlessDiagnose
+pulpogato-graphql-ghes-3.16:spotlessDiagnose
+pulpogato-graphql-ghes-3.17:spotlessDiagnose
+pulpogato-graphql-ghes-3.18:spotlessDiagnose
+pulpogato-graphql-ghes-3.19:spotlessDiagnose
+pulpogato-graphql-ghes-3.20:spotlessDiagnose
+pulpogato-rest-fpt:spotlessDiagnose
+pulpogato-rest-ghec:spotlessDiagnose
+pulpogato-rest-ghes-3.16:spotlessDiagnose
+pulpogato-rest-ghes-3.17:spotlessDiagnose
+pulpogato-rest-ghes-3.18:spotlessDiagnose
+pulpogato-rest-ghes-3.19:spotlessDiagnose
+pulpogato-rest-ghes-3.20:spotlessDiagnose
+pulpogato-rest-ghestest:spotlessDiagnose
+pulpogato-rest-tests:spotlessDiagnose
+spotlessJava
+pulpogato-bom:spotlessJava
+pulpogato-common:spotlessJava
+pulpogato-github-files:spotlessJava
+pulpogato-graphql-fpt:spotlessJava
+pulpogato-graphql-ghec:spotlessJava
+pulpogato-graphql-ghes-3.16:spotlessJava
+pulpogato-graphql-ghes-3.17:spotlessJava
+pulpogato-graphql-ghes-3.18:spotlessJava
+pulpogato-graphql-ghes-3.19:spotlessJava
+pulpogato-graphql-ghes-3.20:spotlessJava
+pulpogato-rest-fpt:spotlessJava
+pulpogato-rest-ghec:spotlessJava
+pulpogato-rest-ghes-3.16:spotlessJava
+pulpogato-rest-ghes-3.17:spotlessJava
+pulpogato-rest-ghes-3.18:spotlessJava
+pulpogato-rest-ghes-3.19:spotlessJava
+pulpogato-rest-ghes-3.20:spotlessJava
+pulpogato-rest-ghestest:spotlessJava
+pulpogato-rest-tests:spotlessJava
+spotlessJavaApply
+pulpogato-bom:spotlessJavaApply
+pulpogato-common:spotlessJavaApply
+pulpogato-github-files:spotlessJavaApply
+pulpogato-graphql-fpt:spotlessJavaApply
+pulpogato-graphql-ghec:spotlessJavaApply
+pulpogato-graphql-ghes-3.16:spotlessJavaApply
+pulpogato-graphql-ghes-3.17:spotlessJavaApply
+pulpogato-graphql-ghes-3.18:spotlessJavaApply
+pulpogato-graphql-ghes-3.19:spotlessJavaApply
+pulpogato-graphql-ghes-3.20:spotlessJavaApply
+pulpogato-rest-fpt:spotlessJavaApply
+pulpogato-rest-ghec:spotlessJavaApply
+pulpogato-rest-ghes-3.16:spotlessJavaApply
+pulpogato-rest-ghes-3.17:spotlessJavaApply
+pulpogato-rest-ghes-3.18:spotlessJavaApply
+pulpogato-rest-ghes-3.19:spotlessJavaApply
+pulpogato-rest-ghes-3.20:spotlessJavaApply
+pulpogato-rest-ghestest:spotlessJavaApply
+pulpogato-rest-tests:spotlessJavaApply
+spotlessJavaCheck
+pulpogato-bom:spotlessJavaCheck
+pulpogato-common:spotlessJavaCheck
+pulpogato-github-files:spotlessJavaCheck
+pulpogato-graphql-fpt:spotlessJavaCheck
+pulpogato-graphql-ghec:spotlessJavaCheck
+pulpogato-graphql-ghes-3.16:spotlessJavaCheck
+pulpogato-graphql-ghes-3.17:spotlessJavaCheck
+pulpogato-graphql-ghes-3.18:spotlessJavaCheck
+pulpogato-graphql-ghes-3.19:spotlessJavaCheck
+pulpogato-graphql-ghes-3.20:spotlessJavaCheck
+pulpogato-rest-fpt:spotlessJavaCheck
+pulpogato-rest-ghec:spotlessJavaCheck
+pulpogato-rest-ghes-3.16:spotlessJavaCheck
+pulpogato-rest-ghes-3.17:spotlessJavaCheck
+pulpogato-rest-ghes-3.18:spotlessJavaCheck
+pulpogato-rest-ghes-3.19:spotlessJavaCheck
+pulpogato-rest-ghes-3.20:spotlessJavaCheck
+pulpogato-rest-ghestest:spotlessJavaCheck
+pulpogato-rest-tests:spotlessJavaCheck
+spotlessJavaDiagnose
+pulpogato-bom:spotlessJavaDiagnose
+pulpogato-common:spotlessJavaDiagnose
+pulpogato-github-files:spotlessJavaDiagnose
+pulpogato-graphql-fpt:spotlessJavaDiagnose
+pulpogato-graphql-ghec:spotlessJavaDiagnose
+pulpogato-graphql-ghes-3.16:spotlessJavaDiagnose
+pulpogato-graphql-ghes-3.17:spotlessJavaDiagnose
+pulpogato-graphql-ghes-3.18:spotlessJavaDiagnose
+pulpogato-graphql-ghes-3.19:spotlessJavaDiagnose
+pulpogato-graphql-ghes-3.20:spotlessJavaDiagnose
+pulpogato-rest-fpt:spotlessJavaDiagnose
+pulpogato-rest-ghec:spotlessJavaDiagnose
+pulpogato-rest-ghes-3.16:spotlessJavaDiagnose
+pulpogato-rest-ghes-3.17:spotlessJavaDiagnose
+pulpogato-rest-ghes-3.18:spotlessJavaDiagnose
+pulpogato-rest-ghes-3.19:spotlessJavaDiagnose
+pulpogato-rest-ghes-3.20:spotlessJavaDiagnose
+pulpogato-rest-ghestest:spotlessJavaDiagnose
+pulpogato-rest-tests:spotlessJavaDiagnose
+spotlessJson
+pulpogato-bom:spotlessJson
+pulpogato-common:spotlessJson
+pulpogato-github-files:spotlessJson
+pulpogato-graphql-fpt:spotlessJson
+pulpogato-graphql-ghec:spotlessJson
+pulpogato-graphql-ghes-3.16:spotlessJson
+pulpogato-graphql-ghes-3.17:spotlessJson
+pulpogato-graphql-ghes-3.18:spotlessJson
+pulpogato-graphql-ghes-3.19:spotlessJson
+pulpogato-graphql-ghes-3.20:spotlessJson
+pulpogato-rest-fpt:spotlessJson
+pulpogato-rest-ghec:spotlessJson
+pulpogato-rest-ghes-3.16:spotlessJson
+pulpogato-rest-ghes-3.17:spotlessJson
+pulpogato-rest-ghes-3.18:spotlessJson
+pulpogato-rest-ghes-3.19:spotlessJson
+pulpogato-rest-ghes-3.20:spotlessJson
+pulpogato-rest-ghestest:spotlessJson
+pulpogato-rest-tests:spotlessJson
+spotlessJsonApply
+pulpogato-bom:spotlessJsonApply
+pulpogato-common:spotlessJsonApply
+pulpogato-github-files:spotlessJsonApply
+pulpogato-graphql-fpt:spotlessJsonApply
+pulpogato-graphql-ghec:spotlessJsonApply
+pulpogato-graphql-ghes-3.16:spotlessJsonApply
+pulpogato-graphql-ghes-3.17:spotlessJsonApply
+pulpogato-graphql-ghes-3.18:spotlessJsonApply
+pulpogato-graphql-ghes-3.19:spotlessJsonApply
+pulpogato-graphql-ghes-3.20:spotlessJsonApply
+pulpogato-rest-fpt:spotlessJsonApply
+pulpogato-rest-ghec:spotlessJsonApply
+pulpogato-rest-ghes-3.16:spotlessJsonApply
+pulpogato-rest-ghes-3.17:spotlessJsonApply
+pulpogato-rest-ghes-3.18:spotlessJsonApply
+pulpogato-rest-ghes-3.19:spotlessJsonApply
+pulpogato-rest-ghes-3.20:spotlessJsonApply
+pulpogato-rest-ghestest:spotlessJsonApply
+pulpogato-rest-tests:spotlessJsonApply
+spotlessJsonCheck
+pulpogato-bom:spotlessJsonCheck
+pulpogato-common:spotlessJsonCheck
+pulpogato-github-files:spotlessJsonCheck
+pulpogato-graphql-fpt:spotlessJsonCheck
+pulpogato-graphql-ghec:spotlessJsonCheck
+pulpogato-graphql-ghes-3.16:spotlessJsonCheck
+pulpogato-graphql-ghes-3.17:spotlessJsonCheck
+pulpogato-graphql-ghes-3.18:spotlessJsonCheck
+pulpogato-graphql-ghes-3.19:spotlessJsonCheck
+pulpogato-graphql-ghes-3.20:spotlessJsonCheck
+pulpogato-rest-fpt:spotlessJsonCheck
+pulpogato-rest-ghec:spotlessJsonCheck
+pulpogato-rest-ghes-3.16:spotlessJsonCheck
+pulpogato-rest-ghes-3.17:spotlessJsonCheck
+pulpogato-rest-ghes-3.18:spotlessJsonCheck
+pulpogato-rest-ghes-3.19:spotlessJsonCheck
+pulpogato-rest-ghes-3.20:spotlessJsonCheck
+pulpogato-rest-ghestest:spotlessJsonCheck
+pulpogato-rest-tests:spotlessJsonCheck
+spotlessJsonDiagnose
+pulpogato-bom:spotlessJsonDiagnose
+pulpogato-common:spotlessJsonDiagnose
+pulpogato-github-files:spotlessJsonDiagnose
+pulpogato-graphql-fpt:spotlessJsonDiagnose
+pulpogato-graphql-ghec:spotlessJsonDiagnose
+pulpogato-graphql-ghes-3.16:spotlessJsonDiagnose
+pulpogato-graphql-ghes-3.17:spotlessJsonDiagnose
+pulpogato-graphql-ghes-3.18:spotlessJsonDiagnose
+pulpogato-graphql-ghes-3.19:spotlessJsonDiagnose
+pulpogato-graphql-ghes-3.20:spotlessJsonDiagnose
+pulpogato-rest-fpt:spotlessJsonDiagnose
+pulpogato-rest-ghec:spotlessJsonDiagnose
+pulpogato-rest-ghes-3.16:spotlessJsonDiagnose
+pulpogato-rest-ghes-3.17:spotlessJsonDiagnose
+pulpogato-rest-ghes-3.18:spotlessJsonDiagnose
+pulpogato-rest-ghes-3.19:spotlessJsonDiagnose
+pulpogato-rest-ghes-3.20:spotlessJsonDiagnose
+pulpogato-rest-ghestest:spotlessJsonDiagnose
+pulpogato-rest-tests:spotlessJsonDiagnose
+spotlessKotlin
+pulpogato-bom:spotlessKotlin
+pulpogato-common:spotlessKotlin
+pulpogato-github-files:spotlessKotlin
+pulpogato-graphql-fpt:spotlessKotlin
+pulpogato-graphql-ghec:spotlessKotlin
+pulpogato-graphql-ghes-3.16:spotlessKotlin
+pulpogato-graphql-ghes-3.17:spotlessKotlin
+pulpogato-graphql-ghes-3.18:spotlessKotlin
+pulpogato-graphql-ghes-3.19:spotlessKotlin
+pulpogato-graphql-ghes-3.20:spotlessKotlin
+pulpogato-rest-fpt:spotlessKotlin
+pulpogato-rest-ghec:spotlessKotlin
+pulpogato-rest-ghes-3.16:spotlessKotlin
+pulpogato-rest-ghes-3.17:spotlessKotlin
+pulpogato-rest-ghes-3.18:spotlessKotlin
+pulpogato-rest-ghes-3.19:spotlessKotlin
+pulpogato-rest-ghes-3.20:spotlessKotlin
+pulpogato-rest-ghestest:spotlessKotlin
+pulpogato-rest-tests:spotlessKotlin
+spotlessKotlinApply
+pulpogato-bom:spotlessKotlinApply
+pulpogato-common:spotlessKotlinApply
+pulpogato-github-files:spotlessKotlinApply
+pulpogato-graphql-fpt:spotlessKotlinApply
+pulpogato-graphql-ghec:spotlessKotlinApply
+pulpogato-graphql-ghes-3.16:spotlessKotlinApply
+pulpogato-graphql-ghes-3.17:spotlessKotlinApply
+pulpogato-graphql-ghes-3.18:spotlessKotlinApply
+pulpogato-graphql-ghes-3.19:spotlessKotlinApply
+pulpogato-graphql-ghes-3.20:spotlessKotlinApply
+pulpogato-rest-fpt:spotlessKotlinApply
+pulpogato-rest-ghec:spotlessKotlinApply
+pulpogato-rest-ghes-3.16:spotlessKotlinApply
+pulpogato-rest-ghes-3.17:spotlessKotlinApply
+pulpogato-rest-ghes-3.18:spotlessKotlinApply
+pulpogato-rest-ghes-3.19:spotlessKotlinApply
+pulpogato-rest-ghes-3.20:spotlessKotlinApply
+pulpogato-rest-ghestest:spotlessKotlinApply
+pulpogato-rest-tests:spotlessKotlinApply
+spotlessKotlinCheck
+pulpogato-bom:spotlessKotlinCheck
+pulpogato-common:spotlessKotlinCheck
+pulpogato-github-files:spotlessKotlinCheck
+pulpogato-graphql-fpt:spotlessKotlinCheck
+pulpogato-graphql-ghec:spotlessKotlinCheck
+pulpogato-graphql-ghes-3.16:spotlessKotlinCheck
+pulpogato-graphql-ghes-3.17:spotlessKotlinCheck
+pulpogato-graphql-ghes-3.18:spotlessKotlinCheck
+pulpogato-graphql-ghes-3.19:spotlessKotlinCheck
+pulpogato-graphql-ghes-3.20:spotlessKotlinCheck
+pulpogato-rest-fpt:spotlessKotlinCheck
+pulpogato-rest-ghec:spotlessKotlinCheck
+pulpogato-rest-ghes-3.16:spotlessKotlinCheck
+pulpogato-rest-ghes-3.17:spotlessKotlinCheck
+pulpogato-rest-ghes-3.18:spotlessKotlinCheck
+pulpogato-rest-ghes-3.19:spotlessKotlinCheck
+pulpogato-rest-ghes-3.20:spotlessKotlinCheck
+pulpogato-rest-ghestest:spotlessKotlinCheck
+pulpogato-rest-tests:spotlessKotlinCheck
+spotlessKotlinDiagnose
+pulpogato-bom:spotlessKotlinDiagnose
+pulpogato-common:spotlessKotlinDiagnose
+pulpogato-github-files:spotlessKotlinDiagnose
+pulpogato-graphql-fpt:spotlessKotlinDiagnose
+pulpogato-graphql-ghec:spotlessKotlinDiagnose
+pulpogato-graphql-ghes-3.16:spotlessKotlinDiagnose
+pulpogato-graphql-ghes-3.17:spotlessKotlinDiagnose
+pulpogato-graphql-ghes-3.18:spotlessKotlinDiagnose
+pulpogato-graphql-ghes-3.19:spotlessKotlinDiagnose
+pulpogato-graphql-ghes-3.20:spotlessKotlinDiagnose
+pulpogato-rest-fpt:spotlessKotlinDiagnose
+pulpogato-rest-ghec:spotlessKotlinDiagnose
+pulpogato-rest-ghes-3.16:spotlessKotlinDiagnose
+pulpogato-rest-ghes-3.17:spotlessKotlinDiagnose
+pulpogato-rest-ghes-3.18:spotlessKotlinDiagnose
+pulpogato-rest-ghes-3.19:spotlessKotlinDiagnose
+pulpogato-rest-ghes-3.20:spotlessKotlinDiagnose
+pulpogato-rest-ghestest:spotlessKotlinDiagnose
+pulpogato-rest-tests:spotlessKotlinDiagnose
+spotlessYaml
+pulpogato-bom:spotlessYaml
+pulpogato-common:spotlessYaml
+pulpogato-github-files:spotlessYaml
+pulpogato-graphql-fpt:spotlessYaml
+pulpogato-graphql-ghec:spotlessYaml
+pulpogato-graphql-ghes-3.16:spotlessYaml
+pulpogato-graphql-ghes-3.17:spotlessYaml
+pulpogato-graphql-ghes-3.18:spotlessYaml
+pulpogato-graphql-ghes-3.19:spotlessYaml
+pulpogato-graphql-ghes-3.20:spotlessYaml
+pulpogato-rest-fpt:spotlessYaml
+pulpogato-rest-ghec:spotlessYaml
+pulpogato-rest-ghes-3.16:spotlessYaml
+pulpogato-rest-ghes-3.17:spotlessYaml
+pulpogato-rest-ghes-3.18:spotlessYaml
+pulpogato-rest-ghes-3.19:spotlessYaml
+pulpogato-rest-ghes-3.20:spotlessYaml
+pulpogato-rest-ghestest:spotlessYaml
+pulpogato-rest-tests:spotlessYaml
+spotlessYamlApply
+pulpogato-bom:spotlessYamlApply
+pulpogato-common:spotlessYamlApply
+pulpogato-github-files:spotlessYamlApply
+pulpogato-graphql-fpt:spotlessYamlApply
+pulpogato-graphql-ghec:spotlessYamlApply
+pulpogato-graphql-ghes-3.16:spotlessYamlApply
+pulpogato-graphql-ghes-3.17:spotlessYamlApply
+pulpogato-graphql-ghes-3.18:spotlessYamlApply
+pulpogato-graphql-ghes-3.19:spotlessYamlApply
+pulpogato-graphql-ghes-3.20:spotlessYamlApply
+pulpogato-rest-fpt:spotlessYamlApply
+pulpogato-rest-ghec:spotlessYamlApply
+pulpogato-rest-ghes-3.16:spotlessYamlApply
+pulpogato-rest-ghes-3.17:spotlessYamlApply
+pulpogato-rest-ghes-3.18:spotlessYamlApply
+pulpogato-rest-ghes-3.19:spotlessYamlApply
+pulpogato-rest-ghes-3.20:spotlessYamlApply
+pulpogato-rest-ghestest:spotlessYamlApply
+pulpogato-rest-tests:spotlessYamlApply
+spotlessYamlCheck
+pulpogato-bom:spotlessYamlCheck
+pulpogato-common:spotlessYamlCheck
+pulpogato-github-files:spotlessYamlCheck
+pulpogato-graphql-fpt:spotlessYamlCheck
+pulpogato-graphql-ghec:spotlessYamlCheck
+pulpogato-graphql-ghes-3.16:spotlessYamlCheck
+pulpogato-graphql-ghes-3.17:spotlessYamlCheck
+pulpogato-graphql-ghes-3.18:spotlessYamlCheck
+pulpogato-graphql-ghes-3.19:spotlessYamlCheck
+pulpogato-graphql-ghes-3.20:spotlessYamlCheck
+pulpogato-rest-fpt:spotlessYamlCheck
+pulpogato-rest-ghec:spotlessYamlCheck
+pulpogato-rest-ghes-3.16:spotlessYamlCheck
+pulpogato-rest-ghes-3.17:spotlessYamlCheck
+pulpogato-rest-ghes-3.18:spotlessYamlCheck
+pulpogato-rest-ghes-3.19:spotlessYamlCheck
+pulpogato-rest-ghes-3.20:spotlessYamlCheck
+pulpogato-rest-ghestest:spotlessYamlCheck
+pulpogato-rest-tests:spotlessYamlCheck
+spotlessYamlDiagnose
+pulpogato-bom:spotlessYamlDiagnose
+pulpogato-common:spotlessYamlDiagnose
+pulpogato-github-files:spotlessYamlDiagnose
+pulpogato-graphql-fpt:spotlessYamlDiagnose
+pulpogato-graphql-ghec:spotlessYamlDiagnose
+pulpogato-graphql-ghes-3.16:spotlessYamlDiagnose
+pulpogato-graphql-ghes-3.17:spotlessYamlDiagnose
+pulpogato-graphql-ghes-3.18:spotlessYamlDiagnose
+pulpogato-graphql-ghes-3.19:spotlessYamlDiagnose
+pulpogato-graphql-ghes-3.20:spotlessYamlDiagnose
+pulpogato-rest-fpt:spotlessYamlDiagnose
+pulpogato-rest-ghec:spotlessYamlDiagnose
+pulpogato-rest-ghes-3.16:spotlessYamlDiagnose
+pulpogato-rest-ghes-3.17:spotlessYamlDiagnose
+pulpogato-rest-ghes-3.18:spotlessYamlDiagnose
+pulpogato-rest-ghes-3.19:spotlessYamlDiagnose
+pulpogato-rest-ghes-3.20:spotlessYamlDiagnose
+pulpogato-rest-ghestest:spotlessYamlDiagnose
+pulpogato-rest-tests:spotlessYamlDiagnose
+pulpogato-common:test - Runs the test suite.
+pulpogato-github-files:test - Runs the test suite.
+pulpogato-graphql-fpt:test - Runs the test suite.
+pulpogato-graphql-ghec:test - Runs the test suite.
+pulpogato-graphql-ghes-3.16:test - Runs the test suite.
+pulpogato-graphql-ghes-3.17:test - Runs the test suite.
+pulpogato-graphql-ghes-3.18:test - Runs the test suite.
+pulpogato-graphql-ghes-3.19:test - Runs the test suite.
+pulpogato-graphql-ghes-3.20:test - Runs the test suite.
+pulpogato-rest-fpt:test - Runs the test suite.
+pulpogato-rest-ghec:test - Runs the test suite.
+pulpogato-rest-ghes-3.16:test - Runs the test suite.
+pulpogato-rest-ghes-3.17:test - Runs the test suite.
+pulpogato-rest-ghes-3.18:test - Runs the test suite.
+pulpogato-rest-ghes-3.19:test - Runs the test suite.
+pulpogato-rest-ghes-3.20:test - Runs the test suite.
+pulpogato-rest-ghestest:test - Runs the test suite.
+pulpogato-rest-tests:test - Runs the test suite.
+
+Other tasks
+-----------
+pulpogato-github-files:addSchemaInfoToBroker
+pulpogato-rest-fpt:addSchemaInfoToBroker
+pulpogato-rest-ghec:addSchemaInfoToBroker
+pulpogato-rest-ghes-3.16:addSchemaInfoToBroker
+pulpogato-rest-ghes-3.17:addSchemaInfoToBroker
+pulpogato-rest-ghes-3.18:addSchemaInfoToBroker
+pulpogato-rest-ghes-3.19:addSchemaInfoToBroker
+pulpogato-rest-ghes-3.20:addSchemaInfoToBroker
+pulpogato-common:compileJava - Compiles main Java source.
+pulpogato-github-files:compileJava - Compiles main Java source.
+pulpogato-graphql-fpt:compileJava - Compiles main Java source.
+pulpogato-graphql-ghec:compileJava - Compiles main Java source.
+pulpogato-graphql-ghes-3.16:compileJava - Compiles main Java source.
+pulpogato-graphql-ghes-3.17:compileJava - Compiles main Java source.
+pulpogato-graphql-ghes-3.18:compileJava - Compiles main Java source.
+pulpogato-graphql-ghes-3.19:compileJava - Compiles main Java source.
+pulpogato-graphql-ghes-3.20:compileJava - Compiles main Java source.
+pulpogato-rest-fpt:compileJava - Compiles main Java source.
+pulpogato-rest-ghec:compileJava - Compiles main Java source.
+pulpogato-rest-ghes-3.16:compileJava - Compiles main Java source.
+pulpogato-rest-ghes-3.17:compileJava - Compiles main Java source.
+pulpogato-rest-ghes-3.18:compileJava - Compiles main Java source.
+pulpogato-rest-ghes-3.19:compileJava - Compiles main Java source.
+pulpogato-rest-ghes-3.20:compileJava - Compiles main Java source.
+pulpogato-rest-ghestest:compileJava - Compiles main Java source.
+pulpogato-rest-tests:compileJava - Compiles main Java source.
+pulpogato-common:compileTestJava - Compiles test Java source.
+pulpogato-github-files:compileTestJava - Compiles test Java source.
+pulpogato-graphql-fpt:compileTestJava - Compiles test Java source.
+pulpogato-graphql-ghec:compileTestJava - Compiles test Java source.
+pulpogato-graphql-ghes-3.16:compileTestJava - Compiles test Java source.
+pulpogato-graphql-ghes-3.17:compileTestJava - Compiles test Java source.
+pulpogato-graphql-ghes-3.18:compileTestJava - Compiles test Java source.
+pulpogato-graphql-ghes-3.19:compileTestJava - Compiles test Java source.
+pulpogato-graphql-ghes-3.20:compileTestJava - Compiles test Java source.
+pulpogato-rest-fpt:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghec:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghes-3.16:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghes-3.17:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghes-3.18:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghes-3.19:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghes-3.20:compileTestJava - Compiles test Java source.
+pulpogato-rest-ghestest:compileTestJava - Compiles test Java source.
+pulpogato-rest-tests:compileTestJava - Compiles test Java source.
+pulpogato-common:createPropertiesFileForJar
+pulpogato-github-files:createPropertiesFileForJar
+pulpogato-graphql-fpt:createPropertiesFileForJar
+pulpogato-graphql-ghec:createPropertiesFileForJar
+pulpogato-graphql-ghes-3.16:createPropertiesFileForJar
+pulpogato-graphql-ghes-3.17:createPropertiesFileForJar
+pulpogato-graphql-ghes-3.18:createPropertiesFileForJar
+pulpogato-graphql-ghes-3.19:createPropertiesFileForJar
+pulpogato-graphql-ghes-3.20:createPropertiesFileForJar
+pulpogato-rest-fpt:createPropertiesFileForJar
+pulpogato-rest-ghec:createPropertiesFileForJar
+pulpogato-rest-ghes-3.16:createPropertiesFileForJar
+pulpogato-rest-ghes-3.17:createPropertiesFileForJar
+pulpogato-rest-ghes-3.18:createPropertiesFileForJar
+pulpogato-rest-ghes-3.19:createPropertiesFileForJar
+pulpogato-rest-ghes-3.20:createPropertiesFileForJar
+prepare - Verifies that the project could be released.
+prepareKotlinBuildScriptModel
+pulpogato-common:processResources - Processes main resources.
+pulpogato-github-files:processResources - Processes main resources.
+pulpogato-graphql-fpt:processResources - Processes main resources.
+pulpogato-graphql-ghec:processResources - Processes main resources.
+pulpogato-graphql-ghes-3.16:processResources - Processes main resources.
+pulpogato-graphql-ghes-3.17:processResources - Processes main resources.
+pulpogato-graphql-ghes-3.18:processResources - Processes main resources.
+pulpogato-graphql-ghes-3.19:processResources - Processes main resources.
+pulpogato-graphql-ghes-3.20:processResources - Processes main resources.
+pulpogato-rest-fpt:processResources - Processes main resources.
+pulpogato-rest-ghec:processResources - Processes main resources.
+pulpogato-rest-ghes-3.16:processResources - Processes main resources.
+pulpogato-rest-ghes-3.17:processResources - Processes main resources.
+pulpogato-rest-ghes-3.18:processResources - Processes main resources.
+pulpogato-rest-ghes-3.19:processResources - Processes main resources.
+pulpogato-rest-ghes-3.20:processResources - Processes main resources.
+pulpogato-rest-ghestest:processResources - Processes main resources.
+pulpogato-rest-tests:processResources - Processes main resources.
+pulpogato-common:processTestResources - Processes test resources.
+pulpogato-github-files:processTestResources - Processes test resources.
+pulpogato-graphql-fpt:processTestResources - Processes test resources.
+pulpogato-graphql-ghec:processTestResources - Processes test resources.
+pulpogato-graphql-ghes-3.16:processTestResources - Processes test resources.
+pulpogato-graphql-ghes-3.17:processTestResources - Processes test resources.
+pulpogato-graphql-ghes-3.18:processTestResources - Processes test resources.
+pulpogato-graphql-ghes-3.19:processTestResources - Processes test resources.
+pulpogato-graphql-ghes-3.20:processTestResources - Processes test resources.
+pulpogato-rest-fpt:processTestResources - Processes test resources.
+pulpogato-rest-ghec:processTestResources - Processes test resources.
+pulpogato-rest-ghes-3.16:processTestResources - Processes test resources.
+pulpogato-rest-ghes-3.17:processTestResources - Processes test resources.
+pulpogato-rest-ghes-3.18:processTestResources - Processes test resources.
+pulpogato-rest-ghes-3.19:processTestResources - Processes test resources.
+pulpogato-rest-ghes-3.20:processTestResources - Processes test resources.
+pulpogato-rest-ghestest:processTestResources - Processes test resources.
+pulpogato-rest-tests:processTestResources - Processes test resources.
+release - Releases this project.
+remapPtsFingerprints - Translates input file and class name fingerprints to the original values in a JSON file. Typically the file is a response body from Predictive Test Selection info handlers.
+testDistributionWebSocketCheck - Performs a simple websocket connection to the Test Distribution Broker to help diagnosing connection problems.
+writeManifestProperties
+pulpogato-bom:writeManifestProperties
+pulpogato-common:writeManifestProperties
+pulpogato-github-files:writeManifestProperties
+pulpogato-graphql-fpt:writeManifestProperties
+pulpogato-graphql-ghec:writeManifestProperties
+pulpogato-graphql-ghes-3.16:writeManifestProperties
+pulpogato-graphql-ghes-3.17:writeManifestProperties
+pulpogato-graphql-ghes-3.18:writeManifestProperties
+pulpogato-graphql-ghes-3.19:writeManifestProperties
+pulpogato-graphql-ghes-3.20:writeManifestProperties
+pulpogato-rest-fpt:writeManifestProperties
+pulpogato-rest-ghec:writeManifestProperties
+pulpogato-rest-ghes-3.16:writeManifestProperties
+pulpogato-rest-ghes-3.17:writeManifestProperties
+pulpogato-rest-ghes-3.18:writeManifestProperties
+pulpogato-rest-ghes-3.19:writeManifestProperties
+pulpogato-rest-ghes-3.20:writeManifestProperties
+
+Rules
+-----
+Pattern: clean<TaskName>: Cleans the output files of a task.
+Pattern: build<ConfigurationName>: Assembles the artifacts of a configuration.
+
+BUILD SUCCESSFUL in 3s
+5 actionable tasks: 1 executed, 4 up-to-date
+
+Publishing Build Scan to Develocity...
+https://gradle.com/s/rtq5i7i43a77w
+
+Configuration cache entry stored.

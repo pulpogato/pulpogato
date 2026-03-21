@@ -162,14 +162,6 @@ val dockerExecutable =
             .firstOrNull { candidate -> rootProject.file(candidate).canExecute() }
         ?: "docker"
 
-tasks.named("prepare") {
-    group = "Nebula Release"
-}
-
-tasks.named("release") {
-    group = "Nebula Release"
-}
-
 tasks.register<Exec>("asciidoctorDocs") {
     description = "Generate Asciidoctor HTML docs in Docker"
     group = "documentation"
