@@ -138,14 +138,12 @@
   versions:
     - fpt
     - ghec
-    - ghes-3.19
     - ghes-3.20
 - example: "#/components/examples/projects-v2-item-with-content/value"
   reason: "https://github.com/github/rest-api-description/issues/5601"
   versions:
     - fpt
     - ghec
-    - ghes-3.19
     - ghes-3.20
 - example: "#/components/examples/org-ruleset-items/value"
   reason: "https://github.com/github/rest-api-description/issues/5602"
@@ -157,12 +155,6 @@
     - ghes-3.18
     - ghes-3.19
     - ghes-3.20
-- example: "#/components/examples/org-ruleset-version-with-state/value"
-  reason: "https://github.com/github/rest-api-description/issues/5860"
-  versions:
-    - fpt
-    - ghec
-    - ghes-3.19
 - example: "#/components/examples/dependabot-alerts-for-repository/value"
   reason: "https://github.com/github/rest-api-description/issues/5628"
   versions:
