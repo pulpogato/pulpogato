@@ -11,6 +11,9 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import tools.jackson.databind.ObjectMapper
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 
 /**
  * Gradle task to check the status of GitHub issues related to ignored tests.
@@ -46,18 +49,78 @@ abstract class CheckIssueStatusesTask : DefaultTask() {
     fun checkStatuses() {
         val file = inputFile.get().asFile
         val statuses = getIssueStatuses(file, schemaFiles.files)
-        val notOpen = statuses.count { it.state != "OPEN" }
+        val notOpenIssues = statuses.filter { it.state != "OPEN" }
 
         println("Checking issue statuses in $file")
         println("Scanning ${schemaFiles.files.size} schema files for issue references")
         println(statuses.groupBy { it.state }.mapValues { it.value.size })
-        statuses
-            .filter { it.state != "OPEN" }
-            .forEach { println(it) }
-        if (notOpen > 0) {
-            throw GradleException("$notOpen issues report as not open. Please check $file")
+        notOpenIssues.forEach { println(it) }
+        if (notOpenIssues.isNotEmpty()) {
+            publishGithubActionsAnnotations(notOpenIssues)
+            publishGithubActionsSummary(file.toPath(), notOpenIssues)
+            throw GradleException("${notOpenIssues.size} issues report as not open. Please check $file")
         }
     }
+
+    private fun publishGithubActionsAnnotations(notOpenIssues: List<IssueStatus>) {
+        if (System.getenv("GITHUB_ACTIONS") != "true") {
+            return
+        }
+
+        notOpenIssues.forEach { issue ->
+            val issueLabel = issue.displayLabel()
+            val issueState = issue.state ?: "UNKNOWN"
+            val message = "Issue $issueLabel is $issueState: ${issue.url.orEmpty()}"
+            println("::error title=Issue status check failed::${escapeGithubActionsValue(message)}")
+        }
+    }
+
+    private fun publishGithubActionsSummary(
+        file: Path,
+        notOpenIssues: List<IssueStatus>,
+    ) {
+        val summaryPath = System.getenv("GITHUB_STEP_SUMMARY")?.takeIf { it.isNotBlank() } ?: return
+        val summaryLines =
+            buildList {
+                add("## Issue status check failed")
+                add("")
+                add("Found ${notOpenIssues.size} issue(s) that are not open while checking `$file`.")
+                add("")
+                notOpenIssues.forEach { issue ->
+                    add("- `${issue.state ?: "UNKNOWN"}`: ${issue.summaryMarkdown()}")
+                }
+            }
+
+        Files.writeString(
+            Path.of(summaryPath),
+            summaryLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()),
+            StandardOpenOption.CREATE,
+            StandardOpenOption.APPEND,
+        )
+    }
+
+    private fun IssueStatus.displayLabel(): String =
+        when {
+            number != null && number != -1 -> "#$number"
+            !url.isNullOrBlank() -> url!!
+            else -> "unknown issue"
+        }
+
+    private fun IssueStatus.summaryMarkdown(): String {
+        val label = displayLabel()
+        val issueUrl = url
+        return if (issueUrl.isNullOrBlank()) {
+            label
+        } else {
+            "[$label]($issueUrl)"
+        }
+    }
+
+    private fun escapeGithubActionsValue(value: String): String =
+        value
+            .replace("%", "%25")
+            .replace("\r", "%0D")
+            .replace("\n", "%0A")
 
     /**
      * Fetches issue statuses from GitHub for the issue URLs found in the input file.
