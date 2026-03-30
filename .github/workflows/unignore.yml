@@ -48,18 +48,21 @@ jobs:
           uv run scripts/unignore.py
 
       - name: Check for changes
+        id: check
         run: |
           if git diff --quiet; then
             echo "No changes detected"
-            exit 1
+            echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "Changes detected:"
             git diff
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Pull Request
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        if: steps.check.outputs.changed == 'true'
         run: |-
           git checkout -b unignore-tests
           git add .
