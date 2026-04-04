@@ -50,7 +50,7 @@ abstract class UpdateRepositoryBranchPropertyTask : DefaultTask() {
         val sha =
             ObjectMapper()
                 .readTree(branchJson)["commit"]["sha"]
-                .textValue()
+                .stringValue()
                 .orEmpty()
                 .take(7)
         val originalContents = targetFile.readText()

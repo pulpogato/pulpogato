@@ -6,6 +6,7 @@ import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeSpec
+import com.palantir.javapoet.WildcardTypeName
 import io.github.pulpogato.restcodegen.Annotations.generated
 import java.io.File
 import javax.lang.model.element.Modifier
@@ -58,8 +59,7 @@ class EnumConvertersBuilder {
         val converterType =
             ParameterizedTypeName.get(
                 ClassName.get("org.springframework.core.convert.converter", "Converter"),
-                com.palantir.javapoet.WildcardTypeName
-                    .subtypeOf(Object::class.java),
+                WildcardTypeName.subtypeOf(ClassName.get("java.lang", "Object")),
                 ClassName.get(String::class.java),
             )
 

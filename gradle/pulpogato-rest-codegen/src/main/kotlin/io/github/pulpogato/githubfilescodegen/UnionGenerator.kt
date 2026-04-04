@@ -111,7 +111,7 @@ object UnionGenerator {
         args.add(thisClass)
         args.add(MODE)
         args.add(mode)
-        args.add(ClassName.get(java.util.List::class.java))
+        args.add(ClassName.get("java.util", "List"))
 
         variants.forEachIndexed { index, v ->
             if (index > 0) {
@@ -156,7 +156,7 @@ object UnionGenerator {
         args.add(thisClass)
         args.add(MODE)
         args.add(mode)
-        args.add(ClassName.get(java.util.List::class.java))
+        args.add(ClassName.get("java.util", "List"))
 
         variants.forEachIndexed { index, v ->
             if (index > 0) {
