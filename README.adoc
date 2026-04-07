@@ -11,6 +11,7 @@
 :deprecated-middle: ?style=for-the-badge&label=R&color=lightgrey[alt=Maven Central Version,height=30,link="https://central.sonatype.com/artifact/{package}/
 
 Pulpogato is a java client for GitHub.
+_Pulpogato_ is Spanish for _Octopus-Cat_.
 
 image:images/Pulpogato.png[alt=Pulpogato logo. An octocat in the style of Pablo Picasso.,width=300]
 
