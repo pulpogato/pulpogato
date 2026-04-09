@@ -110,6 +110,60 @@ class MetricsExchangeFunctionTest {
     }
 
     @Test
+    void testGaugeValuesUpdateOnSubsequentResponses() {
+        // GIVEN - first response
+        Instant now = clock.instant();
+        Instant hourLater = now.plus(1, ChronoUnit.HOURS);
+
+        given(headers.header("x-ratelimit-limit")).willReturn(List.of("5000"));
+        given(headers.header("x-ratelimit-remaining")).willReturn(List.of("4999"));
+        given(headers.header("x-ratelimit-used")).willReturn(List.of("1"));
+        given(headers.header("x-ratelimit-reset")).willReturn(List.of(String.valueOf(hourLater.getEpochSecond())));
+        given(headers.header("x-ratelimit-resource")).willReturn(List.of("core"));
+        given(response.headers()).willReturn(headers);
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(Mono.just(response));
+
+        var clientRequest = ClientRequest.create(HttpMethod.GET, URI.create("https://api.github.com/test"))
+                .build();
+
+        StepVerifier.create(metricsExchangeFunction.filter(clientRequest, exchangeFunction))
+                .expectNext(response)
+                .verifyComplete();
+
+        // GIVEN - second response with different values
+        ClientResponse response2 = org.mockito.Mockito.mock(ClientResponse.class);
+        ClientResponse.Headers headers2 = org.mockito.Mockito.mock(ClientResponse.Headers.class);
+        given(headers2.header("x-ratelimit-limit")).willReturn(List.of("5000"));
+        given(headers2.header("x-ratelimit-remaining")).willReturn(List.of("4990"));
+        given(headers2.header("x-ratelimit-used")).willReturn(List.of("10"));
+        given(headers2.header("x-ratelimit-reset")).willReturn(List.of(String.valueOf(hourLater.getEpochSecond())));
+        given(headers2.header("x-ratelimit-resource")).willReturn(List.of("core"));
+        given(response2.headers()).willReturn(headers2);
+        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(Mono.just(response2));
+
+        // WHEN - second call
+        StepVerifier.create(metricsExchangeFunction.filter(clientRequest, exchangeFunction))
+                .expectNext(response2)
+                .verifyComplete();
+
+        // THEN - still only 4 meters, values reflect the second response
+        var meters = meterRegistry.getMeters();
+        assertThat(meters).hasSize(4);
+
+        assertThat(meters)
+                .anySatisfy(meter -> {
+                    assertThat(meter.getId().getName()).isEqualTo("github.api.rateLimit.remaining");
+                    var gauge = (DefaultGauge) meter;
+                    assertThat(gauge.value()).isEqualTo(4990);
+                })
+                .anySatisfy(meter -> {
+                    assertThat(meter.getId().getName()).isEqualTo("github.api.rateLimit.used");
+                    var gauge = (DefaultGauge) meter;
+                    assertThat(gauge.value()).isEqualTo(10);
+                });
+    }
+
+    @Test
     void testRateLimitMetricsWithMissingHeaders() {
         // GIVEN
         given(headers.header("x-ratelimit-limit")).willReturn(List.of("5000"));

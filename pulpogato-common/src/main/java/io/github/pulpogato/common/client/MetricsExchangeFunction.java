@@ -5,6 +5,8 @@ import io.micrometer.core.instrument.Tag;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import lombok.Builder;
 import org.jspecify.annotations.NonNull;
@@ -65,6 +67,8 @@ public class MetricsExchangeFunction implements ExchangeFilterFunction {
     @Builder.Default
     private final List<Tag> defaultTags = List.of();
 
+    private final ConcurrentHashMap<String, AtomicLong> gauges = new ConcurrentHashMap<>();
+
     @Override
     @NonNull
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
@@ -84,23 +88,31 @@ public class MetricsExchangeFunction implements ExchangeFilterFunction {
     }
 
     private void recordRateLimitMetrics(ClientResponse response) {
-        // Extract rate limit headers
         String resource = getFirstHeader(response, RATE_LIMIT_RESOURCE);
 
-        // Create tags for the metrics
         List<Tag> tags = new ArrayList<>(defaultTags);
         tags.add(Tag.of("resource", resource != null ? resource : "unknown"));
 
-        withNumericHeader(response, RATE_LIMIT_LIMIT, v -> registry.gauge(prefix + ".limit", tags, v));
-        withNumericHeader(response, RATE_LIMIT_REMAINING, v -> registry.gauge(prefix + ".remaining", tags, v));
-        withNumericHeader(response, RATE_LIMIT_USED, v -> registry.gauge(prefix + ".used", tags, v));
+        withNumericHeader(response, RATE_LIMIT_LIMIT, v -> setGauge(prefix + ".limit", tags, v));
+        withNumericHeader(response, RATE_LIMIT_REMAINING, v -> setGauge(prefix + ".remaining", tags, v));
+        withNumericHeader(response, RATE_LIMIT_USED, v -> setGauge(prefix + ".used", tags, v));
         withNumericHeader(
                 response,
                 RATE_LIMIT_RESET,
-                resetValue -> registry.gauge(
+                resetValue -> setGauge(
                         prefix + ".secondsToReset",
                         tags,
                         resetValue - clock.instant().getEpochSecond()));
+    }
+
+    private void setGauge(String name, List<Tag> tags, long value) {
+        var key = name + "/" + tags;
+        var ref = gauges.computeIfAbsent(key, k -> {
+            var atomicLong = new AtomicLong(value);
+            registry.gauge(name, tags, atomicLong, AtomicLong::get);
+            return atomicLong;
+        });
+        ref.set(value);
     }
 
     private String getFirstHeader(ClientResponse response, String headerName) {
