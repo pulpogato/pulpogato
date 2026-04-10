@@ -1,0 +1,21 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "app-permissions": {
+        "properties": {
+          "organization_copilot_seat_management": {
+            "type": "string",
+            "description": "The level of permission to grant the access token for managing access to GitHub Copilot for members of an organization with a Copilot Business subscription. This property is in public preview and is subject to change. https://github.com/github/rest-api-description/issues/6272",
+            "enum": [ "read", "write" ]
+          }
+        }
+      }
+    }
+  },
+  "paths": { }
+}
