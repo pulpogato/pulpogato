@@ -1,0 +1,17 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "app-permissions": {
+        "properties": {
+          "organization_copilot_seat_management": null
+        }
+      }
+    }
+  },
+  "paths": { }
+}
