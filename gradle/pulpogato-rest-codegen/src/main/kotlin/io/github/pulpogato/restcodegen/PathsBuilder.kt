@@ -93,8 +93,32 @@ class PathsBuilder {
                 .classBuilder("RestClients")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
-                .addJavadoc($$"$L", "Client to access all REST APIs.")
-                .addField(
+                .addJavadoc(
+                    """
+                    Central entry point for accessing all GitHub REST APIs.
+
+                    <p>Construct with a pre-configured {@link WebClient}, then call {@code get<Xxx>Api()}
+                    to obtain a typed API interface. Example:
+
+                    <pre>{@code
+                    WebClient webClient = WebClient.builder()
+                            .baseUrl("https://api.github.com")
+                            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .build();
+
+                    RestClients clients = new RestClients(webClient);
+                    UsersApi users = clients.getUsersApi();
+                    ResponseEntity<User> response = users.getAuthenticated();
+                    }</pre>
+
+                    <p>The constructor automatically applies {@code DefaultHeadersExchangeFunction}
+                    (adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers)
+                    and {@code NoContentExchangeFunction} (handles 204 responses).
+
+                    @see io.github.pulpogato.common.client.DefaultHeadersExchangeFunction
+                    @see io.github.pulpogato.common.client.NoContentExchangeFunction
+                    """.trimIndent(),
+                ).addField(
                     FieldSpec
                         .builder(
                             ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"),
@@ -304,7 +328,12 @@ class PathsBuilder {
             .interfaceBuilder(interfaceName)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
-            .addJavadoc($$"$L", apiDescription ?: "")
+            .addJavadoc(
+                buildString {
+                    append(apiDescription ?: "API interface.")
+                    append("\n<p>Obtain an instance via {@code RestClients.get$interfaceName()}.")
+                }.trimIndent(),
+            )
 
     /**
      * Builds a method specification for a REST API operation.
