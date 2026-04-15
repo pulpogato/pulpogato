@@ -18,16 +18,5 @@ class PatchDgsGeneratedSourcesAction(
             .walkTopDown()
             .filter { it.isFile && it.name == "DgsConstants.java" }
             .forEach { it.delete() }
-
-        generatedSourcesDir
-            .walkTopDown()
-            .filter { it.isFile && it.extension == "java" }
-            .forEach { file ->
-                val content = file.readText()
-                val patchedContent = content.replace(" package,", " _package,")
-                if (patchedContent != content) {
-                    file.writeText(patchedContent)
-                }
-            }
     }
 }
