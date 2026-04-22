@@ -692,16 +692,16 @@ private fun buildFieldSpec(
     context: Context,
     keyValuePair: Map.Entry<String, Schema<Any>>,
     classRef: ClassName,
-): FieldSpec =
-    FieldSpec
-        .builder(
-            referenceAndDefinition(context, keyValuePair, "", classRef)!!.first,
-            keyValuePair.key.unkeywordize().camelCase(),
-            Modifier.PRIVATE,
-        ).addJavadoc($$"$L", schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
+): FieldSpec {
+    val typeName = referenceAndDefinition(context, keyValuePair, "", classRef)!!.first
+    return FieldSpec
+        .builder(typeName.withoutAnnotations(), keyValuePair.key.unkeywordize().camelCase(), Modifier.PRIVATE)
+        .addAnnotations(typeName.annotations())
+        .addJavadoc($$"$L", schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
         .addAnnotation(generated(0, context))
         .addAnnotation(jsonProperty(keyValuePair.key))
         .build()
+}
 
 private fun getGettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
@@ -1426,10 +1426,11 @@ private fun addFieldIfNew(
                     .initializer($$"$T.notSet()", Types.NULLABLE_OPTIONAL)
         } else {
             // Keep existing behavior for non-nullable or simple types
-            actualTypeName = typeName
+            actualTypeName = typeName.withoutAnnotations()
             builder =
                 FieldSpec
                     .builder(actualTypeName, fieldName, Modifier.PRIVATE)
+                    .addAnnotations(typeName.annotations())
                     .addAnnotation(jsonProperty(property.key))
                     .addAnnotation(generated(0, context.withSchemaStack("properties", property.key), sourceFile))
 
