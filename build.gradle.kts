@@ -120,6 +120,16 @@ tasks.register<UpdateRepositoryBranchPropertyTask>("updateSchemastoreVersion") {
     gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
 }
 
+tasks.register<UpdateRepositoryBranchPropertyTask>("updateGithubActionsTypingSchemaVersion") {
+    description = "Update GitHub Actions typing schema version from typesafegithub/github-actions-typing"
+    group = "maintenance"
+    repository.set(project.ext["gh.actions.typing.repo"].toString())
+    branch.set("schema-latest")
+    propertyName.set("gh.actions.typing.commit")
+    propertiesFile.set(layout.projectDirectory.file("gradle.properties"))
+    gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
+}
+
 val checkPlugin =
     tasks.register("checkPlugin", Exec::class) {
         description = "Run check on plugin code"
