@@ -299,7 +299,7 @@ class GithubWorkflowDeserializationTest {
                     .get("build")
                     .getNormalJob()
                     .getContainer()
-                    .getContainer()
+                    .getJobContainer()
                     .getPorts();
             assertThat(ports).hasSize(2);
             assertThat(ports.get(0).getBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(5432));
