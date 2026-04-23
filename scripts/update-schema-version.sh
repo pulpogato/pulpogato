@@ -86,3 +86,10 @@ update_and_pr \
     "schemastore.commit" \
     "update-schemastore-version" \
     "${SCHEMASTORE_REPO}"
+
+GH_ACTIONS_TYPING_REPO=$(grep "gh.actions.typing.repo=" gradle.properties | cut -d'=' -f2)
+update_and_pr \
+    "updateGithubActionsTypingSchemaVersion" \
+    "gh.actions.typing.commit" \
+    "update-github-actions-typing-schema-version" \
+    "${GH_ACTIONS_TYPING_REPO}"

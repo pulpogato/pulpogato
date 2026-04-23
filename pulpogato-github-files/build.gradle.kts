@@ -14,24 +14,94 @@ plugins {
 
 val schemastoreRepo = project.ext["schemastore.repo"].toString()
 val schemastoreCommit = project.ext["schemastore.commit"].toString()
+val githubActionsTypingRepo = project.ext["gh.actions.typing.repo"].toString()
+val githubActionsTypingCommit = project.ext["gh.actions.typing.commit"].toString()
 
 description = "Java types for GitHub file configuration schemas"
 
 data class SchemaSpec(
     val filename: String,
     val subpackage: String,
+    val sourceName: String,
+    val sourceDescription: String,
+    val sourceCommit: String,
+    val sourceUrl: String,
 )
 
 val schemas =
     listOf(
-        SchemaSpec("github-action.json", "actions"),
-        SchemaSpec("github-discussion.json", "discussion"),
-        SchemaSpec("github-funding.json", "funding"),
-        SchemaSpec("github-issue-config.json", "issueconfig"),
-        SchemaSpec("github-issue-forms.json", "issueforms"),
-        SchemaSpec("github-release-config.json", "releases"),
-        SchemaSpec("github-workflow.json", "workflows"),
-        SchemaSpec("github-workflow-template-properties.json", "workflowtemplates"),
+        SchemaSpec(
+            "github-action.json",
+            "actions",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-action.json",
+        ),
+        SchemaSpec(
+            "github-actions-typing.schema.json",
+            "actionstyping",
+            "Github-Actions-Typing",
+            "typesafegithub/github-actions-typing",
+            githubActionsTypingCommit,
+            "https://raw.githubusercontent.com/$githubActionsTypingRepo/$githubActionsTypingCommit/github-actions-typing.schema.json",
+        ),
+        SchemaSpec(
+            "github-discussion.json",
+            "discussion",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-discussion.json",
+        ),
+        SchemaSpec(
+            "github-funding.json",
+            "funding",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-funding.json",
+        ),
+        SchemaSpec(
+            "github-issue-config.json",
+            "issueconfig",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-issue-config.json",
+        ),
+        SchemaSpec(
+            "github-issue-forms.json",
+            "issueforms",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-issue-forms.json",
+        ),
+        SchemaSpec(
+            "github-release-config.json",
+            "releases",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-release-config.json",
+        ),
+        SchemaSpec(
+            "github-workflow.json",
+            "workflows",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-workflow.json",
+        ),
+        SchemaSpec(
+            "github-workflow-template-properties.json",
+            "workflowtemplates",
+            "Schemastore",
+            "schemastore",
+            schemastoreCommit,
+            "https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/github-workflow-template-properties.json",
+        ),
     )
 
 val downloadAllSchemas =
@@ -46,8 +116,8 @@ schemas.forEach { spec ->
     val downloadTask =
         tasks.register<Download>("downloadSchema$taskSuffix") {
             group = "code generation"
-            description = "Download ${spec.filename} from schemastore"
-            src("https://raw.githubusercontent.com/$schemastoreRepo/$schemastoreCommit/src/schemas/json/${spec.filename}")
+            description = "Download ${spec.filename} from ${spec.sourceDescription}"
+            src(spec.sourceUrl)
             dest(project.layout.buildDirectory.file("generated-src/main/resources/${spec.filename}"))
             overwrite(false)
         }
@@ -57,26 +127,38 @@ schemas.forEach { spec ->
 
 val addSchemaInfoToBroker =
     tasks.register<WriteInfoPropertiesTask>("addSchemaInfoToBroker") {
-        description = "Writes schema metadata (checksum, schemastore commit) to info.properties for the info broker plugin"
+        description = "Writes schema metadata (checksums, source commits) to info.properties for the info broker plugin"
         group = "build setup"
         dependsOn(downloadAllSchemas)
-        staticEntries.put("Schemastore-Commit", schemastoreCommit)
+        schemas
+            .associate { it.sourceName to it.sourceCommit }
+            .forEach { (sourceName, sourceCommit) ->
+                staticEntries.put("$sourceName-Commit", sourceCommit)
+            }
         schemas.forEach { spec ->
             checksumFiles.from(project.layout.buildDirectory.file("generated-src/main/resources/${spec.filename}"))
             val label = spec.subpackage.replaceFirstChar { it.uppercase() }
-            checksumEntriesByFilename.put(spec.filename, "Schemastore-$label-SHA256")
+            checksumEntriesByFilename.put(spec.filename, "${spec.sourceName}-$label-SHA256")
         }
         outputFile.set(layout.buildDirectory.file("reports/schema-info.properties"))
     }
 
 val infoPropertiesFile = addSchemaInfoToBroker.flatMap { it.outputFile }
 val infoBrokerPlugin = project.plugins.getPlugin(InfoBrokerPlugin::class.java)
-infoBrokerPlugin.add("Schemastore-Commit", PropertiesFileValueClosure(infoPropertiesFile.get().asFile, "Schemastore-Commit"))
+schemas
+    .map { it.sourceName }
+    .distinct()
+    .forEach { sourceName ->
+        infoBrokerPlugin.add(
+            "$sourceName-Commit",
+            PropertiesFileValueClosure(infoPropertiesFile.get().asFile, "$sourceName-Commit"),
+        )
+    }
 schemas.forEach { spec ->
     val label = spec.subpackage.replaceFirstChar { it.uppercase() }
     infoBrokerPlugin.add(
-        "Schemastore-$label-SHA256",
-        PropertiesFileValueClosure(infoPropertiesFile.get().asFile, "Schemastore-$label-SHA256"),
+        "${spec.sourceName}-$label-SHA256",
+        PropertiesFileValueClosure(infoPropertiesFile.get().asFile, "${spec.sourceName}-$label-SHA256"),
     )
 }
 
