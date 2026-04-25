@@ -47,7 +47,7 @@ jobs:
         run: |-
           uv run scripts/unignore.py
 
-      - name: Run unignore-schemas script
+      - name: Run delete-customizations script
         run: |-
           uv run scripts/delete-customizations.py
 
