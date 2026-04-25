@@ -42,8 +42,18 @@ class RestCodegenPlugin : Plugin<Project> {
                 }
             rootProjectDir.set(target.rootProject.projectDir)
             projectDir.set(target.projectDir)
-            commonResourcesDir.set(target.rootProject.projectDir.resolve("pulpogato-common/src/main/resources"))
-            moduleResourcesDir.set(target.projectDir.resolve("src/main/resources"))
+            commonResourcesDir.set(
+                target.provider {
+                    val dir = target.rootProject.projectDir.resolve("pulpogato-common/src/main/resources")
+                    if (dir.exists()) dir else null
+                },
+            )
+            moduleResourcesDir.set(
+                target.provider {
+                    val dir = target.projectDir.resolve("src/main/resources")
+                    if (dir.exists()) dir else null
+                },
+            )
         }
     }
 }
