@@ -7,7 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-FULL_CHECK_CMD = ["./gradlew", "check", "--max-workers=3", "--continue"]
 COMMON_SCHEMA_DIR = Path("pulpogato-common/src/main/resources")
 
 
@@ -36,15 +35,36 @@ def find_common_schema_files():
 
 
 def find_module_schema_files():
-    """Return {module_gradle_path: [schema_files]} for all rest submodules."""
+    """Return {gradle_task: [schema_files]} for all rest submodules that have schema files."""
     modules = {}
     for resources_dir in sorted(Path(".").glob("pulpogato-rest-*/src/main/resources")):
         files = sorted(resources_dir.glob("*.schema.json"))
         if files:
-            module_name = resources_dir.parts[0]  # e.g. pulpogato-rest-fpt
-            gradle_task = f":{module_name}:check"
-            modules[gradle_task] = files
+            module_name = resources_dir.parts[0]
+            modules[f":{module_name}:check"] = files
     return modules
+
+
+def schema_base_name(f: Path) -> str:
+    """Strip .del.schema.json or .schema.json to get a pairing key."""
+    name = f.name
+    if name.endswith(".del.schema.json"):
+        return name[: -len(".del.schema.json")]
+    return name[: -len(".schema.json")]
+
+
+def group_into_units(files) -> list[list[Path]]:
+    """Group files sharing the same base name into test units (pairs or singles)."""
+    groups: dict[str, list[Path]] = {}
+    for f in files:
+        groups.setdefault(schema_base_name(f), []).append(f)
+    return list(groups.values())
+
+
+def unit_label(unit: list[Path]) -> str:
+    if len(unit) == 1:
+        return unit[0].name
+    return f"{schema_base_name(unit[0])} ({len(unit)} paired files)"
 
 
 def remove_files(files):
@@ -70,12 +90,16 @@ def try_without(files, gradle_tasks):
 
 
 def process_schema_group(label, files, gradle_tasks):
-    """Try to remove each schema file in the group, returning the list of removable ones."""
+    """Try to remove each schema unit in the group, returning the list of removable files."""
+    units = group_into_units(files)
+
     print(f"\n{'='*60}")
-    print(f"Group: {label}  ({len(files)} file(s))")
+    print(f"Group: {label}  ({len(files)} file(s), {len(units)} unit(s))")
     print(f"{'='*60}")
-    for f in files:
-        print(f"  - {f}")
+    for unit in units:
+        print(f"  - {unit[0].name}")
+        for f in unit[1:]:
+            print(f"    {f.name}  (paired)")
 
     start_group(f"Attempt: removing all {len(files)} file(s) at once")
     if try_without(files, gradle_tasks):
@@ -84,15 +108,15 @@ def process_schema_group(label, files, gradle_tasks):
         return list(files)
     end_group()
 
-    print("\nNot all files can be removed. Testing individually...\n")
+    print("\nNot all units can be removed. Testing each unit individually...\n")
     removable = []
-    for f in files:
-        start_group(f"Testing removal of: {f}")
-        if try_without([f], gradle_tasks):
-            removable.append(f)
-            print(f"→ Can be removed: {f}")
+    for unit in units:
+        start_group(f"Testing removal of unit: {unit_label(unit)}")
+        if try_without(unit, gradle_tasks):
+            removable.extend(unit)
+            print(f"→ Can be removed: {unit_label(unit)}")
         else:
-            print(f"→ Still needed: {f}")
+            print(f"→ Still needed: {unit_label(unit)}")
         end_group()
 
     if len(removable) > 1:
@@ -145,7 +169,8 @@ def main():
         print("  (none)")
 
     still_needed = [
-        f for f in list(common_files) + [f for fs in module_files.values() for f in fs]
+        f
+        for f in list(common_files) + [f for fs in module_files.values() for f in fs]
         if f.exists()
     ]
     if still_needed:
