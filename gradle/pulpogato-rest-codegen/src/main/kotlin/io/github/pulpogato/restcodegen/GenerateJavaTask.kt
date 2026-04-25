@@ -7,6 +7,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
@@ -94,14 +95,16 @@ open class GenerateJavaTask : DefaultTask() {
     /**
      * The common resources directory for schema additions.
      */
-    @Input
+    @InputDirectory
+    @PathSensitive(PathSensitivity.RELATIVE)
     @Optional
     val commonResourcesDir: Property<File> = project.objects.property(File::class.java)
 
     /**
      * The module resources directory for schema additions.
      */
-    @Input
+    @InputDirectory
+    @PathSensitive(PathSensitivity.RELATIVE)
     @Optional
     val moduleResourcesDir: Property<File> = project.objects.property(File::class.java)
 
