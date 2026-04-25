@@ -47,6 +47,10 @@ jobs:
         run: |-
           uv run scripts/unignore.py
 
+      - name: Run unignore-schemas script
+        run: |-
+          uv run scripts/delete-customizations.py
+
       - name: Check for changes
         id: check
         run: |
