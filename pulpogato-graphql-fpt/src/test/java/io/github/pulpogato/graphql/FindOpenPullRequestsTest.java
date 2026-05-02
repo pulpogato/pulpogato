@@ -2,9 +2,13 @@ package io.github.pulpogato.graphql;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
+import com.netflix.graphql.dgs.client.DgsWebClientGraphQLClient;
+import com.netflix.graphql.dgs.client.Jackson2DgsJsonMapperAdapter;
+import com.netflix.graphql.dgs.client.Jackson3DgsJsonMapperAdapter;
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
+import com.netflix.graphql.dgs.json.DgsJsonMapper;
 import io.github.pulpogato.common.util.LinkedHashMapBuilder;
 import io.github.pulpogato.graphql.client.RepositoryGraphQLQuery;
 import io.github.pulpogato.graphql.client.RepositoryProjectionRoot;
@@ -20,8 +24,11 @@ import io.github.pulpogato.graphql.types.User;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Stream;
 import org.intellij.lang.annotations.Language;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class FindOpenPullRequestsTest extends BaseIntegrationTest {
     // tag::query[]
@@ -60,11 +67,18 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
         """;
     // end::query[]
 
-    @Test
-    void testFindOpenPullRequestsQuery() {
+    static Stream<Arguments> mappers() {
+        return Stream.of(
+                arguments("jackson2", Jackson2DgsJsonMapperAdapter.fromOptions()),
+                arguments("jackson3", Jackson3DgsJsonMapperAdapter.fromOptions()));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("mappers")
+    void testFindOpenPullRequestsQuery(String mapperName, DgsJsonMapper mapper) {
         var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
         // tag::execute[]
-        WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
+        var graphQLClient = new DgsWebClientGraphQLClient(graphqlWebClient, h -> {}, mapper);
 
         var variables = LinkedHashMapBuilder.of(
                 entry("owner", "pulpogato"), // <1>
@@ -191,11 +205,12 @@ class FindOpenPullRequestsTest extends BaseIntegrationTest {
                         .build());
     }
 
-    @Test
-    void testFindOpenPullRequestsTypedQuery() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("mappers")
+    void testFindOpenPullRequestsTypedQuery(String mapperName, DgsJsonMapper mapper) {
         var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
         // tag::execute-typed-query[]
-        WebClientGraphQLClient graphQLClient = new WebClientGraphQLClient(graphqlWebClient);
+        var graphQLClient = new DgsWebClientGraphQLClient(graphqlWebClient, h -> {}, mapper);
 
         var query = RepositoryGraphQLQuery.newRequest()
                 .followRenames(false)

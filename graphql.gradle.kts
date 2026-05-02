@@ -15,7 +15,6 @@ plugins {
 }
 
 dependencies {
-    api(libs.jackson3Core)
     api(project(":pulpogato-common"))
 
     compileOnly(libs.jakartaAnnotations)
@@ -23,6 +22,10 @@ dependencies {
     testImplementation(libs.bundles.springBoot)
     testImplementation(libs.dgsClient)
     testImplementation(project(":${rootProject.name}-rest-tests"))
+    testRuntimeOnly(libs.jackson2Jdk8)
+    testRuntimeOnly(libs.jackson3ModuleKotlin)
+    testRuntimeOnly(libs.jacksonModuleKotlin)
+    testRuntimeOnly(libs.jacksonModuleParameterNames)
 }
 
 fun getUrl(projectVariant: String): String {
