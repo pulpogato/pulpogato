@@ -983,7 +983,7 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
                 <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
-        <span class="nc">WebClientGraphQLClient</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">);</span>
+        <span class="kt">var</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DgsWebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">,</span> <span class="n">h</span> <span class="o">-&gt;</span> <span class="o">{},</span> <span class="n">mapper</span><span class="o">);</span>
 
         <span class="kt">var</span> <span class="n">variables</span> <span class="o">=</span> <span class="nc">LinkedHashMapBuilder</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
                 <span class="n">entry</span><span class="o">(</span><span class="s">"owner"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <i class="conum" data-value="1"></i><b>(1)</b>
@@ -1019,7 +1019,7 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
                 <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
-        <span class="nc">WebClientGraphQLClient</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">);</span>
+        <span class="kt">var</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DgsWebClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlWebClient</span><span class="o">,</span> <span class="n">h</span> <span class="o">-&gt;</span> <span class="o">{},</span> <span class="n">mapper</span><span class="o">);</span>
 
         <span class="kt">var</span> <span class="n">query</span> <span class="o">=</span> <span class="nc">RepositoryGraphQLQuery</span><span class="o">.</span><span class="na">newRequest</span><span class="o">()</span>
                 <span class="o">.</span><span class="na">followRenames</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
