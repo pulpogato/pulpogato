@@ -35,7 +35,7 @@ spring = "7.0.7"
 springBoot = "4.0.6"
 swaggerParser = "2.1.41"
 testLogger = "4.0.0"
-waena = "0.24.0"
+waena = "0.25.0"
 
 [libraries]
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
