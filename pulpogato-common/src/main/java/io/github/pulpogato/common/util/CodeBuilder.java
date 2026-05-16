@@ -138,6 +138,7 @@ public class CodeBuilder {
     private static String escapeString(String s) {
         return s.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
+                .replace("$", "\\$")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
