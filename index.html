@@ -838,18 +838,14 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">RestExample</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
-        <span class="c1">// create a WebClient</span>
         <span class="nc">WebClient</span> <span class="n">webClient</span> <span class="o">=</span> <span class="nc">WebClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
                 <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span> <i class="conum" data-value="1"></i><b>(1)</b>
 
-        <span class="c1">// Create RestClients instance</span>
-        <span class="nc">RestClients</span> <span class="n">restClients</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RestClients</span><span class="o">(</span><span class="n">webClient</span><span class="o">);</span>
-        <span class="c1">// Get UsersApi</span>
-        <span class="nc">UsersApi</span> <span class="n">api</span> <span class="o">=</span> <span class="n">restClients</span><span class="o">.</span><span class="na">getUsersApi</span><span class="o">();</span>
-        <span class="c1">// Call getAuthenticated method</span>
-        <span class="kt">var</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span>
+        <span class="nc">RestClients</span> <span class="n">restClients</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RestClients</span><span class="o">(</span><span class="n">webClient</span><span class="o">);</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="nc">UsersApi</span> <span class="n">api</span> <span class="o">=</span> <span class="n">restClients</span><span class="o">.</span><span class="na">getUsersApi</span><span class="o">();</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="kt">var</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span> <i class="conum" data-value="4"></i><b>(4)</b>
         <span class="kt">var</span> <span class="n">body</span> <span class="o">=</span> <span class="n">authenticated</span><span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
         <span class="kt">var</span> <span class="n">privateUser</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="na">getPrivateUser</span><span class="o">();</span>
         <span class="kt">var</span> <span class="n">login</span> <span class="o">=</span> <span class="n">privateUser</span><span class="o">.</span><span class="na">getLogin</span><span class="o">();</span>
@@ -857,6 +853,26 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Create a WebClient. You can also inject one.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Create RestClients instance.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Get the UsersApi client. There are many more you can get.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Call the <code>getAuthenticated</code> method.</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -871,21 +887,15 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">ReactiveRestExample</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
-        <span class="c1">// create a WebClient</span>
         <span class="nc">WebClient</span> <span class="n">webClient</span> <span class="o">=</span> <span class="nc">WebClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
                 <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span> <i class="conum" data-value="1"></i><b>(1)</b>
 
-        <span class="c1">// Create RestClients instance</span>
-        <span class="nc">RestClients</span> <span class="n">restClients</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RestClients</span><span class="o">(</span><span class="n">webClient</span><span class="o">);</span>
-        <span class="c1">// Get UsersApi</span>
-        <span class="nc">UsersApi</span> <span class="n">api</span> <span class="o">=</span> <span class="n">restClients</span><span class="o">.</span><span class="na">getUsersApi</span><span class="o">();</span>
-        <span class="c1">// Call getAuthenticated method to obtain a Mono object</span>
-        <span class="kt">var</span> <span class="n">responseEntityMono</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span>
-        <span class="c1">// Call block() to subscribe to the Mono and block</span>
-        <span class="c1">// until the call response is received.</span>
-        <span class="kt">var</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">responseEntityMono</span><span class="o">.</span><span class="na">block</span><span class="o">();</span>
+        <span class="nc">RestClients</span> <span class="n">restClients</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RestClients</span><span class="o">(</span><span class="n">webClient</span><span class="o">);</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="nc">UsersApi</span> <span class="n">api</span> <span class="o">=</span> <span class="n">restClients</span><span class="o">.</span><span class="na">getUsersApi</span><span class="o">();</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="kt">var</span> <span class="n">responseEntityMono</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span> <i class="conum" data-value="4"></i><b>(4)</b>
+        <span class="kt">var</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">responseEntityMono</span><span class="o">.</span><span class="na">block</span><span class="o">();</span> <i class="conum" data-value="5"></i><b>(5)</b>
         <span class="kt">var</span> <span class="n">body</span> <span class="o">=</span> <span class="n">authenticated</span><span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
         <span class="kt">var</span> <span class="n">privateUser</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="na">getPrivateUser</span><span class="o">();</span>
         <span class="kt">var</span> <span class="n">login</span> <span class="o">=</span> <span class="n">privateUser</span><span class="o">.</span><span class="na">getLogin</span><span class="o">();</span>
@@ -893,6 +903,30 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Create a WebClient. You can also inject one.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Create RestClients instance.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Get the reactive UsersApi client. There are many more you can get.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Call the <code>getAuthenticated</code> method, which returns a Mono.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Call block() to subscribe to the Mono and block until the call response is received.</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
