@@ -36,11 +36,10 @@ import io.github.pulpogato.rest.api.UsersApi;
 
 public class RestExample {
     public static void main(String[] args) {
-        // create a WebClient
         WebClient webClient = WebClient.builder()
                 .baseUrl("https://api.github.com")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
-                .build();
+                .build(); //<1>
 
 include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/UsersApiIntegrationTest.java[tags=getAuthenticatedPublic]
 include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/UsersApiIntegrationTest.java[tags=getBody]
@@ -50,6 +49,10 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/Use
     }
 }
 ----
+<1> Create a WebClient. You can also inject one.
+<2> Create RestClients instance.
+<3> Get the UsersApi client. There are many more you can get.
+<4> Call the `getAuthenticated` method.
 
 === Reactive REST Client Example
 
@@ -63,11 +66,10 @@ import io.github.pulpogato.rest.api.reactive.UsersApi;
 
 public class ReactiveRestExample {
     public static void main(String[] args) {
-        // create a WebClient
         WebClient webClient = WebClient.builder()
                 .baseUrl("https://api.github.com")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
-                .build();
+                .build(); //<1>
 
 include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/reactive/UsersApiIntegrationTest.java[tags=getAuthenticatedPublic]
 include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/reactive/UsersApiIntegrationTest.java[tags=getBody]
@@ -77,6 +79,12 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/rea
     }
 }
 ----
+<1> Create a WebClient. You can also inject one.
+<2> Create RestClients instance.
+<3> Get the reactive UsersApi client. There are many more you can get.
+<4> Call the `getAuthenticated` method, which returns a Mono.
+<5> Call block() to subscribe to the Mono and block until the call response is received.
+
 === Webhook Example
 
 This shows how to create a Webhook handler that listens for ping events.

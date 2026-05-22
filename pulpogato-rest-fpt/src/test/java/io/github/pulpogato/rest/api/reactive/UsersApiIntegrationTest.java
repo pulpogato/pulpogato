@@ -19,15 +19,10 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testGetAuthenticatedPublic() {
         // tag::getAuthenticatedPublic[]
-        // Create RestClients instance
-        RestClients restClients = new RestClients(webClient);
-        // Get UsersApi
-        UsersApi api = restClients.getUsersApi();
-        // Call getAuthenticated method to obtain a Mono object
-        var responseEntityMono = api.getAuthenticated();
-        // Call block() to subscribe to the Mono and block
-        // until the call response is received.
-        var authenticated = responseEntityMono.block();
+        RestClients restClients = new RestClients(webClient); // <2>
+        UsersApi api = restClients.getUsersApi(); // <3>
+        var responseEntityMono = api.getAuthenticated(); // <4>
+        var authenticated = responseEntityMono.block(); // <5>
         // end::getAuthenticatedPublic[]
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
