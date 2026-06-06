@@ -121,10 +121,11 @@ def process_schema_group(label, files, gradle_tasks):
 
     if len(removable) > 1:
         start_group(f"Final check: removing {len(removable)} candidate(s) together")
-        if not try_without(removable, gradle_tasks):
+        # Files are already deleted from the per-unit tests above; just re-run the check.
+        if not gradle_check(gradle_tasks):
             end_group()
             print("ERROR: Individual removals passed but combined removal failed.")
-            print("Restoring all files. Manual investigation required.")
+            print("Manual investigation required.")
             sys.exit(2)
         end_group()
 
