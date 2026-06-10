@@ -2,7 +2,6 @@ package io.github.pulpogato.restcodegen
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.internal.provider.DefaultProvider
 
 @Suppress("unused")
 class RestCodegenPlugin : Plugin<Project> {
@@ -23,18 +22,18 @@ class RestCodegenPlugin : Plugin<Project> {
         generateJava.configure {
             dependsOn(downloadSchema)
             schema =
-                DefaultProvider {
+                target.provider {
                     downloadSchema
                         .get()
                         .schemaFile
                         .get()
                         .asFile
                 }
-            packageName = DefaultProvider { extension.packageName.get() }
-            mainDir = DefaultProvider { extension.mainDir.get().asFile }
-            testDir = DefaultProvider { extension.testDir.get().asFile }
+            packageName = target.provider { extension.packageName.get() }
+            mainDir = target.provider { extension.mainDir.get().asFile }
+            testDir = target.provider { extension.testDir.get().asFile }
             testResourcesDir =
-                DefaultProvider {
+                target.provider {
                     extension.testDir
                         .get()
                         .asFile.parentFile
