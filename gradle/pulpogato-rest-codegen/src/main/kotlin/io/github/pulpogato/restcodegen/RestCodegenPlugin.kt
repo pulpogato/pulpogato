@@ -21,14 +21,7 @@ class RestCodegenPlugin : Plugin<Project> {
         val generateJava = target.tasks.register("generateJava", GenerateJavaTask::class.java)
         generateJava.configure {
             dependsOn(downloadSchema)
-            schema =
-                target.provider {
-                    downloadSchema
-                        .get()
-                        .schemaFile
-                        .get()
-                        .asFile
-                }
+            schema = downloadSchema.flatMap { it.schemaFile }.map { it.asFile }
             packageName = target.provider { extension.packageName.get() }
             mainDir = target.provider { extension.mainDir.get().asFile }
             testDir = target.provider { extension.testDir.get().asFile }
