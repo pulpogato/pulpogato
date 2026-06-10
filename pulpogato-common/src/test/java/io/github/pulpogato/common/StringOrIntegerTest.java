@@ -16,8 +16,8 @@ class StringOrIntegerTest {
         StringOrInteger value = StringOrInteger.builder().integerValue(3L).build();
         assertThat(value.toCode()).isEqualTo("""
                         io.github.pulpogato.common.StringOrInteger.builder()
-                            .integerValue(3L)
-                            .build()""");
+                          .integerValue(3L)
+                          .build()""");
     }
 
     @Test
@@ -25,8 +25,8 @@ class StringOrIntegerTest {
         StringOrInteger value = StringOrInteger.builder().stringValue("example").build();
         assertThat(value.toCode()).isEqualTo("""
                         io.github.pulpogato.common.StringOrInteger.builder()
-                            .stringValue("example")
-                            .build()""");
+                          .stringValue("example")
+                          .build()""");
     }
 
     @Builder

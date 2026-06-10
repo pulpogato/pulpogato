@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -19,6 +20,11 @@ public class CodeBuilder {
 
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+    private static final int INDENT_SIZE = 2;
+
+    private static String indentOnly(String input) {
+        return input.indent(INDENT_SIZE).replaceAll("\n$", "");
+    }
 
     /**
      * The type of the object being built.
@@ -58,12 +64,13 @@ public class CodeBuilder {
     public String build() {
         StringBuilder sb = new StringBuilder();
         sb.append(type).append(".builder()");
-        properties.forEach((key, value) -> sb.append("\n    .")
+        properties.forEach((key, value) -> sb.append("\n")
+                .append(indentOnly("."))
                 .append(key)
                 .append("(")
                 .append(render(value))
                 .append(")"));
-        sb.append("\n    .build()");
+        sb.append("\n").append(indentOnly(".build()"));
         return sb.toString();
     }
 
@@ -85,30 +92,28 @@ public class CodeBuilder {
             case Double n -> n + "D";
             case Float n -> n + "F";
             case BigDecimal bd -> "new java.math.BigDecimal(\"" + bd + "\")";
-            case PulpogatoType pt -> pt.toCode().indent(2).trim();
+            case PulpogatoType pt -> pt.toCode().indent(INDENT_SIZE).trim();
             case Enum<?> e -> e.getClass().getName() + "." + e.name();
             case URI u -> "URI.create(\"" + u + "\")";
             case UUID uuid -> "UUID.fromString(\"" + uuid + "\")";
             case OffsetDateTime odt -> formatDateTime(odt);
             case LocalDate ld -> "LocalDate.parse(\"" + ld + "\")";
-            case Map<?, ?> map -> formatMap(map);
-            case List<?> list -> formatList(list);
-            default -> "/* [TODO: CodeBuilder.render]" + value + " */ " + null;
+            case Map<?, ?> map -> formatMap(map).indent(INDENT_SIZE).trim();
+            case List<?> list -> formatList(list).indent(INDENT_SIZE).trim();
+            default -> throw new UnsupportedOperationException(getMessage(value));
         };
     }
 
+    private static @NonNull String getMessage(Object value) {
+        String name = value.getClass().getName();
+        return "Unsupported type in CodeBuilder.render: " + name + " (value=" + value + ")";
+    }
+
     private static @NonNull String formatMap(Map<?, ?> map) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("new java.util.HashMap<Object, Object>() {{\n");
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            sb.append("        put(")
-                    .append(render(entry.getKey()))
-                    .append(", ")
-                    .append(render(entry.getValue()))
-                    .append(");\n");
-        }
-        sb.append("    }}");
-        return sb.toString();
+        return map.entrySet().stream()
+                .map(entry -> "\n" + indentOnly("io.github.pulpogato.common.util.LinkedHashMapBuilder.entry(")
+                        + render(entry.getKey()) + ", " + render(entry.getValue()) + ")")
+                .collect(Collectors.joining(",", "io.github.pulpogato.common.util.LinkedHashMapBuilder.of(", ")"));
     }
 
     private static @NonNull String formatDateTime(OffsetDateTime odt) {
@@ -117,16 +122,7 @@ public class CodeBuilder {
     }
 
     private static @NonNull String formatList(List<?> list) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("List.of(\n");
-        for (int i = 0; i < list.size(); i++) {
-            sb.append("        ").append(render(list.get(i)));
-            if (i < list.size() - 1) {
-                sb.append(",\n");
-            }
-        }
-        sb.append("\n    )");
-        return sb.toString();
+        return list.stream().map(it -> "\n" + indentOnly(render(it))).collect(Collectors.joining(",", "List.of(", ")"));
     }
 
     /**
