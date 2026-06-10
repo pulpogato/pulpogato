@@ -1,5 +1,6 @@
 package io.github.pulpogato.common.util;
 
+import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -12,6 +13,20 @@ public class LinkedHashMapBuilder {
      */
     private LinkedHashMapBuilder() {
         // Empty Default Private Constructor. This should not be instantiated.
+    }
+
+    /**
+     * Creates a Map.Entry from the provided key and value.
+     * This entry supports null values.
+     *
+     * @param key   the key
+     * @param value the value
+     * @param <K>   the type of key
+     * @param <V>   the type of value
+     * @return a Map.Entry containing the provided key and value
+     */
+    public static <K, V> Map.Entry<K, V> entry(K key, V value) {
+        return new AbstractMap.SimpleEntry<>(key, value);
     }
 
     /**

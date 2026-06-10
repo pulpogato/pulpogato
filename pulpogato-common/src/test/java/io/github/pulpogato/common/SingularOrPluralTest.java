@@ -348,10 +348,9 @@ class SingularOrPluralTest {
 
             var expectedCode = """
                     io.github.pulpogato.common.SingularOrPlural.plural(List.of(
-                            "one",
-                            "two",
-                            "three"
-                        ))""";
+                        "one",
+                        "two",
+                        "three"))""";
             assertThat(code).isEqualTo(expectedCode);
         }
 
@@ -364,8 +363,8 @@ class SingularOrPluralTest {
 
             var expectedCode = """
                     io.github.pulpogato.common.SingularOrPlural.singular(io.github.pulpogato.common.StringOrInteger.builder()
-                          .stringValue("test")
-                          .build())""";
+                        .stringValue("test")
+                        .build())""";
             assertThat(code).isEqualTo(expectedCode);
         }
     }
