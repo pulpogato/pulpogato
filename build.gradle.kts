@@ -1,7 +1,6 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.github.rahulsom.waena.WaenaExtension
 import io.github.pulpogato.buildsupport.UpdateRepositoryBranchPropertyTask
-import nebula.plugin.contacts.ContactsExtension
 
 buildscript {
     repositories {
@@ -73,9 +72,8 @@ allprojects {
             targetExclude("build/**")
         }
     }
-
-    extensions.findByType<ContactsExtension>()?.apply {
-        with(addPerson("rahulsom@noreply.github.com")) {
+    contacts {
+        addPerson("rahulsom@noreply.github.com") {
             moniker("Rahul Somasunderam")
             roles("owner")
             github("https://github.com/rahulsom")
