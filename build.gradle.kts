@@ -95,7 +95,7 @@ subprojects {
 }
 
 waena {
-    publishMode.set(WaenaExtension.PublishMode.Central)
+    publishModes.set(setOf(WaenaExtension.PublishMode.Central, WaenaExtension.PublishMode.GitHub))
 }
 
 tasks.register<UpdateRepositoryBranchPropertyTask>("updateRestSchemaVersion") {
