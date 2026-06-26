@@ -1,11 +1,24 @@
 package io.github.pulpogato.restcodegen
 
+import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.TypeName
+import com.palantir.javapoet.TypeSpec
+import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.ext.pascalCase
 import io.github.pulpogato.restcodegen.ext.referenceAndDefinition
 import java.io.File
+import javax.lang.model.element.Modifier
 
 class SchemasBuilder {
+    private companion object {
+        // jackson-annotations keeps this package for both Jackson 2 and Jackson 3.
+        const val PACKAGE_JACKSON_ANNOTATION = "com.fasterxml.jackson.annotation"
+    }
+
     fun buildSchemas(
         context: Context,
         mainDir: File,
@@ -13,11 +26,37 @@ class SchemasBuilder {
         enumConverters: MutableSet<ClassName>,
     ) {
         val openAPI = context.openAPI
+
+        // Webhook events that share a subcategory (e.g. all `check_run` events) get a generated
+        // sealed supertype so callers can pattern match. Work out which body schemas belong to a
+        // group before generating, so each member class can be tagged as a permitted subtype.
+        val supertypeGroups = WebhookSupertypes.compute(openAPI, packageName)
+        // A body schema can belong to more than one subcategory (e.g. the `exemption-request-*` bodies
+        // are shared by several `*_request_*` events), so a member may be permitted by multiple sealed
+        // interfaces and must implement all of them.
+        val schemaKeyToSupertypes =
+            supertypeGroups
+                .flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } }
+                .groupBy({ it.first }, { it.second })
+
+        // Captured per member schema so we can later derive the getters common to every member.
+        val memberFieldsByKey = mutableMapOf<String, Map<String, TypeName>>()
+
         openAPI.components.schemas.forEach { entry ->
             val (typeName, definition) =
                 referenceAndDefinition(context.withSchemaStack("#", "components", "schemas", entry.key), entry, "", null)!!
             definition?.let {
-                JavaFile.builder(packageName, it).build().writeTo(mainDir)
+                val supertypes = schemaKeyToSupertypes[entry.key]
+                val typeSpec =
+                    if (!supertypes.isNullOrEmpty()) {
+                        val (accessible, enriched) = enrichMember(it, supertypes)
+                        memberFieldsByKey[entry.key] = accessible
+                        enriched
+                    } else {
+                        it
+                    }
+
+                JavaFile.builder(packageName, typeSpec).build().writeTo(mainDir)
 
                 // If this is an enum, add its converter to the set
                 if (it.enumConstants().isNotEmpty() && typeName is ClassName) {
@@ -26,5 +65,188 @@ class SchemasBuilder {
                 }
             }
         }
+
+        writeWebhookSupertypeInterfaces(context, mainDir, packageName, supertypeGroups, memberFieldsByKey)
+    }
+
+    /**
+     * Emits one sealed interface per webhook supertype group. The interface permits each member body
+     * class and declares the getters whose name and type are identical across every member.
+     */
+    private fun writeWebhookSupertypeInterfaces(
+        context: Context,
+        mainDir: File,
+        packageName: String,
+        groups: List<WebhookSupertypes.Group>,
+        memberFieldsByKey: Map<String, Map<String, TypeName>>,
+    ) {
+        groups.forEach { group ->
+            val memberFields = group.memberSchemaKeys.map { memberFieldsByKey[it] }
+            // Skip if any member did not generate as a class; otherwise `permits` would dangle.
+            if (memberFields.any { it == null }) return@forEach
+            val present = memberFields.filterNotNull()
+            val commonFields = present.first().filter { (name, type) -> present.all { it[name] == type } }
+
+            val builder =
+                TypeSpec
+                    .interfaceBuilder(group.supertype)
+                    .addModifiers(Modifier.PUBLIC, Modifier.SEALED)
+                    .addSuperinterface(ClassName.get(Types.COMMON_PACKAGE, "PulpogatoType"))
+                    .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
+                    .addJavadoc(
+                        $$"$L",
+                        "A sealed supertype for the <code>${group.subcategory}</code> webhook payloads, " +
+                            "exposing the fields common to every event variant.\n" +
+                            "<br/>Use pattern matching over the permitted subtypes to handle individual variants.",
+                    )
+
+            // When every member is distinguished by a distinct `action` value, wire up Jackson so the
+            // supertype deserializes straight to the right subtype.
+            if (group.discriminable) {
+                jsonSubTypesAnnotations(packageName, group).forEach { builder.addAnnotation(it) }
+            }
+
+            group.memberSchemaKeys.forEach { key ->
+                builder.addPermittedSubclass(ClassName.get(packageName, key.pascalCase()))
+            }
+
+            commonFields.forEach { (name, type) ->
+                builder.addMethod(
+                    MethodSpec
+                        .methodBuilder("get${name.pascalCase()}")
+                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                        .returns(type)
+                        .build(),
+                )
+            }
+
+            JavaFile.builder(packageName, builder.build()).build().writeTo(mainDir)
+        }
+    }
+
+    /**
+     * Builds the `@JsonTypeInfo` / `@JsonSubTypes` pair that lets Jackson deserialize the supertype
+     * directly to the correct member based on the `action` discriminator. Only called for groups that
+     * are [discriminable][WebhookSupertypes.Group.discriminable].
+     *
+     * The Jackson 2 and Jackson 3 runtimes both read these `com.fasterxml.jackson.annotation` types,
+     * so a single annotation pair covers both.
+     */
+    private fun jsonSubTypesAnnotations(
+        packageName: String,
+        group: WebhookSupertypes.Group,
+    ): List<AnnotationSpec> {
+        val jsonTypeInfo = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonTypeInfo")
+        val jsonSubTypes = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes")
+        val subTypesType = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes", "Type")
+
+        // EXISTING_PROPERTY: the `action` value already lives in the payload, so it is not consumed and
+        // each subtype keeps populating its own `action` field as usual.
+        val typeInfo =
+            AnnotationSpec
+                .builder(jsonTypeInfo)
+                .addMember("use", $$"$T.Id.NAME", jsonTypeInfo)
+                .addMember("include", $$"$T.As.EXISTING_PROPERTY", jsonTypeInfo)
+                .addMember("property", $$"$S", "action")
+                .build()
+
+        val subTypes = AnnotationSpec.builder(jsonSubTypes)
+        group.memberSchemaKeys.forEach { key ->
+            val memberClass = ClassName.get(packageName, key.pascalCase())
+            group.actionsByKey[key].orEmpty().forEach { value ->
+                subTypes.addMember(
+                    "value",
+                    $$"$L",
+                    AnnotationSpec
+                        .builder(subTypesType)
+                        .addMember("value", $$"$T.class", memberClass)
+                        .addMember("name", $$"$S", value)
+                        .build(),
+                )
+            }
+        }
+
+        return listOf(typeInfo, subTypes.build())
+    }
+
+    /**
+     * Marks a member body class as a permitted subtype of its sealed supertype(s) and returns the
+     * fields callers can read off the supertype.
+     *
+     * A plain object exposes its own instance fields. A composite (`oneOf`/`anyOf`) body stores its
+     * variants as branch objects rather than flattened fields, so we expose the fields common to every
+     * branch and add delegating getters that read from whichever branch is populated — letting those
+     * fields participate in the supertype's common getters.
+     */
+    private fun enrichMember(
+        typeSpec: TypeSpec,
+        supertypes: List<ClassName>,
+    ): Pair<Map<String, TypeName>, TypeSpec> {
+        // A permitted subtype of a sealed interface must declare its own sealing; these classes are
+        // open POJOs, so mark them non-sealed.
+        val builder = typeSpec.toBuilder().addModifiers(Modifier.NON_SEALED)
+        supertypes.forEach { builder.addSuperinterface(it) }
+
+        val branches = inlineBranches(typeSpec)
+        val accessible =
+            if (branches.isEmpty()) {
+                instanceFields(typeSpec)
+            } else {
+                val common = branchCommonFields(branches)
+                val branchGetters = branches.map { it.first }
+                common.forEach { (name, type) -> builder.addMethod(delegatingGetter(name, type, branchGetters)) }
+                common
+            }
+        return accessible to builder.build()
+    }
+
+    private fun instanceFields(typeSpec: TypeSpec): Map<String, TypeName> =
+        typeSpec
+            .fieldSpecs()
+            .filter { Modifier.STATIC !in it.modifiers() }
+            .associate { it.name() to it.type().withoutAnnotations() }
+
+    /**
+     * For a composite (`oneOf`/`anyOf`) body, the (getter-name, branch-type) pairs of its inline branch
+     * classes, in declaration order. Empty when the type isn't composite or any variant isn't an inline
+     * nested branch (e.g. a `oneOf` of `$ref`s), in which case branch fields can't be read locally.
+     */
+    private fun inlineBranches(typeSpec: TypeSpec): List<Pair<String, TypeSpec>> {
+        val isComposite = typeSpec.typeSpecs().any { it.name()?.endsWith("Jackson3Deserializer") == true }
+        if (!isComposite) return emptyList()
+
+        val nestedByName = typeSpec.typeSpecs().associateBy { it.name() }
+        val fields = typeSpec.fieldSpecs().filter { Modifier.STATIC !in it.modifiers() }
+        if (fields.isEmpty()) return emptyList()
+        return fields.map { field ->
+            val branchName = (field.type().withoutAnnotations() as? ClassName)?.simpleName()
+            val branch = branchName?.let { nestedByName[it] } ?: return emptyList()
+            "get${field.name().pascalCase()}" to branch
+        }
+    }
+
+    private fun branchCommonFields(branches: List<Pair<String, TypeSpec>>): Map<String, TypeName> {
+        val perBranch = branches.map { (_, branch) -> instanceFields(branch) }
+        return perBranch.first().filter { (name, type) -> perBranch.all { it[name] == type } }
+    }
+
+    private fun delegatingGetter(
+        name: String,
+        type: TypeName,
+        branchGetters: List<String>,
+    ): MethodSpec {
+        val code = CodeBlock.builder()
+        branchGetters.forEach { branchGetter ->
+            code.beginControlFlow($$"if ($L() != null)", branchGetter)
+            code.addStatement($$"return $L().get$L()", branchGetter, name.pascalCase())
+            code.endControlFlow()
+        }
+        code.addStatement("return null")
+        return MethodSpec
+            .methodBuilder("get${name.pascalCase()}")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(type)
+            .addCode(code.build())
+            .build()
     }
 }
