@@ -3,6 +3,7 @@ package io.github.pulpogato.restcodegen
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.MethodSpec
@@ -33,6 +34,8 @@ class WebhooksBuilder {
         val interfaceBuilder: TypeSpec.Builder,
         val unitTestBuilder: TypeSpec.Builder,
         val testControllerBuilder: TypeSpec.Builder,
+        val springEndpoint: Boolean,
+        val supertype: WebhookSupertypes.Group?,
     )
 
     data class ProcessingContext(
@@ -44,6 +47,7 @@ class WebhooksBuilder {
         val builders: WebhookBuilderParams,
         val name: String,
         val testResourcesDir: File,
+        val springEndpoint: Boolean,
     )
 
     fun buildWebhooks(
@@ -58,6 +62,9 @@ class WebhooksBuilder {
         val testControllerBuilder = buildTestController()
 
         val openAPI = context.openAPI
+        // The same supertypes SchemasBuilder generates; used here to route the synthetic handler
+        // straight to the typed supertype when the subcategory can be deserialized polymorphically.
+        val supertypesBySubcategory = WebhookSupertypes.compute(openAPI, "$restPackage.schemas").associateBy { it.subcategory }
         openAPI.webhooks
             .entries
             .groupBy {
@@ -73,7 +80,16 @@ class WebhooksBuilder {
                 val unitTestBuilder = getUnitTestBuilder(subcategory)
 
                 val requestBodyTypes = mutableMapOf<String, Pair<String, ClassName>>()
-                val builders = WebhookBuilderParams(interfaceBuilder, unitTestBuilder, testControllerBuilder)
+                // For a multi-event subcategory only the synthetic process<Subcategory> is a real
+                // Spring endpoint; the per-event methods are typed callbacks it dispatches to.
+                val builders =
+                    WebhookBuilderParams(
+                        interfaceBuilder,
+                        unitTestBuilder,
+                        testControllerBuilder,
+                        springEndpoint = v.size == 1,
+                        supertype = supertypesBySubcategory[subcategory],
+                    )
                 v.forEach { (name, webhook) ->
                     val requestBody =
                         createWebhookInterface(context, name, webhook, restPackage, builders, testResourcesDir)
@@ -96,6 +112,7 @@ class WebhooksBuilder {
                         requestBodyTypes,
                         interfaceBuilder,
                         v.first().value,
+                        builders.supertype,
                     )
                 }
 
@@ -145,11 +162,13 @@ class WebhooksBuilder {
         requestBodyTypes: Map<String, Pair<String, ClassName>>,
         interfaceBuilder: TypeSpec.Builder,
         pathItem: PathItem,
+        supertype: WebhookSupertypes.Group?,
     ) {
+        val syntheticContext = context.withSchemaStack("#", "synthetic")
         val methodBuilder =
             MethodSpec
                 .methodBuilder("process${subcategory.pascalCase()}")
-                .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
+                .addAnnotation(generated(0, syntheticContext))
                 .addAnnotation(createHeaderAnnotation(subcategory))
                 .returns(ParameterizedTypeName.get(ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"), TypeVariableName.get("T")))
                 .addException(Types.EXCEPTION)
@@ -169,20 +188,28 @@ class WebhooksBuilder {
                         ParameterSpec
                             .builder(Types.STRING, it.camelCase())
                             .addAnnotation(getParameterAnnotation(it).build())
-                            .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
+                            .addAnnotation(generated(0, syntheticContext))
                             .build(),
                     )
             }
 
-        val router = buildRouter(requestBodyTypes, subcategory, headerNames)
-
-        methodBuilder
-            .addParameter(buildRequestBodyParameter(context.withSchemaStack("#", "synthetic")))
-            .addCode(router, ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"))
-
-        interfaceBuilder
-            .addMethod(methodBuilder.build())
-            .addMethod(getObjectMapperMethod())
+        if (supertype != null && supertype.discriminable) {
+            // Spring deserializes straight to the sealed supertype (via its @JsonSubTypes), so the
+            // handler just pattern matches over the permitted subtypes — no manual JSON routing.
+            // The default dispatch still calls the per-event methods, which are deprecated.
+            methodBuilder
+                .addAnnotation(suppressDeprecation())
+                .addParameter(buildTypedRequestBodyParameter(syntheticContext, supertype.supertype))
+                .addCode(buildTypedRouter(requestBodyTypes, headerNames))
+            interfaceBuilder.addMethod(methodBuilder.build())
+        } else {
+            methodBuilder
+                .addParameter(buildRequestBodyParameter(syntheticContext))
+                .addCode(buildRouter(requestBodyTypes, subcategory, headerNames), ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"))
+            interfaceBuilder
+                .addMethod(methodBuilder.build())
+                .addMethod(getObjectMapperMethod())
+        }
     }
 
     private fun getObjectMapperMethod(): MethodSpec =
@@ -204,6 +231,35 @@ class WebhooksBuilder {
             .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestBody")).build())
             .addAnnotation(generated(0, context))
             .build()
+
+    private fun buildTypedRequestBodyParameter(
+        context: Context,
+        supertype: ClassName,
+    ): ParameterSpec =
+        ParameterSpec
+            .builder(supertype, "requestBody")
+            .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestBody")).build())
+            .addAnnotation(generated(0, context))
+            .build()
+
+    /**
+     * Routes a polymorphically-deserialized webhook body to its typed handler. The switch over the
+     * sealed supertype is exhaustive, so no default branch is needed.
+     */
+    private fun buildTypedRouter(
+        requestBodyTypes: Map<String, Pair<String, ClassName>>,
+        headerNames: List<String>,
+    ): CodeBlock {
+        val code = CodeBlock.builder()
+        code.add("return switch (requestBody) {\n")
+        requestBodyTypes.forEach { (_, methodNameAndType) ->
+            val (methodName, type) = methodNameAndType
+            val args = (headerNames.map { it.camelCase() } + "body").joinToString(", ")
+            code.add($$"    case $T body -> $L($L);\n", type, methodName, args)
+        }
+        code.add("};\n")
+        return code.build()
+    }
 
     private fun buildRouter(
         requestBodyTypes: Map<String, Pair<String, ClassName>>,
@@ -338,6 +394,8 @@ class WebhooksBuilder {
                     .addStatement("return this.objectMapper")
                     .build(),
             ).addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RestController")).build())
+            // Implements the deprecated per-event callbacks to exercise the default dispatch.
+            .addAnnotation(suppressDeprecation())
             .addAnnotation(
                 AnnotationSpec
                     .builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestMapping"))
@@ -360,23 +418,51 @@ class WebhooksBuilder {
         val tests = mutableListOf<MethodSpec>()
         val (_, operation) = webhook.readOperationsMap().entries.first()
 
+        val springEndpoint = builders.springEndpoint
+        // When the subcategory has a discriminable supertype, callers are steered towards the typed
+        // process<Subcategory> handler, so these per-event methods become optional, deprecated callbacks.
+        val discriminableGroup = builders.supertype?.takeIf { it.discriminable }
+        val syntheticMethodName = builders.supertype?.let { "process${it.subcategory.pascalCase()}" }
+
         val methodName = "process" + operation.operationId.replace("/", "-").pascalCase()
         val context1 = context.withSchemaStack("#", "webhooks", name, "post")
         val methodSpecBuilder =
             MethodSpec
                 .methodBuilder(methodName)
                 .addAnnotation(generated(0, context1))
-                .addAnnotation(createPostMappingAnnotation(name))
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addModifiers(Modifier.PUBLIC, if (discriminableGroup != null) Modifier.DEFAULT else Modifier.ABSTRACT)
                 .returns(
                     ParameterizedTypeName.get(ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"), TypeVariableName.get("T")),
                 )
+        if (springEndpoint) {
+            methodSpecBuilder.addAnnotation(createPostMappingAnnotation(name))
+        }
+        if (discriminableGroup != null) {
+            methodSpecBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_JAVA_LANG, "Deprecated")).build())
+        }
 
         val requestBody = operation.requestBody
-        val processingContext = ProcessingContext(restPackage, operation, methodSpecBuilder, context1, tests, builders, name, testResourcesDir)
+        val processingContext =
+            ProcessingContext(restPackage, operation, methodSpecBuilder, context1, tests, builders, name, testResourcesDir, springEndpoint)
         val bodyType = processRequestBody(requestBody, processingContext)
 
-        val javadoc = buildJavadoc(operation)
+        if (discriminableGroup != null) {
+            methodSpecBuilder.addStatement(
+                $$"throw new $T($S)",
+                ClassName.get(PACKAGE_JAVA_LANG, "UnsupportedOperationException"),
+                "Implement $$syntheticMethodName and pattern match over ${discriminableGroup.supertype.simpleName()} instead.",
+            )
+        }
+
+        val javadoc = buildJavadoc(operation).toMutableList()
+        if (discriminableGroup != null) {
+            javadoc.add("")
+            javadoc.add(
+                "@deprecated Prefer implementing {@code $syntheticMethodName} and pattern matching over " +
+                    "{@link ${discriminableGroup.supertype.simpleName()}}; this per-event method is only invoked by the " +
+                    "default {@code $syntheticMethodName} dispatch.",
+            )
+        }
         val methodSpec =
             methodSpecBuilder
                 .addJavadoc($$"$L", javadoc.joinToString("\n"))
@@ -401,8 +487,15 @@ class WebhooksBuilder {
             .addMember("headers", $$"$S", "X-Github-Event=$name")
             .build()
 
+    private fun suppressDeprecation(): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get(PACKAGE_JAVA_LANG, "SuppressWarnings"))
+            .addMember("value", $$"$S", "deprecation")
+            .build()
+
     companion object {
         private val TEST_RESPONSE = ClassName.get("io.github.pulpogato.test", "TestWebhookResponse")
+        private const val PACKAGE_JAVA_LANG = "java.lang"
         private const val PACKAGE_SPRING_WEB_BIND_ANNOTATION = "org.springframework.web.bind.annotation"
         private const val PACKAGE_SPRING_HTTP = "org.springframework.http"
         private const val PACKAGE_PULPOGATO_TEST = "io.github.pulpogato.test"
@@ -414,7 +507,7 @@ class WebhooksBuilder {
     ): MethodSpec.Builder =
         MethodSpec
             .methodBuilder(methodName)
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("java.lang", "Override")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_JAVA_LANG, "Override")).build())
             .returns(
                 ParameterizedTypeName.get(
                     ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
@@ -486,16 +579,17 @@ class WebhooksBuilder {
                 .first { it.key == ref }
         val type = schema.className()
 
-        addHeaderParameters(ctx.operation, ctx.methodSpecBuilder, ctx.context)
+        addHeaderParameters(ctx.operation, ctx.methodSpecBuilder, ctx.context, ctx.springEndpoint)
 
         val bodyType = ClassName.get("${ctx.restPackage}.schemas", type)
-        ctx.methodSpecBuilder.addParameter(
+        val bodyParam =
             ParameterSpec
                 .builder(bodyType, "requestBody")
-                .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestBody")).build())
                 .addAnnotation(generated(0, ctx.context.withSchemaStack("requestBody")))
-                .build(),
-        )
+        if (ctx.springEndpoint) {
+            bodyParam.addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestBody")).build())
+        }
+        ctx.methodSpecBuilder.addParameter(bodyParam.build())
 
         processExamples(entry, ctx.context, ctx.tests, bodyType, ctx.testResourcesDir)
 
@@ -517,27 +611,28 @@ class WebhooksBuilder {
         operation: Operation,
         methodSpecBuilder: MethodSpec.Builder,
         context: Context,
+        springEndpoint: Boolean,
     ) {
         operation.parameters.filter { it.`in` == "header" }.forEachIndexed { idx, it ->
-            val required =
-                when {
-                    it.name.startsWith("X-Hub-Signature") -> false
-                    it.name.startsWith("X-GitHub-Enterprise") -> false
-                    else -> true
-                }
-            val parameterAnnotation =
-                getRequestHeaderAnnotation(it.name)
-            if (!required) {
-                parameterAnnotation.addMember("required", $$"$L", false)
-            }
             val contextForParameters = context.withSchemaStack("parameters", idx.toString())
-            methodSpecBuilder.addParameter(
+            val parameter =
                 ParameterSpec
                     .builder(Types.STRING, it.name.camelCase())
-                    .addAnnotation(parameterAnnotation.build())
                     .addAnnotation(generated(0, contextForParameters))
-                    .build(),
-            )
+            if (springEndpoint) {
+                val required =
+                    when {
+                        it.name.startsWith("X-Hub-Signature") -> false
+                        it.name.startsWith("X-GitHub-Enterprise") -> false
+                        else -> true
+                    }
+                val parameterAnnotation = getRequestHeaderAnnotation(it.name)
+                if (!required) {
+                    parameterAnnotation.addMember("required", $$"$L", false)
+                }
+                parameter.addAnnotation(parameterAnnotation.build())
+            }
+            methodSpecBuilder.addParameter(parameter.build())
         }
     }
 

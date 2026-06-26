@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.Mode;
@@ -57,6 +58,19 @@ public class Jackson2FancySerializer<T> extends StdSerializer<T> {
      * The fields that can be read from the class
      */
     private final transient List<GettableField<T, ?>> fields;
+
+    /**
+     * Serializes the value when used as a polymorphic subtype (e.g. a sealed webhook supertype).
+     *
+     * <p>These types only ever participate in {@code @JsonTypeInfo} with {@code As.EXISTING_PROPERTY},
+     * where the discriminator is already part of the serialized body. There is therefore no separate
+     * type id to emit, so the value is written exactly as {@link #serialize}.
+     */
+    @Override
+    public void serializeWithType(T value, JsonGenerator gen, SerializerProvider provider, TypeSerializer typeSer)
+            throws IOException {
+        serialize(value, gen, provider);
+    }
 
     @Override
     public void serialize(T value, JsonGenerator gen, SerializerProvider provider) throws IOException {

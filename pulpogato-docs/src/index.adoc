@@ -87,8 +87,19 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/rea
 
 === Webhook Example
 
-This shows how to create a Webhook handler that listens for ping events.
-There are many other event types you can listen for.
+Most webhook events (like `pull_request`, `check_run`) have multiple action variants.
+The generated interface provides a sealed supertype — e.g. `WebhookPullRequest` — so you implement
+a single `processPullRequest` method and use pattern matching to branch on the concrete subtype.
+Jackson deserializes the payload to the right subtype automatically based on the `action` field.
+The individual per-event methods (e.g. `processPullRequestEdited`) are `@Deprecated` and dispatched
+by the default implementation; you do not need to override them.
+
+[source,java,indent=0]
+----
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/webhooks/PullRequestWebhooksIntegrationTest.java[tags=pull-request-webhook-controller]
+----
+
+For single-event webhooks such as `ping`, the interface has exactly one method with no dispatch layer:
 
 [source,java,indent=0]
 ----
