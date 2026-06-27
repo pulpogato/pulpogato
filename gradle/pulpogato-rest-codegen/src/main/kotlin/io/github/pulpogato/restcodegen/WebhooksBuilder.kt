@@ -110,9 +110,8 @@ class WebhooksBuilder {
                         context,
                         subcategory,
                         requestBodyTypes,
-                        interfaceBuilder,
+                        builders,
                         v.first().value,
-                        builders.supertype,
                     )
                 }
 
@@ -160,11 +159,12 @@ class WebhooksBuilder {
         context: Context,
         subcategory: String,
         requestBodyTypes: Map<String, Pair<String, ClassName>>,
-        interfaceBuilder: TypeSpec.Builder,
+        builders: WebhookBuilderParams,
         pathItem: PathItem,
-        supertype: WebhookSupertypes.Group?,
     ) {
+        val supertype = builders.supertype
         val syntheticContext = context.withSchemaStack("#", "synthetic")
+        val isDiscriminable = supertype?.discriminable == true
         val methodBuilder =
             MethodSpec
                 .methodBuilder("process${subcategory.pascalCase()}")
@@ -172,7 +172,7 @@ class WebhooksBuilder {
                 .addAnnotation(createHeaderAnnotation(subcategory))
                 .returns(ParameterizedTypeName.get(ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"), TypeVariableName.get("T")))
                 .addException(Types.EXCEPTION)
-                .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
+                .addModifiers(Modifier.PUBLIC, if (isDiscriminable) Modifier.ABSTRACT else Modifier.DEFAULT)
         val headerNames =
             pathItem
                 .readOperationsMap()
@@ -196,20 +196,58 @@ class WebhooksBuilder {
         if (supertype != null && supertype.discriminable) {
             // Spring deserializes straight to the sealed supertype (via its @JsonSubTypes), so the
             // handler just pattern matches over the permitted subtypes — no manual JSON routing.
-            // The default dispatch still calls the per-event methods, which are deprecated.
             methodBuilder
-                .addAnnotation(suppressDeprecation())
                 .addParameter(buildTypedRequestBodyParameter(syntheticContext, supertype.supertype))
-                .addCode(buildTypedRouter(requestBodyTypes, headerNames))
-            interfaceBuilder.addMethod(methodBuilder.build())
+            val methodSpec = methodBuilder.build()
+            builders.interfaceBuilder.addMethod(methodSpec)
+            builders.testControllerBuilder.addMethod(
+                buildSyntheticTestControllerMethod("process${subcategory.pascalCase()}", methodSpec, requestBodyTypes).build(),
+            )
         } else {
             methodBuilder
                 .addParameter(buildRequestBodyParameter(syntheticContext))
                 .addCode(buildRouter(requestBodyTypes, subcategory, headerNames), ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"))
-            interfaceBuilder
+            builders.interfaceBuilder
                 .addMethod(methodBuilder.build())
                 .addMethod(getObjectMapperMethod())
         }
+    }
+
+    private fun buildSyntheticTestControllerMethod(
+        methodName: String,
+        interfaceMethod: MethodSpec,
+        requestBodyTypes: Map<String, Pair<String, ClassName>>,
+    ): MethodSpec.Builder {
+        val code = CodeBlock.builder()
+        code.add("return switch (requestBody) {\n")
+        requestBodyTypes.forEach { (name, methodNameAndType) ->
+            val (_, type) = methodNameAndType
+            code.add(
+                $$"    case $T body -> $T.ok($T.builder().webhookName($S).body(objectMapper.writeValueAsString(body)).build());\n",
+                type,
+                ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
+                TEST_RESPONSE,
+                name,
+            )
+        }
+        code.add("};\n")
+
+        val builder =
+            MethodSpec
+                .methodBuilder(methodName)
+                .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_JAVA_LANG, "Override")).build())
+                .addModifiers(Modifier.PUBLIC)
+                .returns(
+                    ParameterizedTypeName.get(
+                        ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
+                        TEST_RESPONSE,
+                    ),
+                )
+        interfaceMethod.parameters().forEach { t ->
+            builder.addParameter(ParameterSpec.builder(t.type(), t.name()).build())
+        }
+        builder.addCode(code.build())
+        return builder
     }
 
     private fun getObjectMapperMethod(): MethodSpec =
@@ -394,8 +432,6 @@ class WebhooksBuilder {
                     .addStatement("return this.objectMapper")
                     .build(),
             ).addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RestController")).build())
-            // Implements the deprecated per-event callbacks to exercise the default dispatch.
-            .addAnnotation(suppressDeprecation())
             .addAnnotation(
                 AnnotationSpec
                     .builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestMapping"))
@@ -419,10 +455,7 @@ class WebhooksBuilder {
         val (_, operation) = webhook.readOperationsMap().entries.first()
 
         val springEndpoint = builders.springEndpoint
-        // When the subcategory has a discriminable supertype, callers are steered towards the typed
-        // process<Subcategory> handler, so these per-event methods become optional, deprecated callbacks.
         val discriminableGroup = builders.supertype?.takeIf { it.discriminable }
-        val syntheticMethodName = builders.supertype?.let { "process${it.subcategory.pascalCase()}" }
 
         val methodName = "process" + operation.operationId.replace("/", "-").pascalCase()
         val context1 = context.withSchemaStack("#", "webhooks", name, "post")
@@ -430,15 +463,12 @@ class WebhooksBuilder {
             MethodSpec
                 .methodBuilder(methodName)
                 .addAnnotation(generated(0, context1))
-                .addModifiers(Modifier.PUBLIC, if (discriminableGroup != null) Modifier.DEFAULT else Modifier.ABSTRACT)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(
                     ParameterizedTypeName.get(ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"), TypeVariableName.get("T")),
                 )
         if (springEndpoint) {
             methodSpecBuilder.addAnnotation(createPostMappingAnnotation(name))
-        }
-        if (discriminableGroup != null) {
-            methodSpecBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_JAVA_LANG, "Deprecated")).build())
         }
 
         val requestBody = operation.requestBody
@@ -446,37 +476,22 @@ class WebhooksBuilder {
             ProcessingContext(restPackage, operation, methodSpecBuilder, context1, tests, builders, name, testResourcesDir, springEndpoint)
         val bodyType = processRequestBody(requestBody, processingContext)
 
-        if (discriminableGroup != null) {
-            methodSpecBuilder.addStatement(
-                $$"throw new $T($S)",
-                ClassName.get(PACKAGE_JAVA_LANG, "UnsupportedOperationException"),
-                "Implement $$syntheticMethodName and pattern match over ${discriminableGroup.supertype.simpleName()} instead.",
-            )
+        // Discriminable-group per-event methods are omitted from the interface — implementers use
+        // the typed abstract process<Subcategory> method and pattern-match on the sealed supertype.
+        if (discriminableGroup == null) {
+            val methodSpec =
+                methodSpecBuilder
+                    .addJavadoc($$"$L", buildJavadoc(operation).joinToString("\n"))
+                    .addException(Types.EXCEPTION)
+                    .build()
+            builders.interfaceBuilder.addMethod(methodSpec)
+
+            val testControllerMethod = buildTestControllerMethod(methodName, name)
+            methodSpec.parameters().forEach { t ->
+                testControllerMethod.addParameter(ParameterSpec.builder(t.type(), t.name()).build())
+            }
+            builders.testControllerBuilder.addMethod(testControllerMethod.build())
         }
-
-        val javadoc = buildJavadoc(operation).toMutableList()
-        if (discriminableGroup != null) {
-            javadoc.add("")
-            javadoc.add(
-                "@deprecated Prefer implementing {@code $syntheticMethodName} and pattern matching over " +
-                    "{@link ${discriminableGroup.supertype.simpleName()}}; this per-event method is only invoked by the " +
-                    "default {@code $syntheticMethodName} dispatch.",
-            )
-        }
-        val methodSpec =
-            methodSpecBuilder
-                .addJavadoc($$"$L", javadoc.joinToString("\n"))
-                .addException(Types.EXCEPTION)
-                .build()
-        builders.interfaceBuilder.addMethod(methodSpec)
-
-        val testControllerMethod = buildTestControllerMethod(methodName, name)
-
-        methodSpec.parameters().forEach { t ->
-            testControllerMethod.addParameter(ParameterSpec.builder(t.type(), t.name()).build())
-        }
-
-        builders.testControllerBuilder.addMethod(testControllerMethod.build())
 
         return bodyType
     }
@@ -485,12 +500,6 @@ class WebhooksBuilder {
         AnnotationSpec
             .builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "PostMapping"))
             .addMember("headers", $$"$S", "X-Github-Event=$name")
-            .build()
-
-    private fun suppressDeprecation(): AnnotationSpec =
-        AnnotationSpec
-            .builder(ClassName.get(PACKAGE_JAVA_LANG, "SuppressWarnings"))
-            .addMember("value", $$"$S", "deprecation")
             .build()
 
     companion object {
