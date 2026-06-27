@@ -1,0 +1,43 @@
+- request:
+    method: GET
+    uri: /orgs/example/members/rahulsom/copilot
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+    bodyIsBinary: false
+    body: |-
+      {
+        "created_at" : "2023-09-18T21:39:11-07:00",
+        "assignee" : {
+          "login" : "rahulsom",
+          "id" : 193047,
+          "node_id" : "MDQ6VXNlcjE5MzA0Nw==",
+          "avatar_url" : "https://avatars.githubusercontent.com/u/193047?v=4",
+          "gravatar_id" : "",
+          "url" : "https://api.github.com/users/rahulsom",
+          "html_url" : "https://github.com/rahulsom",
+          "followers_url" : "https://api.github.com/users/rahulsom/followers",
+          "following_url" : "https://api.github.com/users/rahulsom/following{/other_user}",
+          "gists_url" : "https://api.github.com/users/rahulsom/gists{/gist_id}",
+          "starred_url" : "https://api.github.com/users/rahulsom/starred{/owner}{/repo}",
+          "subscriptions_url" : "https://api.github.com/users/rahulsom/subscriptions",
+          "organizations_url" : "https://api.github.com/users/rahulsom/orgs",
+          "repos_url" : "https://api.github.com/users/rahulsom/repos",
+          "events_url" : "https://api.github.com/users/rahulsom/events{/privacy}",
+          "received_events_url" : "https://api.github.com/users/rahulsom/received_events",
+          "type" : "User",
+          "user_view_type" : "public",
+          "site_admin" : false
+        },
+        "pending_cancellation_date" : null,
+        "plan_type" : "business",
+        "last_authenticated_at" : "2026-06-27T16:14:35Z",
+        "updated_at" : "2024-10-15T00:00:00-07:00",
+        "last_activity_at" : "2026-06-27T09:14:32-07:00",
+        "last_activity_editor" : "unknown/GitHubCopilotChat/0.53.1"
+      }

@@ -3,7 +3,13 @@ package io.github.pulpogato.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.pulpogato.common.jackson.Jackson2OneOfDeserializer;
+import io.github.pulpogato.common.jackson.Jackson3OneOfDeserializer;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class NullableOptionalTest {
@@ -204,5 +210,85 @@ class NullableOptionalTest {
 
     static class TestWrapper {
         public NullableOptional<String> field = NullableOptional.notSet();
+    }
+
+    // -- NullableOptional<SealedInterface> tests ---------------------------------------------------
+    // This combination is the critical path: NullableOptionalJacksonNDeserializer reads the inner
+    // value via the interface's declared type, so the interface's @JsonDeserialize must be present
+    // on the type itself. The None.class reset on each member prevents the inherited annotation from
+    // causing a StackOverflowError when the inner deserializer tries a concrete subtype.
+
+    @tools.jackson.databind.annotation.JsonDeserialize(using = ColorJackson3Deserializer.class)
+    @JsonDeserialize(using = ColorJackson2Deserializer.class)
+    sealed interface Color permits RedColor, BlueColor {}
+
+    @tools.jackson.databind.annotation.JsonDeserialize(using = tools.jackson.databind.ValueDeserializer.None.class)
+    @JsonDeserialize(using = JsonDeserializer.None.class)
+    record RedColor(@JsonProperty("red") int red) implements Color {}
+
+    @tools.jackson.databind.annotation.JsonDeserialize(using = tools.jackson.databind.ValueDeserializer.None.class)
+    @JsonDeserialize(using = JsonDeserializer.None.class)
+    record BlueColor(@JsonProperty("blue") int blue) implements Color {}
+
+    static class ColorJackson3Deserializer extends Jackson3OneOfDeserializer<Color> {
+        public ColorJackson3Deserializer() {
+            super(Color.class, List.of(RedColor.class, BlueColor.class));
+        }
+    }
+
+    static class ColorJackson2Deserializer extends Jackson2OneOfDeserializer<Color> {
+        public ColorJackson2Deserializer() {
+            super(Color.class, List.of(RedColor.class, BlueColor.class));
+        }
+    }
+
+    static class ColorWrapper {
+        public NullableOptional<Color> color = NullableOptional.notSet();
+    }
+
+    @Test
+    void testNullableOptionalSealedInterfaceAbsentJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
+        var result = om.readValue("{}", ColorWrapper.class);
+        assertThat(result.color.isNotSet()).isTrue();
+    }
+
+    @Test
+    void testNullableOptionalSealedInterfaceNullJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
+        var result = om.readValue("{\"color\":null}", ColorWrapper.class);
+        assertThat(result.color.isNull()).isTrue();
+    }
+
+    @Test
+    void testNullableOptionalSealedInterfaceValueJackson3() {
+        var om = new tools.jackson.databind.ObjectMapper();
+        var result = om.readValue("{\"color\":{\"red\":255}}", ColorWrapper.class);
+        assertThat(result.color.isValue()).isTrue();
+        assertThat(result.color.getValue()).isInstanceOf(RedColor.class);
+        assertThat(((RedColor) result.color.getValue()).red()).isEqualTo(255);
+    }
+
+    @Test
+    void testNullableOptionalSealedInterfaceAbsentJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        var result = om.readValue("{}", ColorWrapper.class);
+        assertThat(result.color.isNotSet()).isTrue();
+    }
+
+    @Test
+    void testNullableOptionalSealedInterfaceNullJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        var result = om.readValue("{\"color\":null}", ColorWrapper.class);
+        assertThat(result.color.isNull()).isTrue();
+    }
+
+    @Test
+    void testNullableOptionalSealedInterfaceValueJackson2() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper().registerModule(new JavaTimeModule());
+        var result = om.readValue("{\"color\":{\"blue\":128}}", ColorWrapper.class);
+        assertThat(result.color.isValue()).isTrue();
+        assertThat(result.color.getValue()).isInstanceOf(BlueColor.class);
+        assertThat(((BlueColor) result.color.getValue()).blue()).isEqualTo(128);
     }
 }

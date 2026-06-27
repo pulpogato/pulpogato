@@ -23,6 +23,7 @@ data class Context(
     val schemaStack: List<String>,
     val addedProperties: Map<String, Map<String, String>> = emptyMap(),
     val discriminatedOneOfGroups: List<DiscriminatedOneOfGroups.Group> = emptyList(),
+    val nonDiscriminatedOneOfGroups: List<NonDiscriminatedOneOfGroups.Group> = emptyList(),
 ) {
     // Cached schema stack reference to avoid repeated string operations
     private val cachedSchemaStackRef: String by lazy { schemaStackRef(schemaStack) }
