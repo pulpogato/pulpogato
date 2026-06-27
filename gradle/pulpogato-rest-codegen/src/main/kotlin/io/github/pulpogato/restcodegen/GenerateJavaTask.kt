@@ -160,13 +160,15 @@ open class GenerateJavaTask : DefaultTask() {
         val openAPI = result.openAPI
         val version = projectName.get().replace("pulpogato-rest-", "")
 
-        val context = Context(openAPI, version, emptyList(), addedProperties)
+        val schemasPackage = "$packageNamePrefix.rest.schemas"
+        val discriminatedOneOfGroups = DiscriminatedOneOfGroups.compute(openAPI, schemasPackage)
+        val context = Context(openAPI, version, emptyList(), addedProperties, discriminatedOneOfGroups)
         val enumConverters = mutableSetOf<com.palantir.javapoet.ClassName>()
         var enumConverterPackageName = "$packageNamePrefix.rest.api"
         PathsBuilder().buildApis(context, main, test, "$packageNamePrefix.rest.api", enumConverterPackageName, enumConverters, false)
         PathsBuilder().buildApis(context, main, test, "$packageNamePrefix.rest.api.reactive", enumConverterPackageName, enumConverters, true)
         WebhooksBuilder().buildWebhooks(context, main, test, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks")
-        SchemasBuilder().buildSchemas(context, main, "$packageNamePrefix.rest.schemas", enumConverters)
+        SchemasBuilder().buildSchemas(context, main, schemasPackage, enumConverters)
         EnumConvertersBuilder().buildEnumConverters(context, main, enumConverterPackageName, enumConverters)
 
         // Format generated Java code
