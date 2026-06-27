@@ -34,6 +34,7 @@ import javax.lang.model.element.Modifier
 
 private const val PACKAGE_PULPOGATO_COMMON = "io.github.pulpogato.common"
 private const val PACKAGE_COMMONS_LANG3_BUILDER = "org.apache.commons.lang3.builder"
+private const val COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/"
 
 fun Map.Entry<String, Schema<*>>.className() = key.pascalCase()
 
@@ -108,6 +109,21 @@ private fun isOnlyForValidation(
     }
 }
 
+private fun findDiscriminatedGroup(
+    context: Context,
+    schema: Schema<*>,
+    oneOf: List<Schema<*>>?,
+) = if (oneOf != null && schema.discriminator != null) {
+    val memberKeys = oneOf.mapNotNull { it.`$ref`?.removePrefix(COMPONENTS_SCHEMAS_PREFIX) }
+    if (memberKeys.size == oneOf.size) {
+        context.discriminatedOneOfGroups.find { g -> g.memberSchemaKeys.toSet() == memberKeys.toSet() }
+    } else {
+        null
+    }
+} else {
+    null
+}
+
 fun referenceAndDefinition(
     context: Context,
     entry1: Map.Entry<String, Schema<*>?>,
@@ -128,6 +144,7 @@ fun referenceAndDefinition(
             ?.filter { it.types != setOf("null") }
     val oneOf = entry.value.oneOf?.filterNotNull()
     val allOf = entry.value.allOf?.filterNotNull()
+    val discriminatedGroup = findDiscriminatedGroup(context, entry.value, oneOf)
 
     return when {
         entry.key == "empty-object" -> {
@@ -180,6 +197,10 @@ fun referenceAndDefinition(
 
         oneOf != null && isOneOfOnlyForValidation(oneOf, entry.value) -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
+        }
+
+        discriminatedGroup != null -> {
+            Pair(discriminatedGroup.supertype.annotated(typeGenerated()), null)
         }
 
         oneOf != null -> {
@@ -374,7 +395,7 @@ private fun buildReferenceAndDefinitionFromRef(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
 ): Pair<TypeName, TypeSpec?> {
-    val schemaName = entry.value.`$ref`.replace("#/components/schemas/", "")
+    val schemaName = entry.value.`$ref`.replace(COMPONENTS_SCHEMAS_PREFIX, "")
     val entries =
         context.openAPI.components.schemas
             .filter { (k, _) -> k == schemaName }
@@ -464,7 +485,7 @@ private fun buildFancyObject(
         .mapIndexed { index, it ->
             var newKey = entry.key + index
             if (it.`$ref` != null) {
-                newKey = it.`$ref`.replace("#/components/schemas/", "")
+                newKey = it.`$ref`.replace(COMPONENTS_SCHEMAS_PREFIX, "")
             } else if (it.title != null) {
                 newKey = it.title
             }

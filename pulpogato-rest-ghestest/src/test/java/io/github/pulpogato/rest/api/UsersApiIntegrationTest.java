@@ -2,6 +2,7 @@ package io.github.pulpogato.rest.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.rest.schemas.PublicUser;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 
@@ -19,10 +20,8 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
 
-        assertThat(body.getPrivateUser()).isNotNull();
-        assertThat(body.getPublicUser()).isNull();
-
-        var user = body.getPrivateUser();
+        assertThat(body).isInstanceOf(PublicUser.class);
+        var user = (PublicUser) body;
 
         assertThat(user.getLogin()).isEqualTo("user1");
         assertThat(user.getName()).isEqualTo("User One");
@@ -48,10 +47,8 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
 
-        assertThat(body.getPrivateUser()).isNotNull();
-        assertThat(body.getPublicUser()).isNull();
-
-        var user = body.getPrivateUser();
+        assertThat(body).isInstanceOf(PublicUser.class);
+        var user = (PublicUser) body;
 
         assertThat(user.getLogin()).isEqualTo("user2");
         assertThat(user.getName()).isEqualTo("User Two");

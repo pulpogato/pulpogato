@@ -17,6 +17,7 @@ class SchemasBuilder {
     private companion object {
         // jackson-annotations keeps this package for both Jackson 2 and Jackson 3.
         const val PACKAGE_JACKSON_ANNOTATION = "com.fasterxml.jackson.annotation"
+        const val TYPE_CLASS_FORMAT = "\$T.class"
     }
 
     fun buildSchemas(
@@ -31,13 +32,15 @@ class SchemasBuilder {
         // sealed supertype so callers can pattern match. Work out which body schemas belong to a
         // group before generating, so each member class can be tagged as a permitted subtype.
         val supertypeGroups = WebhookSupertypes.compute(openAPI, packageName)
+        val discriminatedGroups = context.discriminatedOneOfGroups
         // A body schema can belong to more than one subcategory (e.g. the `exemption-request-*` bodies
         // are shared by several `*_request_*` events), so a member may be permitted by multiple sealed
-        // interfaces and must implement all of them.
+        // interfaces and must implement all of them. Discriminated REST API oneOf groups are included.
         val schemaKeyToSupertypes =
-            supertypeGroups
-                .flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } }
-                .groupBy({ it.first }, { it.second })
+            (
+                supertypeGroups.flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } } +
+                    discriminatedGroups.flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } }
+            ).groupBy({ it.first }, { it.second })
 
         // Captured per member schema so we can later derive the getters common to every member.
         val memberFieldsByKey = mutableMapOf<String, Map<String, TypeName>>()
@@ -67,6 +70,7 @@ class SchemasBuilder {
         }
 
         writeWebhookSupertypeInterfaces(context, mainDir, packageName, supertypeGroups, memberFieldsByKey)
+        writeDiscriminatedOneOfInterfaces(context, mainDir, packageName, discriminatedGroups, memberFieldsByKey)
     }
 
     /**
@@ -81,47 +85,136 @@ class SchemasBuilder {
         memberFieldsByKey: Map<String, Map<String, TypeName>>,
     ) {
         groups.forEach { group ->
-            val memberFields = group.memberSchemaKeys.map { memberFieldsByKey[it] }
-            // Skip if any member did not generate as a class; otherwise `permits` would dangle.
-            if (memberFields.any { it == null }) return@forEach
-            val present = memberFields.filterNotNull()
-            val commonFields = present.first().filter { (name, type) -> present.all { it[name] == type } }
+            val annotations =
+                if (group.discriminable) jsonSubTypesAnnotations(packageName, group) else emptyList()
+            writeSealedInterface(
+                context,
+                mainDir,
+                packageName,
+                group.supertype,
+                group.memberSchemaKeys,
+                "A sealed supertype for the <code>${group.subcategory}</code> webhook payloads, " +
+                    "exposing the fields common to every event variant.\n" +
+                    "<br/>Use pattern matching over the permitted subtypes to handle individual variants.",
+                annotations,
+                memberFieldsByKey,
+            )
+        }
+    }
 
-            val builder =
-                TypeSpec
-                    .interfaceBuilder(group.supertype)
-                    .addModifiers(Modifier.PUBLIC, Modifier.SEALED)
-                    .addSuperinterface(ClassName.get(Types.COMMON_PACKAGE, "PulpogatoType"))
-                    .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
-                    .addJavadoc(
-                        $$"$L",
-                        "A sealed supertype for the <code>${group.subcategory}</code> webhook payloads, " +
-                            "exposing the fields common to every event variant.\n" +
-                            "<br/>Use pattern matching over the permitted subtypes to handle individual variants.",
-                    )
+    /**
+     * Emits one sealed interface per discriminated REST API oneOf group.
+     *
+     * Each interface is annotated with `@JsonTypeInfo` and `@JsonSubTypes` so Jackson can pick the
+     * correct concrete subtype directly from the discriminator property in the payload.
+     */
+    private fun writeDiscriminatedOneOfInterfaces(
+        context: Context,
+        mainDir: File,
+        packageName: String,
+        groups: List<DiscriminatedOneOfGroups.Group>,
+        memberFieldsByKey: Map<String, Map<String, TypeName>>,
+    ) {
+        groups.forEach { group ->
+            writeSealedInterface(
+                context,
+                mainDir,
+                packageName,
+                group.supertype,
+                group.memberSchemaKeys,
+                "A sealed supertype for the <code>${group.discriminatorProperty}</code>-discriminated oneOf, " +
+                    "deserializable directly via Jackson using the discriminator property.\n" +
+                    "<br/>Use pattern matching over the permitted subtypes to handle each variant.",
+                jsonDiscriminatorAnnotations(packageName, group),
+                memberFieldsByKey,
+            )
+        }
+    }
 
-            // When every member is distinguished by a distinct `action` value, wire up Jackson so the
-            // supertype deserializes straight to the right subtype.
-            if (group.discriminable) {
-                jsonSubTypesAnnotations(packageName, group).forEach { builder.addAnnotation(it) }
-            }
+    private fun writeSealedInterface(
+        context: Context,
+        mainDir: File,
+        packageName: String,
+        supertype: ClassName,
+        memberSchemaKeys: List<String>,
+        javadoc: String,
+        annotations: List<AnnotationSpec>,
+        memberFieldsByKey: Map<String, Map<String, TypeName>>,
+    ) {
+        val memberFields = memberSchemaKeys.map { memberFieldsByKey[it] }
+        // Skip if any member did not generate as a class; otherwise `permits` would dangle.
+        if (memberFields.any { it == null }) return
+        val present = memberFields.filterNotNull()
+        val commonFields = present.first().filter { (name, type) -> present.all { it[name] == type } }
 
-            group.memberSchemaKeys.forEach { key ->
-                builder.addPermittedSubclass(ClassName.get(packageName, key.pascalCase()))
-            }
+        val builder =
+            TypeSpec
+                .interfaceBuilder(supertype)
+                .addModifiers(Modifier.PUBLIC, Modifier.SEALED)
+                .addSuperinterface(ClassName.get(Types.COMMON_PACKAGE, "PulpogatoType"))
+                .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
+                .addJavadoc($$"$L", javadoc)
 
-            commonFields.forEach { (name, type) ->
-                builder.addMethod(
-                    MethodSpec
-                        .methodBuilder("get${name.pascalCase()}")
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(type)
+        annotations.forEach { builder.addAnnotation(it) }
+
+        memberSchemaKeys.forEach { key ->
+            builder.addPermittedSubclass(ClassName.get(packageName, key.pascalCase()))
+        }
+
+        commonFields.forEach { (name, type) ->
+            builder.addMethod(
+                MethodSpec
+                    .methodBuilder("get${name.pascalCase()}")
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .returns(type)
+                    .build(),
+            )
+        }
+
+        JavaFile.builder(packageName, builder.build()).build().writeTo(mainDir)
+    }
+
+    /**
+     * Builds the `@JsonTypeInfo` / `@JsonSubTypes` pair for a discriminated REST API oneOf group.
+     *
+     * Uses `EXISTING_PROPERTY` so the discriminator field stays in the payload and each subtype
+     * continues to deserialize it into its own field.
+     */
+    private fun jsonDiscriminatorAnnotations(
+        packageName: String,
+        group: DiscriminatedOneOfGroups.Group,
+    ): List<AnnotationSpec> {
+        val jsonTypeInfo = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonTypeInfo")
+        val jsonSubTypes = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes")
+        val subTypesType = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes", "Type")
+
+        val defaultImplClass = ClassName.get(packageName, group.memberSchemaKeys.first().pascalCase())
+        val typeInfo =
+            AnnotationSpec
+                .builder(jsonTypeInfo)
+                .addMember("use", $$"$T.Id.NAME", jsonTypeInfo)
+                .addMember("include", $$"$T.As.EXISTING_PROPERTY", jsonTypeInfo)
+                .addMember("property", $$"$S", group.discriminatorProperty)
+                .addMember("defaultImpl", TYPE_CLASS_FORMAT, defaultImplClass)
+                .build()
+
+        val subTypes = AnnotationSpec.builder(jsonSubTypes)
+        group.memberSchemaKeys.forEach { key ->
+            val memberClass = ClassName.get(packageName, key.pascalCase())
+            group.valuesByKey[key].orEmpty().forEach { value ->
+                subTypes.addMember(
+                    "value",
+                    $$"$L",
+                    AnnotationSpec
+                        .builder(subTypesType)
+                        .addMember("value", TYPE_CLASS_FORMAT, memberClass)
+                        .addMember("name", $$"$S", value)
                         .build(),
                 )
             }
-
-            JavaFile.builder(packageName, builder.build()).build().writeTo(mainDir)
         }
+
+        return listOf(typeInfo, subTypes.build())
     }
 
     /**
@@ -159,7 +252,7 @@ class SchemasBuilder {
                     $$"$L",
                     AnnotationSpec
                         .builder(subTypesType)
-                        .addMember("value", $$"$T.class", memberClass)
+                        .addMember("value", TYPE_CLASS_FORMAT, memberClass)
                         .addMember("name", $$"$S", value)
                         .build(),
                 )

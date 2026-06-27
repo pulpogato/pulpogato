@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import io.github.pulpogato.rest.schemas.BasicError;
 import io.github.pulpogato.rest.schemas.PrivateUser;
+import io.github.pulpogato.rest.schemas.PublicUser;
 import io.github.pulpogato.rest.schemas.SimpleUser;
 import io.github.pulpogato.rest.schemas.ValidationErrorSimple;
 import java.util.List;
@@ -23,18 +24,17 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         var authenticated = api.getAuthenticated(); // <4>
         // end::getAuthenticatedPublic[]
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
+        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PublicUser.class);
         // tag::getBody[]
         var body = authenticated.getBody();
         // end::getBody[]
-        // TODO: This should be a PublicUser
         // tag::getUser[]
-        var privateUser = body.getPrivateUser();
+        assertThat(body).isInstanceOf(PublicUser.class);
+        var publicUser = (PublicUser) body;
         // end::getUser[]
-        assertThat(body.getPrivateUser()).isNotNull();
-        assertThat(privateUser.getId()).isEqualTo(193047L);
+        assertThat(publicUser.getId()).isEqualTo(193047L);
         // tag::getLogin[]
-        var login = privateUser.getLogin();
+        var login = publicUser.getLogin();
         // end::getLogin[]
         assertThat(login).isEqualTo("rahulsom");
     }
@@ -44,11 +44,11 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getUsersApi();
         var authenticated = api.getAuthenticated();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(UsersApi.GetAuthenticated200.class);
+        assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PrivateUser.class);
         var body = authenticated.getBody();
 
-        assertThat(body.getPrivateUser()).isNotNull();
-        var privateUser = body.getPrivateUser();
+        assertThat(body).isInstanceOf(PrivateUser.class);
+        var privateUser = (PrivateUser) body;
         assertThat(privateUser.getId()).isEqualTo(193047L);
         assertThat(privateUser.getLogin()).isEqualTo("rahulsom");
         assertThat(privateUser.getPlan()).isNotNull();
@@ -263,13 +263,8 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
-        assertThat(response.getBody()).isNotNull();
-        var body = response.getBody();
-
-        // TODO: This should be a PublicUser
-        assertThat(body.getPrivateUser()).isNotNull();
-
-        var user = body.getPrivateUser();
+        assertThat(response.getBody()).isNotNull().isInstanceOf(PublicUser.class);
+        var user = (PublicUser) response.getBody();
 
         assertThat(user.getLogin()).isEqualTo("sghill");
         assertThat(user.getName()).isEqualTo("Steve Hill");
@@ -291,13 +286,8 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
-        assertThat(response.getBody()).isNotNull();
-        var body = response.getBody();
-
-        // TODO: This should be a PublicUser
-        assertThat(body.getPrivateUser()).isNotNull();
-
-        var user = body.getPrivateUser();
+        assertThat(response.getBody()).isNotNull().isInstanceOf(PublicUser.class);
+        var user = (PublicUser) response.getBody();
 
         assertThat(user.getLogin()).isEqualTo("sghill");
         assertThat(user.getName()).isEqualTo("Steve Hill");
