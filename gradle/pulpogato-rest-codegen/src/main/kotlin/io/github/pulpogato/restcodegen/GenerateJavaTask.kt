@@ -162,9 +162,11 @@ open class GenerateJavaTask : DefaultTask() {
 
         val schemasPackage = "$packageNamePrefix.rest.schemas"
         val discriminatedOneOfGroups = DiscriminatedOneOfGroups.compute(openAPI, schemasPackage)
-        val context = Context(openAPI, version, emptyList(), addedProperties, discriminatedOneOfGroups)
+        val nonDiscriminatedOneOfGroups = NonDiscriminatedOneOfGroups.compute(openAPI, schemasPackage)
+        val context =
+            Context(openAPI, version, emptyList(), addedProperties, discriminatedOneOfGroups, nonDiscriminatedOneOfGroups)
         val enumConverters = mutableSetOf<com.palantir.javapoet.ClassName>()
-        var enumConverterPackageName = "$packageNamePrefix.rest.api"
+        val enumConverterPackageName = "$packageNamePrefix.rest.api"
         PathsBuilder().buildApis(context, main, test, "$packageNamePrefix.rest.api", enumConverterPackageName, enumConverters, false)
         PathsBuilder().buildApis(context, main, test, "$packageNamePrefix.rest.api.reactive", enumConverterPackageName, enumConverters, true)
         WebhooksBuilder().buildWebhooks(context, main, test, "$packageNamePrefix.rest", "$packageNamePrefix.rest.webhooks")

@@ -124,6 +124,18 @@ private fun findDiscriminatedGroup(
     null
 }
 
+private fun findNonDiscriminatedGroup(
+    context: Context,
+    schema: Schema<*>,
+    oneOf: List<Schema<*>>?,
+) = if (oneOf != null && schema.discriminator == null) {
+    // Interfaces are identified by where the oneOf occurs, so match on the current schema location
+    // rather than the member set (two locations may share a member set but get distinct interfaces).
+    context.nonDiscriminatedOneOfGroups.find { g -> g.locationRef == context.getSchemaStackRef() }
+} else {
+    null
+}
+
 fun referenceAndDefinition(
     context: Context,
     entry1: Map.Entry<String, Schema<*>?>,
@@ -145,6 +157,7 @@ fun referenceAndDefinition(
     val oneOf = entry.value.oneOf?.filterNotNull()
     val allOf = entry.value.allOf?.filterNotNull()
     val discriminatedGroup = findDiscriminatedGroup(context, entry.value, oneOf)
+    val nonDiscriminatedGroup = findNonDiscriminatedGroup(context, entry.value, oneOf)
 
     return when {
         entry.key == "empty-object" -> {
@@ -201,6 +214,10 @@ fun referenceAndDefinition(
 
         discriminatedGroup != null -> {
             Pair(discriminatedGroup.supertype.annotated(typeGenerated()), null)
+        }
+
+        nonDiscriminatedGroup != null -> {
+            Pair(nonDiscriminatedGroup.supertype.annotated(typeGenerated()), null)
         }
 
         oneOf != null -> {
