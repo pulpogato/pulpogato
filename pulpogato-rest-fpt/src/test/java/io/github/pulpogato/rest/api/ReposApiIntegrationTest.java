@@ -8,6 +8,7 @@ import io.github.pulpogato.common.SingularOrPlural;
 import io.github.pulpogato.rest.schemas.ContentFile;
 import io.github.pulpogato.rest.schemas.CustomPropertyValue;
 import io.github.pulpogato.rest.schemas.FullRepository;
+import io.github.pulpogato.rest.schemas.RulesetVersion;
 import io.github.pulpogato.rest.schemas.SecurityAndAnalysis;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -481,5 +482,39 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(securityAndAnalysis.getSecretScanningNonProviderPatterns().getStatus())
                 .isEqualTo(SecurityAndAnalysis.SecretScanningNonProviderPatterns.Status.DISABLED);
         assertThat(securityAndAnalysis.getSecretScanningAiDetection()).isNull();
+    }
+
+    private static final Long DEFAULT_BRANCH_RULESET_ID = 1115480L;
+    private static final Long RULESET_VERSION_ID = 41470112L;
+
+    /**
+     * Locks in the public API of an {@code allOf} schema returned by a REST endpoint.
+     *
+     * <p>{@code GET /repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}} returns
+     * {@code ruleset-version-with-state}, described as
+     * {@code allOf: [{$ref: ruleset-version}, {properties: {state}}]}, which the codegen models as
+     * {@code RulesetVersionWithState extends RulesetVersion}. The inherited version fields and the
+     * added {@code state} must both be reachable on the same object; if the generator regressed to the
+     * old wrapper-with-an-indexed-field shape this test would not compile.
+     */
+    @Test
+    void testGetRepoRulesetVersion() {
+        var api = new RestClients(webClient).getReposApi();
+        var response =
+                api.getRepoRulesetVersion("pulpogato", "pulpogato", DEFAULT_BRANCH_RULESET_ID, RULESET_VERSION_ID);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        var version = response.getBody();
+        assertThat(version).isNotNull();
+
+        // The generated type extends the referenced RulesetVersion, so it is-a RulesetVersion...
+        assertThat(version).isInstanceOf(RulesetVersion.class);
+
+        // ...exposing the inherited version fields directly on the same object...
+        assertThat(version.getVersionId()).isEqualTo(RULESET_VERSION_ID);
+        assertThat(version.getUpdatedAt()).isNotNull();
+
+        // ...plus the inline allOf member (state) as the subclass's own accessor.
+        assertThat(version.getState()).isNotNull().isNotEmpty();
     }
 }

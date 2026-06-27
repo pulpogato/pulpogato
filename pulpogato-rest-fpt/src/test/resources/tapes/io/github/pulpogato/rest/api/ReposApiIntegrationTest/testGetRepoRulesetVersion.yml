@@ -1,0 +1,53 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/pulpogato/rulesets/1115480/history/41470112
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+    bodyIsBinary: false
+    body: |-
+      {
+        "version_id" : 41470112,
+        "updated_at" : "2026-06-27T14:23:43.456-07:00",
+        "actor" : {
+          "id" : 193047,
+          "type" : "User"
+        },
+        "state" : {
+          "id" : 1115480,
+          "name" : "Default Branch",
+          "target" : "branch",
+          "source_type" : "Repository",
+          "source" : "pulpogato/pulpogato",
+          "enforcement" : "active",
+          "conditions" : {
+            "ref_name" : {
+              "exclude" : [ ],
+              "include" : [ "~DEFAULT_BRANCH" ]
+            }
+          },
+          "rules" : [ {
+            "type" : "deletion"
+          }, {
+            "type" : "non_fast_forward"
+          }, {
+            "type" : "required_status_checks",
+            "parameters" : {
+              "strict_required_status_checks_policy" : false,
+              "do_not_enforce_on_create" : false,
+              "required_status_checks" : [ {
+                "context" : "Build with Gradle",
+                "integration_id" : 15368
+              } ]
+            }
+          } ],
+          "updated_at" : null,
+          "bypass_actors" : [ ],
+          "current_user_can_bypass" : "never"
+        }
+      }

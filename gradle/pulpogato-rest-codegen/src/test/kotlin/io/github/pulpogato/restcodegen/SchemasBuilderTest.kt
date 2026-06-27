@@ -91,6 +91,134 @@ class SchemasBuilderTest {
             .contains("getWebhookComboComposite1()")
     }
 
+    @Test
+    fun `allOf of a single ref schema collapses to the referenced type`() {
+        generate(allOfSampleOpenAPI())
+
+        // `creator` is `allOf: [{$ref: simple-user}]`, which adds nothing, so the field is typed
+        // directly as the referenced type with no synthetic wrapper class.
+        assertThat(readGenerated("CreatorWrapper"))
+            .contains("private SimpleUser creator;")
+            .doesNotContain("class Creator implements")
+    }
+
+    @Test
+    fun `allOf of a ref plus inline object extends the referenced type`() {
+        generate(allOfSampleOpenAPI())
+
+        val releaseEvent = readGenerated("ReleaseEvent")
+        assertThat(releaseEvent)
+            // The inline extension becomes a subclass of the referenced base type...
+            .contains("class Release extends io.github.pulpogato.rest.schemas.Release")
+            .contains("extends io.github.pulpogato.rest.schemas.Release.ReleaseBuilder<C, B>")
+            .contains("super(b)")
+            // ...exposing only the inline properties as its own fields.
+            .contains("getShortDescriptionHtml()")
+            .contains("getIsShortDescriptionHtmlTruncated()")
+            // No runtime merge machinery and no meaningless indexed field.
+            .doesNotContain("FancySerializer")
+            .doesNotContain("release1")
+    }
+
+    @Test
+    fun `allOf of only inline objects flattens their properties into one object`() {
+        generate(allOfSampleOpenAPI())
+
+        val forkEvent = readGenerated("ForkEvent")
+        assertThat(forkEvent)
+            .contains("public static class Forkee implements PulpogatoType")
+            // Properties from both inline members live directly on the single flattened class.
+            .contains("getNodeId()")
+            .contains("getFullName()")
+            .doesNotContain("FancySerializer")
+            .doesNotContain("forkee1")
+    }
+
+    @Test
+    fun `allOf of multiple refs keeps the runtime merge serializer`() {
+        generate(allOfSampleOpenAPI())
+
+        // Two $refs cannot be expressed via single inheritance, so the merge serializer is retained.
+        assertThat(readGenerated("Combo"))
+            .contains("FancySerializer")
+    }
+
+    /**
+     * A spec exercising each allOf shape as a property: a single-ref alias, a ref + inline extension,
+     * a flatten of inline-only members, and a multi-ref merge.
+     */
+    private fun allOfSampleOpenAPI(): OpenAPI {
+        val stringSchema = { Schema<Any>().apply { types = mutableSetOf("string") } }
+        val booleanSchema = { Schema<Any>().apply { types = mutableSetOf("boolean") } }
+        val refSchema = { ref: String -> Schema<Any>().apply { `$ref` = ref } }
+        val objectSchema = { props: Map<String, Schema<Any>> ->
+            Schema<Any>().apply {
+                types = mutableSetOf("object")
+                properties = LinkedHashMap(props)
+            }
+        }
+        val allOfSchema = { members: List<Schema<Any>> ->
+            Schema<Any>().apply { allOf = members }
+        }
+
+        val openAPI = OpenAPI()
+        openAPI.schema("simple-user", objectSchema(mapOf("login" to stringSchema())))
+        openAPI.schema("release", objectSchema(mapOf("id" to stringSchema(), "name" to stringSchema())))
+
+        openAPI.schema(
+            "creator-wrapper",
+            objectSchema(mapOf("creator" to allOfSchema(listOf(refSchema("#/components/schemas/simple-user"))))),
+        )
+        openAPI.schema(
+            "release-event",
+            objectSchema(
+                mapOf(
+                    "release" to
+                        allOfSchema(
+                            listOf(
+                                refSchema("#/components/schemas/release"),
+                                objectSchema(
+                                    mapOf(
+                                        "short_description_html" to stringSchema(),
+                                        "is_short_description_html_truncated" to booleanSchema(),
+                                    ),
+                                ),
+                            ),
+                        ),
+                ),
+            ),
+        )
+        openAPI.schema(
+            "fork-event",
+            objectSchema(
+                mapOf(
+                    "forkee" to
+                        allOfSchema(
+                            listOf(
+                                objectSchema(mapOf("node_id" to stringSchema())),
+                                objectSchema(mapOf("full_name" to stringSchema())),
+                            ),
+                        ),
+                ),
+            ),
+        )
+        openAPI.schema(
+            "combo",
+            objectSchema(
+                mapOf(
+                    "both" to
+                        allOfSchema(
+                            listOf(
+                                refSchema("#/components/schemas/simple-user"),
+                                refSchema("#/components/schemas/release"),
+                            ),
+                        ),
+                ),
+            ),
+        )
+        return openAPI
+    }
+
     private fun generate(openAPI: OpenAPI) {
         val context = Context(openAPI, "test", emptyList(), emptyMap())
         SchemasBuilder().buildSchemas(context, tempDir.toFile(), packageName, mutableSetOf<ClassName>())

@@ -209,9 +209,52 @@ fun referenceAndDefinition(
             }
         }
 
+        allOf != null && allOf.size == 1 -> {
+            // A single-member allOf adds nothing structurally; collapse it to that member directly
+            // (GitHub commonly uses this just to attach a description to a $ref).
+            referenceAndDefinition(
+                context.withSchemaStack("allOf", "0"),
+                mapOf(entry.key to allOf.first()).entries.first(),
+                prefix,
+                parentClass,
+            )!!
+        }
+
         allOf != null -> {
-            buildType("${prefix}${entry.className()}", parentClass) {
-                buildFancyObject(context, entry, allOf, "allOf", it)
+            val inlines = allOf.filter { it.`$ref` == null }
+            val refs = allOf.filter { it.`$ref` != null }
+            val allInlinesMergeable = inlines.isNotEmpty() && inlines.all { isMergeableInlineObject(it) }
+            val extendableRef = if (refs.size == 1) extendableRefName(context, refs.first()) else null
+            when {
+                // One extendable $ref plus inline property objects: model it as a subclass of the
+                // referenced type that adds the inline properties, instead of a wrapper with a
+                // meaningless "release1"-style field.
+                extendableRef != null && allInlinesMergeable -> {
+                    buildType("${prefix}${entry.className()}", parentClass) {
+                        buildAllOfObject(
+                            context,
+                            entry,
+                            allOf,
+                            it,
+                            ClassName.get("io.github.pulpogato.rest.schemas", extendableRef.pascalCase()),
+                            extendableRef,
+                        )
+                    }
+                }
+
+                // Only inline property objects: flatten their properties into a single object.
+                refs.isEmpty() && allInlinesMergeable -> {
+                    buildType("${prefix}${entry.className()}", parentClass) {
+                        buildAllOfObject(context, entry, allOf, it, null, null)
+                    }
+                }
+
+                // Anything else (e.g. multiple $refs) keeps the runtime merge serializer.
+                else -> {
+                    buildType("${prefix}${entry.className()}", parentClass) {
+                        buildFancyObject(context, entry, allOf, "allOf", it)
+                    }
+                }
             }
         }
 
@@ -431,6 +474,7 @@ private fun addStandardMethodsAndBuilderLogic(
     builder: TypeSpec.Builder,
     fieldSpecs: List<FieldSpec>,
     classRef: ClassName,
+    superType: ClassName? = null,
 ) {
     // Generate all methods
     fieldSpecs.forEach { field ->
@@ -446,13 +490,15 @@ private fun addStandardMethodsAndBuilderLogic(
         .addMethod(generateToString())
         .addMethod(generateNoArgsConstructor())
 
-    if (fieldSpecs.isNotEmpty()) {
-        builder.addMethod(generateAllArgsConstructor(classRef, fieldSpecs))
+    // A subclass always needs an all-args constructor so its SuperBuilder can wire up the
+    // inherited base via super(b), even when it adds no fields of its own.
+    if (fieldSpecs.isNotEmpty() || superType != null) {
+        builder.addMethod(generateAllArgsConstructor(classRef, fieldSpecs, superType))
     }
 
     // Add builder pattern
     builder
-        .addType(generateBuilderClass(classRef, fieldSpecs))
+        .addType(generateBuilderClass(classRef, fieldSpecs, superType))
         .addType(generateBuilderImplClass(classRef))
         .addMethod(generateBuilderFactoryMethod(classRef))
         .addMethod(generateToBuilderMethod(classRef))
@@ -594,6 +640,11 @@ private fun copyTypeSpecToBuilderWithFilteredTypes(
         }
     original.annotations().forEach { builder.addAnnotation(it) }
     original.modifiers().forEach { builder.addModifiers(it) }
+    // Preserve an explicit superclass (e.g. an allOf object that extends a referenced base type).
+    // Enums cannot declare a superclass, and Object is the implicit default, so skip both.
+    if (original.kind() != TypeSpec.Kind.ENUM) {
+        original.superclass()?.takeIf { it != Types.OBJECT }?.let { builder.superclass(it) }
+    }
     original.superinterfaces().forEach { builder.addSuperinterface(it) }
     original.fieldSpecs().forEach { builder.addField(it) }
     original.typeSpecs().filter(typeSpecFilter).forEach { builder.addType(it) }
@@ -812,6 +863,162 @@ private fun buildDeserializer(
                 ).build(),
         ).build()
 
+/**
+ * An inline (non-{@code $ref}) allOf member is "mergeable" when it is a plain object that only
+ * contributes named properties. Such members can be flattened into the surrounding type rather
+ * than being wrapped in their own nested class.
+ */
+private fun isMergeableInlineObject(sub: Schema<*>): Boolean =
+    sub.`$ref` == null &&
+        sub.oneOf == null &&
+        sub.anyOf == null &&
+        sub.allOf == null &&
+        sub.enum == null &&
+        sub.properties != null &&
+        sub.properties.isNotEmpty()
+
+/**
+ * Returns the schema name of a {@code $ref} member when the referenced schema is a plain object
+ * that can serve as a Java superclass (it generates a regular class with the SuperBuilder pattern).
+ * Returns null when the referent is a union, enum, map, or otherwise not safely extendable.
+ */
+private fun extendableRefName(
+    context: Context,
+    refMember: Schema<*>,
+): String? {
+    val name = refMember.`$ref`?.removePrefix(COMPONENTS_SCHEMAS_PREFIX) ?: return null
+    val target =
+        context.openAPI.components
+            ?.schemas
+            ?.get(name) ?: return null
+    val isPlainObject =
+        target.`$ref` == null &&
+            target.oneOf == null &&
+            target.anyOf == null &&
+            target.allOf == null &&
+            target.enum == null &&
+            target.discriminator == null &&
+            target.properties != null &&
+            target.properties.isNotEmpty()
+    return if (isPlainObject) name else null
+}
+
+/**
+ * Builds the class for an allOf composed of plain inline objects, optionally extending a referenced
+ * base type.
+ *
+ * When [superType] is non-null the generated class {@code extends} that base type and declares only
+ * the inline properties (the base properties are inherited). When it is null the inline properties
+ * from every member are flattened into a single standalone object.
+ *
+ * Unlike [buildFancyObject], this produces an ordinary POJO that Jackson serializes via field
+ * access, so no custom merge serializer/deserializer is required.
+ */
+private fun buildAllOfObject(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+    allOf: List<Schema<Any>>,
+    nameRef: ClassName,
+    superType: ClassName?,
+    baseRefName: String?,
+): TypeSpec {
+    val name = nameRef.simpleName()
+
+    val builder =
+        TypeSpec
+            .classBuilder(name)
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(generated(0, context.withSchemaStack("allOf")))
+            .addAnnotation(jsonIncludeNonNull())
+            .addSuperinterface(ClassName.get(PACKAGE_PULPOGATO_COMMON, "PulpogatoType"))
+
+    superType?.let { builder.superclass(it) }
+
+    schemaJavadoc(entry).let {
+        if (it.isNotBlank()) {
+            builder.addJavadoc($$"$L", it)
+        }
+    }
+
+    // Collect parent property names upfront so inline allOf members don't re-declare fields that
+    // are already inherited, which would cause Java type-erasure clashes (e.g. getMembers() with
+    // incompatible List element types in parent vs. child).
+    val baseProperties: List<String> =
+        if (baseRefName != null) {
+            context.openAPI.components
+                ?.schemas
+                ?.get(baseRefName)
+                ?.properties
+                ?.keys
+                ?.map { it.unkeywordize().camelCase() }
+                ?: emptyList()
+        } else {
+            emptyList()
+        }
+    val parentPropertyNames = baseProperties.toSet()
+
+    // Properties declared directly on the allOf schema (rare, but allowed at the same level).
+    if (entry.value.properties?.isNotEmpty() == true) {
+        addProperties(context, entry, nameRef, builder)
+    }
+
+    // Properties contributed by each inline member, skipping any that are already defined in the
+    // parent schema to avoid incompatible override errors in the generated Java code.
+    allOf.forEachIndexed { index, sub ->
+        if (sub.`$ref` == null) {
+            addProperties(context.withSchemaStack("allOf", "$index"), mapOf(entry.key to sub).entries.first(), nameRef, builder, parentPropertyNames)
+        }
+    }
+
+    val fieldSpecs = builder.build().fieldSpecs()
+
+    addStandardMethodsAndBuilderLogic(builder, fieldSpecs, nameRef, superType)
+
+    if (baseRefName != null) {
+        addExtendingToCodeMethod(fieldSpecs, baseProperties, builder, nameRef)
+    } else {
+        addToCodeMethod(fieldSpecs, builder, nameRef)
+    }
+
+    return builder.build()
+}
+
+/**
+ * Generates a {@code toCode} method for a subclass-style allOf object. Inherited base properties are
+ * read through their getters (their backing fields are private to the superclass), while the
+ * declared inline fields are referenced directly.
+ */
+private fun addExtendingToCodeMethod(
+    inlineFields: List<FieldSpec>,
+    baseProperties: List<String>,
+    builder: TypeSpec.Builder,
+    nameRef: ClassName,
+) {
+    val toCodeStatement =
+        CodeBlock
+            .builder()
+            .add($$"return new $T($S)", Types.CODE_BUILDER, nameRef.canonicalName())
+
+    baseProperties.forEach { camelName ->
+        toCodeStatement.add($$"\n    .addProperty($S, get$L())", camelName, camelName.pascalCase())
+    }
+
+    inlineFields.forEach { field ->
+        toCodeStatement.add($$"\n    .addProperty($S, $N)", field.name(), field.name())
+    }
+
+    toCodeStatement.add("\n    .build()")
+
+    builder.addMethod(
+        MethodSpec
+            .methodBuilder("toCode")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(String::class.java)
+            .addStatement(toCodeStatement.build())
+            .build(),
+    )
+}
+
 private fun buildSimpleObject(
     context: Context,
     entry: Map.Entry<String, Schema<*>>,
@@ -966,6 +1173,7 @@ private fun generateNoArgsConstructor(): MethodSpec =
 private fun generateAllArgsConstructor(
     className: ClassName,
     fields: List<FieldSpec>,
+    superType: ClassName? = null,
 ): MethodSpec {
     val builderClassName = className.nestedClass("${className.simpleName()}Builder")
     val wildcardBuilder =
@@ -980,6 +1188,11 @@ private fun generateAllArgsConstructor(
             .constructorBuilder()
             .addModifiers(Modifier.PROTECTED)
             .addParameter(wildcardBuilder, "b")
+
+    // Let the base SuperBuilder populate the inherited fields before we set our own.
+    if (superType != null) {
+        builder.addStatement("super(b)")
+    }
 
     fields.forEach { field ->
         builder.addStatement($$"this.$N = b.$N", field.name(), field.name())
@@ -1029,13 +1242,19 @@ private fun generateHashCode(): MethodSpec =
 private fun generateFillValuesFromMethod(
     bTypeVar: TypeVariableName,
     cTypeVar: TypeVariableName,
+    callSuper: Boolean = false,
 ): MethodSpec =
     MethodSpec
         .methodBuilder($$"$fillValuesFrom")
         .addModifiers(Modifier.PROTECTED)
         .returns(bTypeVar)
         .addParameter(cTypeVar, "instance")
-        .addStatement($$$"$$fillValuesFromInstanceIntoBuilder(instance, this)")
+        .apply {
+            // Pull inherited fields up from the base builder first when this is a subclass builder.
+            if (callSuper) {
+                addStatement($$$"super.$$fillValuesFrom(instance)")
+            }
+        }.addStatement($$$"$$fillValuesFromInstanceIntoBuilder(instance, this)")
         .addStatement("return this.self()")
         .build()
 
@@ -1181,6 +1400,7 @@ private fun generateAbstractBuilderSetter(
 private fun generateBuilderClass(
     className: ClassName,
     fields: List<FieldSpec>,
+    superType: ClassName? = null,
 ): TypeSpec {
     val builderName = "${className.simpleName()}Builder"
     val cTypeVar = TypeVariableName.get("C", className)
@@ -1200,6 +1420,17 @@ private fun generateBuilderClass(
             .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.STATIC)
             .addTypeVariable(cTypeVar)
             .addTypeVariable(TypeVariableName.get("B", bBound))
+
+    // Chain onto the base type's SuperBuilder so inherited fields are settable through this builder.
+    superType?.let {
+        builder.superclass(
+            ParameterizedTypeName.get(
+                it.nestedClass("${it.simpleName()}Builder"),
+                cTypeVar,
+                bTypeVar,
+            ),
+        )
+    }
 
     // Add fields to builder (same as parent, but non-final)
     fields.forEach { field ->
@@ -1241,7 +1472,7 @@ private fun generateBuilderClass(
     }
 
     // Add $fillValuesFrom method
-    builder.addMethod(generateFillValuesFromMethod(bTypeVar, cTypeVar))
+    builder.addMethod(generateFillValuesFromMethod(bTypeVar, cTypeVar, callSuper = superType != null))
 
     // Add $fillValuesFromInstanceIntoBuilder static helper
     builder.addMethod(generateFillValuesFromInstanceIntoBuilderMethod(className, builderName, fields))
@@ -1359,9 +1590,10 @@ private fun addProperties(
     entry: Map.Entry<String, Schema<*>>,
     nameRef: ClassName,
     classBuilder: TypeSpec.Builder,
+    skipFields: Set<String> = emptySet(),
 ) {
     val built = classBuilder.build()
-    val knownFields = built.fieldSpecs().map { it.name() }
+    val knownFields = built.fieldSpecs().map { it.name() } + skipFields
     val knownSubTypes = built.typeSpecs().map { it.name() }
 
     entry.value.properties?.forEach { property ->
@@ -1377,6 +1609,11 @@ private fun processProperty(
     knownFields: List<String>,
     knownSubTypes: List<String>,
 ) {
+    // Skip this property entirely (field + nested type) if it is already known, which includes
+    // properties inherited from a parent class in an allOf subclass scenario.
+    val fieldName = property.key.unkeywordize().camelCase()
+    if (knownFields.contains(fieldName)) return
+
     referenceAndDefinition(context.withSchemaStack("properties", property.key), property, "", nameRef)?.let { (d, s) ->
         processNestedTypeIfPresent(s, d, knownSubTypes, classBuilder)
         addFieldIfNew(context, property, d, knownFields, classBuilder)
