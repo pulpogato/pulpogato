@@ -338,8 +338,10 @@ private fun buildReferenceAndDefinitionFromObject(
                 )!!
                     .let { Pair(ParameterizedTypeName.get(Types.MAP, Types.STRING, it.first), it.second) }
             } else {
-                val message = additionalProperties.javaClass
-                println(message)
+                // additionalProperties is a non-Schema value (e.g. a bare `additionalProperties: true`)
+                // that we don't model yet. Emit the sentinel Todo type, which doesn't exist and so fails
+                // the generated-code compile loudly, rather than silently producing a wrong mapping.
+                // No current GitHub schema variant reaches this branch.
                 Pair(Types.TODO, null)
             }
         }
