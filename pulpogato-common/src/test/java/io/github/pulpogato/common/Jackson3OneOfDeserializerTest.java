@@ -58,11 +58,10 @@ class Jackson3OneOfDeserializerTest {
 
     @Test
     void firstCandidateWinsWhenBothCouldMatch() {
-        // Both Circle and Square could accept a payload with only shared fields;
-        // Circle is first in the candidate list, so it wins.
+        // An empty object matches both Circle and Square (neither has required fields).
+        // GitHub's schemas have this overlap; we return the first candidate rather than throwing.
         var om = new ObjectMapper();
         var result = om.readValue("{\"shape\":{}}", Wrapper.class);
-        // Empty object matches Circle first (it is listed first).
         assertThat(result.shape).isInstanceOf(Circle.class);
     }
 

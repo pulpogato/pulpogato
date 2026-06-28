@@ -2,6 +2,7 @@ package io.github.pulpogato.common.jackson;
 
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
@@ -18,6 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
  *
  * @param <T> The sealed interface type
  */
+@Slf4j
 public class Jackson3OneOfDeserializer<T> extends StdDeserializer<T> {
 
     // FAIL_ON_UNKNOWN_PROPERTIES is what lets a wrong candidate be rejected: a payload shaped for one
@@ -47,7 +49,7 @@ public class Jackson3OneOfDeserializer<T> extends StdDeserializer<T> {
             try {
                 return om.readValue(json, candidate);
             } catch (Exception e) {
-                // Not this branch; try the next candidate.
+                log.debug("Candidate {} did not match, trying next", candidate.getSimpleName(), e);
             }
         }
         return null;

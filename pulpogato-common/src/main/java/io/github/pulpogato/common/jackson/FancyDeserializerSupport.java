@@ -129,12 +129,41 @@ public class FancyDeserializerSupport<T> {
     }
 
     /**
+     * Hint about the current JSON token type, supplied by the calling deserializer when it can read
+     * the token type from the parser. Used by YAML-aware deserializers to preserve the original
+     * scalar type (boolean/number) instead of letting Jackson coerce it to String first.
+     */
+    public enum TokenHint {
+        /** Input token is a boolean literal (true/false). */
+        BOOLEAN,
+        /** Input token is a numeric literal. */
+        NUMBER
+    }
+
+    /**
      * Performs the deserialization by trying to read the input as Map, List, String, or Number.
+     * Uses String-before-Number order to preserve Jackson's default coercion behaviour for
+     * JSON input.
      *
      * @param contextReader Reads from the Jackson parser/context
      * @return The deserialized value, or null if all attempts fail
      */
     public T deserialize(ContextReader contextReader) {
+        return deserialize(contextReader, null);
+    }
+
+    /**
+     * Performs the deserialization with an optional token type hint.
+     *
+     * <p>When a hint is present (set by YAML-aware deserializers that can inspect the raw token),
+     * the scalar-read order is adjusted so that the native type is tried first, preventing Jackson
+     * from coercing e.g. a YAML boolean into a String before the Boolean branch gets a chance.
+     *
+     * @param contextReader Reads from the Jackson parser/context
+     * @param hint          The token type hint, or {@code null} for default String-first ordering
+     * @return The deserialized value, or null if all attempts fail
+     */
+    public T deserialize(ContextReader contextReader, TokenHint hint) {
         final var returnValue = initializer.get();
         var inProgress = IN_PROGRESS.get();
         inProgress.add(type);
@@ -152,27 +181,73 @@ public class FancyDeserializerSupport<T> {
                     setAllFields(listAsString, returnValue);
                 } catch (Exception e1) {
                     ensureParsingException(e1);
-                    try {
-                        final var str = contextReader.readValue(String.class);
-                        final var strAsString = writer.writeValueAsString(str);
-                        setAllFields(strAsString, returnValue);
-                    } catch (Exception e2) {
-                        ensureParsingException(e2);
-                        try {
-                            final var num = contextReader.readValue(Number.class);
-                            final var numAsString = writer.writeValueAsString(num);
-                            setAllFields(numAsString, returnValue);
-                        } catch (Exception e3) {
-                            ensureParsingException(e3);
-                            log.debug("Failed to parse", e3);
-                            return null;
-                        }
-                    }
+                    deserializeScalar(contextReader, hint, returnValue);
                 }
             }
             return returnValue;
         } finally {
             inProgress.remove(type);
+        }
+    }
+
+    private void deserializeScalar(ContextReader contextReader, TokenHint hint, T returnValue) {
+        if (hint == TokenHint.BOOLEAN) {
+            deserializeBoolThenNumberThenString(contextReader, returnValue);
+        } else if (hint == TokenHint.NUMBER) {
+            deserializeNumberThenString(contextReader, returnValue);
+        } else {
+            deserializeStringThenNumber(contextReader, returnValue);
+        }
+    }
+
+    private void deserializeBoolThenNumberThenString(ContextReader contextReader, T returnValue) {
+        try {
+            final var bool = contextReader.readValue(Boolean.class);
+            final var boolAsString = writer.writeValueAsString(bool);
+            setAllFields(boolAsString, returnValue);
+        } catch (Exception e2) {
+            ensureParsingException(e2);
+            deserializeNumberThenString(contextReader, returnValue);
+        }
+    }
+
+    private void deserializeNumberThenString(ContextReader contextReader, T returnValue) {
+        try {
+            final var num = contextReader.readValue(Number.class);
+            final var numAsString = writer.writeValueAsString(num);
+            setAllFields(numAsString, returnValue);
+        } catch (Exception e3) {
+            ensureParsingException(e3);
+            deserializeString(contextReader, returnValue);
+        }
+    }
+
+    private void deserializeStringThenNumber(ContextReader contextReader, T returnValue) {
+        try {
+            final var str = contextReader.readValue(String.class);
+            final var strAsString = writer.writeValueAsString(str);
+            setAllFields(strAsString, returnValue);
+        } catch (Exception e4) {
+            ensureParsingException(e4);
+            try {
+                final var num = contextReader.readValue(Number.class);
+                final var numAsString = writer.writeValueAsString(num);
+                setAllFields(numAsString, returnValue);
+            } catch (Exception e5) {
+                ensureParsingException(e5);
+                log.debug("Failed to parse", e5);
+            }
+        }
+    }
+
+    private void deserializeString(ContextReader contextReader, T returnValue) {
+        try {
+            final var str = contextReader.readValue(String.class);
+            final var strAsString = writer.writeValueAsString(str);
+            setAllFields(strAsString, returnValue);
+        } catch (Exception e) {
+            ensureParsingException(e);
+            log.debug("Failed to parse", e);
         }
     }
 
@@ -201,18 +276,55 @@ public class FancyDeserializerSupport<T> {
     }
 
     /**
-     * Sets all available fields on the return value by attempting to deserialize the JSON string.
-     * For {@link Mode#ONE_OF}, returns early after the first successful field set.
+     * Sets fields on the return value according to the mode's semantics:
+     * <ul>
+     *   <li>{@link Mode#ONE_OF}: exactly one field must match; throws if multiple match.</li>
+     *   <li>{@link Mode#ALL_OF}: every field must match; throws if any field fails.</li>
+     *   <li>{@link Mode#ANY_OF}: sets every field that successfully deserializes.</li>
+     * </ul>
      *
      * @param mapAsString the JSON string to deserialize
      * @param returnValue the object being populated
      */
     protected final void setAllFields(String mapAsString, T returnValue) {
-        for (var pair : fields) {
-            final boolean successful = setField(pair, mapAsString, returnValue);
-            if (mode == Mode.ONE_OF && successful) {
-                return;
+        if (mode == Mode.ONE_OF) {
+            // Object.class is a catch-all wildcard — skip it in the strict-match pass and fall back
+            // to it only when no more specific field matched.
+            SettableField<T, ?> match = null;
+            SettableField<T, ?> objectFallback = null;
+            for (var pair : fields) {
+                if (pair.type() == Object.class) {
+                    objectFallback = pair;
+                    continue;
+                }
+                // Scalar types (String, Number subclasses, Boolean) must match the JSON token type.
+                // Without this guard, Jackson's default coercion lets a JSON number satisfy String
+                // (and vice versa), producing spurious ambiguity in oneOf unions like String|BigDecimal.
+                if (isScalarType(pair.type()) && !isJsonTokenCompatible(mapAsString, pair.type())) {
+                    continue;
+                }
+                var probe = initializer.get();
+                if (setField(pair, mapAsString, probe)) {
+                    if (match != null) {
+                        log.debug(
+                                "Ambiguous oneOf for {}: both {} and {} matched; using first match",
+                                type.getSimpleName(),
+                                match.type().getSimpleName(),
+                                pair.type().getSimpleName());
+                        break;
+                    }
+                    match = pair;
+                }
             }
+            if (match != null) {
+                setField(match, mapAsString, returnValue);
+            } else if (objectFallback != null) {
+                setField(objectFallback, mapAsString, returnValue);
+            }
+            return;
+        }
+        for (var pair : fields) {
+            setField(pair, mapAsString, returnValue);
         }
     }
 
@@ -259,6 +371,30 @@ public class FancyDeserializerSupport<T> {
             log.debug("Failed to parse {} as {}", string, clazz, e);
             return false;
         }
+    }
+
+    private static boolean isScalarType(Class<?> clazz) {
+        return clazz == String.class
+                || clazz == Boolean.class
+                || clazz == boolean.class
+                || Number.class.isAssignableFrom(clazz)
+                || clazz.isPrimitive();
+    }
+
+    private static boolean isJsonTokenCompatible(String json, Class<?> clazz) {
+        if (json == null || json.isEmpty()) return true;
+        int i = 0;
+        while (i < json.length() && Character.isWhitespace(json.charAt(i))) i++;
+        if (i == json.length()) return true;
+        char first = json.charAt(i);
+        if (clazz == String.class) return first == '"' || json.startsWith("null", i);
+        if (clazz == Boolean.class || clazz == boolean.class) {
+            return json.startsWith("true", i) || json.startsWith("false", i) || json.startsWith("null", i);
+        }
+        if (Number.class.isAssignableFrom(clazz)) {
+            return (first >= '0' && first <= '9') || first == '-' || json.startsWith("null", i);
+        }
+        return true;
     }
 
     private static <T> Class<?> detectEnumAlternativeType(List<SettableField<T, ?>> fields) {
