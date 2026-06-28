@@ -53,7 +53,12 @@ class PathsBuilder {
         val method: HttpMethod,
         val operationId: String,
         val operation: Operation,
-    )
+    ) {
+        // GitHub operation ids are always "<group>/<operation>" (e.g. "repos/get-content"); the group
+        // becomes the API interface and the operation becomes the method name.
+        val group: String get() = operationId.substringBefore('/')
+        val operationName: String get() = operationId.substringAfter('/')
+    }
 
     /**
      * Generates REST API client code based on the provided OpenAPI context.
@@ -190,7 +195,7 @@ class PathsBuilder {
                 pathItem.readOperationsMap().map { (method, operation) ->
                     AtomicMethod(path, method, operation.operationId, operation)
                 }
-            }.groupBy { it.operationId.split('/')[0] }
+            }.groupBy { it.group }
             .toSortedMap()
             .forEach { (groupName, atomicMethods) ->
                 val docTag = atomicMethods[0].operation.tags[0]
@@ -392,7 +397,7 @@ class PathsBuilder {
                 val rad =
                     referenceAndDefinition(
                         context.withSchemaStack("responses", successResponse.key, "content", contentType, "schema"),
-                        mapOf("${atomicMethod.operationId.split('/')[1].pascalCase()}${successResponse.key}" to details.schema).entries.first(),
+                        mapOf("${atomicMethod.operationName.pascalCase()}${successResponse.key}" to details.schema).entries.first(),
                         "",
                         typeRef,
                     )
@@ -403,8 +408,8 @@ class PathsBuilder {
                     val respRef = r.first
                     val methodName =
                         when (successResponse.value.content.size) {
-                            1 -> atomicMethod.operationId.split('/')[1].camelCase()
-                            else -> atomicMethod.operationId.split('/')[1].camelCase() + suffixContentType(contentType)
+                            1 -> atomicMethod.operationName.camelCase()
+                            else -> atomicMethod.operationName.camelCase() + suffixContentType(contentType)
                         }
                     val testMethods = getTestMethods(context, successResponse, contentType, details, respRef, testResourcesDir)
 
@@ -597,7 +602,7 @@ class PathsBuilder {
         reactiveReturnTypes: Boolean,
     ): MethodSpec =
         MethodSpec
-            .methodBuilder(atomicMethod.operationId.split('/')[1].camelCase())
+            .methodBuilder(atomicMethod.operationName.camelCase())
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .addJavadoc($$"$L", javadoc)
             .addAnnotation(
@@ -722,7 +727,7 @@ class PathsBuilder {
         typeRef: ClassName,
         enumConverters: MutableSet<ClassName>,
     ): ParameterSpec {
-        val operationName = atomicMethod.operationId.split('/')[1]
+        val operationName = atomicMethod.operationName
         val (ref, def) =
             referenceAndDefinition(context, mapOf(theParameter.name to theParameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
 
@@ -824,7 +829,7 @@ class PathsBuilder {
         typeRef: ClassName,
         testResourcesDir: File,
     ) {
-        val operationName = atomicMethod.operationId.split('/')[1]
+        val operationName = atomicMethod.operationName
         val paramName = theParameter.name.unkeywordize().camelCase()
         val testMethods =
             (theParameter.examples ?: emptyMap())
@@ -853,7 +858,7 @@ class PathsBuilder {
             testClass.addType(
                 TypeSpec
                     .classBuilder("${operationName}RequestBody".pascalCase())
-                    .addJavadoc($$"$L", "Tests {@link $typeRef#${atomicMethod.operationId.split('/')[1].camelCase()}}")
+                    .addJavadoc($$"$L", "Tests {@link $typeRef#${atomicMethod.operationName.camelCase()}}")
                     .addAnnotation(generated(0, context))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
                     .addMethods(testMethods)
@@ -928,7 +933,7 @@ class PathsBuilder {
                 referenceAndDefinition(
                     context.withSchemaStack("requestBody", "content", firstEntry.key, "schema"),
                     mapOf("requestBody" to firstEntry.value.schema).entries.first(),
-                    atomicMethod.operationId.split('/')[1].pascalCase(),
+                    atomicMethod.operationName.pascalCase(),
                     typeRef,
                 )!!
             def?.let {
@@ -990,7 +995,7 @@ class PathsBuilder {
     ) {
         parameters.forEach { (parameter, _) ->
             if (parameter.`in` == "body") {
-                val operationName = atomicMethod.operationId.split('/')[1]
+                val operationName = atomicMethod.operationName
                 val (ref, _) = referenceAndDefinition(context, mapOf(parameter.name to parameter.schema).entries.first(), operationName.pascalCase(), typeRef)!!
                 buildBodyTestCode(context, parameter, ref, atomicMethod, testClass, typeRef, testResourcesDir)
             }
