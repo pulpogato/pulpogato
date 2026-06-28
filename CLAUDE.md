@@ -54,6 +54,18 @@ Code generation is core to the project:
 ./scripts/update-schema-version.sh
 ```
 
+### Build performance flags
+Both default to the fast path; opt in when you need the extra output.
+```bash
+# Generate code coverage (Jacoco). Off by default so the agent + report stay off the critical path.
+./gradlew :pulpogato-rest-fpt:check -Pcoverage=true
+
+# Palantir formatting of generated sources is OFF by default (cosmetic, ~13-15s, only affects the
+# published sources jar). Laptop and PR builds skip it; CI enables it for snapshot/candidate/final.
+# Turn it on locally to match a release build:
+./gradlew :pulpogato-rest-fpt:generateJava -Pcodegen.format=true
+```
+
 ### Integration test requirements
 - Set `GITHUB_TOKEN` environment variable
 - For GHES testing, also set `GITHUB_HOST` and `GITHUB_PORT`

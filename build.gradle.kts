@@ -91,6 +91,9 @@ subprojects {
     }
     tasks.withType<Test> {
         useJUnitPlatform()
+        // Tests are MockMvc-based (no bound ports) and data-driven, so they parallelize safely across forked JVMs.
+        // Half the cores leaves headroom for codegen/compile work and Gradle's own worker leases during a full build.
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
     }
 }
 

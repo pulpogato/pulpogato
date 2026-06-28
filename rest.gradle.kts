@@ -3,6 +3,7 @@ import io.github.pulpogato.buildsupport.PropertiesFileValueClosure
 import io.github.pulpogato.buildsupport.WriteInfoPropertiesTask
 import io.github.pulpogato.restcodegen.DownloadSchemaTask
 import nebula.plugin.info.InfoBrokerPlugin
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import kotlin.jvm.java
 
 plugins {
@@ -118,8 +119,18 @@ tasks {
     }
 }
 
+// Coverage is a CI/reporting concern, not needed on every local build. Keeping it off the default path
+// avoids both the Jacoco agent overhead during test execution and the report task (~19s) on the critical path.
+// Enable with -Pcoverage=true (or set it in CI).
+val coverageEnabled = providers.gradleProperty("coverage").map(String::toBoolean).getOrElse(false)
+
 tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
+    extensions.configure<JacocoTaskExtension> {
+        isEnabled = coverageEnabled
+    }
+    if (coverageEnabled) {
+        finalizedBy(tasks.jacocoTestReport)
+    }
 }
 
 tasks.jacocoTestReport {

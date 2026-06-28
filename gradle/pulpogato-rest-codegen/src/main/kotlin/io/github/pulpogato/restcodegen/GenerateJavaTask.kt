@@ -93,6 +93,17 @@ open class GenerateJavaTask : DefaultTask() {
     val projectDir: Property<File> = project.objects.property(File::class.java)
 
     /**
+     * Whether to run Palantir Java Format over the generated sources.
+     *
+     * Formatting every generated file costs ~13–15s but produces no behavioral difference — it only affects
+     * the readability of the published sources jar. It defaults to off so laptop and PR builds stay fast;
+     * CI turns it on (`-Pcodegen.format=true`) when building snapshot/candidate/final artifacts.
+     */
+    @Input
+    @Optional
+    val formatCode: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
+
+    /**
      * The common resources directory for schema additions.
      */
     @InputDirectory
@@ -176,7 +187,9 @@ open class GenerateJavaTask : DefaultTask() {
         // Format generated Java code
         val javaFiles = collectJavaFiles(main)
         val testJavaFiles = collectJavaFiles(test)
-        formatJavaFiles(javaFiles + testJavaFiles, logger)
+        if (formatCode.get()) {
+            formatJavaFiles(javaFiles + testJavaFiles, logger)
+        }
 
         // Validate JSON references using the merged spec (includes additions)
         JsonRefValidator(0).validate(schemas, javaFiles + testJavaFiles)
