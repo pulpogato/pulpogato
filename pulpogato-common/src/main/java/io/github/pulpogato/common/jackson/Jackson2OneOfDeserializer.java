@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A Jackson 2 deserializer for a non-discriminated {@code oneOf} modeled as a sealed interface.
@@ -20,6 +21,7 @@ import java.util.Map;
  *
  * @param <T> The sealed interface type
  */
+@Slf4j
 public class Jackson2OneOfDeserializer<T> extends StdDeserializer<T> {
 
     // FAIL_ON_UNKNOWN_PROPERTIES is what lets a wrong candidate be rejected: a payload shaped for one
@@ -49,7 +51,7 @@ public class Jackson2OneOfDeserializer<T> extends StdDeserializer<T> {
             try {
                 return om.readValue(json, candidate);
             } catch (Exception e) {
-                // Not this branch; try the next candidate.
+                log.debug("Candidate {} did not match, trying next", candidate.getSimpleName(), e);
             }
         }
         return null;

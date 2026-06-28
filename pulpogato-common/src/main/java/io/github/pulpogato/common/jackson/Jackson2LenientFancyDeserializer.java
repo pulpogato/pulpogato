@@ -50,6 +50,12 @@ public class Jackson2LenientFancyDeserializer<T> extends StdDeserializer<T> {
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) {
-        return support.deserialize(type -> ctxt.readValue(p, type));
+        var hint =
+                switch (p.currentToken()) {
+                    case VALUE_TRUE, VALUE_FALSE -> FancyDeserializerSupport.TokenHint.BOOLEAN;
+                    case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> FancyDeserializerSupport.TokenHint.NUMBER;
+                    default -> null;
+                };
+        return support.deserialize(type -> ctxt.readValue(p, type), hint);
     }
 }

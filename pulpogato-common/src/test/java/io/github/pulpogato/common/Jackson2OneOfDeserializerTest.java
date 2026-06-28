@@ -57,8 +57,8 @@ class Jackson2OneOfDeserializerTest {
 
     @Test
     void firstCandidateWinsWhenBothCouldMatch() throws Exception {
-        // Both Circle and Square could accept a payload with only shared fields;
-        // Circle is first in the candidate list, so it wins.
+        // An empty object matches both Circle and Square (neither has required fields).
+        // GitHub's schemas have this overlap; we return the first candidate rather than throwing.
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
         var result = om.readValue("{\"shape\":{}}", Wrapper.class);
         assertThat(result.shape).isInstanceOf(Circle.class);

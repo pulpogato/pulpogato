@@ -102,8 +102,6 @@ class StringOrIntegerTest {
 
     @Test
     void shouldSerializeFixtureWithIntegerInStringValueJackson2() throws Exception {
-        // Jackson 2 deserializes numeric-looking strings differently than Jackson 3
-        // This test verifies serialization is correct, but round-trip may differ
         var fixture = Fixture.builder()
                 .value(StringOrInteger.builder().stringValue("4").build())
                 .build();
@@ -113,9 +111,8 @@ class StringOrIntegerTest {
         assertThat(written).isEqualTo("""
                 {"value":"4"}""");
 
-        // Jackson 2 parses "4" as integer, so we verify it's not null rather than exact equality
         Fixture readFixture = jackson2Mapper.readValue(written, Fixture.class);
-        assertThat(readFixture.getValue()).isNotNull();
+        assertThat(readFixture).isEqualTo(fixture);
     }
 
     @Test

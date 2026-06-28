@@ -1,7 +1,5 @@
 package io.github.pulpogato.common;
 
-import io.github.pulpogato.common.jackson.FancyDeserializerSupport.SettableField;
-import io.github.pulpogato.common.jackson.Jackson2FancyDeserializer;
 import io.github.pulpogato.common.jackson.Jackson2FancySerializer;
 import io.github.pulpogato.common.util.CodeBuilder;
 import java.util.List;
@@ -105,15 +103,32 @@ public class StringOrInteger implements PulpogatoType {
         }
     }
 
-    static class Jackson2Deserializer extends Jackson2FancyDeserializer<StringOrInteger> {
+    static class Jackson2Deserializer
+            extends com.fasterxml.jackson.databind.deser.std.StdDeserializer<StringOrInteger> {
         public Jackson2Deserializer() {
-            super(
-                    StringOrInteger.class,
-                    StringOrInteger::new,
-                    Mode.ONE_OF,
-                    List.of(
-                            new SettableField<>(Long.class, StringOrInteger::setIntegerValue),
-                            new SettableField<>(String.class, StringOrInteger::setStringValue)));
+            super(StringOrInteger.class);
+        }
+
+        @Override
+        public StringOrInteger deserialize(
+                com.fasterxml.jackson.core.JsonParser p, com.fasterxml.jackson.databind.DeserializationContext ctxt)
+                throws java.io.IOException {
+            var result = new StringOrInteger();
+            switch (p.currentToken()) {
+                case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> result.setIntegerValue(p.getLongValue());
+                case VALUE_STRING -> result.setStringValue(p.getValueAsString());
+                default -> {
+                    var value = p.getValueAsString();
+                    if (value != null) {
+                        try {
+                            result.setIntegerValue(Long.parseLong(value));
+                        } catch (NumberFormatException e) {
+                            result.setStringValue(value);
+                        }
+                    }
+                }
+            }
+            return result;
         }
     }
 
