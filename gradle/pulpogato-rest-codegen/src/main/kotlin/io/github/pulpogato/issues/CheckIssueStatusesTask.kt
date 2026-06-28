@@ -68,9 +68,8 @@ abstract class CheckIssueStatusesTask : DefaultTask() {
         }
 
         notOpenIssues.forEach { issue ->
-            val issueLabel = issue.displayLabel()
             val issueState = issue.state ?: "UNKNOWN"
-            val message = "Issue $issueLabel is $issueState: ${issue.url.orEmpty()}"
+            val message = "Issue is $issueState: ${issue.url.orEmpty()}"
             println("::error title=Issue status check failed::${escapeGithubActionsValue(message)}")
         }
     }
