@@ -10,6 +10,11 @@ import io.github.pulpogato.restcodegen.MarkdownHelper
 import javax.lang.model.element.Modifier
 
 object ObjectGenerator {
+    // The GitHub Actions workflow `on:` trigger (object form) lets each event be written with a null
+    // value (e.g. `on: { push: }`) to mean "trigger with defaults". Marking this class's fields
+    // @JsonSetter(nulls = AS_EMPTY) makes those nulls deserialize as empty objects instead of null.
+    private const val WORKFLOW_ON_OBJECT_CLASS = "GithubWorkflowOnVariant2"
+
     private val LOMBOK_DATA = ClassName.get("lombok", "Data")
     private val LOMBOK_BUILDER = ClassName.get("lombok", "Builder")
     private val LOMBOK_NO_ARGS = ClassName.get("lombok", "NoArgsConstructor")
@@ -30,7 +35,7 @@ object ObjectGenerator {
         schemaRef: String,
         sourceFile: String,
     ): TypeSpec {
-        val nullsAsEmpty = name == "GithubWorkflowOnVariant2"
+        val nullsAsEmpty = name == WORKFLOW_ON_OBJECT_CLASS
         val builder =
             TypeSpec
                 .classBuilder(name)
