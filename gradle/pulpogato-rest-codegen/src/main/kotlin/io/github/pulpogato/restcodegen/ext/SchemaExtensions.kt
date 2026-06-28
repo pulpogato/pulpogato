@@ -477,8 +477,15 @@ private fun buildType(
     val refName =
         when {
             parentClass == null -> ClassName.get("io.github.pulpogato.rest.schemas", className)
+
             parentClass.simpleName() == className -> parentClass.nestedClass("${className}Inner")
+
+            // Java forbids a nested type from sharing its simple name with an enclosing type. In the
+            // repository-ruleset-edited webhook, `Updated` is itself nested inside a `Changes` type yet
+            // carries its own `changes` object; name that inner one `Changes2` to avoid clashing with the
+            // enclosing `Changes`. (The immediate parent == child clash is handled by the branch above.)
             parentClass.simpleName() == "Updated" && className == "Changes" -> parentClass.nestedClass("Changes2")
+
             else -> parentClass.nestedClass(className)
         }
 
