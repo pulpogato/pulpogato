@@ -22,6 +22,14 @@ class RestCodegenPlugin : Plugin<Project> {
         generateJava.configure {
             dependsOn(downloadSchema)
             schema = downloadSchema.flatMap { it.schemaFile }.map { it.asFile }
+            // Formatting generated sources is cosmetic and only matters for the published sources jar, so it
+            // defaults to off for fast laptop/PR builds. CI enables it (-Pcodegen.format=true) for published builds.
+            formatCode.set(
+                target.providers
+                    .gradleProperty("codegen.format")
+                    .map(String::toBoolean)
+                    .orElse(false),
+            )
             packageName = target.provider { extension.packageName.get() }
             mainDir = target.provider { extension.mainDir.get().asFile }
             testDir = target.provider { extension.testDir.get().asFile }

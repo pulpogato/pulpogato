@@ -188,6 +188,19 @@ Install JDK 21 first.
 To build, run `./gradlew build`.
 If you have low memory or CPU, you can customize parallelism with `--max-workers`.
 
+=== Build performance
+
+Laptop and PR builds are tuned for speed, so two pieces of optional work are off by default.
+
+`-Pcodegen.format=true` runs Palantir Java Format over the generated sources.
+Formatting is cosmetic and only affects the readability of the published sources jar, so it is skipped by default and saves roughly 13-15 seconds per REST module.
+CI turns it on automatically when building snapshot, candidate, and final artifacts.
+
+`-Pcoverage=true` enables JaCoCo.
+Coverage collection and its report are a CI/reporting concern, so they stay off the default critical path.
+
+Tests run in parallel across forked JVMs (`maxParallelForks`), which the data-driven generated tests benefit from the most.
+
 === Automatically generated tests
 
 When the REST schema contains examples, they are automatically converted to tests in the generated test sources directory.
