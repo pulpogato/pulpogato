@@ -48,10 +48,10 @@ object UnionGenerator {
     ): TypeSpec {
         val thisClass = ClassName.bestGuess(className)
 
-        val deserializer3 = buildDeserializer(3, thisClass, variants, mode)
-        val serializer3 = buildSerializer(3, thisClass, variants, mode)
-        val deserializer2 = buildDeserializer(2, thisClass, variants, mode)
-        val serializer2 = buildSerializer(2, thisClass, variants, mode)
+        val deserializer3 = buildSerde(3, thisClass, variants, mode, deserializer = true)
+        val serializer3 = buildSerde(3, thisClass, variants, mode, deserializer = false)
+        val deserializer2 = buildSerde(2, thisClass, variants, mode, deserializer = true)
+        val serializer2 = buildSerde(2, thisClass, variants, mode, deserializer = false)
 
         val builder =
             TypeSpec
@@ -89,26 +89,37 @@ object UnionGenerator {
         return builder.build()
     }
 
-    private fun buildDeserializer(
+    /**
+     * Builds a nested Jackson deserializer or serializer for the union class. The two share the same
+     * shape; they differ only in the superclass, the constructor's accessor wiring, and the fact that
+     * deserializers also receive a `::new` factory so they can construct the union.
+     */
+    private fun buildSerde(
         jacksonVersion: Int,
         thisClass: ClassName,
         variants: List<VariantSpec>,
         mode: String,
+        deserializer: Boolean,
     ): TypeSpec {
-        val deserializerName = "${thisClass.simpleName()}Jackson${jacksonVersion}Deserializer"
-        val superClass = ParameterizedTypeName.get(fancyDeser(jacksonVersion), thisClass)
-
-        val constructorBuilder =
-            MethodSpec
-                .constructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
+        val suffix = if (deserializer) "Deserializer" else "Serializer"
+        val typeName = "${thisClass.simpleName()}Jackson$jacksonVersion$suffix"
+        val superClass =
+            ParameterizedTypeName.get(
+                if (deserializer) fancyDeser(jacksonVersion) else fancySer(jacksonVersion),
+                thisClass,
+            )
 
         val formatParts = mutableListOf<String>()
         val args = mutableListOf<Any>()
 
-        formatParts.add($$"super($T.class, $T::new, $T.$L, $T.of(")
-        args.add(thisClass)
-        args.add(thisClass)
+        if (deserializer) {
+            formatParts.add($$"super($T.class, $T::new, $T.$L, $T.of(")
+            args.add(thisClass)
+            args.add(thisClass)
+        } else {
+            formatParts.add($$"super($T.class, $T.$L, $T.of(")
+            args.add(thisClass)
+        }
         args.add(MODE)
         args.add(mode)
         args.add(ClassName.get("java.util", "List"))
@@ -117,63 +128,23 @@ object UnionGenerator {
             if (index > 0) {
                 formatParts.add(", ")
             }
-            formatParts.add($$"new $T<>($T.class, $T::set$${v.fieldName.replaceFirstChar { it.uppercaseChar() }})")
-            args.add(settableField())
+            val accessor = (if (deserializer) "set" else "get") + v.fieldName.replaceFirstChar { it.uppercaseChar() }
+            formatParts.add($$"new $T<>($T.class, $T::$$accessor)")
+            args.add(if (deserializer) settableField() else gettableField(jacksonVersion))
             args.add(rawType(v.typeName))
             args.add(thisClass)
         }
 
         formatParts.add("))")
-
-        constructorBuilder.addStatement(formatParts.joinToString(""), *args.toTypedArray())
-
-        return TypeSpec
-            .classBuilder(deserializerName)
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .superclass(superClass)
-            .addMethod(constructorBuilder.build())
-            .build()
-    }
-
-    private fun buildSerializer(
-        jacksonVersion: Int,
-        thisClass: ClassName,
-        variants: List<VariantSpec>,
-        mode: String,
-    ): TypeSpec {
-        val serializerName = "${thisClass.simpleName()}Jackson${jacksonVersion}Serializer"
-        val superClass = ParameterizedTypeName.get(fancySer(jacksonVersion), thisClass)
 
         val constructorBuilder =
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-
-        val formatParts = mutableListOf<String>()
-        val args = mutableListOf<Any>()
-
-        formatParts.add($$"super($T.class, $T.$L, $T.of(")
-        args.add(thisClass)
-        args.add(MODE)
-        args.add(mode)
-        args.add(ClassName.get("java.util", "List"))
-
-        variants.forEachIndexed { index, v ->
-            if (index > 0) {
-                formatParts.add(", ")
-            }
-            formatParts.add($$"new $T<>($T.class, $T::get$${v.fieldName.replaceFirstChar { it.uppercaseChar() }})")
-            args.add(gettableField(jacksonVersion))
-            args.add(rawType(v.typeName))
-            args.add(thisClass)
-        }
-
-        formatParts.add("))")
-
-        constructorBuilder.addStatement(formatParts.joinToString(""), *args.toTypedArray())
+                .addStatement(formatParts.joinToString(""), *args.toTypedArray())
 
         return TypeSpec
-            .classBuilder(serializerName)
+            .classBuilder(typeName)
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .superclass(superClass)
             .addMethod(constructorBuilder.build())
