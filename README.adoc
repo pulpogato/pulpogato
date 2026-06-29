@@ -25,11 +25,19 @@ image:https://img.shields.io/github/actions/workflow/status/pulpogato/pulpogato/
 
 // tag::installation[]
 
-For releases, use mavenCentral.
+For releases, you can use mavenCentral.
 
 [source]
 ----
 https://repo.maven.apache.org/maven2/
+----
+
+Or you can use https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package[GitHub Packages].
+This would be the URL for that.
+
+[source]
+----
+https://maven.pkg.github.com/pulpogato/pulpogato
 ----
 
 For snapshots, use this url.
