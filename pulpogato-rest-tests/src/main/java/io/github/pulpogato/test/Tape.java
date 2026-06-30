@@ -2,6 +2,7 @@ package io.github.pulpogato.test;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +41,12 @@ public class Tape implements Closeable {
 
         List<Exchange> exchanges;
 
-        try (var stream = Tape.class.getResourceAsStream("/" + resourceName)) {
+        // Read from the source file directly rather than the classpath: within a single test,
+        // a tape can be written and re-read multiple times (e.g. when following a redirect),
+        // but the classpath copy is only refreshed by processTestResources between runs.
+        var file = new File(fileName);
+        try (var stream =
+                file.isFile() ? new FileInputStream(file) : Tape.class.getResourceAsStream("/" + resourceName)) {
             if (stream != null) {
                 exchanges = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<>() {});
                 log.info("Loaded {} exchanges from tape: {}", exchanges.size(), resourceName);

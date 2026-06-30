@@ -29,6 +29,7 @@ import javax.lang.model.element.Modifier
 private const val PACKAGE_SPRING_FORMAT_SUPPORT = "org.springframework.format.support"
 private const val PACKAGE_SPRING_WEBCLIENT = "org.springframework.web.reactive.function.client"
 private const val PACKAGE_SPRING_HTTP = "org.springframework.http"
+private const val PACKAGE_PULPOGATO_CLIENT = "io.github.pulpogato.common.client"
 
 /**
  * A builder class that generates REST API client code based on OpenAPI specifications.
@@ -115,13 +116,6 @@ class PathsBuilder {
                     UsersApi users = clients.getUsersApi();
                     ResponseEntity<User> response = users.getAuthenticated();
                     }</pre>
-
-                    <p>The constructor automatically applies {@code DefaultHeadersExchangeFunction}
-                    (adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers)
-                    and {@code NoContentExchangeFunction} (handles 204 responses).
-
-                    @see io.github.pulpogato.common.client.DefaultHeadersExchangeFunction
-                    @see io.github.pulpogato.common.client.NoContentExchangeFunction
                     """.trimIndent(),
                 ).addField(
                     FieldSpec
@@ -252,22 +246,48 @@ class PathsBuilder {
                 )
             }
 
-        // Add a constructor that initializes all API fields
+        // Add a constructor that accepts an explicit filter chain and initializes all API fields
         val constructorBuilder =
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(
+                .addJavadoc(
+                    """
+                    Constructs a client with an explicit filter chain.
+
+                    <p>The given {@code filters} are applied, in order, to {@code restWebClient}.
+                    Use this constructor to customize, reorder, or omit the default filters
+                    ({@code RedirectExchangeFunction}, {@code DefaultHeadersExchangeFunction},
+                    {@code NoContentExchangeFunction}) applied by {@link #RestClients(WebClient)}.
+
+                    @see io.github.pulpogato.common.client.RedirectExchangeFunction
+                    @see io.github.pulpogato.common.client.DefaultHeadersExchangeFunction
+                    @see io.github.pulpogato.common.client.NoContentExchangeFunction
+                    """.trimIndent(),
+                ).addParameter(
                     ParameterSpec
                         .builder(
                             ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
                             "restWebClient",
                         ).addAnnotation(nonNull())
                         .build(),
+                ).addParameter(
+                    ParameterSpec
+                        .builder(
+                            ParameterizedTypeName.get(
+                                ClassName.get("java.util", "List"),
+                                ClassName.get(PACKAGE_SPRING_WEBCLIENT, "ExchangeFilterFunction"),
+                            ),
+                            "filters",
+                        ).addAnnotation(nonNull())
+                        .build(),
                 ).addStatement(
-                    $$"this.restWebClient = restWebClient.mutate().filter(new $T()).filter(new $T()).build()",
-                    ClassName.get("io.github.pulpogato.common.client", "DefaultHeadersExchangeFunction"),
-                    ClassName.get("io.github.pulpogato.common.client", "NoContentExchangeFunction"),
+                    $$"$T builder = restWebClient.mutate()",
+                    ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient", "Builder"),
+                ).addStatement(
+                    "filters.forEach(builder::filter)",
+                ).addStatement(
+                    "this.restWebClient = builder.build()",
                 ).addStatement(
                     $$"this.conversionService = new $T()",
                     ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "DefaultFormattingConversionService"),
@@ -293,6 +313,41 @@ class PathsBuilder {
         }
 
         restClients.addMethod(constructorBuilder.build())
+
+        // Convenience constructor that applies the default filter chain
+        restClients.addMethod(
+            MethodSpec
+                .constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(
+                    ParameterSpec
+                        .builder(
+                            ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
+                            "restWebClient",
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addJavadoc(
+                    """
+                    Constructs a client with the default filter chain: 
+                    <ul>
+                      <li>{@code RedirectExchangeFunction}
+                    (follows 3xx redirects, e.g. for renamed repositories)</li>
+                      <li>{@code DefaultHeadersExchangeFunction}
+                    (adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers)</li>
+                      <li>{@code NoContentExchangeFunction} (handles 204 responses)</li>
+                    <ul>
+
+                    @see #RestClients(WebClient, List)
+                    """.trimIndent(),
+                ).addStatement(
+                    $$"this($N, $T.of(new $T(), new $T(), new $T()))",
+                    "restWebClient",
+                    ClassName.get("java.util", "List"),
+                    ClassName.get(PACKAGE_PULPOGATO_CLIENT, "RedirectExchangeFunction"),
+                    ClassName.get(PACKAGE_PULPOGATO_CLIENT, "DefaultHeadersExchangeFunction"),
+                    ClassName.get(PACKAGE_PULPOGATO_CLIENT, "NoContentExchangeFunction"),
+                ).build(),
+        )
 
         JavaFile.builder(packageName, restClients.build()).build().writeTo(mainDir)
     }
