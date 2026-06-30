@@ -37,8 +37,10 @@ public class ProxyController {
     private final RestTemplate restTemplate;
 
     public ProxyController() {
-        // Configure RestTemplate with Apache HttpClient to support the PATCH method
-        var httpClient = HttpClients.createDefault();
+        // Configure RestTemplate with Apache HttpClient to support the PATCH method.
+        // Redirects must not be followed transparently here, since GitHub uses 3xx
+        // responses (e.g. renamed repos) that callers need to observe directly.
+        var httpClient = HttpClients.custom().disableRedirectHandling().build();
         var requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
     }

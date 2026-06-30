@@ -192,6 +192,18 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     }
 
     @Test
+    void testGetAfterRename() {
+        var api = new RestClients(webClient).getReposApi();
+        var response = api.get("pulpogato", "create-demo");
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("rename-demo");
+        assertThat(body.getFullName()).isEqualTo("pulpogato/rename-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
+    }
+
+    @Test
     void testGetBranch() {
         var api = new RestClients(webClient).getReposApi();
         var response = api.getBranch("pulpogato", "pulpogato", "main");
