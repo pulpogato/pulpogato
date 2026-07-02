@@ -288,8 +288,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response.getBody()).isNotNull().isInstanceOf(FullRepository.class);
 
         var objectMapper = new ObjectMapper();
-        var body = objectMapper.readValue(
-                objectMapper.writeValueAsString(response.getBody()), ExtendedFullRepository.class);
+        var body = objectMapper.convertValue(response.getBody(), ExtendedFullRepository.class);
 
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
