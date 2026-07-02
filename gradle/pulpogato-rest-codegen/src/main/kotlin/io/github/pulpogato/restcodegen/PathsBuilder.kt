@@ -23,6 +23,7 @@ import io.swagger.v3.oas.models.PathItem.HttpMethod
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.responses.ApiResponse
+import org.apache.http.HttpStatus
 import java.io.File
 import javax.lang.model.element.Modifier
 
@@ -430,11 +431,11 @@ class PathsBuilder {
                 }.toMutableMap()
         val hasNoContent204Success =
             atomicMethod.operation.responses.any { (responseCode, apiResponse) ->
-                responseCode == "204" && apiResponse.content.isNullOrEmpty()
+                responseCode == HttpStatus.SC_NO_CONTENT.toString() && apiResponse.content.isNullOrEmpty()
             }
 
-        if (successResponses.size > 1 && successResponses.containsKey("204")) {
-            successResponses.remove("204")
+        if (successResponses.size > 1 && successResponses.containsKey(HttpStatus.SC_NO_CONTENT.toString())) {
+            successResponses.remove(HttpStatus.SC_NO_CONTENT.toString())
         }
 
         val javadoc =
