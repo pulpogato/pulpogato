@@ -25,7 +25,7 @@ image:https://img.shields.io/github/actions/workflow/status/pulpogato/pulpogato/
 
 // tag::installation[]
 
-For releases, you can use mavenCentral.
+For releases, you can use https://central.sonatype.com/[Maven Central].
 
 [source]
 ----
