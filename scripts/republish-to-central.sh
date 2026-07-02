@@ -31,7 +31,10 @@ CHECKSUM_SUFFIXES=("" ".asc" ".md5" ".sha1" ".sha256" ".sha512" ".asc.md5" ".asc
 
 fetch() {
     local url="$1" out="$2"
-    if curl -sf -u "x-access-token:${GITHUB_TOKEN}" -o "$out" "$url"; then
+    # GitHub Packages redirects downloads to pre-signed S3 URLs (3xx); -f alone
+    # doesn't catch that, so without -L curl "succeeds" while saving the HTML
+    # redirect body instead of the real artifact.
+    if curl -sfL -u "x-access-token:${GITHUB_TOKEN}" -o "$out" "$url"; then
         return 0
     fi
     rm -f "$out"
