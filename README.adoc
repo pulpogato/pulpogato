@@ -301,4 +301,4 @@ To run asciidoctor locally, run this command.
 ./gradlew asciidoctorDocs
 ----
 
-This task uses `asciidoctor/docker-asciidoctor:main` and writes output to `pulpogato-docs/build/index.html`.
+This task uses the Gradle Asciidoctor plugin and writes output to `pulpogato-docs/build/index.html`.
