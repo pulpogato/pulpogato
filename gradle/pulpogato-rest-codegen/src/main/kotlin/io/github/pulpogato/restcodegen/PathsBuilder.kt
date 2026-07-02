@@ -335,7 +335,7 @@ class PathsBuilder {
                       <li>{@code DefaultHeadersExchangeFunction}
                     (adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers)</li>
                       <li>{@code NoContentExchangeFunction} (handles 204 responses)</li>
-                    <ul>
+                    </ul>
 
                     @see #RestClients(WebClient, List)
                     """.trimIndent(),
