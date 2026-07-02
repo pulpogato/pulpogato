@@ -10,6 +10,7 @@ import io.github.pulpogato.rest.schemas.ContentFile;
 import io.github.pulpogato.rest.schemas.CustomPropertyValue;
 import io.github.pulpogato.rest.schemas.FullRepository;
 import io.github.pulpogato.rest.schemas.SecurityAndAnalysis;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +137,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var content = body.getContent().replace("\n", "");
         assertThat(content).isNotNull();
-        var decoded = new String(Base64.getDecoder().decode(content));
+        var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
         assertThat(decoded).startsWith("= Pulpogato");
     }
 
@@ -154,7 +155,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var content = body.getContentFile().getContent().replace("\n", "");
         assertThat(content).isNotNull();
-        var decoded = new String(Base64.getDecoder().decode(content));
+        var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
         assertThat(decoded).startsWith("= Pulpogato");
     }
 

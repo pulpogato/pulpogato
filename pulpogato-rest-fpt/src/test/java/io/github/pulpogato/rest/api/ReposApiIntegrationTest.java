@@ -129,7 +129,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var content = body.getContent().replace("\n", "");
         assertThat(content).isNotNull();
-        var decoded = new String(Base64.getDecoder().decode(content));
+        var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
         assertThat(decoded).startsWith("= Pulpogato");
     }
 
@@ -146,7 +146,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var content = body.getContentFile().getContent().replace("\n", "");
         assertThat(content).isNotNull();
-        var decoded = new String(Base64.getDecoder().decode(content));
+        var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
         assertThat(decoded).startsWith("= Pulpogato");
     }
 
