@@ -36,6 +36,7 @@ springBoot = "4.1.0"
 swaggerParser = "2.1.45"
 testLogger = "4.0.0"
 waena = "0.28.0"
+asciidoctor = "4.0.5"
 
 [libraries]
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
@@ -98,3 +99,4 @@ spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }
 waenaPublished = { id = "com.github.rahulsom.waena.published", version.ref = "waena" }
 waenaRoot = { id = "com.github.rahulsom.waena.root", version.ref = "waena" }
+asciidoctor = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }
