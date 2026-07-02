@@ -412,7 +412,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     }
 
     @Test
-    void testUnrchiveRepository() {
+    void testUnarchiveRepository() {
         var api = new RestClients(webClient).getReposApi();
         var response = api.update(
                 "pulpogato",
