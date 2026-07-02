@@ -77,7 +77,9 @@ class PathsBuilder {
      * @param mainDir The directory where generated source files will be written
      * @param testDir The directory where generated test files will be written
      * @param packageName The target Java package name for generated classes
+     * @param enumConvertersPackageName The target Java package name for generated enum converter classes
      * @param enumConverters A mutable set to collect enum converter class names for later processing
+     * @param reactiveReturnTypes Whether generated methods should return reactive ({@code Mono}) types
      */
     fun buildApis(
         context: Context,
@@ -410,6 +412,7 @@ class PathsBuilder {
      * @param testClass The test class builder to which test methods will be added
      * @param enumConverters A mutable set to collect enum converter class names
      * @param testResourcesDir The directory where test resource files will be stored
+     * @param reactiveReturnTypes Whether the generated method should return a reactive ({@code Mono}) type
      */
     private fun buildMethod(
         context: Context,
@@ -582,6 +585,8 @@ class PathsBuilder {
      * @param contentType The content type of the response
      * @param parameterSpecs The list of parameter specifications for the method
      * @param respRef The type name reference for the response type
+     * @param reactiveReturnTypes Whether the generated method should return a reactive ({@code Mono}) type
+     * @param responseBodyNullable Whether the response body should be annotated as nullable (e.g. when a 204 response is also possible)
      * @return A MethodSpec object representing the generated method
      */
     private fun buildNonVoidMethod(
@@ -647,6 +652,7 @@ class PathsBuilder {
      * @param atomicMethod The atomic method representing the API operation
      * @param javadoc The Javadoc documentation for the method
      * @param parameters The list of parameter pairs (OpenAPI Parameter and ParameterSpec)
+     * @param reactiveReturnTypes Whether the generated method should return a reactive ({@code Mono}) type
      * @return A MethodSpec object representing the generated void method
      */
     private fun buildVoidMethod(
