@@ -1,0 +1,63 @@
+<script>
+(function () {
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+        }
+
+        var textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+            document.execCommand("copy");
+            return Promise.resolve();
+        } catch (error) {
+            return Promise.reject(error);
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+
+    function setButtonText(button, text) {
+        button.textContent = text;
+        window.setTimeout(function () {
+            button.textContent = "Copy";
+        }, 1200);
+    }
+
+    function addCopyButton(listingBlock) {
+        var content = listingBlock.querySelector(":scope > .content");
+        var code = listingBlock.querySelector("pre code");
+
+        if (!content || !code) {
+            return;
+        }
+
+        var button = document.createElement("button");
+        button.className = "copy-code-button";
+        button.type = "button";
+        button.textContent = "Copy";
+        button.setAttribute("aria-label", "Copy code block");
+        button.addEventListener("click", function () {
+            copyText(code.innerText).then(
+                function () {
+                    setButtonText(button, "Copied");
+                },
+                function () {
+                    setButtonText(button, "Failed");
+                },
+            );
+        });
+        content.appendChild(button);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".listingblock").forEach(addCopyButton);
+    });
+})();
+</script>
