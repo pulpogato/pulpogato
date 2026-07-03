@@ -4,21 +4,38 @@
 }
 
 .listingblock > .content > pre {
-    padding-right: 4.75rem;
+    padding-right: 3rem;
 }
 
 .listingblock .copy-code-button {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     background: #fff;
-    color: rgba(0, 0, 0, 0.75);
-    font-family: "Open Sans", "DejaVu Sans", sans-serif;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     line-height: 1;
-    padding: 0.35rem 0.5rem;
+    padding: 0.25rem 0.35rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.listingblock:hover .copy-code-button,
+.listingblock:focus-within .copy-code-button {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (hover: none) {
+    .listingblock .copy-code-button {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 .listingblock .copy-code-button:hover,

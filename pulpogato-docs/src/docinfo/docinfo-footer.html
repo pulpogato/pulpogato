@@ -23,11 +23,26 @@
         }
     }
 
-    function setButtonText(button, text) {
-        button.textContent = text;
-        window.setTimeout(function () {
-            button.textContent = "Copy";
-        }, 1200);
+    var copyEmoji = {
+        copy: "📋",
+        copied: "✅",
+        failed: "❌",
+    };
+
+    var copyLabels = {
+        copy: "Copy code block",
+        copied: "Copied",
+        failed: "Copy failed",
+    };
+
+    function setButtonIcon(button, state) {
+        button.textContent = copyEmoji[state];
+        button.setAttribute("aria-label", copyLabels[state]);
+        if (state !== "copy") {
+            window.setTimeout(function () {
+                setButtonIcon(button, "copy");
+            }, 1200);
+        }
     }
 
     function addCopyButton(listingBlock) {
@@ -41,15 +56,14 @@
         var button = document.createElement("button");
         button.className = "copy-code-button";
         button.type = "button";
-        button.textContent = "Copy";
-        button.setAttribute("aria-label", "Copy code block");
+        setButtonIcon(button, "copy");
         button.addEventListener("click", function () {
             copyText(code.innerText).then(
                 function () {
-                    setButtonText(button, "Copied");
+                    setButtonIcon(button, "copied");
                 },
                 function () {
-                    setButtonText(button, "Failed");
+                    setButtonIcon(button, "failed");
                 },
             );
         });
