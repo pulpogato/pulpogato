@@ -48,7 +48,11 @@ repositories {
 }
 
 allprojects {
-    group = "io.github.pulpogato"
+    group =
+        when (System.getenv("JITPACK")) {
+            "true" -> "com.github.pulpogato.pulpogato"
+            else -> "io.github.pulpogato"
+        }
     apply(plugin = "com.diffplug.spotless")
 
     configure<SpotlessExtension> {

@@ -25,20 +25,45 @@ image:https://img.shields.io/github/actions/workflow/status/pulpogato/pulpogato/
 
 // tag::installation[]
 
-For releases, you can use https://central.sonatype.com/[Maven Central].
+For releases, you can use https://central.sonatype.com/[Maven Central], https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package[GitHub Packages], or https://jitpack.io[JitPack].
+
+The maven group id is `io.github.pulpogato`.
+Most maven artifact ids are `pulpogato-<api-type>-<gh-version>`.
+The `api-type` is one of `graphql` or `rest`.
+The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
+To align versions across all Pulpogato modules, use the artifact `pulpogato-bom`.
+
+=== Maven Central
+
+This would be the URL for Maven Central.
 
 [source]
 ----
 https://repo.maven.apache.org/maven2/
 ----
 
-Or you can use https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package[GitHub Packages].
-This would be the URL for that.
+=== GitHub Packages
+
+This would be the URL for GitHub Packages.
 
 [source]
 ----
 https://maven.pkg.github.com/pulpogato/pulpogato
 ----
+
+=== Jitpack
+
+This would be the URL for Jitpack.
+
+[source]
+----
+https://jitpack.io/
+----
+
+Jitpack uses a different groupId for the artifact, though.
+Instead of `io.github.pulpogato`, you would use `com.github.pulpogato.pulpogato`.
+
+=== Sonatype Snapshots
 
 For snapshots, use this url.
 
@@ -47,17 +72,7 @@ For snapshots, use this url.
 https://central.sonatype.com/repository/maven-snapshots/
 ----
 
-The maven group id is `io.github.pulpogato`.
-
-Most maven artifact ids are `pulpogato-<api-type>-<gh-version>`.
-
-The `api-type` is one of `graphql` or `rest`.
-
-The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
-
-To align versions across all Pulpogato modules, use `io.github.pulpogato:pulpogato-bom`.
-
-.Example in a gradle kotlin build script
+.Example in a Gradle kotlin build script
 [%collapsible]
 ====
 [source,kotlin]
@@ -67,6 +82,10 @@ ext {
     set("netflixDgsVersion", "9.1.2")
     set("ghVersion", "fpt")
     set("pulpogatoVersion", "2.8.0")
+}
+
+repositories {
+    mavenCentral()
 }
 
 val ghVersion: String by project.ext
