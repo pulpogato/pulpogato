@@ -702,12 +702,19 @@ pre.rouge {
 <div id="header">
 <h1>Pulpogato</h1>
 <div class="details">
-<span id="revnumber">version 3.2.0-dev.32+1fec667</span>
+<span id="revnumber">version 3.2.0-dev.34+8c55741</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_installation">Installation</a></li>
+<li><a href="#_installation">Installation</a>
+<ul class="sectlevel2">
+<li><a href="#_maven_central">Maven Central</a></li>
+<li><a href="#_github_packages">GitHub Packages</a></li>
+<li><a href="#_jitpack">Jitpack</a></li>
+<li><a href="#_sonatype_snapshots">Sonatype Snapshots</a></li>
+</ul>
+</li>
 <li><a href="#_available_versions">Available versions</a>
 <ul class="sectlevel2">
 <li><a href="#_shared_modules">Shared modules</a></li>
@@ -754,22 +761,54 @@ pre.rouge {
 <h2 id="_installation">Installation</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>For releases, you can use <a href="https://central.sonatype.com/">Maven Central</a>.</p>
+<p>For releases, you can use <a href="https://central.sonatype.com/">Maven Central</a>, <a href="https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package">GitHub Packages</a>, or <a href="https://jitpack.io">JitPack</a>.</p>
+</div>
+<div class="paragraph">
+<p>The maven group id is <code>io.github.pulpogato</code>.
+Most maven artifact ids are <code>pulpogato-&lt;api-type&gt;-&lt;gh-version&gt;</code>.
+The <code>api-type</code> is one of <code>graphql</code> or <code>rest</code>.
+The <code>gh-version</code> is one of <code>ghec</code>,<code>fpt</code>, or <code>ghes-&lt;GHES-version&gt;</code>.
+To align versions across all Pulpogato modules, use the artifact <code>pulpogato-bom</code>.</p>
+</div>
+<div class="sect2">
+<h3 id="_maven_central">Maven Central</h3>
+<div class="paragraph">
+<p>This would be the URL for Maven Central.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code>https://repo.maven.apache.org/maven2/</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_github_packages">GitHub Packages</h3>
 <div class="paragraph">
-<p>Or you can use <a href="https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package">GitHub Packages</a>.
-This would be the URL for that.</p>
+<p>This would be the URL for GitHub Packages.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code>https://maven.pkg.github.com/pulpogato/pulpogato</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_jitpack">Jitpack</h3>
+<div class="paragraph">
+<p>This would be the URL for Jitpack.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code>https://jitpack.io/</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Jitpack uses a different groupId for the artifact, though.
+Instead of <code>io.github.pulpogato</code>, you would use <code>com.github.pulpogato.pulpogato</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sonatype_snapshots">Sonatype Snapshots</h3>
 <div class="paragraph">
 <p>For snapshots, use this url.</p>
 </div>
@@ -778,23 +817,8 @@ This would be the URL for that.</p>
 <pre class="rouge highlight"><code>https://central.sonatype.com/repository/maven-snapshots/</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>The maven group id is <code>io.github.pulpogato</code>.</p>
-</div>
-<div class="paragraph">
-<p>Most maven artifact ids are <code>pulpogato-&lt;api-type&gt;-&lt;gh-version&gt;</code>.</p>
-</div>
-<div class="paragraph">
-<p>The <code>api-type</code> is one of <code>graphql</code> or <code>rest</code>.</p>
-</div>
-<div class="paragraph">
-<p>The <code>gh-version</code> is one of <code>ghec</code>,<code>fpt</code>, or <code>ghes-&lt;GHES-version&gt;</code>.</p>
-</div>
-<div class="paragraph">
-<p>To align versions across all Pulpogato modules, use <code>io.github.pulpogato:pulpogato-bom</code>.</p>
-</div>
 <details>
-<summary class="title">Example in a gradle kotlin build script</summary>
+<summary class="title">Example in a Gradle kotlin build script</summary>
 <div class="content">
 <div class="listingblock">
 <div class="content">
@@ -803,6 +827,10 @@ This would be the URL for that.</p>
     <span class="k">set</span><span class="p">(</span><span class="s">"netflixDgsVersion"</span><span class="p">,</span> <span class="s">"9.1.2"</span><span class="p">)</span>
     <span class="k">set</span><span class="p">(</span><span class="s">"ghVersion"</span><span class="p">,</span> <span class="s">"fpt"</span><span class="p">)</span>
     <span class="k">set</span><span class="p">(</span><span class="s">"pulpogatoVersion"</span><span class="p">,</span> <span class="s">"2.8.0"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nf">repositories</span> <span class="p">{</span>
+    <span class="nf">mavenCentral</span><span class="p">()</span>
 <span class="p">}</span>
 
 <span class="kd">val</span> <span class="py">ghVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
@@ -824,6 +852,7 @@ This would be the URL for that.</p>
 </div>
 </div>
 </details>
+</div>
 </div>
 </div>
 <div class="sect1">
