@@ -1,6 +1,7 @@
 package io.github.pulpogato.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -69,6 +70,16 @@ class NullableOptionalTest {
         assertThatThrownBy(optional::getValue)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("No value present");
+    }
+
+    @Test
+    void hashCodeDoesNotThrowWhenNotSet() {
+        assertThatCode(() -> NullableOptional.notSet().hashCode()).doesNotThrowAnyException();
+    }
+
+    @Test
+    void hashCodeDoesNotThrowWhenNull() {
+        assertThatCode(() -> NullableOptional.ofNull().hashCode()).doesNotThrowAnyException();
     }
 
     @Test
