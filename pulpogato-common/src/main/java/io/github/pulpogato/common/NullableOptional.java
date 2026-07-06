@@ -41,7 +41,7 @@ import lombok.EqualsAndHashCode;
 @tools.jackson.databind.annotation.JsonDeserialize(using = NullableOptionalJackson3Deserializer.class)
 @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = NullableOptionalJackson2Serializer.class)
 @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = NullableOptionalJackson2Deserializer.class)
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 public final class NullableOptional<T> implements PulpogatoType {
 
     private enum State {
