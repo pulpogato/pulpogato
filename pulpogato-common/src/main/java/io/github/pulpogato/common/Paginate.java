@@ -1,5 +1,6 @@
 package io.github.pulpogato.common;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.ToIntFunction;
@@ -45,5 +46,24 @@ public class Paginate {
                 Stream.iterate(2L, page -> page + 1)
                         .limit(pages - 1)
                         .flatMap(page -> extractItems.apply(fetchPage.apply(page))));
+    }
+
+    /**
+     * Creates a stream of items from paginated API responses that don't report a total page count,
+     * such as {@code io.github.pulpogato.rest.api.ReposApi#listBranches}. Pages are fetched lazily,
+     * starting from page 1, and fetching stops as soon as a page comes back empty (or {@code maxPages}
+     * is reached), since these APIs signal the end of pagination by returning a short or empty page.
+     *
+     * @param <T>       the type of items to be extracted from each page
+     * @param maxPages  the maximum number of pages to fetch (prevents infinite pagination)
+     * @param fetchPage function that takes a page number (1-based) and returns the list of items for that page
+     * @return a stream containing all items from the fetched pages
+     */
+    public <T> Stream<T> from(final long maxPages, final LongFunction<@NonNull List<T>> fetchPage) {
+        return Stream.iterate(1L, page -> page + 1)
+                .limit(maxPages)
+                .map(fetchPage::apply)
+                .takeWhile(items -> !items.isEmpty())
+                .flatMap(List::stream);
     }
 }

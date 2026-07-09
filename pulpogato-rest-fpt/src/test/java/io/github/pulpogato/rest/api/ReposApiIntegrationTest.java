@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.pulpogato.common.NullableOptional;
+import io.github.pulpogato.common.Paginate;
 import io.github.pulpogato.common.SingularOrPlural;
 import io.github.pulpogato.rest.schemas.ContentFile;
 import io.github.pulpogato.rest.schemas.CustomPropertyValue;
 import io.github.pulpogato.rest.schemas.FullRepository;
 import io.github.pulpogato.rest.schemas.RulesetVersion;
 import io.github.pulpogato.rest.schemas.SecurityAndAnalysis;
+import io.github.pulpogato.rest.schemas.ShortBranch;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -37,6 +39,54 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(tags).hasSize(2);
         assertThat(tags.get(0).getName()).isEqualTo("v0.2.0");
         assertThat(tags.get(1).getName()).isEqualTo("v0.1.0");
+    }
+
+    @Test
+    void testListBranchesPaginated() {
+        var api = new RestClients(webClient).getReposApi();
+        var perPage = 5L;
+
+        var branches = new Paginate()
+                .from(25, page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
+                        .getBody())
+                .toList();
+
+        var allBranches = api.listBranches("jenkinsci", "gradle-jpi-plugin", null, 100L, 1L)
+                .getBody();
+        assertThat(branches).hasSize(24);
+        assertThat(branches)
+                .extracting(ShortBranch::getName)
+                .containsExactlyElementsOf(
+                        allBranches.stream().map(ShortBranch::getName).toList());
+        assertThat(branches)
+                .filteredOn(ShortBranch::getName, "main")
+                .extracting(ShortBranch::getIsProtected)
+                .containsExactly(true);
+    }
+
+    @Test
+    void testListBranchesPaginatedRespectsMaxPages() {
+        var api = new RestClients(webClient).getReposApi();
+        var perPage = 1L;
+
+        var branches = new Paginate()
+                .from(1, page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
+                        .getBody())
+                .toList();
+
+        assertThat(branches).extracting(ShortBranch::getName).containsExactly("gh-pages");
+    }
+
+    @Test
+    void testListBranchesPaginatedNoResults() {
+        var api = new RestClients(webClient).getReposApi();
+
+        var branches = new Paginate()
+                .from(10, page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
+                        .getBody())
+                .toList();
+
+        assertThat(branches).isEmpty();
     }
 
     @Test
