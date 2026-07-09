@@ -2,8 +2,12 @@ package io.github.pulpogato.rest.api.reactive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.common.Paginate;
 import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
+import io.github.pulpogato.rest.schemas.RepoSearchResultItem;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
+import reactor.core.publisher.Flux;
 
 class SearchApiIntegrationTest extends BaseApiIntegrationTest {
 
@@ -39,6 +43,27 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
         assertThat(searchResult.getItems()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void testSearchRepositoriesPaginated() {
+        var api = new RestClients(webClient).getSearchApi();
+        var perPage = 1L;
+
+        var repos = new Paginate()
+                .fromReactive(
+                        8,
+                        page -> api.repos("pulpogato", null, null, perPage, page)
+                                .map(ResponseEntity::getBody),
+                        response -> Flux.fromIterable(response.getItems()),
+                        response -> (int) Math.ceil(response.getTotalCount() / (double) perPage))
+                .collectList()
+                .block();
+
+        // total_count is 20, but the maxPages cap of 8 (with per_page=1) stops us short of that
+        assertThat(repos).hasSize(8);
+        assertThat(repos).extracting(RepoSearchResultItem::getFullName).doesNotHaveDuplicates();
+        assertThat(repos).extracting(RepoSearchResultItem::getFullName).contains("pulpogato/pulpogato");
     }
 
     @Test
