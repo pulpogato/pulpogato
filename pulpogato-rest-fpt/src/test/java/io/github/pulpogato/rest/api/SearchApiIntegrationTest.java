@@ -2,6 +2,8 @@ package io.github.pulpogato.rest.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.common.Paginate;
+import io.github.pulpogato.rest.schemas.RepoSearchResultItem;
 import org.junit.jupiter.api.Test;
 
 class SearchApiIntegrationTest extends BaseApiIntegrationTest {
@@ -38,6 +40,26 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
         var searchResult = response.getBody();
         assertThat(searchResult.getTotalCount()).isNotNull();
         assertThat(searchResult.getItems()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void testSearchRepositoriesPaginated() {
+        var api = new RestClients(webClient).getSearchApi();
+        var perPage = 1L;
+
+        var repos = new Paginate()
+                .from(
+                        8,
+                        page -> api.repos("pulpogato", null, null, perPage, page)
+                                .getBody(),
+                        response -> response.getItems().stream(),
+                        response -> (int) Math.ceil(response.getTotalCount() / (double) perPage))
+                .toList();
+
+        // total_count is 20, but the maxPages cap of 8 (with per_page=1) stops us short of that
+        assertThat(repos).hasSize(8);
+        assertThat(repos).extracting(RepoSearchResultItem::getFullName).doesNotHaveDuplicates();
+        assertThat(repos).extracting(RepoSearchResultItem::getFullName).contains("pulpogato/pulpogato");
     }
 
     @Test

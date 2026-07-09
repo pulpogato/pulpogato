@@ -1,0 +1,30 @@
+- request:
+    method: GET
+    uri: /repos/pulpogato/create-demo/branches?protected=true&per_page=100&page=1
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 301
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Location: https://api.github.com/repositories/952818951/branches?protected=true&per_page=100&page=1
+    bodyIsBinary: false
+    body: |-
+      {
+        "message" : "Moved Permanently",
+        "url" : "https://api.github.com/repositories/952818951/branches?protected=true&per_page=100&page=1",
+        "documentation_url" : "https://docs.github.com/rest/guides/best-practices-for-using-the-rest-api#follow-redirects"
+      }
+- request:
+    method: GET
+    uri: /repositories/952818951/branches?protected=true&per_page=100&page=1
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+    bodyIsBinary: false
+    body: "[ ]"

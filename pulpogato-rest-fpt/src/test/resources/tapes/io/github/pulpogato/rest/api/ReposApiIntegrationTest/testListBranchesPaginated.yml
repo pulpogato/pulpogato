@@ -1,0 +1,457 @@
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=5&page=1
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+      Link: "<https://api.github.com/repositories/2976872/branches?per_page=5&page=2>;\
+        \ rel=\"next\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"last\""
+    bodyIsBinary: false
+    body: |-
+      [ {
+        "name" : "accmod-toolchain",
+        "commit" : {
+          "sha" : "714cb1afb32117f84f9445786905c0a4dcf43666",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/714cb1afb32117f84f9445786905c0a4dcf43666"
+        },
+        "protected" : false
+      }, {
+        "name" : "feature/nix",
+        "commit" : {
+          "sha" : "f4f4613bb9be07fd38dfbc82062504e6d3c50bb0",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/f4f4613bb9be07fd38dfbc82062504e6d3c50bb0"
+        },
+        "protected" : false
+      }, {
+        "name" : "feature/remote-exec",
+        "commit" : {
+          "sha" : "e93896a56933692b767d19bc12f702011be21c1a",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/e93896a56933692b767d19bc12f702011be21c1a"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/ci",
+        "commit" : {
+          "sha" : "ec7194e8098d6a2322fbc7147f15b97671078230",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/ec7194e8098d6a2322fbc7147f15b97671078230"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/jvm-args",
+        "commit" : {
+          "sha" : "5fcebbb1d125dd4ecb47033c470d1f8e470b2ce0",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/5fcebbb1d125dd4ecb47033c470d1f8e470b2ce0"
+        },
+        "protected" : false
+      } ]
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=5&page=2
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+      Link: "<https://api.github.com/repositories/2976872/branches?per_page=5&page=1>;\
+        \ rel=\"prev\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=3>;\
+        \ rel=\"next\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"last\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=1>;\
+        \ rel=\"first\""
+    bodyIsBinary: false
+    body: |-
+      [ {
+        "name" : "fix/project-ref",
+        "commit" : {
+          "sha" : "e3fd27ff49b738b8a40b8ea4c0bc36a94e932697",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/e3fd27ff49b738b8a40b8ea4c0bc36a94e932697"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/test-annotation",
+        "commit" : {
+          "sha" : "feedb8c276b52f28e804b1ad74cf346a5c21c1a8",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/feedb8c276b52f28e804b1ad74cf346a5c21c1a8"
+        },
+        "protected" : false
+      }, {
+        "name" : "gradle-8.5",
+        "commit" : {
+          "sha" : "5deca30757717b33b63a3bd3a035e0ddcf44dd49",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/5deca30757717b33b63a3bd3a035e0ddcf44dd49"
+        },
+        "protected" : false
+      }, {
+        "name" : "jdk-8",
+        "commit" : {
+          "sha" : "c7e31f0d53724d0395ba961bce5023e8fd70bac1",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/c7e31f0d53724d0395ba961bce5023e8fd70bac1"
+        },
+        "protected" : false
+      }, {
+        "name" : "jdk-11",
+        "commit" : {
+          "sha" : "63a6fe9d1f3fcf6697004e2f8075fa2711cdb703",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/63a6fe9d1f3fcf6697004e2f8075fa2711cdb703"
+        },
+        "protected" : false
+      } ]
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=5&page=3
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+      Link: "<https://api.github.com/repositories/2976872/branches?per_page=5&page=2>;\
+        \ rel=\"prev\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=4>;\
+        \ rel=\"next\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"last\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=1>;\
+        \ rel=\"first\""
+    bodyIsBinary: false
+    body: |-
+      [ {
+        "name" : "main",
+        "commit" : {
+          "sha" : "d52a19414f56db5b5437ad1c8af4de280e905a3b",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/d52a19414f56db5b5437ad1c8af4de280e905a3b"
+        },
+        "protected" : true
+      }, {
+        "name" : "pull/227/head",
+        "commit" : {
+          "sha" : "6b0931bd77ff1d4476615824e290ed6fecb4712f",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/6b0931bd77ff1d4476615824e290ed6fecb4712f"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/actions-checkout-7.x",
+        "commit" : {
+          "sha" : "fc9418b358a555d9dfc1e80c559ebc9e4085820e",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/fc9418b358a555d9dfc1e80c559ebc9e4085820e"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/codenarc-3.x",
+        "commit" : {
+          "sha" : "d8db4bd651cc22d7d2c7e56be6e6cf3cedc26829",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/d8db4bd651cc22d7d2c7e56be6e6cf3cedc26829"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/com.gradle.develocity-4.x",
+        "commit" : {
+          "sha" : "dcf742206f665103980f3ff64c98e2c6a4e792ec",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/dcf742206f665103980f3ff64c98e2c6a4e792ec"
+        },
+        "protected" : false
+      } ]
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=5&page=4
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+      Link: "<https://api.github.com/repositories/2976872/branches?per_page=5&page=3>;\
+        \ rel=\"prev\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"next\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"last\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=1>;\
+        \ rel=\"first\""
+    bodyIsBinary: false
+    body: |-
+      [ {
+        "name" : "renovate/gradle-9.x",
+        "commit" : {
+          "sha" : "0851e8c4afe13275a8910a6563bad8eedef1d673",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/0851e8c4afe13275a8910a6563bad8eedef1d673"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/jenkins",
+        "commit" : {
+          "sha" : "e568696fffbc0189af607c1534df817e28a1033d",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/e568696fffbc0189af607c1534df817e28a1033d"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/junit-framework-monorepo",
+        "commit" : {
+          "sha" : "2fa6c0c25c5bee46cdcf4fd0b930bbafe902fb1d",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/2fa6c0c25c5bee46cdcf4fd0b930bbafe902fb1d"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/kotlin-monorepo",
+        "commit" : {
+          "sha" : "c1e088c01ee05c32a1b1b3376d082a98bf85ca51",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/c1e088c01ee05c32a1b1b3376d082a98bf85ca51"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/major-guava-monorepo",
+        "commit" : {
+          "sha" : "d165bca50fed8496383711922dcc58f8a642d8f7",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/d165bca50fed8496383711922dcc58f8a642d8f7"
+        },
+        "protected" : false
+      } ]
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=5&page=5
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+      Link: "<https://api.github.com/repositories/2976872/branches?per_page=5&page=4>;\
+        \ rel=\"prev\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=1>;\
+        \ rel=\"first\""
+    bodyIsBinary: false
+    body: |-
+      [ {
+        "name" : "renovate/major-okhttp-monorepo",
+        "commit" : {
+          "sha" : "104ad715d9019b5828a386c97f306e8cb684029d",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/104ad715d9019b5828a386c97f306e8cb684029d"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/spotbugs.gradle",
+        "commit" : {
+          "sha" : "96b425e1a14d3b7515adc54885a3a3210896ca2a",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/96b425e1a14d3b7515adc54885a3a3210896ca2a"
+        },
+        "protected" : false
+      }, {
+        "name" : "sghill-patch-1",
+        "commit" : {
+          "sha" : "2717072fa244abe521377966126b02ea8c4587f8",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/2717072fa244abe521377966126b02ea8c4587f8"
+        },
+        "protected" : false
+      }, {
+        "name" : "simplify-manifest",
+        "commit" : {
+          "sha" : "012fdb9d173f6cfd8cbc59e7916db703a8a1a090",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/012fdb9d173f6cfd8cbc59e7916db703a8a1a090"
+        },
+        "protected" : false
+      } ]
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=5&page=6
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Link: "<https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"prev\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=5>;\
+        \ rel=\"last\", <https://api.github.com/repositories/2976872/branches?per_page=5&page=1>;\
+        \ rel=\"first\""
+    bodyIsBinary: false
+    body: "[ ]"
+- request:
+    method: GET
+    uri: /repos/jenkinsci/gradle-jpi-plugin/branches?per_page=100&page=1
+    protocol: HTTP/1.1
+    headers:
+      Accept: application/json
+  response:
+    statusCode: 200
+    headers:
+      Content-Type: application/json; charset=utf-8
+      Transfer-Encoding: chunked
+    bodyIsBinary: false
+    body: |-
+      [ {
+        "name" : "accmod-toolchain",
+        "commit" : {
+          "sha" : "714cb1afb32117f84f9445786905c0a4dcf43666",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/714cb1afb32117f84f9445786905c0a4dcf43666"
+        },
+        "protected" : false
+      }, {
+        "name" : "feature/nix",
+        "commit" : {
+          "sha" : "f4f4613bb9be07fd38dfbc82062504e6d3c50bb0",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/f4f4613bb9be07fd38dfbc82062504e6d3c50bb0"
+        },
+        "protected" : false
+      }, {
+        "name" : "feature/remote-exec",
+        "commit" : {
+          "sha" : "e93896a56933692b767d19bc12f702011be21c1a",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/e93896a56933692b767d19bc12f702011be21c1a"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/ci",
+        "commit" : {
+          "sha" : "ec7194e8098d6a2322fbc7147f15b97671078230",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/ec7194e8098d6a2322fbc7147f15b97671078230"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/jvm-args",
+        "commit" : {
+          "sha" : "5fcebbb1d125dd4ecb47033c470d1f8e470b2ce0",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/5fcebbb1d125dd4ecb47033c470d1f8e470b2ce0"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/project-ref",
+        "commit" : {
+          "sha" : "e3fd27ff49b738b8a40b8ea4c0bc36a94e932697",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/e3fd27ff49b738b8a40b8ea4c0bc36a94e932697"
+        },
+        "protected" : false
+      }, {
+        "name" : "fix/test-annotation",
+        "commit" : {
+          "sha" : "feedb8c276b52f28e804b1ad74cf346a5c21c1a8",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/feedb8c276b52f28e804b1ad74cf346a5c21c1a8"
+        },
+        "protected" : false
+      }, {
+        "name" : "gradle-8.5",
+        "commit" : {
+          "sha" : "5deca30757717b33b63a3bd3a035e0ddcf44dd49",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/5deca30757717b33b63a3bd3a035e0ddcf44dd49"
+        },
+        "protected" : false
+      }, {
+        "name" : "jdk-8",
+        "commit" : {
+          "sha" : "c7e31f0d53724d0395ba961bce5023e8fd70bac1",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/c7e31f0d53724d0395ba961bce5023e8fd70bac1"
+        },
+        "protected" : false
+      }, {
+        "name" : "jdk-11",
+        "commit" : {
+          "sha" : "63a6fe9d1f3fcf6697004e2f8075fa2711cdb703",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/63a6fe9d1f3fcf6697004e2f8075fa2711cdb703"
+        },
+        "protected" : false
+      }, {
+        "name" : "main",
+        "commit" : {
+          "sha" : "d52a19414f56db5b5437ad1c8af4de280e905a3b",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/d52a19414f56db5b5437ad1c8af4de280e905a3b"
+        },
+        "protected" : true
+      }, {
+        "name" : "pull/227/head",
+        "commit" : {
+          "sha" : "6b0931bd77ff1d4476615824e290ed6fecb4712f",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/6b0931bd77ff1d4476615824e290ed6fecb4712f"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/actions-checkout-7.x",
+        "commit" : {
+          "sha" : "fc9418b358a555d9dfc1e80c559ebc9e4085820e",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/fc9418b358a555d9dfc1e80c559ebc9e4085820e"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/codenarc-3.x",
+        "commit" : {
+          "sha" : "d8db4bd651cc22d7d2c7e56be6e6cf3cedc26829",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/d8db4bd651cc22d7d2c7e56be6e6cf3cedc26829"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/com.gradle.develocity-4.x",
+        "commit" : {
+          "sha" : "dcf742206f665103980f3ff64c98e2c6a4e792ec",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/dcf742206f665103980f3ff64c98e2c6a4e792ec"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/gradle-9.x",
+        "commit" : {
+          "sha" : "0851e8c4afe13275a8910a6563bad8eedef1d673",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/0851e8c4afe13275a8910a6563bad8eedef1d673"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/jenkins",
+        "commit" : {
+          "sha" : "e568696fffbc0189af607c1534df817e28a1033d",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/e568696fffbc0189af607c1534df817e28a1033d"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/junit-framework-monorepo",
+        "commit" : {
+          "sha" : "2fa6c0c25c5bee46cdcf4fd0b930bbafe902fb1d",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/2fa6c0c25c5bee46cdcf4fd0b930bbafe902fb1d"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/kotlin-monorepo",
+        "commit" : {
+          "sha" : "c1e088c01ee05c32a1b1b3376d082a98bf85ca51",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/c1e088c01ee05c32a1b1b3376d082a98bf85ca51"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/major-guava-monorepo",
+        "commit" : {
+          "sha" : "d165bca50fed8496383711922dcc58f8a642d8f7",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/d165bca50fed8496383711922dcc58f8a642d8f7"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/major-okhttp-monorepo",
+        "commit" : {
+          "sha" : "104ad715d9019b5828a386c97f306e8cb684029d",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/104ad715d9019b5828a386c97f306e8cb684029d"
+        },
+        "protected" : false
+      }, {
+        "name" : "renovate/spotbugs.gradle",
+        "commit" : {
+          "sha" : "96b425e1a14d3b7515adc54885a3a3210896ca2a",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/96b425e1a14d3b7515adc54885a3a3210896ca2a"
+        },
+        "protected" : false
+      }, {
+        "name" : "sghill-patch-1",
+        "commit" : {
+          "sha" : "2717072fa244abe521377966126b02ea8c4587f8",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/2717072fa244abe521377966126b02ea8c4587f8"
+        },
+        "protected" : false
+      }, {
+        "name" : "simplify-manifest",
+        "commit" : {
+          "sha" : "012fdb9d173f6cfd8cbc59e7916db703a8a1a090",
+          "url" : "https://api.github.com/repos/jenkinsci/gradle-jpi-plugin/commits/012fdb9d173f6cfd8cbc59e7916db703a8a1a090"
+        },
+        "protected" : false
+      } ]

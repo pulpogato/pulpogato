@@ -105,4 +105,51 @@ class PaginateTest {
 
         assertThat(first).isPresent();
     }
+
+    @Mock
+    private LongFunction<List<String>> fetchListPage;
+
+    @Test
+    @DisplayName("Should return all items from a single page when there is no total page count")
+    void singlePageNoTotalPages() {
+        var paginate = new Paginate();
+        when(fetchListPage.apply(1L)).thenReturn(List.of("1", "2", "3"));
+        when(fetchListPage.apply(2L)).thenReturn(List.of());
+
+        var result = paginate.from(10, fetchListPage);
+        assertThat(result).containsExactly("1", "2", "3");
+    }
+
+    @Test
+    @DisplayName("Should concatenate items from multiple pages when there is no total page count")
+    void multiplePagesNoTotalPages() {
+        var paginate = new Paginate();
+        when(fetchListPage.apply(1L)).thenReturn(List.of("1", "2", "3"));
+        when(fetchListPage.apply(2L)).thenReturn(List.of("4", "5", "6"));
+        when(fetchListPage.apply(3L)).thenReturn(List.of());
+
+        var result = paginate.from(10, fetchListPage);
+        assertThat(result).containsExactly("1", "2", "3", "4", "5", "6");
+    }
+
+    @Test
+    @DisplayName("Should return empty stream when there is no data and no total page count")
+    void noDataNoTotalPages() {
+        var paginate = new Paginate();
+        when(fetchListPage.apply(1L)).thenReturn(List.of());
+
+        var result = paginate.from(10, fetchListPage);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should respect max pages limit when there is no total page count")
+    void limitPagesNoTotalPages() {
+        var paginate = new Paginate();
+        when(fetchListPage.apply(1L)).thenReturn(List.of("1", "2", "3"));
+        when(fetchListPage.apply(2L)).thenReturn(List.of("4", "5", "6"));
+
+        var result = paginate.from(2, fetchListPage);
+        assertThat(result).containsExactly("1", "2", "3", "4", "5", "6");
+    }
 }
