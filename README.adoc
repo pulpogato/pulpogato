@@ -33,6 +33,8 @@ The `api-type` is one of `graphql` or `rest`.
 The `gh-version` is one of `ghec`,`fpt`, or `ghes-<GHES-version>`.
 To align versions across all Pulpogato modules, use the artifact `pulpogato-bom`.
 
+Look at https://github.com/pulpogato/pulpogato-demo[the demo project] for a working example.
+
 === Maven Central
 
 This would be the URL for Maven Central.
@@ -62,6 +64,7 @@ https://jitpack.io/
 
 Jitpack uses a different groupId for the artifact, though.
 Instead of `io.github.pulpogato`, you would use `com.github.pulpogato.pulpogato`.
+Also, prefix the version with `v`, for example `v3.2.0` instead of `3.2.0`.
 
 === Sonatype Snapshots
 
