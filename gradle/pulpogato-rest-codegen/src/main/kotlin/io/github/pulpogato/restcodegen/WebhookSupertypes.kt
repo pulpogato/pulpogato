@@ -63,6 +63,27 @@ object WebhookSupertypes {
     }
 
     /**
+     * The body schema keys for subcategories with exactly one event, i.e. the schemas that are used
+     * directly as a `@RequestBody` rather than as a permitted subtype of a generated sealed supertype.
+     * Mirrors the `springEndpoint = v.size == 1` grouping in [WebhooksBuilder].
+     */
+    fun singleEventBodyKeys(openAPI: OpenAPI): Set<String> {
+        val webhooks = openAPI.webhooks ?: return emptySet()
+        return webhooks.entries
+            .groupBy {
+                subcategoryOf(
+                    it.value
+                        .readOperationsMap()
+                        .values
+                        .first(),
+                )
+            }.values
+            .filter { it.size == 1 }
+            .mapNotNull { requestBodySchemaKey(it.first().value) }
+            .toSet()
+    }
+
+    /**
      * The distinct values of a schema's `action` discriminator, or null when it can't be determined.
      *
      * Plain object bodies declare `action` directly. Composite (`oneOf`/`anyOf`) bodies — e.g.
