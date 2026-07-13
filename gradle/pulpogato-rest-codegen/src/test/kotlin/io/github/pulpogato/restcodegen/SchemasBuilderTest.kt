@@ -28,7 +28,7 @@ class SchemasBuilderTest {
 
         val supertype = readGenerated("WebhookThing")
         assertThat(supertype)
-            .contains("public sealed interface WebhookThing extends PulpogatoType")
+            .contains("public sealed interface WebhookThing extends WebhookEvent")
             .contains("permits")
             .contains("WebhookThingCreated")
             .contains("WebhookThingDeleted")

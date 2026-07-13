@@ -12,6 +12,7 @@ import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
+import com.palantir.javapoet.WildcardTypeName
 import io.github.pulpogato.restcodegen.Annotations.generated
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
@@ -81,6 +82,7 @@ class WebhooksBuilder {
         // The same supertypes SchemasBuilder generates; used here to route the synthetic handler
         // straight to the typed supertype when the subcategory can be deserialized polymorphically.
         val supertypesBySubcategory = WebhookSupertypes.compute(openAPI, "$restPackage.schemas").associateBy { it.subcategory }
+        val requestBodyTypeByEventName = linkedMapOf<String, ClassName>()
         openAPI.webhooks
             .entries
             .groupBy {
@@ -109,6 +111,12 @@ class WebhooksBuilder {
                 v.forEach { (name, webhook) ->
                     val requestBody =
                         createWebhookInterface(context, name, webhook, restPackage, builders, testResourcesDir)
+                    // Per-event methods only carry a real @RequestBody/header pairing when they ARE
+                    // the Spring endpoint (single-event subcategory); for multi-event subcategories
+                    // the only annotated endpoint is the synthetic dispatcher added below.
+                    if (builders.springEndpoint) {
+                        requestBodyTypeByEventName[name] = requestBody
+                    }
                     val methodName =
                         "process" +
                             webhook
@@ -129,6 +137,12 @@ class WebhooksBuilder {
                         builders,
                         v.first().value,
                     )
+                    // Only a discriminable supertype implements WebhookEvent; a non-discriminable group's
+                    // synthetic dispatcher reads JsonNode instead, which has no typed body to publish here.
+                    val supertype = builders.supertype
+                    if (supertype != null && supertype.discriminable) {
+                        requestBodyTypeByEventName[subcategory.replace("-", "_")] = supertype.supertype
+                    }
                 }
 
                 val interfaceSpec = interfaceBuilder.build()
@@ -152,6 +166,11 @@ class WebhooksBuilder {
                         .writeTo(testDir)
                 }
             }
+        JavaFile
+            .builder(webhooksPackage, buildWebhookEventTypes(requestBodyTypeByEventName))
+            .build()
+            .writeTo(mainDir)
+
         val testConfig = buildTestConfig(testControllerBuilder.build())
         val integrationTestBuilder = buildIntegrationTest(context, testConfig.build())
         JavaFile
@@ -454,6 +473,36 @@ class WebhooksBuilder {
             .build()
     }
 
+    /**
+     * Generates a lookup from each `X-Github-Event` header value to the request body type Spring
+     * deserializes it into, for callers that need to resolve a payload's type before dispatch.
+     */
+    private fun buildWebhookEventTypes(requestBodyTypeByEventName: Map<String, ClassName>): TypeSpec {
+        val webhookEvent = ClassName.get(Types.COMMON_PACKAGE, "WebhookEvent")
+        val classOfWildcard = ParameterizedTypeName.get(ClassName.get(Class::class.java), WildcardTypeName.subtypeOf(webhookEvent))
+        val mapType = ParameterizedTypeName.get(Types.MAP, Types.STRING, classOfWildcard)
+
+        // Explicit type witness avoids "vararg method call with 50+ poly arguments" javac warning.
+        val initializer = CodeBlock.builder().add($$"$T.<$T, $T>ofEntries(\n", Types.MAP, Types.STRING, classOfWildcard).indent()
+        requestBodyTypeByEventName.entries.forEachIndexed { index, (eventName, type) ->
+            initializer.add($$"$T.entry($S, $T.class)", Types.MAP, eventName, type)
+            initializer.add(if (index == requestBodyTypeByEventName.size - 1) "\n" else ",\n")
+        }
+        initializer.unindent().add(")")
+
+        return TypeSpec
+            .classBuilder("WebhookEventTypes")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .addJavadoc("Maps each {@code X-Github-Event} header value to its webhook request body type.\n")
+            .addField(
+                FieldSpec
+                    .builder(mapType, "BY_EVENT_NAME", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                    .initializer(initializer.build())
+                    .build(),
+            ).addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build())
+            .build()
+    }
+
     private fun getUnitTestBuilder(subcategory: String): TypeSpec.Builder =
         TypeSpec
             .classBuilder("${subcategory.pascalCase()}WebhooksTest")
@@ -577,21 +626,6 @@ class WebhooksBuilder {
             .addAnnotation(AnnotationSpec.builder(ClassName.get(PACKAGE_SPRING_WEB_BIND_ANNOTATION, "RequestBody")).build())
             .addAnnotation(generated(0, context))
             .build()
-
-    /**
-     * Routes a polymorphically-deserialized webhook body to its typed handler. The switch over the
-     * sealed supertype is exhaustive, so no default branch is needed.
-     */
-    private fun buildTypedRouter(requestBodyTypes: Map<String, Pair<String, ClassName>>): CodeBlock {
-        val code = CodeBlock.builder()
-        code.add("return switch (requestBody) {\n")
-        requestBodyTypes.forEach { (_, methodNameAndType) ->
-            val (methodName, type) = methodNameAndType
-            code.add($$"    case $T body -> $L(headers, body);\n", type, methodName)
-        }
-        code.add("};\n")
-        return code.build()
-    }
 
     private fun buildRouter(
         requestBodyTypes: Map<String, Pair<String, ClassName>>,

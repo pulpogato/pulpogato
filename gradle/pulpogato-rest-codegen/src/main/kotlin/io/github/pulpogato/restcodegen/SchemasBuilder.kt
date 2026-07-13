@@ -34,6 +34,7 @@ class SchemasBuilder {
         // sealed supertype so callers can pattern match. Work out which body schemas belong to a
         // group before generating, so each member class can be tagged as a permitted subtype.
         val supertypeGroups = WebhookSupertypes.compute(openAPI, packageName)
+        val singleEventWebhookBodyKeys = WebhookSupertypes.singleEventBodyKeys(openAPI)
         val discriminatedGroups = context.discriminatedOneOfGroups
         val nonDiscriminatedGroups = context.nonDiscriminatedOneOfGroups
         // A body schema can belong to more than one subcategory (e.g. the `exemption-request-*` bodies
@@ -67,8 +68,16 @@ class SchemasBuilder {
                     } else {
                         it
                     }
+                // Single-event webhook bodies aren't a permitted subtype of any generated sealed
+                // interface, so they need tagging here directly rather than via enrichMember.
+                val taggedTypeSpec =
+                    if (entry.key in singleEventWebhookBodyKeys) {
+                        typeSpec.toBuilder().addSuperinterface(ClassName.get(Types.COMMON_PACKAGE, "WebhookEvent")).build()
+                    } else {
+                        typeSpec
+                    }
 
-                JavaFile.builder(packageName, typeSpec).build().writeTo(mainDir)
+                JavaFile.builder(packageName, taggedTypeSpec).build().writeTo(mainDir)
 
                 // If this is an enum, add its converter to the set
                 if (it.enumConstants().isNotEmpty() && typeName is ClassName) {
@@ -108,6 +117,7 @@ class SchemasBuilder {
                     "<br/>Use pattern matching over the permitted subtypes to handle individual variants.",
                 annotations,
                 memberFieldsByKey,
+                markerInterface = ClassName.get(Types.COMMON_PACKAGE, "WebhookEvent"),
             )
         }
     }
@@ -151,6 +161,7 @@ class SchemasBuilder {
         annotations: List<AnnotationSpec>,
         memberFieldsByKey: Map<String, Map<String, TypeName>>,
         nestedTypes: List<TypeSpec> = emptyList(),
+        markerInterface: ClassName = ClassName.get(Types.COMMON_PACKAGE, "PulpogatoType"),
     ) {
         val memberFields = memberSchemaKeys.map { memberFieldsByKey[it] }
         // Skip if any member did not generate as a class; otherwise `permits` would dangle.
@@ -162,7 +173,7 @@ class SchemasBuilder {
             TypeSpec
                 .interfaceBuilder(supertype)
                 .addModifiers(Modifier.PUBLIC, Modifier.SEALED)
-                .addSuperinterface(ClassName.get(Types.COMMON_PACKAGE, "PulpogatoType"))
+                .addSuperinterface(markerInterface)
                 .addAnnotation(generated(0, context.withSchemaStack("#", "synthetic")))
                 .addJavadoc($$"$L", javadoc)
 
