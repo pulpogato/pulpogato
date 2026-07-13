@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.pulpogato.rest.schemas.WebhookPing;
 import io.github.pulpogato.test.TestWebhookResponse;
 import io.github.pulpogato.test.WebhookHelper;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,7 +21,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.DateTimeFeature;
@@ -46,7 +49,7 @@ class PingWebhooksIntegrationTest {
     @Configuration
     @SpringBootConfiguration
     @EnableWebMvc
-    static class PingTestConfig {
+    static class PingTestConfig implements WebMvcConfigurer {
         @Bean
         ObjectMapper objectMapper() {
             return JsonMapper.builder()
@@ -54,6 +57,11 @@ class PingWebhooksIntegrationTest {
                     .disable(DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
                     .build();
+        }
+
+        @Override
+        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+            resolvers.add(new WebhookHeadersArgumentResolver());
         }
 
         @SuppressWarnings("InnerClassMayBeStatic")
@@ -65,15 +73,7 @@ class PingWebhooksIntegrationTest {
             private final ObjectMapper objectMapper;
 
             @Override
-            public ResponseEntity<TestWebhookResponse> processPing(
-                    String userAgent,
-                    String xGithubHookId,
-                    String xGithubEvent,
-                    String xGithubHookInstallationTargetId,
-                    String xGithubHookInstallationTargetType,
-                    String xGitHubDelivery,
-                    String xHubSignature256,
-                    WebhookPing requestBody) {
+            public ResponseEntity<TestWebhookResponse> processPing(WebhookHeaders headers, WebhookPing requestBody) {
                 return ResponseEntity.ok(TestWebhookResponse.builder()
                         .webhookName("ping")
                         .body(objectMapper.writeValueAsString(requestBody))
