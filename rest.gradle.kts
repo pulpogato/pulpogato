@@ -16,6 +16,7 @@ plugins {
 
 dependencies {
     compileOnly(libs.jspecify)
+    compileOnly(libs.springBootWeb)
     compileOnly(libs.springBootWebflux)
     compileOnly(libs.springWeb)
 

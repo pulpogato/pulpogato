@@ -6,6 +6,7 @@ import io.github.pulpogato.rest.schemas.WebhookPullRequestEdited;
 import io.github.pulpogato.rest.schemas.WebhookPullRequestReviewRequested;
 import io.github.pulpogato.test.TestWebhookResponse;
 import io.github.pulpogato.test.WebhookHelper;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +23,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.DateTimeFeature;
@@ -39,7 +42,7 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @WebMvcTest
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = PullRequestWebhooksIntegrationTest.PullRequestTestConfig.class)
+@ContextConfiguration(classes = PullRequestWebhooksIntegrationTest.WebhookMvcConfigurer.class)
 class PullRequestWebhooksIntegrationTest {
     @Autowired
     MockMvc mvc;
@@ -54,10 +57,20 @@ class PullRequestWebhooksIntegrationTest {
         WebhookHelper.testWebhook(hookname, filename, mvc);
     }
 
-    @Configuration
     @SpringBootConfiguration
     @EnableWebMvc
-    static class PullRequestTestConfig {
+    // tag::pre-pull-request-webhook-resolver[]
+    @Configuration
+    // end::pre-pull-request-webhook-resolver[]
+    public static
+    // tag::pull-request-webhook-resolver[]
+    class WebhookMvcConfigurer implements WebMvcConfigurer {
+        @Override
+        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+            resolvers.add(new WebhookHeadersArgumentResolver());
+        }
+        // end::pull-request-webhook-resolver[]
+
         @Bean
         ObjectMapper objectMapper() {
             return JsonMapper.builder()
@@ -77,14 +90,7 @@ class PullRequestWebhooksIntegrationTest {
 
             @Override
             public ResponseEntity<TestWebhookResponse> processPullRequest(
-                    String userAgent,
-                    String xGithubHookId,
-                    String xGithubEvent,
-                    String xGithubHookInstallationTargetId,
-                    String xGithubHookInstallationTargetType,
-                    String xGitHubDelivery,
-                    String xHubSignature256,
-                    WebhookPullRequest requestBody) {
+                    WebhookHeaders headers, WebhookPullRequest requestBody) {
                 var hookname =
                         switch (requestBody) {
                             case WebhookPullRequestEdited ignored -> "pull-request-edited";
@@ -100,5 +106,7 @@ class PullRequestWebhooksIntegrationTest {
             }
         }
         // end::pull-request-webhook-controller[]
+        // tag::end-pull-request-webhook-resolver[]
     }
+    // end::end-pull-request-webhook-resolver[]
 }
