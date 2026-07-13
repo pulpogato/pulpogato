@@ -702,7 +702,7 @@ pre.rouge {
 <div id="header">
 <h1>Pulpogato</h1>
 <div class="details">
-<span id="revnumber">version 3.3.0-dev.10+d58fafb</span>
+<span id="revnumber">version 3.3.0-dev.12+105fba3</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -1136,6 +1136,23 @@ Jackson deserializes the payload to the right subtype automatically based on the
 The individual per-event methods (e.g. <code>processPullRequestEdited</code>) are <code>@Deprecated</code> and dispatched
 by the default implementation; you do not need to override them.</p>
 </div>
+<div class="paragraph">
+<p>Every webhook method takes a generated <code>WebhookHeaders</code> type instead of individual
+<code>@RequestHeader</code> parameters, one per module/schema variant.
+Binding it requires registering the matching <code>WebhookHeadersArgumentResolver</code> as a
+<code>HandlerMethodArgumentResolver</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Configuration</span>
+<span class="kd">class</span> <span class="nc">WebhookMvcConfigurer</span> <span class="kd">implements</span> <span class="nc">WebMvcConfigurer</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addArgumentResolvers</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">HandlerMethodArgumentResolver</span><span class="o">&gt;</span> <span class="n">resolvers</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">resolvers</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">WebhookHeadersArgumentResolver</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@RestController</span>
@@ -1146,14 +1163,7 @@ by the default implementation; you do not need to override them.</p>
 
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPullRequest</span><span class="o">(</span>
-            <span class="nc">String</span> <span class="n">userAgent</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubHookId</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubEvent</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubHookInstallationTargetId</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubHookInstallationTargetType</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGitHubDelivery</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xHubSignature256</span><span class="o">,</span>
-            <span class="nc">WebhookPullRequest</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">WebhookHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">WebhookPullRequest</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
         <span class="kt">var</span> <span class="n">hookname</span> <span class="o">=</span>
                 <span class="k">switch</span> <span class="o">(</span><span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
                     <span class="k">case</span> <span class="nc">WebhookPullRequestEdited</span> <span class="n">ignored</span> <span class="o">-&gt;</span> <span class="s">"pull-request-edited"</span><span class="o">;</span>
@@ -1182,15 +1192,7 @@ by the default implementation; you do not need to override them.</p>
     <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span><span class="o">;</span>
 
     <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPing</span><span class="o">(</span>
-            <span class="nc">String</span> <span class="n">userAgent</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubHookId</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubEvent</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubHookInstallationTargetId</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGithubHookInstallationTargetType</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xGitHubDelivery</span><span class="o">,</span>
-            <span class="nc">String</span> <span class="n">xHubSignature256</span><span class="o">,</span>
-            <span class="nc">WebhookPing</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPing</span><span class="o">(</span><span class="nc">WebhookHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">WebhookPing</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
         <span class="k">return</span> <span class="nc">ResponseEntity</span><span class="o">.</span><span class="na">ok</span><span class="o">(</span><span class="nc">TestWebhookResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
                 <span class="o">.</span><span class="na">webhookName</span><span class="o">(</span><span class="s">"ping"</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">requestBody</span><span class="o">))</span>
