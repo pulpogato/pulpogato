@@ -2,7 +2,10 @@ package io.github.pulpogato.common.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import java.net.URI;
+import java.time.Instant;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,41 +16,43 @@ class DefaultCacheKeyMapperTest {
 
     private final DefaultCacheKeyMapper mapper = new DefaultCacheKeyMapper();
 
+    private static final String SHA256_HEX_PATTERN = "[0-9a-f]{64}";
+
+    @Test
+    @DisplayName("produces a 64-character lowercase hex (SHA-256) key")
+    void producesMd5HexKey() {
+        var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                .build();
+
+        var key = mapper.apply(request);
+
+        assertThat(key).matches(SHA256_HEX_PATTERN);
+    }
+
+    @Test
+    @DisplayName("is deterministic for equivalent requests")
+    void isDeterministic() {
+        var requestA = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                .build();
+        var requestB = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                .build();
+
+        assertThat(mapper.apply(requestA)).isEqualTo(mapper.apply(requestB));
+    }
+
     @Nested
     @DisplayName("HTTP method")
     class HttpMethodTests {
 
         @Test
-        @DisplayName("includes GET method in cache key")
-        void includesGetMethod() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+        @DisplayName("differs by HTTP method")
+        void differsByMethod() {
+            var getRequest = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .build();
+            var postRequest = ClientRequest.create(HttpMethod.POST, URI.create("https://api.example.com/data"))
                     .build();
 
-            var key = mapper.apply(request);
-
-            assertThat(key).startsWith("GET ");
-        }
-
-        @Test
-        @DisplayName("includes POST method in cache key")
-        void includesPostMethod() {
-            var request = ClientRequest.create(HttpMethod.POST, URI.create("https://api.example.com/data"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).startsWith("POST ");
-        }
-
-        @Test
-        @DisplayName("includes PUT method in cache key")
-        void includesPutMethod() {
-            var request = ClientRequest.create(HttpMethod.PUT, URI.create("https://api.example.com/data"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).startsWith("PUT ");
+            assertThat(mapper.apply(getRequest)).isNotEqualTo(mapper.apply(postRequest));
         }
     }
 
@@ -56,48 +61,26 @@ class DefaultCacheKeyMapperTest {
     class HostResolutionTests {
 
         @Test
-        @DisplayName("uses Host header when present")
+        @DisplayName("uses Host header when present, over the URL host")
         void usesHostHeader() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+            var withHeader = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
                     .header("Host", "custom-host.example.com")
                     .build();
+            var withoutHeader = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .build();
 
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET custom-host.example.com /data");
+            assertThat(mapper.apply(withHeader)).isNotEqualTo(mapper.apply(withoutHeader));
         }
 
         @Test
-        @DisplayName("derives host from URL when Host header is absent")
-        void derivesHostFromUrl() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+        @DisplayName("differs by port")
+        void differsByPort() {
+            var defaultPort = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .build();
+            var explicitPort = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com:8443/data"))
                     .build();
 
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com /data");
-        }
-
-        @Test
-        @DisplayName("includes port in host when non-standard port is used")
-        void includesPortWhenNonStandard() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com:8443/data"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com:8443 /data");
-        }
-
-        @Test
-        @DisplayName("omits port when using default HTTPS port")
-        void omitsDefaultHttpsPort() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com:443/data"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com:443 /data");
+            assertThat(mapper.apply(defaultPort)).isNotEqualTo(mapper.apply(explicitPort));
         }
     }
 
@@ -106,72 +89,124 @@ class DefaultCacheKeyMapperTest {
     class PathAndQueryTests {
 
         @Test
-        @DisplayName("includes path in cache key")
-        void includesPath() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/users/123"))
+        @DisplayName("differs by path")
+        void differsByPath() {
+            var requestA = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/users/123"))
+                    .build();
+            var requestB = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/users/456"))
                     .build();
 
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com /users/123");
+            assertThat(mapper.apply(requestA)).isNotEqualTo(mapper.apply(requestB));
         }
 
         @Test
-        @DisplayName("includes query parameters in cache key")
-        void includesQueryParameters() {
-            var request = ClientRequest.create(
+        @DisplayName("differs by query parameters")
+        void differsByQueryParameters() {
+            var requestA = ClientRequest.create(
                             HttpMethod.GET, URI.create("https://api.example.com/search?q=test&page=1"))
                     .build();
+            var requestB = ClientRequest.create(
+                            HttpMethod.GET, URI.create("https://api.example.com/search?q=test&page=2"))
+                    .build();
 
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com /search?q=test&page=1");
+            assertThat(mapper.apply(requestA)).isNotEqualTo(mapper.apply(requestB));
         }
 
         @Test
-        @DisplayName("handles empty query string")
+        @DisplayName("no query string does not blow up and is distinct from a request with one")
         void handlesEmptyQuery() {
+            var noQuery = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .build();
+            var withQuery = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data?a=b"))
+                    .build();
+
+            assertThat(mapper.apply(noQuery)).isNotEqualTo(mapper.apply(withQuery));
+        }
+    }
+
+    @Nested
+    @DisplayName("Accept and Content-Type headers")
+    class HeaderTests {
+
+        @Test
+        @DisplayName("differs by Accept header")
+        void differsByAccept() {
+            var withAccept = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .build();
+            var withoutAccept = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .build();
+
+            assertThat(mapper.apply(withAccept)).isNotEqualTo(mapper.apply(withoutAccept));
+        }
+
+        @Test
+        @DisplayName("differs by Content-Type header")
+        void differsByContentType() {
+            var withContentType = ClientRequest.create(HttpMethod.POST, URI.create("https://api.example.com/data"))
+                    .header("Content-Type", "application/json")
+                    .build();
+            var withoutContentType = ClientRequest.create(HttpMethod.POST, URI.create("https://api.example.com/data"))
+                    .build();
+
+            assertThat(mapper.apply(withContentType)).isNotEqualTo(mapper.apply(withoutContentType));
+        }
+    }
+
+    @Nested
+    @DisplayName("JWT Authorization header")
+    class JwtTests {
+
+        @Test
+        @DisplayName("differs by JWT subject")
+        void differsByJwtSubject() {
+            var requestA = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .header("Authorization", "Bearer " + jwtWithSubject("user-a"))
+                    .build();
+            var requestB = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .header("Authorization", "Bearer " + jwtWithSubject("user-b"))
+                    .build();
+
+            assertThat(mapper.apply(requestA)).isNotEqualTo(mapper.apply(requestB));
+        }
+
+        @Test
+        @DisplayName("is the same key for the same JWT subject even if the token itself differs")
+        void sameSubjectSameKey() {
+            var requestA = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .header(
+                            "Authorization",
+                            "Bearer "
+                                    + JWT.create()
+                                            .withSubject("user-a")
+                                            .withIssuedAt(Instant.ofEpochSecond(1))
+                                            .sign(Algorithm.HMAC256("secret-one")))
+                    .build();
+            var requestB = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .header(
+                            "Authorization",
+                            "Bearer "
+                                    + JWT.create()
+                                            .withSubject("user-a")
+                                            .withIssuedAt(Instant.ofEpochSecond(2))
+                                            .sign(Algorithm.HMAC256("secret-two")))
+                    .build();
+
+            assertThat(mapper.apply(requestA)).isEqualTo(mapper.apply(requestB));
+        }
+
+        @Test
+        @DisplayName("does not blow up for a non-JWT Authorization header (e.g. a personal access token)")
+        void nonJwtAuthorizationHeaderIsIgnored() {
             var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
+                    .header("Authorization", "token ghp_notActuallyAJwt")
                     .build();
 
-            var key = mapper.apply(request);
-
-            assertThat(key).doesNotContain("?");
+            assertThat(mapper.apply(request)).matches(SHA256_HEX_PATTERN);
         }
 
-        @Test
-        @DisplayName("handles root path")
-        void handlesRootPath() {
-            var request = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com /");
-        }
-
-        @Test
-        @DisplayName("preserves URL-encoded characters in path")
-        void preservesEncodedPath() {
-            var request = ClientRequest.create(
-                            HttpMethod.GET, URI.create("https://api.example.com/path%20with%20spaces"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com /path%20with%20spaces");
-        }
-
-        @Test
-        @DisplayName("preserves URL-encoded characters in query")
-        void preservesEncodedQuery() {
-            var request = ClientRequest.create(
-                            HttpMethod.GET, URI.create("https://api.example.com/search?q=hello%20world"))
-                    .build();
-
-            var key = mapper.apply(request);
-
-            assertThat(key).isEqualTo("GET api.example.com /search?q=hello%20world");
+        private String jwtWithSubject(String subject) {
+            return JWT.create().withSubject(subject).sign(Algorithm.HMAC256("secret"));
         }
     }
 }
