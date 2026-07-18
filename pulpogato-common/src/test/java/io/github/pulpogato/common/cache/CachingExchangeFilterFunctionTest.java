@@ -335,6 +335,92 @@ class CachingExchangeFilterFunctionTest {
             verify(cache).put(eq(CACHE_KEY), captor.capture());
             assertThat(captor.getValue().getEtag()).isEqualTo("\"new\"");
         }
+
+        @Test
+        @DisplayName("304 restarts the freshness lifetime and writes the entry back")
+        void notModifiedRestartsFreshness() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var staleCache =
+                    new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME - 100_000);
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
+
+            filter.filter(request, exchangeFunction).block();
+
+            var captor = ArgumentCaptor.forClass(CachedResponse.class);
+            verify(cache).put(eq(CACHE_KEY), captor.capture());
+            var refreshed = captor.getValue();
+            // Freshness is stamped from now, so the entry is fresh again against its max-age.
+            assertThat(refreshed.getCachedAtMillis()).isEqualTo(CURRENT_TIME);
+            assertThat(refreshed.isExpired(CURRENT_TIME)).isFalse();
+            // Freshness metadata absent from the stored headers is carried forward, not discarded.
+            assertThat(refreshed.getEtag()).isEqualTo("\"abc123\"");
+            assertThat(refreshed.getMaxAgeSeconds()).isEqualTo(60);
+        }
+
+        @Test
+        @DisplayName("304 header fields replace the corresponding stored fields")
+        void notModifiedReplacesStoredHeaders() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var storedHeaders = Map.of(
+                    "Content-Type", List.of("application/json"),
+                    "ETag", List.of("\"v1\""),
+                    "Cache-Control", List.of("max-age=30"));
+            var staleCache =
+                    new CachedResponse(RESPONSE_BODY, storedHeaders, "\"v1\"", null, 30, CURRENT_TIME - 100_000);
+            var notModified = ClientResponse.create(HttpStatus.NOT_MODIFIED)
+                    .header("ETag", "\"v2\"")
+                    .header("Cache-Control", "max-age=120")
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(notModified));
+
+            var result = filter.filter(request, exchangeFunction).block();
+
+            var captor = ArgumentCaptor.forClass(CachedResponse.class);
+            verify(cache).put(eq(CACHE_KEY), captor.capture());
+            var refreshed = captor.getValue();
+            assertThat(refreshed.getEtag()).isEqualTo("\"v2\"");
+            assertThat(refreshed.getMaxAgeSeconds()).isEqualTo(120);
+            assertThat(refreshed.getHeaders().get("ETag")).containsExactly("\"v2\"");
+            assertThat(refreshed.getHeaders().get("Cache-Control")).containsExactly("max-age=120");
+            // Headers not present in the 304 are retained from the stored entry.
+            assertThat(refreshed.getHeaders().get("Content-Type")).containsExactly("application/json");
+            // The refreshed headers are also what the caller sees.
+            assertThat(result).isNotNull();
+            assertThat(result.headers().header("ETag")).containsExactly("\"v2\"");
+        }
+
+        @Test
+        @DisplayName("304 Content-Length does not overwrite the stored representation's length")
+        void notModifiedContentLengthDoesNotClobberStored() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            var request = createGetRequest();
+            var bodyLength = String.valueOf(RESPONSE_BODY.length);
+            var storedHeaders = Map.of(
+                    "Content-Type", List.of("application/json"),
+                    "Content-Length", List.of(bodyLength),
+                    "ETag", List.of("\"abc123\""));
+            var staleCache =
+                    new CachedResponse(RESPONSE_BODY, storedHeaders, "\"abc123\"", null, 60, CURRENT_TIME - 100_000);
+            // Some servers send Content-Length: 0 on a bodyless 304; it must not corrupt the entry.
+            var notModified = ClientResponse.create(HttpStatus.NOT_MODIFIED)
+                    .header("Content-Length", "0")
+                    .build();
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(notModified));
+
+            filter.filter(request, exchangeFunction).block();
+
+            var captor = ArgumentCaptor.forClass(CachedResponse.class);
+            verify(cache).put(eq(CACHE_KEY), captor.capture());
+            assertThat(captor.getValue().getHeaders().get("Content-Length")).containsExactly(bodyLength);
+        }
     }
 
     @Nested
@@ -684,8 +770,8 @@ class CachingExchangeFilterFunctionTest {
         }
 
         @Test
-        @DisplayName("Stale entry revalidated with 304 records a cache.get STALE span and no cache.put span")
-        void revalidationRecordsStaleLookupOnly() {
+        @DisplayName("Stale entry revalidated with 304 records a cache.get STALE span and a cache.put STORED span")
+        void revalidationRecordsStaleLookupAndRefresh() {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
             // Cached long enough ago to be expired against its 60s max-age.
@@ -703,8 +789,14 @@ class CachingExchangeFilterFunctionTest {
                     .that()
                     .hasLowCardinalityKeyValue(
                             CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_STALE);
+            // The refreshed entry is written back per RFC 9111 4.3.4.
             TestObservationRegistryAssert.assertThat(observationRegistry)
-                    .hasNumberOfObservationsWithNameEqualTo(CACHE_PUT, 0);
+                    .hasObservationWithNameEqualTo(CACHE_PUT)
+                    .that()
+                    .hasLowCardinalityKeyValue(
+                            CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_STORED)
+                    .hasHighCardinalityKeyValue("uri", TEST_URL)
+                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
         }
 
         @Test
