@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.micrometer.observation.tck.TestObservationRegistry;
+import io.micrometer.observation.tck.TestObservationRegistryAssert;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -608,6 +610,122 @@ class CachingExchangeFilterFunctionTest {
             assertThat(result2.headers().header(CachingExchangeFilterFunction.CACHE_HEADER_NAME))
                     .containsExactly("SKIP");
             verify(cache, never()).put(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Observations")
+    class Observations {
+
+        private static final String CACHE_GET = "pulpogato.cache.get";
+        private static final String CACHE_PUT = "pulpogato.cache.put";
+
+        private final TestObservationRegistry observationRegistry = TestObservationRegistry.create();
+
+        private CachingExchangeFilterFunction observedFilter(int maxCacheableSize) {
+            return CachingExchangeFilterFunction.builder()
+                    .cache(cache)
+                    .cacheKeyMapper(cacheKeyMapper)
+                    .clock(clock)
+                    .maxCacheableSize(maxCacheableSize)
+                    .observationRegistry(observationRegistry)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("Cache miss records a cache.get MISS span and a cache.put STORED span")
+        void missRecordsLookupAndStore() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            when(exchangeFunction.exchange(any(ClientRequest.class)))
+                    .thenReturn(Mono.just(createResponse("\"abc123\"", null, null)));
+
+            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction)
+                    .block();
+
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasObservationWithNameEqualTo(CACHE_GET)
+                    .that()
+                    .hasLowCardinalityKeyValue(
+                            CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_MISS)
+                    .hasHighCardinalityKeyValue("uri", TEST_URL)
+                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasObservationWithNameEqualTo(CACHE_PUT)
+                    .that()
+                    .hasLowCardinalityKeyValue(
+                            CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_STORED)
+                    .hasHighCardinalityKeyValue("uri", TEST_URL)
+                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
+        }
+
+        @Test
+        @DisplayName("Fresh cache hit records a cache.get HIT span and no cache.put span")
+        void hitRecordsLookupOnly() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            when(cache.get(CACHE_KEY, CachedResponse.class))
+                    .thenReturn(
+                            new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME));
+
+            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction)
+                    .block();
+
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasObservationWithNameEqualTo(CACHE_GET)
+                    .that()
+                    .hasLowCardinalityKeyValue(
+                            CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_HIT);
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasNumberOfObservationsWithNameEqualTo(CACHE_PUT, 0);
+        }
+
+        @Test
+        @DisplayName("Stale entry revalidated with 304 records a cache.get STALE span and no cache.put span")
+        void revalidationRecordsStaleLookupOnly() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            // Cached long enough ago to be expired against its 60s max-age.
+            when(cache.get(CACHE_KEY, CachedResponse.class))
+                    .thenReturn(new CachedResponse(
+                            RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME - 100_000));
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
+
+            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction)
+                    .block();
+
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasObservationWithNameEqualTo(CACHE_GET)
+                    .that()
+                    .hasLowCardinalityKeyValue(
+                            CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_STALE);
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasNumberOfObservationsWithNameEqualTo(CACHE_PUT, 0);
+        }
+
+        @Test
+        @DisplayName("Response too large records a cache.put SKIP span")
+        void oversizedResponseRecordsSkipStore() {
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
+            var largeBody = new byte[2000];
+            var response = ClientResponse.create(HttpStatus.OK)
+                    .header("ETag", "\"too-large\"")
+                    .body(Flux.just(bufferFactory.wrap(largeBody)))
+                    .build();
+            when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
+
+            observedFilter(1000).filter(createGetRequest(), exchangeFunction).block();
+
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasObservationWithNameEqualTo(CACHE_PUT)
+                    .that()
+                    .hasLowCardinalityKeyValue(
+                            CachingExchangeFilterFunction.CACHE_STATUS, CachingExchangeFilterFunction.CACHE_SKIP);
         }
     }
 }

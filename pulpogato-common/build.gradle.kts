@@ -13,7 +13,7 @@ dependencies {
     compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
     compileOnly(libs.micrometerCore)
-    compileOnly(libs.micrometerObservation)
+    api(libs.micrometerObservation)
     compileOnly(libs.springBootWebflux)
 
     annotationProcessor(libs.lombok)
@@ -34,6 +34,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.micrometerCore)
     testImplementation(libs.micrometerObservation)
+    testImplementation(libs.micrometerObservationTest)
     testImplementation(libs.mockito)
     testImplementation(libs.mockitoJunitJupiter)
     testImplementation(libs.reactorTest)
