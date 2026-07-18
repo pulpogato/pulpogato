@@ -14,6 +14,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.support.NoOpCache;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -37,7 +38,10 @@ import reactor.core.publisher.Mono;
  *
  * <p>When a cached response exists and is still fresh (within max-age), it is returned directly.
  * When expired, conditional headers are added and on 304 Not Modified the cached response body
- * is returned.
+ * is returned. Per <a href="https://www.rfc-editor.org/rfc/rfc9111#section-4.3.4">RFC 9111
+ * section 4.3.4</a>, a 304 also refreshes the stored entry: the header fields from the 304 replace
+ * the corresponding stored fields and the freshness lifetime restarts, so a validated entry can
+ * serve fresh hits again instead of revalidating on every subsequent request.
  *
  * <p>Responses larger than {@link #maxCacheableSize} are not cached but are still returned
  * successfully. This prevents memory issues with very large responses.
@@ -187,13 +191,15 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         var conditionalRequest = requestBuilder.build();
 
         return next.exchange(conditionalRequest).flatMap(response -> {
-            // On 304, return cached body
+            // On 304 the stored representation is still valid: refresh its freshness and merge the
+            // updated header fields (RFC 9111 4.3.4), then serve the cached body.
             if (response.statusCode().value() == 304 && cached != null) {
+                var refreshed = refreshFromNotModified(cacheKey, request, cached, response, parent);
                 return response.releaseBody()
                         .then(Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
-                                .headers(h -> h.putAll(cached.getHeaders()))
+                                .headers(h -> h.putAll(refreshed.getHeaders()))
                                 .header(CACHE_HEADER_NAME, CACHE_REVALIDATED)
-                                .body(Flux.just(bufferFactory.wrap(cached.getBody())))
+                                .body(Flux.just(bufferFactory.wrap(refreshed.getBody())))
                                 .build()));
             }
 
@@ -204,6 +210,53 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
             return Mono.just(response);
         });
+    }
+
+    /**
+     * Applies a 304 Not Modified to the stored entry per
+     * <a href="https://www.rfc-editor.org/rfc/rfc9111#section-4.3.4">RFC 9111 section 4.3.4</a>:
+     * header fields from the 304 replace the corresponding stored fields, and the freshness lifetime
+     * restarts from now so the entry can serve fresh hits again instead of revalidating on every
+     * subsequent request. The refreshed entry is written back to the cache inside a
+     * {@code pulpogato.cache.put} span.
+     */
+    private CachedResponse refreshFromNotModified(
+            String cacheKey,
+            ClientRequest request,
+            CachedResponse cached,
+            ClientResponse notModified,
+            Observation parent) {
+        var updateHeaders = notModified.headers().asHttpHeaders();
+
+        // Overlay the 304's header fields onto the stored headers (case-insensitively via HttpHeaders).
+        var merged = new HttpHeaders();
+        cached.getHeaders().forEach(merged::addAll);
+        updateHeaders.forEach((name, values) -> {
+            // A 304 carries no body, so a Content-Length it sends (often 0) must not overwrite the
+            // length of the stored representation we are about to serve.
+            if (!HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) {
+                merged.put(name, new ArrayList<>(values));
+            }
+        });
+
+        var headerMap = HashMap.<String, List<String>>newHashMap(merged.size());
+        merged.forEach((name, values) -> headerMap.put(name, new ArrayList<>(values)));
+
+        // Recompute caching metadata from the merged headers so any refreshed ETag, Last-Modified, or
+        // Cache-Control the server sent on the 304 is reflected. When the 304 omits a header, the
+        // merged headers retain the stored value; if even that is absent, fall back to the entry's
+        // existing metadata so revalidation never discards known freshness information. A header is
+        // absent exactly when getFirst returns null, so a present-but-updated value still wins.
+        var mergedCacheControl = merged.getFirst(HttpHeaders.CACHE_CONTROL);
+        var etag = merged.getETag() != null ? merged.getETag() : cached.getEtag();
+        var lastModified = merged.getFirst(HttpHeaders.LAST_MODIFIED) != null
+                ? merged.getFirst(HttpHeaders.LAST_MODIFIED)
+                : cached.getLastModified();
+        var maxAge = mergedCacheControl != null ? parseMaxAge(mergedCacheControl) : cached.getMaxAgeSeconds();
+
+        var refreshed = new CachedResponse(cached.getBody(), headerMap, etag, lastModified, maxAge, clock.millis());
+        recordPut(parent, request, cacheKey, CACHE_STORED, () -> cache.put(cacheKey, refreshed));
+        return refreshed;
     }
 
     /**
