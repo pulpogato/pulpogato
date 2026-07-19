@@ -132,7 +132,7 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
 
         // Verify topics search returns results
         assertThat(searchResult.getItems()).isNotEmpty();
-        assertThat(searchResult.getItems().size()).isEqualTo(10);
+        assertThat(searchResult.getItems()).hasSize(10);
 
         var firstTopic = searchResult.getItems().getFirst();
         assertThat(firstTopic.getName()).isNotNull();
