@@ -1,11 +1,13 @@
 package io.github.pulpogato.common;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -33,21 +35,29 @@ public class Paginate {
      * @param totalPages   function that takes an API response and returns the total number of pages available
      * @return a stream containing all items from the fetched pages
      */
+    @NonNull
     public <T, R> Stream<T> from(
             final long maxPages,
-            final LongFunction<@NonNull R> fetchPage,
-            final Function<R, @NonNull Stream<T>> extractItems,
-            final ToIntFunction<R> totalPages) {
+            final LongFunction<@Nullable R> fetchPage,
+            final Function<@NonNull R, @NonNull Stream<T>> extractItems,
+            final ToIntFunction<@NonNull R> totalPages) {
         var response = fetchPage.apply(1L);
+        if (response == null) {
+            return Stream.empty();
+        }
         var pages = Math.min(maxPages, totalPages.applyAsInt(response));
+        var firstPage = extractItems.apply(response);
         if (pages <= 1) {
-            return extractItems.apply(response);
+            return firstPage;
         }
         return Stream.concat(
-                extractItems.apply(response),
-                Stream.iterate(2L, page -> page + 1)
-                        .limit(pages - 1)
-                        .flatMap(page -> extractItems.apply(fetchPage.apply(page))));
+                firstPage, Stream.iterate(2L, page -> page + 1).limit(pages - 1).flatMap(page -> {
+                    var pageResponse = fetchPage.apply(page);
+                    if (pageResponse == null) {
+                        return Stream.empty();
+                    }
+                    return extractItems.apply(pageResponse);
+                }));
     }
 
     /**
@@ -61,12 +71,13 @@ public class Paginate {
      * @param fetchPage function that takes a page number (1-based) and returns the list of items for that page
      * @return a stream containing all items from the fetched pages
      */
-    public <T> Stream<T> from(final long maxPages, final LongFunction<@NonNull List<T>> fetchPage) {
+    @NonNull
+    public <T> Stream<T> from(final long maxPages, final LongFunction<@Nullable List<T>> fetchPage) {
         return Stream.iterate(1L, page -> page + 1)
                 .limit(maxPages)
                 .map(fetchPage::apply)
-                .takeWhile(items -> !items.isEmpty())
-                .flatMap(List::stream);
+                .takeWhile(items -> items != null && !items.isEmpty())
+                .flatMap(Collection::stream);
     }
 
     /**
@@ -83,21 +94,26 @@ public class Paginate {
      * @param totalPages   function that takes an API response and returns the total number of pages available
      * @return a flux containing all items from the fetched pages
      */
+    @NonNull
     public <T, R> Flux<T> fromReactive(
             final long maxPages,
-            final LongFunction<@NonNull Mono<R>> fetchPage,
-            final Function<R, @NonNull Flux<T>> extractItems,
-            final ToIntFunction<R> totalPages) {
+            final LongFunction<@Nullable Mono<R>> fetchPage,
+            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
+            final ToIntFunction<@NonNull R> totalPages) {
         return fetchReactive(1L, maxPages, fetchPage, extractItems, totalPages);
     }
 
     private <T, R> Flux<T> fetchReactive(
             final long page,
             final long maxPages,
-            final LongFunction<@NonNull Mono<R>> fetchPage,
-            final Function<R, @NonNull Flux<T>> extractItems,
-            final ToIntFunction<R> totalPages) {
-        return fetchPage.apply(page).flatMapMany(response -> {
+            final LongFunction<@Nullable Mono<R>> fetchPage,
+            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
+            final ToIntFunction<@NonNull R> totalPages) {
+        Mono<R> pageContent = fetchPage.apply(page);
+        if (pageContent == null) {
+            return Flux.empty();
+        }
+        return pageContent.flatMapMany(response -> {
             var items = extractItems.apply(response);
             if (page >= maxPages || page >= totalPages.applyAsInt(response)) {
                 return items;
@@ -117,16 +133,21 @@ public class Paginate {
      * @param fetchPage function that takes a page number (1-based) and returns the list of items for that page
      * @return a flux containing all items from the fetched pages
      */
-    public <T> Flux<T> fromReactive(final long maxPages, final LongFunction<@NonNull Mono<List<T>>> fetchPage) {
+    @NonNull
+    public <T> Flux<T> fromReactive(final long maxPages, final LongFunction<@Nullable Mono<List<T>>> fetchPage) {
         return fetchListReactive(1L, maxPages, fetchPage);
     }
 
     private <T> Flux<T> fetchListReactive(
-            final long page, final long maxPages, final LongFunction<@NonNull Mono<List<T>>> fetchPage) {
+            final long page, final long maxPages, final LongFunction<@Nullable Mono<List<T>>> fetchPage) {
         if (page > maxPages) {
             return Flux.empty();
         }
-        return fetchPage.apply(page).flatMapMany(items -> {
+        Mono<List<T>> pageContent = fetchPage.apply(page);
+        if (pageContent == null) {
+            return Flux.empty();
+        }
+        return pageContent.flatMapMany(items -> {
             if (items.isEmpty()) {
                 return Flux.empty();
             }
