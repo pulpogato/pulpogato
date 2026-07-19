@@ -53,6 +53,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var allBranches = api.listBranches("jenkinsci", "gradle-jpi-plugin", null, 100L, 1L)
                 .getBody();
+        assertThat(allBranches).isNotEmpty();
         assertThat(branches).hasSize(24);
         assertThat(branches)
                 .extracting(ShortBranch::getName)
@@ -226,7 +227,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.getContentRaw("rahulsom", "lgtmin", ".appcfg_oauth2_tokens_java.enc", null);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().length).isEqualTo(214);
+        assertThat(response.getBody()).hasSize(214);
     }
 
     @Test

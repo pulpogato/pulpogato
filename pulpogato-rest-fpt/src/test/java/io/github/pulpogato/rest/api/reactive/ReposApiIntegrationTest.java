@@ -209,6 +209,8 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var allBranches = api.listBranches("jenkinsci", "gradle-jpi-plugin", null, 100L, 1L)
                 .block()
                 .getBody();
+        assertThat(allBranches).isNotEmpty();
+
         assertThat(branches).hasSize(24);
         assertThat(branches)
                 .extracting(ShortBranch::getName)
