@@ -580,28 +580,32 @@ object JsonSchemaTypeResolver {
         parentNode: ObjectNode,
     ): ResolvedType {
         val mergedProps = mutableListOf<ObjectGenerator.PropertySpec>()
-        collectParentProperties(ctx, name, parentNode, parentPackage, mergedProps)
+        collectAndMergeObjectProperties(ctx, name, parentNode, parentPackage, mergedProps)
         val singleRef = collectAllOfElementProperties(ctx, name, allOf, parentPackage, mergedProps)
         if (singleRef != null) return singleRef
         if (mergedProps.isEmpty()) return ResolvedType(Types.OBJECT)
         return generateMergedObjectType(ctx, name, parentNode, parentPackage, mergedProps)
     }
 
-    private fun collectParentProperties(
+    /**
+     * Collects properties from an object schema (including if/then/else branches)
+     * and merges them into [mergedProps], resolving duplicate names via [mergeProperty].
+     */
+    private fun collectAndMergeObjectProperties(
         ctx: JsonSchemaContext,
         name: String,
-        parentNode: ObjectNode,
+        node: ObjectNode,
         parentPackage: String,
         mergedProps: MutableList<ObjectGenerator.PropertySpec>,
     ) {
-        val parentProps = parentNode["properties"]
-        if (parentProps != null && parentProps.isObject) {
-            (parentProps as ObjectNode).properties().forEach { (propName, propSchema) ->
+        val properties = node["properties"]
+        if (properties != null && properties.isObject) {
+            (properties as ObjectNode).properties().forEach { (propName, propSchema) ->
                 mergeProperty(ctx, name, parentPackage, mergedProps, propName, propSchema, ctx.withSchemaStack("properties", propName))
             }
         }
         val conditionalProps = mutableListOf<Pair<ObjectNode, List<String>>>()
-        gatherConditionalProperties(parentNode, conditionalProps)
+        gatherConditionalProperties(node, conditionalProps)
         conditionalProps.forEach { (propsNode, pathPrefix) ->
             propsNode.properties().forEach { (propName, propSchema) ->
                 mergeProperty(ctx, name, parentPackage, mergedProps, propName, propSchema, ctx.withSchemaStack(*pathPrefix.toTypedArray(), propName))
@@ -964,64 +968,9 @@ object JsonSchemaTypeResolver {
             return ResolvedType(ParameterizedTypeName.get(Types.MAP, Types.STRING, Types.OBJECT))
         }
 
-        // Build properties
         val propSpecs = mutableListOf<ObjectGenerator.PropertySpec>()
-
-        // Gather if/then/else properties as well
-        val allPropertyNodes = mutableListOf((properties as ObjectNode) to listOf("properties"))
-        gatherConditionalProperties(node, allPropertyNodes)
-
-        allPropertyNodes.forEach { (propsNode, pathPrefix) ->
-            propsNode.properties().forEach { (propName, propSchema) ->
-                val propTypeName = propName.pascalCase()
-                val propCtx = ctx.withSchemaStack(*pathPrefix.toTypedArray(), propName)
-                val propResolved = resolveType(propCtx, "${name}$propTypeName", propSchema, parentPackage)
-                val propDescription = propSchema["description"]?.asString()
-                val existingIndex = propSpecs.indexOfFirst { it.jsonName == propName }
-                if (existingIndex < 0) {
-                    propSpecs.add(
-                        ObjectGenerator.PropertySpec(
-                            propName,
-                            propResolved.typeName,
-                            propDescription,
-                            generatedSchemaRef(propCtx),
-                        ),
-                    )
-                } else {
-                    val existing = propSpecs[existingIndex]
-                    val mergedType =
-                        mergeDuplicatePropertyType(
-                            ctx,
-                            name,
-                            propName,
-                            existing.typeName,
-                            propResolved.typeName,
-                            parentPackage,
-                            existing.description ?: propDescription,
-                        )
-                    propSpecs[existingIndex] =
-                        ObjectGenerator.PropertySpec(
-                            propName,
-                            mergedType,
-                            existing.description ?: propDescription,
-                            existing.schemaRef,
-                        )
-                }
-            }
-        }
-
-        val description = node["description"]?.asString()
-        val spec =
-            ObjectGenerator.generate(
-                name,
-                propSpecs,
-                description,
-                schemaRef = generatedSchemaRef(ctx),
-                sourceFile = generatedSourceFile(ctx),
-            )
-        val className = ClassName.get(parentPackage, name)
-        ctx.generatedTypes[className.toString()] = spec
-        return ResolvedType(className, spec)
+        collectAndMergeObjectProperties(ctx, name, node, parentPackage, propSpecs)
+        return generateMergedObjectType(ctx, name, node, parentPackage, propSpecs)
     }
 
     /**

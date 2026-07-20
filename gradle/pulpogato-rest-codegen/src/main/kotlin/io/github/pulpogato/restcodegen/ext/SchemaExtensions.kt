@@ -999,50 +999,9 @@ private fun buildAllOfObject(
     val fieldSpecs = builder.build().fieldSpecs()
 
     addStandardMethodsAndBuilderLogic(builder, fieldSpecs, nameRef, superType)
-
-    if (baseRefName != null) {
-        addExtendingToCodeMethod(fieldSpecs, baseProperties, builder, nameRef)
-    } else {
-        addToCodeMethod(fieldSpecs, builder, nameRef)
-    }
+    addToCodeMethod(fieldSpecs, builder, nameRef, baseProperties)
 
     return builder.build()
-}
-
-/**
- * Generates a {@code toCode} method for a subclass-style allOf object. Inherited base properties are
- * read through their getters (their backing fields are private to the superclass), while the
- * declared inline fields are referenced directly.
- */
-private fun addExtendingToCodeMethod(
-    inlineFields: List<FieldSpec>,
-    baseProperties: List<String>,
-    builder: TypeSpec.Builder,
-    nameRef: ClassName,
-) {
-    val toCodeStatement =
-        CodeBlock
-            .builder()
-            .add($$"return new $T($S)", Types.CODE_BUILDER, nameRef.canonicalName())
-
-    baseProperties.forEach { camelName ->
-        toCodeStatement.add($$"\n    .addProperty($S, get$L())", camelName, camelName.pascalCase())
-    }
-
-    inlineFields.forEach { field ->
-        toCodeStatement.add($$"\n    .addProperty($S, $N)", field.name(), field.name())
-    }
-
-    toCodeStatement.add("\n    .build()")
-
-    builder.addMethod(
-        MethodSpec
-            .methodBuilder("toCode")
-            .addModifiers(Modifier.PUBLIC)
-            .returns(String::class.java)
-            .addStatement(toCodeStatement.build())
-            .build(),
-    )
 }
 
 private fun buildSimpleObject(
@@ -1080,15 +1039,25 @@ private fun buildSimpleObject(
     return builder.build()
 }
 
+/**
+ * Generates a {@code toCode} method. Declared [fields] are referenced directly; when
+ * [baseProperties] is non-empty (subclass-style allOf), inherited properties are read through
+ * getters because their backing fields are private to the superclass.
+ */
 private fun addToCodeMethod(
     fields: List<FieldSpec>,
     builder: TypeSpec.Builder,
     nameRef: ClassName,
+    baseProperties: List<String> = emptyList(),
 ) {
     val toCodeStatement =
         CodeBlock
             .builder()
             .add($$"return new $T($S)", Types.CODE_BUILDER, nameRef.canonicalName())
+
+    baseProperties.forEach { camelName ->
+        toCodeStatement.add($$"\n    .addProperty($S, get$L())", camelName, camelName.pascalCase())
+    }
 
     fields.forEach { field ->
         toCodeStatement.add($$"\n    .addProperty($S, $N)", field.name(), field.name())
@@ -1096,15 +1065,14 @@ private fun addToCodeMethod(
 
     toCodeStatement.add("\n    .build()")
 
-    builder
-        .addMethod(
-            MethodSpec
-                .methodBuilder("toCode")
-                .addModifiers(Modifier.PUBLIC)
-                .returns(String::class.java)
-                .addStatement(toCodeStatement.build())
-                .build(),
-        )
+    builder.addMethod(
+        MethodSpec
+            .methodBuilder("toCode")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(String::class.java)
+            .addStatement(toCodeStatement.build())
+            .build(),
+    )
 }
 
 /**

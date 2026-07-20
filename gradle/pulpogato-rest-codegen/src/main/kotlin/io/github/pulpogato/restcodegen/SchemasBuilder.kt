@@ -105,7 +105,16 @@ class SchemasBuilder {
     ) {
         groups.forEach { group ->
             val annotations =
-                if (group.discriminable) jsonSubTypesAnnotations(packageName, group) else emptyList()
+                if (group.discriminable) {
+                    jsonTypeInfoAndSubTypesAnnotations(
+                        packageName,
+                        discriminatorProperty = "action",
+                        memberSchemaKeys = group.memberSchemaKeys,
+                        valuesByKey = group.actionsByKey,
+                    )
+                } else {
+                    emptyList()
+                }
             writeSealedInterface(
                 context,
                 mainDir,
@@ -145,7 +154,13 @@ class SchemasBuilder {
                 "A sealed supertype for the <code>${group.discriminatorProperty}</code>-discriminated oneOf, " +
                     "deserializable directly via Jackson using the discriminator property.\n" +
                     "<br/>Use pattern matching over the permitted subtypes to handle each variant.",
-                jsonDiscriminatorAnnotations(packageName, group),
+                jsonTypeInfoAndSubTypesAnnotations(
+                    packageName,
+                    discriminatorProperty = group.discriminatorProperty,
+                    memberSchemaKeys = group.memberSchemaKeys,
+                    valuesByKey = group.valuesByKey,
+                    defaultImplKey = group.memberSchemaKeys.first(),
+                ),
                 memberFieldsByKey,
             )
         }
@@ -325,78 +340,46 @@ class SchemasBuilder {
     }
 
     /**
-     * Builds the `@JsonTypeInfo` / `@JsonSubTypes` pair for a discriminated REST API oneOf group.
+     * Builds the `@JsonTypeInfo` / `@JsonSubTypes` pair that lets Jackson deserialize a sealed
+     * supertype to the correct member from a discriminator property in the payload.
      *
      * Uses `EXISTING_PROPERTY` so the discriminator field stays in the payload and each subtype
-     * continues to deserialize it into its own field.
-     */
-    private fun jsonDiscriminatorAnnotations(
-        packageName: String,
-        group: DiscriminatedOneOfGroups.Group,
-    ): List<AnnotationSpec> {
-        val jsonTypeInfo = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonTypeInfo")
-        val jsonSubTypes = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes")
-        val subTypesType = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes", "Type")
-
-        val defaultImplClass = ClassName.get(packageName, group.memberSchemaKeys.first().pascalCase())
-        val typeInfo =
-            AnnotationSpec
-                .builder(jsonTypeInfo)
-                .addMember("use", $$"$T.Id.NAME", jsonTypeInfo)
-                .addMember("include", $$"$T.As.EXISTING_PROPERTY", jsonTypeInfo)
-                .addMember("property", $$"$S", group.discriminatorProperty)
-                .addMember("defaultImpl", TYPE_CLASS_FORMAT, defaultImplClass)
-                .build()
-
-        val subTypes = AnnotationSpec.builder(jsonSubTypes)
-        group.memberSchemaKeys.forEach { key ->
-            val memberClass = ClassName.get(packageName, key.pascalCase())
-            group.valuesByKey[key].orEmpty().forEach { value ->
-                subTypes.addMember(
-                    "value",
-                    $$"$L",
-                    AnnotationSpec
-                        .builder(subTypesType)
-                        .addMember("value", TYPE_CLASS_FORMAT, memberClass)
-                        .addMember("name", $$"$S", value)
-                        .build(),
-                )
-            }
-        }
-
-        return listOf(typeInfo, subTypes.build())
-    }
-
-    /**
-     * Builds the `@JsonTypeInfo` / `@JsonSubTypes` pair that lets Jackson deserialize the supertype
-     * directly to the correct member based on the `action` discriminator. Only called for groups that
-     * are [discriminable][WebhookSupertypes.Group.discriminable].
+     * continues to deserialize it into its own field. The Jackson 2 and Jackson 3 runtimes both
+     * read these `com.fasterxml.jackson.annotation` types, so a single annotation pair covers both.
      *
-     * The Jackson 2 and Jackson 3 runtimes both read these `com.fasterxml.jackson.annotation` types,
-     * so a single annotation pair covers both.
+     * @param defaultImplKey when non-null, sets `@JsonTypeInfo.defaultImpl` to that member class
      */
-    private fun jsonSubTypesAnnotations(
+    private fun jsonTypeInfoAndSubTypesAnnotations(
         packageName: String,
-        group: WebhookSupertypes.Group,
+        discriminatorProperty: String,
+        memberSchemaKeys: List<String>,
+        valuesByKey: Map<String, List<String>?>,
+        defaultImplKey: String? = null,
     ): List<AnnotationSpec> {
         val jsonTypeInfo = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonTypeInfo")
         val jsonSubTypes = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes")
         val subTypesType = ClassName.get(PACKAGE_JACKSON_ANNOTATION, "JsonSubTypes", "Type")
 
-        // EXISTING_PROPERTY: the `action` value already lives in the payload, so it is not consumed and
-        // each subtype keeps populating its own `action` field as usual.
         val typeInfo =
             AnnotationSpec
                 .builder(jsonTypeInfo)
                 .addMember("use", $$"$T.Id.NAME", jsonTypeInfo)
                 .addMember("include", $$"$T.As.EXISTING_PROPERTY", jsonTypeInfo)
-                .addMember("property", $$"$S", "action")
-                .build()
+                .addMember("property", $$"$S", discriminatorProperty)
+                .apply {
+                    if (defaultImplKey != null) {
+                        addMember(
+                            "defaultImpl",
+                            TYPE_CLASS_FORMAT,
+                            ClassName.get(packageName, defaultImplKey.pascalCase()),
+                        )
+                    }
+                }.build()
 
         val subTypes = AnnotationSpec.builder(jsonSubTypes)
-        group.memberSchemaKeys.forEach { key ->
+        memberSchemaKeys.forEach { key ->
             val memberClass = ClassName.get(packageName, key.pascalCase())
-            group.actionsByKey[key].orEmpty().forEach { value ->
+            valuesByKey[key].orEmpty().forEach { value ->
                 subTypes.addMember(
                     "value",
                     $$"$L",
