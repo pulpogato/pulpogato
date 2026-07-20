@@ -234,11 +234,11 @@ class WebhooksBuilder {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(generated(0, context.withSchemaStack("#", "webhooks")))
                 .addJavadoc(
-                    """
+                    $$"""
                     The set of HTTP headers GitHub sends on webhook deliveries in this schema, bound as a
                     single parameter instead of one {@code @RequestHeader} argument per header.
                     <p>
-                    Requires {@link ${'$'}L} to be registered as a {@code HandlerMethodArgumentResolver} on
+                    Requires {@link $L} to be registered as a {@code HandlerMethodArgumentResolver} on
                     the {@code WebMvcConfigurer} in use.
                     """.trimIndent(),
                     webhookHeadersResolverType.simpleName(),
@@ -332,7 +332,7 @@ class WebhooksBuilder {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(builderType)
                 .addParameter(extraHeadersType, "extraHeaders")
-                .addStatement($$"this.extraHeaders = extraHeaders")
+                .addStatement("this.extraHeaders = extraHeaders")
                 .addStatement("return this")
                 .build(),
         )
@@ -370,8 +370,8 @@ class WebhooksBuilder {
                 constructorCall.add($$".$L(webRequest.getHeader($S))\n", field.fieldName, field.headerName)
             }
         }
-        constructorCall.add($$".extraHeaders(extraHeaders(webRequest))\n")
-        constructorCall.add($$".build();\n")
+        constructorCall.add(".extraHeaders(extraHeaders(webRequest))\n")
+        constructorCall.add(".build();\n")
 
         val resolveArgument =
             MethodSpec
@@ -451,15 +451,15 @@ class WebhooksBuilder {
             .addAnnotation(generated(0, context.withSchemaStack("#", "webhooks")))
             .addSuperinterface(ClassName.get("org.springframework.web.method.support", "HandlerMethodArgumentResolver"))
             .addJavadoc(
-                """
-                Binds a {@link ${'$'}L} parameter from the incoming request's headers, in place of
+                $$"""
+                Binds a {@link $L} parameter from the incoming request's headers, in place of
                 Spring's {@code @RequestHeader}, which only supports single-value or {@code Map} binding.
                 <p>
                 Register on the {@code WebMvcConfigurer} in use:
                 <pre>{@code
                 @Override
                 public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-                    resolvers.add(new ${'$'}L());
+                    resolvers.add(new $L());
                 }
                 }</pre>
                 """.trimIndent(),

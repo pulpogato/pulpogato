@@ -19,7 +19,7 @@ class SchemasBuilder {
         // jackson-annotations keeps this package for both Jackson 2 and Jackson 3.
         const val PACKAGE_JACKSON_ANNOTATION = "com.fasterxml.jackson.annotation"
         const val PACKAGE_PULPOGATO_JACKSON = "io.github.pulpogato.common.jackson"
-        const val TYPE_CLASS_FORMAT = "\$T.class"
+        const val TYPE_CLASS_FORMAT = $$"$T.class"
     }
 
     fun buildSchemas(
