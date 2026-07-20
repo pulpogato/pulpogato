@@ -71,7 +71,7 @@ object TestBuilder {
                     MethodSpec
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
-                        .addAnnotation(Annotations.generated(1, context))
+                        .addAnnotation(Annotations.generated(0, context))
                         .addException(ClassName.get("java.io", "IOException"))
                         .addStatement($$"var stream = getClass().getClassLoader().getResourceAsStream($S)", fileName)
                         .addStatement($$"$T.assertThat(stream).as(\"Could not read stream for file $L\").isNotNull()", assertionsClass, fileName)
@@ -99,7 +99,7 @@ object TestBuilder {
                     MethodSpec
                         .methodBuilder("test${key.pascalCase()}")
                         .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
-                        .addAnnotation(Annotations.generated(1, context))
+                        .addAnnotation(Annotations.generated(0, context))
                         .addStatement($$"@$T(\"json\") $T input = $L", Language::class.java, String::class.java, formatted.blockQuote())
                         .addStatement($$"var softly = new $T()", ClassName.get(PACKAGE_ASSERTJ, "SoftAssertions"))
                         .addStatement(

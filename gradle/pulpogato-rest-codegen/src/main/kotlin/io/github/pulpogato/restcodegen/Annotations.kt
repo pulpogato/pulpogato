@@ -181,7 +181,8 @@ object Annotations {
     private fun codeRef(offset: Int): String {
         val walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
         val frames = walker.walk { frames: Stream<StackWalker.StackFrame> -> frames.toList() }
-        val frame = frames[2 + offset]
+        val callerFrames = frames.dropWhile { it.declaringClass == Annotations::class.java }
+        val frame = callerFrames[offset]
         return "${frame.fileName}:${frame.lineNumber}"
     }
 
