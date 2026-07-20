@@ -2,6 +2,7 @@ package io.github.pulpogato.common;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.ToIntFunction;
@@ -100,26 +101,8 @@ public class Paginate {
             final LongFunction<@Nullable Mono<R>> fetchPage,
             final Function<@NonNull R, @NonNull Flux<T>> extractItems,
             final ToIntFunction<@NonNull R> totalPages) {
-        return fetchReactive(1L, maxPages, fetchPage, extractItems, totalPages);
-    }
-
-    private <T, R> Flux<T> fetchReactive(
-            final long page,
-            final long maxPages,
-            final LongFunction<@Nullable Mono<R>> fetchPage,
-            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
-            final ToIntFunction<@NonNull R> totalPages) {
-        Mono<R> pageContent = fetchPage.apply(page);
-        if (pageContent == null) {
-            return Flux.empty();
-        }
-        return pageContent.flatMapMany(response -> {
-            var items = extractItems.apply(response);
-            if (page >= maxPages || page >= totalPages.applyAsInt(response)) {
-                return items;
-            }
-            return Flux.concat(items, fetchReactive(page + 1, maxPages, fetchPage, extractItems, totalPages));
-        });
+        return fetchReactive(
+                1L, maxPages, fetchPage, extractItems, (page, response) -> page < totalPages.applyAsInt(response));
     }
 
     /**
@@ -135,23 +118,44 @@ public class Paginate {
      */
     @NonNull
     public <T> Flux<T> fromReactive(final long maxPages, final LongFunction<@Nullable Mono<List<T>>> fetchPage) {
-        return fetchListReactive(1L, maxPages, fetchPage);
+        return fetchReactive(1L, maxPages, fetchPage, Flux::fromIterable, (ignore, items) -> !items.isEmpty());
     }
 
-    private <T> Flux<T> fetchListReactive(
-            final long page, final long maxPages, final LongFunction<@Nullable Mono<List<T>>> fetchPage) {
-        if (page > maxPages) {
-            return Flux.empty();
-        }
-        Mono<List<T>> pageContent = fetchPage.apply(page);
+    /**
+     * Shared recursive implementation for reactive pagination. Fetches pages sequentially starting at
+     * {@code page}, emitting items from each page before requesting the next. Fetching stops when
+     * {@code page} reaches {@code maxPages}, when {@code hasMorePages} returns {@code false} for the
+     * current page, or when {@code fetchPage} returns {@code null}. The next page is requested lazily
+     * via {@link Flux#defer}, so later pages are not fetched until the current page's items are consumed.
+     *
+     * @param <T>          the type of items to be extracted from each page
+     * @param <R>          the type of the API response containing the paginated data
+     * @param page         the page number to fetch (1-based)
+     * @param maxPages     the maximum number of pages to fetch (prevents infinite pagination)
+     * @param fetchPage    function that takes a page number and returns the API response for that page
+     * @param extractItems function that takes an API response and returns a flux of items from that page
+     * @param hasMorePages predicate that returns {@code true} when another page should be fetched after
+     *                     the current one (for example, when the response reports more total pages, or
+     *                     when a list-only page is non-empty)
+     * @return a flux containing all items from the fetched pages
+     */
+    private <T, R> Flux<T> fetchReactive(
+            final long page,
+            final long maxPages,
+            final LongFunction<@Nullable Mono<R>> fetchPage,
+            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
+            final BiPredicate<Long, @NonNull R> hasMorePages) {
+        Mono<R> pageContent = fetchPage.apply(page);
         if (pageContent == null) {
             return Flux.empty();
         }
-        return pageContent.flatMapMany(items -> {
-            if (items.isEmpty()) {
-                return Flux.empty();
+        return pageContent.flatMapMany(response -> {
+            var items = extractItems.apply(response);
+            if (page >= maxPages || !hasMorePages.test(page, response)) {
+                return items;
             }
-            return Flux.concat(Flux.fromIterable(items), fetchListReactive(page + 1, maxPages, fetchPage));
+            return Flux.concat(
+                    items, Flux.defer(() -> fetchReactive(page + 1, maxPages, fetchPage, extractItems, hasMorePages)));
         });
     }
 }
