@@ -232,8 +232,9 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         var merged = new HttpHeaders();
         cached.getHeaders().forEach(merged::addAll);
         updateHeaders.forEach((name, values) -> {
-            // A 304 carries no body, so a Content-Length it sends (often 0) must not overwrite the
-            // length of the stored representation we are about to serve.
+            // A 304 Not Modified response doesn't carry a body, so a Content-Length it sends
+            // (often 0) must not overwrite the length of the stored representation we are about
+            // to serve.
             if (!HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) {
                 merged.put(name, new ArrayList<>(values));
             }
@@ -341,7 +342,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     /**
      * Records a {@code pulpogato.cache.put} span for the store phase, tagging it with the outcome
      * ({@link #CACHE_STORED} or {@link #CACHE_SKIP}). When {@code store} is non-null it runs inside
-     * the span so the span captures the cache backend's write latency; a null {@code store} records
+     * the span so the span captures the write latency of the cache backend; a null {@code store} records
      * a zero-work span documenting that the response was not cached.
      */
     private void recordPut(Observation parent, ClientRequest request, String cacheKey, String status, Runnable store) {

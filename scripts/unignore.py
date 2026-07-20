@@ -17,7 +17,7 @@ GRADLE_CMD = ["./gradlew", "check", "--max-workers=3", "--continue"]
 
 
 def run_gradle_check():
-    """Run the gradle check command and return True if it passes, False otherwise."""
+    """Run the Gradle check command and return True if it passes, False otherwise."""
     print(f"Running {' '.join(GRADLE_CMD)}...")
     result = subprocess.run(GRADLE_CMD, capture_output=True, text=True)
     success = result.returncode == 0
@@ -41,7 +41,7 @@ def end_group():
 
 
 def clear_failure_reports():
-    """Delete stale generated test failure reports before a new gradle run."""
+    """Delete stale generated test failure reports before a new Gradle run."""
     for report in Path(".").rglob("generated-test-failures.jsonl"):
         print(f"Deleting stale report: {report}")
         report.unlink()
@@ -122,7 +122,7 @@ def extract_failing_pairs(failures, original_pairs):
 
 
 def run_check_with_data(yaml, data, yaml_file):
-    """Write a candidate YAML file, run gradle, and return (success, failures)."""
+    """Write a candidate YAML file, run Gradle, and return (success, failures)."""
     save_yaml(yaml, data, yaml_file)
     clear_failure_reports()
     success = run_gradle_check()

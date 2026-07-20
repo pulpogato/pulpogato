@@ -187,7 +187,7 @@ class WebhooksBuilder {
 
     /**
      * Derives a Java field name from a header name the same way for every header, so the generated
-     * fields read the same as the ones that used to be hand-written (e.g. `X-GitHub-Delivery` ->
+     * fields read the same as the ones that used to be handwritten (e.g. `X-GitHub-Delivery` ->
      * `githubDelivery`, `X-Hub-Signature-256` -> `hubSignature256`).
      */
     private fun headerFieldName(headerName: String): String {

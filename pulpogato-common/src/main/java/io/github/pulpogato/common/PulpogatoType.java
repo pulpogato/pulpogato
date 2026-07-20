@@ -7,7 +7,7 @@ public interface PulpogatoType {
     /**
      * Converts the object to its code representation.
      *
-     * @return A string representing the java code to create the object.
+     * @return A string representing the Java code to create the object.
      */
     String toCode();
 }

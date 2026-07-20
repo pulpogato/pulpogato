@@ -51,7 +51,7 @@ class SchemasBuilder {
         // Captured per member schema so we can later derive the getters common to every member.
         val memberFieldsByKey = mutableMapOf<String, Map<String, TypeName>>()
 
-        // Members of a non-discriminated group need their inherited @JsonDeserialize cancelled (see
+        // Members of a non-discriminated group need their inherited @JsonDeserialize canceled (see
         // enrichMember): the interface carries the deserializer and would otherwise recurse into itself.
         val nonDiscriminatedMemberKeys = nonDiscriminatedGroups.flatMap { it.memberSchemaKeys }.toSet()
 

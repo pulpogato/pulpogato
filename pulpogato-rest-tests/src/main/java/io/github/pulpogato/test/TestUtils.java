@@ -210,9 +210,6 @@ public class TestUtils {
 
     /**
      * Formats a structured diff between expected and actual JSON values.
-     *
-     * <p>Optimized with string concatenation instead of MessageFormat.format to avoid
-     * redundant pattern parsing and improve performance during test failures.
      */
     private static String formatStructuredDiff(String op, String path, JsonValue oldValue, JsonValue newValue) {
         return "\nDifference at path: " + path + "\n" + "Operation: " + op + "\n\n" + "Expected (from input):\n"

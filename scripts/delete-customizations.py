@@ -81,7 +81,7 @@ def restore_files(saved):
 
 
 def try_without(files, gradle_tasks):
-    """Remove files, run the given gradle tasks, restore on failure."""
+    """Remove files, run the given Gradle tasks, restore on failure."""
     saved = remove_files(files)
     success = gradle_check(gradle_tasks)
     if not success:
