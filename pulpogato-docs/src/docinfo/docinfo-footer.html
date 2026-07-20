@@ -1,12 +1,12 @@
 <script>
 (function () {
-    var copyEmoji = {
+    const copyEmoji = {
         copy: "📋",
         copied: "✅",
         failed: "❌",
     };
 
-    var copyLabels = {
+    const copyLabels = {
         copy: "Copy code block",
         copied: "Copied",
         failed: "Copy failed",
@@ -23,14 +23,14 @@
     }
 
     function addCopyButton(listingBlock) {
-        var content = listingBlock.querySelector(":scope > .content");
-        var code = listingBlock.querySelector("pre code");
+        const content = listingBlock.querySelector(":scope > .content");
+        const code = listingBlock.querySelector("pre code");
 
         if (!content || !code) {
             return;
         }
 
-        var button = document.createElement("button");
+        const button = document.createElement("button");
         button.className = "copy-code-button";
         button.type = "button";
         setButtonIcon(button, "copy");
