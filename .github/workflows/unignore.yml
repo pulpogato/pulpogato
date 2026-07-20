@@ -58,7 +58,7 @@ jobs:
           fi
 
       # Mint the app token here, not at job start: installation tokens expire
-      # 1 hour after creation, and the gradle check above can run longer than that.
+      # 1 hour after creation, and the Gradle check above can run longer than that.
       - uses: actions/create-github-app-token@v3
         id: app-token
         if: steps.check.outputs.changed == 'true'

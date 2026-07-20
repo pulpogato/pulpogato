@@ -11,7 +11,7 @@ import io.swagger.v3.oas.models.media.Schema
  * This is the non-discriminated counterpart to [DiscriminatedOneOfGroups]. Where a discriminator is
  * present, [DiscriminatedOneOfGroups] lets Jackson route by reading the discriminator property; here
  * there is nothing in the payload to route on, so the generated interface uses a custom deserializer
- * that tries each permitted subtype in turn (the same first-match-wins behaviour as the wrapper it
+ * that tries each permitted subtype in turn (the same first-match-wins behavior as the wrapper it
  * replaces).
  *
  * Naming is **context-derived**: each interface is identified by the location where the `oneOf`
@@ -25,7 +25,7 @@ import io.swagger.v3.oas.models.media.Schema
  * - Only `oneOf`s reached through component-schema properties are considered. Inline `oneOf`s in path
  *   responses have no natural property name to derive from and keep their existing wrapper.
  * - `empty-object` members are skipped — it is a special pulpogato type, not a generated POJO, and the
- *   unions that contain it (e.g. `commit.author`) are exercised by hand-written tests.
+ *   unions that contain it (e.g. `commit.author`) are exercised by handwritten tests.
  * - The member count is capped to keep the prototype focused on the simple cases; large unions
  *   (`repository-rule`, `secret-scanning-location` details) are left as wrappers.
  */

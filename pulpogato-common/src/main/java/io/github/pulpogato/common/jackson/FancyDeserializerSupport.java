@@ -142,7 +142,7 @@ public class FancyDeserializerSupport<T> {
 
     /**
      * Performs the deserialization by trying to read the input as Map, List, String, or Number.
-     * Uses String-before-Number order to preserve Jackson's default coercion behaviour for
+     * Uses String-before-Number order to preserve Jackson's default coercion behavior for
      * JSON input.
      *
      * @param contextReader Reads from the Jackson parser/context

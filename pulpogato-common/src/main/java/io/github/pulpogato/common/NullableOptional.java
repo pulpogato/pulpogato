@@ -106,7 +106,7 @@ public final class NullableOptional<T> implements PulpogatoType {
      * This is useful in builder patterns where the caller has a potentially
      * null value and wants it automatically wrapped appropriately.
      * </p>
-     * @param value the value to wrap (may be null)
+     * @param value the value to wrap (can be null)
      * @param <T> the type of the value
      * @return a NullableOptional in NULL state if value is null, VALUE state otherwise
      */
