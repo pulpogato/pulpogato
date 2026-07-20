@@ -8,6 +8,7 @@ import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.ParameterSpec
+import com.palantir.javapoet.ParameterSpec.builder
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
@@ -912,7 +913,11 @@ class WebhooksBuilder {
                 .first { it.key == ref }
         val type = schema.className()
 
-        addHeaderParameters(ctx.methodSpecBuilder, ctx.context)
+        ctx.methodSpecBuilder.addParameter(
+            builder(webhookHeadersType, "headers")
+                .addAnnotation(generated(0, ctx.context.withSchemaStack("parameters")))
+                .build(),
+        )
 
         val bodyType = ClassName.get("${ctx.restPackage}.schemas", type)
         val bodyParam =
@@ -938,18 +943,6 @@ class WebhooksBuilder {
         }
 
         return bodyType
-    }
-
-    private fun addHeaderParameters(
-        methodSpecBuilder: MethodSpec.Builder,
-        context: Context,
-    ) {
-        methodSpecBuilder.addParameter(
-            ParameterSpec
-                .builder(webhookHeadersType, "headers")
-                .addAnnotation(generated(0, context.withSchemaStack("parameters")))
-                .build(),
-        )
     }
 
     private fun processExamples(
