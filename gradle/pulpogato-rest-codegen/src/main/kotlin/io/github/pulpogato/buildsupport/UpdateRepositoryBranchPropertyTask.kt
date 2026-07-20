@@ -69,12 +69,10 @@ abstract class UpdateRepositoryBranchPropertyTask : DefaultTask() {
                 ?.groupValues
                 ?.get(1)
 
-        if (previousValue == sha) {
-            logger.lifecycle("$key is already up to date")
-        } else if (previousValue == null) {
-            logger.lifecycle("Added $key=$sha")
-        } else {
-            logger.lifecycle("Updated $key from $previousValue to $sha")
+        when (previousValue) {
+            sha -> logger.lifecycle("$key is already up to date")
+            null -> logger.lifecycle("Added $key=$sha")
+            else -> logger.lifecycle("Updated $key from $previousValue to $sha")
         }
     }
 }
