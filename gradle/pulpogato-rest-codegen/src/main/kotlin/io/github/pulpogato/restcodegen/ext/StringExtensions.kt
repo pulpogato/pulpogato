@@ -8,7 +8,7 @@ private val trainCaseCache = ConcurrentHashMap<String, String>()
 /**
  * Converts a string to PascalCase.
  */
-fun String.pascalCase() =
+fun String.pascalCase(): String =
     pascalCaseCache.getOrPut(this) {
         this
             .replace(".", "-")
@@ -31,7 +31,7 @@ private val multipleHyphens = Regex("-+")
 /**
  * Converts a string to TRAIN_CASE.
  */
-fun String.trainCase() =
+fun String.trainCase(): String =
     trainCaseCache.getOrPut(this) {
         this
             .split(trainRegex)
