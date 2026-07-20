@@ -86,7 +86,7 @@ class AnnotationsTest {
         val result = Annotations.typeGenerated()
 
         assertThat(result.type().toString()).contains("TypeGenerated")
-        assertThat(result.members()["codeRef"].toString()).contains("AnnotationsTest.kt:")
+        assertThat(result.members()["value"].toString()).contains("AnnotationsTest.kt:")
     }
 
     @Test
@@ -97,7 +97,24 @@ class AnnotationsTest {
         assertThat(result.members()).doesNotContainKey("ghVersion")
         assertThat(result.members()["schemaRef"].toString()).contains("\"#/definitions/step\"")
         assertThat(result.members()["sourceFile"].toString()).contains("\"github-workflow.json\"")
-        assertThat(result.members()["codeRef"].toString()).contains("AnnotationsTest.kt:")
+        assertThat(result.members()["value"].toString()).contains("AnnotationsTest.kt:")
+    }
+
+    @Test
+    fun `methodGenerated creates Generated annotation with only codeRef`() {
+        val result = Annotations.methodGenerated()
+
+        assertThat(result.type().toString()).contains("Generated")
+        assertThat(result.members()).doesNotContainKey("ghVersion")
+        assertThat(result.members()).doesNotContainKey("schemaRef")
+        assertThat(result.members()["value"].toString()).contains("AnnotationsTest.kt:")
+    }
+
+    @Test
+    fun `override creates Override annotation`() {
+        val result = Annotations.override()
+
+        assertThat(result.type().toString()).contains("Override")
     }
 
     @Test
@@ -113,7 +130,7 @@ class AnnotationsTest {
     fun `generated with omitted sourceFile points codeRef at the real call site, not Annotations kt`() {
         val result = Annotations.generated(0, testContext())
 
-        val codeRef = result.members()["codeRef"].toString()
+        val codeRef = result.members()["value"].toString()
         assertThat(codeRef).contains("AnnotationsTest.kt:")
         assertThat(codeRef).doesNotContain("Annotations.kt")
     }
@@ -122,7 +139,7 @@ class AnnotationsTest {
     fun `generated with explicit sourceFile points codeRef at the real call site`() {
         val result = Annotations.generated(0, testContext(), "other.json")
 
-        val codeRef = result.members()["codeRef"].toString()
+        val codeRef = result.members()["value"].toString()
         assertThat(codeRef).contains("AnnotationsTest.kt:")
         assertThat(codeRef).doesNotContain("Annotations.kt")
         assertThat(result.members()["sourceFile"].toString()).contains("\"other.json\"")
@@ -132,7 +149,7 @@ class AnnotationsTest {
     // and use offset=1 to attribute codeRef to the helper's caller instead of the helper itself.
     private fun generateThroughHelper(): String {
         val result = Annotations.generated(1, testContext())
-        return result.members()["codeRef"].toString()
+        return result.members()["value"].toString()
     }
 
     @Test

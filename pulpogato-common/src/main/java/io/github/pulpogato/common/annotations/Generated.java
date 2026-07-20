@@ -23,7 +23,7 @@ public @interface Generated {
      * The generator of the class
      * @return The file and line that generated the type
      */
-    String codeRef();
+    String value();
     /**
      * The source file from which this element was generated
      * @return The source file name (e.g., "schema.json" or "additions.schema.json")

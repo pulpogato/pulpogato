@@ -154,7 +154,7 @@ object Annotations {
         } else {
             throw IllegalArgumentException("SchemaRef is empty")
         }
-        builder.addMember("codeRef", $$"$S", codeRef(offset))
+        builder.addMember("value", $$"$S", codeRef(offset))
         if (sourceFile != "schema.json") {
             builder.addMember("sourceFile", $$"$S", sourceFile)
         }
@@ -164,8 +164,18 @@ object Annotations {
     fun typeGenerated(): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get("$COMMON_PACKAGE.annotations", "TypeGenerated"))
-            .addMember("codeRef", $$"$S", codeRef(0))
+            .addMember("value", $$"$S", codeRef(0))
             .build()
+
+    // For boilerplate methods (equals/hashCode/toString/toCode) that aren't tied to a
+    // specific schema element, so schemaRef/ghVersion don't apply - only codeRef does.
+    fun methodGenerated(offset: Int = 0): AnnotationSpec =
+        AnnotationSpec
+            .builder(ClassName.get("$COMMON_PACKAGE.annotations", "Generated"))
+            .addMember("value", $$"$S", codeRef(offset))
+            .build()
+
+    fun override(): AnnotationSpec = AnnotationSpec.builder(Override::class.java).build()
 
     fun generatedForGithubFiles(
         schemaRef: String,
@@ -174,7 +184,7 @@ object Annotations {
         AnnotationSpec
             .builder(ClassName.get("$COMMON_PACKAGE.annotations", "Generated"))
             .addMember("schemaRef", $$"$S", schemaRef)
-            .addMember("codeRef", $$"$S", codeRef(0))
+            .addMember("value", $$"$S", codeRef(0))
             .addMember("sourceFile", $$"$S", sourceFile)
             .build()
 

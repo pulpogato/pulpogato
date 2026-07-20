@@ -12,5 +12,5 @@ public @interface TypeGenerated {
      * The location of the type in the schema
      * @return The location as a JSON reference
      */
-    String codeRef();
+    String value();
 }

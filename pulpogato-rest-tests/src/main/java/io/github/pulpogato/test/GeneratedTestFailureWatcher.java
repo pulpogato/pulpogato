@@ -35,7 +35,7 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
                         methodName,
                         generated.ghVersion(),
                         generated.schemaRef(),
-                        generated.codeRef(),
+                        generated.value(),
                         cause);
 
                 synchronized (failures) {

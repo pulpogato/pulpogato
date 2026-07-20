@@ -1068,6 +1068,8 @@ private fun addToCodeMethod(
     builder.addMethod(
         MethodSpec
             .methodBuilder("toCode")
+            .addAnnotation(Annotations.override())
+            .addAnnotation(Annotations.methodGenerated())
             .addModifiers(Modifier.PUBLIC)
             .returns(String::class.java)
             .addStatement(toCodeStatement.build())
@@ -1201,6 +1203,8 @@ private fun generateAllArgsConstructor(
 private fun generateToString(): MethodSpec =
     MethodSpec
         .methodBuilder("toString")
+        .addAnnotation(Annotations.override())
+        .addAnnotation(Annotations.methodGenerated())
         .addModifiers(Modifier.PUBLIC)
         .returns(String::class.java)
         .addStatement($$"return $T.reflectionToString(this)", ClassName.get(PACKAGE_COMMONS_LANG3_BUILDER, "ToStringBuilder"))
@@ -1212,6 +1216,8 @@ private fun generateToString(): MethodSpec =
 private fun generateEquals(): MethodSpec =
     MethodSpec
         .methodBuilder("equals")
+        .addAnnotation(Annotations.override())
+        .addAnnotation(Annotations.methodGenerated())
         .addModifiers(Modifier.PUBLIC)
         .returns(TypeName.BOOLEAN)
         .addParameter(ParameterSpec.builder(Types.OBJECT, "o").build())
@@ -1224,6 +1230,8 @@ private fun generateEquals(): MethodSpec =
 private fun generateHashCode(): MethodSpec =
     MethodSpec
         .methodBuilder("hashCode")
+        .addAnnotation(Annotations.override())
+        .addAnnotation(Annotations.methodGenerated())
         .addModifiers(Modifier.PUBLIC)
         .returns(
             TypeName.INT,
