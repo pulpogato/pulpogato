@@ -2,6 +2,7 @@ package io.github.pulpogato.restcodegen
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.palantir.javapoet.TypeSpec
+import io.swagger.v3.oas.models.OpenAPI
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -104,5 +105,43 @@ class AnnotationsTest {
         val result = Annotations.testExtension()
 
         assertThat(result.type().toString()).contains("CompositeTestExtension")
+    }
+
+    private fun testContext(): Context = Context(OpenAPI(), "test", listOf("#", "tags", "0"))
+
+    @Test
+    fun `generated with omitted sourceFile points codeRef at the real call site, not Annotations kt`() {
+        val result = Annotations.generated(0, testContext())
+
+        val codeRef = result.members()["codeRef"].toString()
+        assertThat(codeRef).contains("AnnotationsTest.kt:")
+        assertThat(codeRef).doesNotContain("Annotations.kt")
+    }
+
+    @Test
+    fun `generated with explicit sourceFile points codeRef at the real call site`() {
+        val result = Annotations.generated(0, testContext(), "other.json")
+
+        val codeRef = result.members()["codeRef"].toString()
+        assertThat(codeRef).contains("AnnotationsTest.kt:")
+        assertThat(codeRef).doesNotContain("Annotations.kt")
+        assertThat(result.members()["sourceFile"].toString()).contains("\"other.json\"")
+    }
+
+    // Mimics call sites (e.g. TestBuilder) that generate the annotation from inside a helper
+    // and use offset=1 to attribute codeRef to the helper's caller instead of the helper itself.
+    private fun generateThroughHelper(): String {
+        val result = Annotations.generated(1, testContext())
+        return result.members()["codeRef"].toString()
+    }
+
+    @Test
+    fun `generated with offset skips the immediate caller frame`() {
+        val codeRefFromHelper = generateThroughHelper()
+        val expectedLine = Throwable().stackTrace[0].lineNumber - 1
+
+        assertThat(codeRefFromHelper).contains("AnnotationsTest.kt:")
+        assertThat(codeRefFromHelper).doesNotContain("Annotations.kt")
+        assertThat(codeRefFromHelper).contains("AnnotationsTest.kt:$expectedLine\"")
     }
 }
