@@ -48,7 +48,7 @@ object ObjectGenerator {
                 .addAnnotation(Annotations.jsonIncludeNonNull())
 
         if (!description.isNullOrBlank()) {
-            builder.addJavadoc("\$L", MarkdownHelper.mdToHtml(description))
+            builder.addJavadoc($$"$L", MarkdownHelper.mdToHtml(description))
         }
 
         properties.forEach { prop ->
@@ -63,7 +63,7 @@ object ObjectGenerator {
             }
 
             if (!prop.description.isNullOrBlank()) {
-                fieldBuilder.addJavadoc("\$L", MarkdownHelper.mdToHtml(prop.description))
+                fieldBuilder.addJavadoc($$"$L", MarkdownHelper.mdToHtml(prop.description))
             }
 
             builder.addField(fieldBuilder.build())
