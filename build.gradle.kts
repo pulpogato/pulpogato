@@ -53,7 +53,7 @@ allprojects {
             "true" -> "com.github.pulpogato.pulpogato"
             else -> "io.github.pulpogato"
         }
-    apply(plugin = "com.diffplug.spotless")
+    plugins.apply("com.diffplug.spotless")
 
     configure<SpotlessExtension> {
         kotlin {
