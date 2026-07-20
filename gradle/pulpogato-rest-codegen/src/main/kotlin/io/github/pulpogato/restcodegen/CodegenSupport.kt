@@ -25,7 +25,6 @@ fun collectJavaFiles(vararg directories: File): List<File> =
         .flatMap { dir ->
             dir
                 .walk()
-                .asSequence()
                 .filter { it.isFile && it.extension == "java" }
         }.toList()
 
