@@ -36,7 +36,7 @@ private const val PACKAGE_PULPOGATO_COMMON = "io.github.pulpogato.common"
 private const val PACKAGE_COMMONS_LANG3_BUILDER = "org.apache.commons.lang3.builder"
 private const val COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/"
 
-fun Map.Entry<String, Schema<*>>.className() = key.pascalCase()
+fun Map.Entry<String, Schema<*>>.className(): String = key.pascalCase()
 
 /**
  * Checks if the given TypeName represents a simple type (primitive, string, or date/time)
