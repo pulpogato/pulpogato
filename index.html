@@ -702,7 +702,7 @@ pre.rouge {
 <div id="header">
 <h1>Pulpogato</h1>
 <div class="details">
-<span id="revnumber">version 3.5.0-dev.16+8655728</span>
+<span id="revnumber">version 3.5.0-dev.18+e15e6fb</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -1825,13 +1825,13 @@ This helps monitor your API usage and avoid hitting rate limits.</p>
 </div>
 <script>
 (function () {
-    var copyEmoji = {
+    const copyEmoji = {
         copy: "📋",
         copied: "✅",
         failed: "❌",
     };
 
-    var copyLabels = {
+    const copyLabels = {
         copy: "Copy code block",
         copied: "Copied",
         failed: "Copy failed",
@@ -1848,14 +1848,14 @@ This helps monitor your API usage and avoid hitting rate limits.</p>
     }
 
     function addCopyButton(listingBlock) {
-        var content = listingBlock.querySelector(":scope > .content");
-        var code = listingBlock.querySelector("pre code");
+        const content = listingBlock.querySelector(":scope > .content");
+        const code = listingBlock.querySelector("pre code");
 
         if (!content || !code) {
             return;
         }
 
-        var button = document.createElement("button");
+        const button = document.createElement("button");
         button.className = "copy-code-button";
         button.type = "button";
         setButtonIcon(button, "copy");
