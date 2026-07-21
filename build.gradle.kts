@@ -94,6 +94,11 @@ subprojects {
         isPreserveFileTimestamps = false
         isReproducibleFileOrder = true
     }
+    tasks.withType<JavaCompile>().configureEach {
+        // Codegen emits @Deprecated fields verbatim from GitHub's OpenAPI spec, so a stray
+        // reference to one anywhere in hand-written code is a real signal, not noise.
+        options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Werror"))
+    }
     tasks.withType<Test> {
         useJUnitPlatform()
         // Tests are MockMvc-based (no bound ports) and data-driven, so they parallelize safely across forked JVMs.
