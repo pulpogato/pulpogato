@@ -722,28 +722,32 @@ pre.rouge {
 </li>
 <li><a href="#_usage">Usage</a>
 <ul class="sectlevel2">
-<li><a href="#_rest_client_example">REST Client Example</a></li>
-<li><a href="#_reactive_rest_client_example">Reactive REST Client Example</a></li>
+<li><a href="#_rest_api_clients">REST API Clients</a></li>
 <li><a href="#_webhook_example">Webhook Example</a></li>
-<li><a href="#_graphql_client_example">GraphQL Client Example</a></li>
+<li><a href="#_graphql_clients">GraphQL Clients</a></li>
 <li><a href="#_github_files_example">GitHub Files Example</a></li>
 </ul>
 </li>
 <li><a href="#_github_app_jwt_authentication">GitHub App JWT Authentication</a>
 <ul class="sectlevel2">
 <li><a href="#_jwt_filter_setup">JWT Filter Setup</a></li>
+<li><a href="#_jwt_interceptor_setup_restclient">JWT Interceptor Setup (RestClient)</a></li>
 </ul>
 </li>
 <li><a href="#_http_caching">HTTP Caching</a>
 <ul class="sectlevel2">
 <li><a href="#_basic_caching_setup">Basic Caching Setup</a></li>
 <li><a href="#_advanced_caching_options">Advanced Caching Options</a></li>
+<li><a href="#_basic_caching_setup_restclient">Basic Caching Setup (RestClient)</a></li>
+<li><a href="#_advanced_caching_options_restclient">Advanced Caching Options (RestClient)</a></li>
 </ul>
 </li>
 <li><a href="#_rate_limit_metrics">Rate Limit Metrics</a>
 <ul class="sectlevel2">
 <li><a href="#_basic_metrics_setup">Basic Metrics Setup</a></li>
 <li><a href="#_advanced_metrics_options">Advanced Metrics Options</a></li>
+<li><a href="#_basic_metrics_setup_restclient">Basic Metrics Setup (RestClient)</a></li>
+<li><a href="#_advanced_metrics_options_restclient">Advanced Metrics Options (RestClient)</a></li>
 </ul>
 </li>
 </ul>
@@ -1020,7 +1024,9 @@ It is recommended to use this BOM in your build system to ensure all Pulpogato m
 <h2 id="_usage">Usage</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_rest_client_example">REST Client Example</h3>
+<h3 id="_rest_api_clients">REST API Clients</h3>
+<div class="sect3">
+<h4 id="_webclient">WebClient</h4>
 <div class="paragraph">
 <p>This shows how to create a REST client and get the authenticated user.
 Ideally, you would inject the WebClient and export a Bean for RestClients.
@@ -1071,8 +1077,8 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_reactive_rest_client_example">Reactive REST Client Example</h3>
+<div class="sect3">
+<h4 id="_webclient_reactive">WebClient Reactive</h4>
 <div class="paragraph">
 <p>This shows how to create a REST client that returns a <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html">Mono</a> reactive type.</p>
 </div>
@@ -1124,6 +1130,60 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 <td>Call block() to subscribe to the Mono and block until the call response is received.</td>
 </tr>
 </table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_restclient">RestClient</h4>
+<div class="paragraph">
+<p>This shows how to create a REST client backed by Spring&#8217;s synchronous
+<a href="https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-restclient">RestClient</a>
+instead of <code>WebClient</code>.
+It uses the same generated API interfaces as the blocking <code>WebClient</code> example above.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">io.github.pulpogato.rest.api.UsersApi</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.github.pulpogato.rest.api.restclient.RestClients</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RestClientExample</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">RestClient</span> <span class="n">restClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span> <i class="conum" data-value="1"></i><b>(1)</b>
+
+        <span class="nc">RestClients</span> <span class="n">restClients</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RestClients</span><span class="o">(</span><span class="n">restClient</span><span class="o">);</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="nc">UsersApi</span> <span class="n">api</span> <span class="o">=</span> <span class="n">restClients</span><span class="o">.</span><span class="na">getUsersApi</span><span class="o">();</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="kt">var</span> <span class="n">authenticated</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">getAuthenticated</span><span class="o">();</span> <i class="conum" data-value="4"></i><b>(4)</b>
+        <span class="kt">var</span> <span class="n">body</span> <span class="o">=</span> <span class="n">authenticated</span><span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+        <span class="n">assertThat</span><span class="o">(</span><span class="n">body</span><span class="o">).</span><span class="na">isInstanceOf</span><span class="o">(</span><span class="nc">PublicUser</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="kt">var</span> <span class="n">publicUser</span> <span class="o">=</span> <span class="o">(</span><span class="nc">PublicUser</span><span class="o">)</span> <span class="n">body</span><span class="o">;</span>
+        <span class="kt">var</span> <span class="n">login</span> <span class="o">=</span> <span class="n">publicUser</span><span class="o">.</span><span class="na">getLogin</span><span class="o">();</span>
+
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Create a RestClient. You can also inject one.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Create RestClients instance.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Get the UsersApi client. There are many more you can get.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Call the <code>getAuthenticated</code> method.</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1203,7 +1263,9 @@ Binding it requires registering the matching <code>WebhookHeadersArgumentResolve
 </div>
 </div>
 <div class="sect2">
-<h3 id="_graphql_client_example">GraphQL Client Example</h3>
+<h3 id="_graphql_clients">GraphQL Clients</h3>
+<div class="sect3">
+<h4 id="_webclient_reactive_2">WebClient Reactive</h4>
 <div class="paragraph">
 <p>This shows how to create a GraphQL client and get the authenticated user.
 Ideally, you would inject the WebClient and export a Bean for GraphQLClients.
@@ -1352,6 +1414,38 @@ If you&#8217;re supporting multiple GitHub Apps or sites, you would export a fac
 
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_restclient_2">RestClient</h4>
+<div class="paragraph">
+<p>This shows the same query using a <code>RestClient</code>-backed GraphQL client instead of <code>WebClient</code>.
+Unlike the <code>WebClient</code> variant, <code>DgsRestClientGraphQLClient</code> blocks and returns the response directly, so there&#8217;s no <code>.block()</code> call.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RestClientGraphQlExample</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// create a RestClient</span>
+        <span class="nc">RestClient</span> <span class="n">restClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com/graphql"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+        <span class="kt">var</span> <span class="n">graphQLClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DgsRestClientGraphQLClient</span><span class="o">(</span><span class="n">graphqlRestClient</span><span class="o">,</span> <span class="n">h</span> <span class="o">-&gt;</span> <span class="o">{},</span> <span class="n">mapper</span><span class="o">);</span>
+
+        <span class="kt">var</span> <span class="n">variables</span> <span class="o">=</span> <span class="nc">LinkedHashMapBuilder</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+                <span class="n">entry</span><span class="o">(</span><span class="s">"owner"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <span class="n">entry</span><span class="o">(</span><span class="s">"repo"</span><span class="o">,</span> <span class="s">"pulpogato"</span><span class="o">),</span> <span class="n">entry</span><span class="o">(</span><span class="s">"branch"</span><span class="o">,</span> <span class="s">"main"</span><span class="o">));</span>
+        <span class="kt">var</span> <span class="n">response</span> <span class="o">=</span>
+                <span class="n">graphQLClient</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">(</span><span class="n">io</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">pulpogato</span><span class="o">.</span><span class="na">graphql</span><span class="o">.</span><span class="na">FindOpenPullRequestsTest</span><span class="o">.</span><span class="na">OPEN_PRS</span><span class="o">,</span> <span class="n">variables</span><span class="o">);</span>
+
+        <span class="kt">var</span> <span class="n">repository</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="na">extractValueAsObject</span><span class="o">(</span><span class="s">"repository"</span><span class="o">,</span> <span class="nc">Repository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1641,6 +1735,43 @@ This is useful when you need to authenticate as the app itself rather than as an
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_jwt_interceptor_setup_restclient">JWT Interceptor Setup (RestClient)</h3>
+<div class="paragraph">
+<p><code>JwtClientHttpRequestInterceptor</code> is the <code>RestClient</code> equivalent of <code>JwtFilter</code>, offering the same behavior for blocking clients.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">jwtFactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JwtFactory</span><span class="o">(</span>
+        <span class="n">privateKeyPem</span><span class="o">,</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="mi">12345L</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">);</span>
+<span class="kt">var</span> <span class="n">jwtInterceptor</span> <span class="o">=</span>
+        <span class="nc">JwtClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">().</span><span class="na">jwtFactory</span><span class="o">(</span><span class="n">jwtFactory</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">restClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">requestInterceptor</span><span class="o">(</span><span class="n">jwtInterceptor</span><span class="o">)</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The RSA private key in PEM format (PKCS#1 or PKCS#8), loaded from your GitHub App settings</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Your GitHub App ID (or client ID) as a string</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Add the interceptor to your RestClient</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1743,6 +1874,72 @@ This can significantly reduce API calls and improve performance.</p>
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_basic_caching_setup_restclient">Basic Caching Setup (RestClient)</h3>
+<div class="paragraph">
+<p><code>CachingClientHttpRequestInterceptor</code> is the <code>RestClient</code> equivalent of <code>CachingExchangeFilterFunction</code>, offering the same caching behavior for blocking clients.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">cachingInterceptor</span> <span class="o">=</span> <span class="nc">CachingClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">cachingClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">requestInterceptor</span><span class="o">(</span><span class="n">cachingInterceptor</span><span class="o">)</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>This is a Spring Cache (ConcurrentMapCache, Caffeine, Redis, etc.)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Add the interceptor to your RestClient</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_caching_options_restclient">Advanced Caching Options (RestClient)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">cachingInterceptor</span> <span class="o">=</span> <span class="nc">CachingClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">cacheKeyMapper</span><span class="o">(</span><span class="n">request</span> <span class="o">-&gt;</span> <span class="n">request</span><span class="o">.</span><span class="na">getURI</span><span class="o">().</span><span class="na">toASCIIString</span><span class="o">())</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">maxCacheableSize</span><span class="o">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">)</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">.</span><span class="na">alwaysRevalidate</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">cachingClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">requestInterceptor</span><span class="o">(</span><span class="n">cachingInterceptor</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Custom function to generate cache keys from requests</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Maximum response size to cache (default: 2MB)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Always send conditional requests even if cache is fresh. This is helpful when GitHub&#8217;s cache directive is too long for your usecase.</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1805,6 +2002,63 @@ This helps monitor your API usage and avoid hitting rate limits.</p>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
 <span class="kt">var</span> <span class="n">metricsClient</span> <span class="o">=</span> <span class="n">webClient</span><span class="o">.</span><span class="na">mutate</span><span class="o">().</span><span class="na">filter</span><span class="o">(</span><span class="n">metricsFilter</span><span class="o">).</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Custom metric name prefix</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Additional tags to add to all metrics</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_metrics_setup_restclient">Basic Metrics Setup (RestClient)</h3>
+<div class="paragraph">
+<p><code>MetricsClientHttpRequestInterceptor</code> is the <code>RestClient</code> equivalent of <code>MetricsExchangeFunction</code>, offering the same rate-limit metrics for blocking clients.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">metricsInterceptor</span> <span class="o">=</span> <span class="nc">MetricsClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">registry</span><span class="o">(</span><span class="n">meterRegistry</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">metricsClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">requestInterceptor</span><span class="o">(</span><span class="n">metricsInterceptor</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>This is a Micrometer MeterRegistry (SimpleMeterRegistry, PrometheusMeterRegistry, etc.) It could be injected from Spring.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_metrics_options_restclient">Advanced Metrics Options (RestClient)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">metricsInterceptor</span> <span class="o">=</span> <span class="nc">MetricsClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">registry</span><span class="o">(</span><span class="n">meterRegistry</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">prefix</span><span class="o">(</span><span class="s">"myapp.github.rateLimit"</span><span class="o">)</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">defaultTags</span><span class="o">(</span><span class="nc">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="nc">Tag</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="s">"env"</span><span class="o">,</span> <span class="s">"production"</span><span class="o">)))</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="kt">var</span> <span class="n">metricsClient</span> <span class="o">=</span> <span class="nc">RestClient</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">baseUrl</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">defaultHeader</span><span class="o">(</span><span class="nc">HttpHeaders</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">,</span> <span class="s">"Bearer ...your token here..."</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">requestInterceptor</span><span class="o">(</span><span class="n">metricsInterceptor</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre>
 </div>
 </div>
 <div class="colist arabic">
