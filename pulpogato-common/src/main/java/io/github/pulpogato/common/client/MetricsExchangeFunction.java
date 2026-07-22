@@ -3,12 +3,9 @@ package io.github.pulpogato.common.client;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.LongConsumer;
 import lombok.Builder;
+import lombok.Getter;
 import org.jspecify.annotations.NonNull;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -36,12 +33,6 @@ import reactor.core.publisher.Mono;
 @Builder
 public class MetricsExchangeFunction implements ExchangeFilterFunction {
 
-    private static final String RATE_LIMIT_LIMIT = "x-ratelimit-limit";
-    private static final String RATE_LIMIT_REMAINING = "x-ratelimit-remaining";
-    private static final String RATE_LIMIT_USED = "x-ratelimit-used";
-    private static final String RATE_LIMIT_RESET = "x-ratelimit-reset";
-    private static final String RATE_LIMIT_RESOURCE = "x-ratelimit-resource";
-
     /**
      * A registry instance used to record and manage application metrics.
      * This is used for monitoring and gathering metrics data related to
@@ -67,7 +58,13 @@ public class MetricsExchangeFunction implements ExchangeFilterFunction {
     @Builder.Default
     private final List<Tag> defaultTags = List.of();
 
-    private final ConcurrentHashMap<String, AtomicLong> gauges = new ConcurrentHashMap<>();
+    // Lombok's @Getter(lazy=true) defers this initializer to first access instead of running it as
+    // a plain field initializer, which would otherwise race @Builder.Default's assignment of
+    // registry/clock/prefix/defaultTags in the generated constructor. The recorder's gauge map must
+    // persist across calls, so it can't just be rebuilt per call.
+    @Getter(lazy = true)
+    private final RateLimitMetricsRecorder recorder =
+            new RateLimitMetricsRecorder(registry, clock, prefix, defaultTags);
 
     @Override
     @NonNull
@@ -75,44 +72,8 @@ public class MetricsExchangeFunction implements ExchangeFilterFunction {
         return next.exchange(request).doOnNext(this::recordRateLimitMetrics);
     }
 
-    private void withNumericHeader(ClientResponse response, String headerName, LongConsumer consumer) {
-        var value = getFirstHeader(response, headerName);
-        if (value != null) {
-            try {
-                var numericValue = Long.parseLong(value);
-                consumer.accept(numericValue);
-            } catch (NumberFormatException ignore) {
-                // ignore this
-            }
-        }
-    }
-
     private void recordRateLimitMetrics(ClientResponse response) {
-        String resource = getFirstHeader(response, RATE_LIMIT_RESOURCE);
-
-        List<Tag> tags = new ArrayList<>(defaultTags);
-        tags.add(Tag.of("resource", resource != null ? resource : "unknown"));
-
-        withNumericHeader(response, RATE_LIMIT_LIMIT, v -> setGauge(prefix + ".limit", tags, v));
-        withNumericHeader(response, RATE_LIMIT_REMAINING, v -> setGauge(prefix + ".remaining", tags, v));
-        withNumericHeader(response, RATE_LIMIT_USED, v -> setGauge(prefix + ".used", tags, v));
-        withNumericHeader(
-                response,
-                RATE_LIMIT_RESET,
-                resetValue -> setGauge(
-                        prefix + ".secondsToReset",
-                        tags,
-                        resetValue - clock.instant().getEpochSecond()));
-    }
-
-    private void setGauge(String name, List<Tag> tags, long value) {
-        var key = name + "/" + tags;
-        var ref = gauges.computeIfAbsent(key, k -> {
-            var atomicLong = new AtomicLong(value);
-            registry.gauge(name, tags, atomicLong, AtomicLong::get);
-            return atomicLong;
-        });
-        ref.set(value);
+        getRecorder().recordMetrics(headerName -> getFirstHeader(response, headerName));
     }
 
     private String getFirstHeader(ClientResponse response, String headerName) {

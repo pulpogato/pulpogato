@@ -1,21 +1,21 @@
-package io.github.pulpogato.rest.api;
+package io.github.pulpogato.rest.api.restclient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.common.StringOrInteger;
-import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
+import io.github.pulpogato.rest.api.ActionsApi;
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.ActionsCacheList;
 import io.github.pulpogato.rest.schemas.ActionsCacheUsageByRepository;
 import java.net.URI;
 import org.junit.jupiter.api.Test;
-import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.http.HttpStatus;
 
 class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testGetActionsCacheUsage() {
-        var api = new RestClients(webClient).getActionsApi();
+        var api = new RestClients(restClient).getActionsApi();
         var response = api.getActionsCacheUsage("pulpogato", "pulpogato");
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -29,7 +29,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testGetActionsCacheList() {
-        var api = new RestClients(webClient).getActionsApi();
+        var api = new RestClients(restClient).getActionsApi();
         var response = api.getActionsCacheList("pulpogato", "pulpogato", null, null, null, null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -42,7 +42,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testGetActionsCacheListWithPagination() {
-        var api = new RestClients(webClient).getActionsApi();
+        var api = new RestClients(restClient).getActionsApi();
         var response = api.getActionsCacheList("pulpogato", "pulpogato", 10L, 0L, null, null, null, null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -58,7 +58,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testCreateWorkflowDispatch() {
-        RestClients restClients = new RestClients(webClient);
+        RestClients restClients = new RestClients(restClient);
         var api = restClients.getActionsApi();
 
         var response = api.createWorkflowDispatch(
@@ -78,7 +78,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testCreateWorkflowDispatchWithResponse() {
-        RestClients restClients = new RestClients(webClient);
+        RestClients restClients = new RestClients(restClient);
         var api = restClients.getActionsApi();
 
         var response = api.createWorkflowDispatch(
@@ -104,38 +104,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testListWorkflowRuns() {
-        var api = new RestClients(webClient).getActionsApi();
-        var response = api.listWorkflowRuns(
-                "pulpogato",
-                "pulpogato",
-                StringOrInteger.builder()
-                        .stringValue("check-issues-statuses.yml")
-                        .build(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-        assertThat(response.getBody())
-                .as("Workflow runs response should not be null")
-                .isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    void testListWorkflowRunsWithCache() {
-        var cachingClient = webClient
-                .mutate()
-                .filter(CachingExchangeFilterFunction.builder()
-                        .cache(new ConcurrentMapCache("test-cache"))
-                        .build())
-                .build();
-        var api = new RestClients(cachingClient).getActionsApi();
+        var api = new RestClients(restClient).getActionsApi();
         var response = api.listWorkflowRuns(
                 "pulpogato",
                 "pulpogato",

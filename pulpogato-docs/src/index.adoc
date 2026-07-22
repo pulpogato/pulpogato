@@ -22,7 +22,9 @@ include::../../README.adoc[tags=installation]
 
 == Usage
 
-=== REST Client Example
+=== REST API Clients
+
+==== WebClient
 
 This shows how to create a REST client and get the authenticated user.
 Ideally, you would inject the WebClient and export a Bean for RestClients.
@@ -54,7 +56,7 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/Use
 <3> Get the UsersApi client. There are many more you can get.
 <4> Call the `getAuthenticated` method.
 
-=== Reactive REST Client Example
+==== WebClient Reactive
 
 This shows how to create a REST client that returns a https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html[Mono] reactive type.
 
@@ -84,6 +86,39 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/rea
 <3> Get the reactive UsersApi client. There are many more you can get.
 <4> Call the `getAuthenticated` method, which returns a Mono.
 <5> Call block() to subscribe to the Mono and block until the call response is received.
+
+==== RestClient
+
+This shows how to create a REST client backed by Spring's synchronous
+https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-restclient[RestClient]
+instead of `WebClient`.
+It uses the same generated API interfaces as the blocking `WebClient` example above.
+
+[source,java]
+----
+
+import io.github.pulpogato.rest.api.UsersApi;
+import io.github.pulpogato.rest.api.restclient.RestClients;
+
+public class RestClientExample {
+    public static void main(String[] args) {
+        RestClient restClient = RestClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build(); //<1>
+
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/restclient/UsersApiIntegrationTest.java[tags=getAuthenticatedPublic]
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/restclient/UsersApiIntegrationTest.java[tags=getBody]
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/restclient/UsersApiIntegrationTest.java[tags=getUser]
+include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/restclient/UsersApiIntegrationTest.java[tags=getLogin]
+
+    }
+}
+----
+<1> Create a RestClient. You can also inject one.
+<2> Create RestClients instance.
+<3> Get the UsersApi client. There are many more you can get.
+<4> Call the `getAuthenticated` method.
 
 === Webhook Example
 
@@ -118,7 +153,9 @@ For single-event webhooks such as `ping`, the interface has exactly one method w
 include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/webhooks/PingWebhooksIntegrationTest.java[tags=ping-webhook-controller]
 ----
 
-=== GraphQL Client Example
+=== GraphQL Clients
+
+==== WebClient Reactive
 
 This shows how to create a GraphQL client and get the authenticated user.
 Ideally, you would inject the WebClient and export a Bean for GraphQLClients.
@@ -162,6 +199,30 @@ public class TypedGraphQlExample {
                 .build();
 
 include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=execute-typed-query]
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=extract]
+
+    }
+}
+----
+
+==== RestClient
+
+This shows the same query using a `RestClient`-backed GraphQL client instead of `WebClient`.
+Unlike the `WebClient` variant, `DgsRestClientGraphQLClient` blocks and returns the response directly, so there's no `.block()` call.
+
+[source,java]
+----
+public class RestClientGraphQlExample {
+
+    public static void main(String[] args) {
+        // create a RestClient
+        RestClient restClient = RestClient.builder()
+                .baseUrl("https://api.github.com/graphql")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer ...your token here...")
+                .build();
+
+include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/restclient/FindOpenPullRequestsTest.java[tags=execute-restclient]
 
 include::../../pulpogato-graphql-fpt/src/test/java/io/github/pulpogato/graphql/FindOpenPullRequestsTest.java[tags=extract]
 
@@ -278,6 +339,18 @@ The filter:
 * Caches tokens and refreshes them 30 seconds before expiry
 * Supports both PKCS#1 (`BEGIN RSA PRIVATE KEY`) and PKCS#8 (`BEGIN PRIVATE KEY`) formats
 
+=== JWT Interceptor Setup (RestClient)
+
+`JwtClientHttpRequestInterceptor` is the `RestClient` equivalent of `JwtFilter`, offering the same behavior for blocking clients.
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=setup-jwt-restclient]
+----
+<1> The RSA private key in PEM format (PKCS#1 or PKCS#8), loaded from your GitHub App settings
+<2> Your GitHub App ID (or client ID) as a string
+<3> Add the interceptor to your RestClient
+
 == HTTP Caching
 
 Pulpogato provides `CachingExchangeFilterFunction` to cache HTTP responses based on standard HTTP caching headers (ETag, Last-Modified, Cache-Control).
@@ -315,6 +388,27 @@ include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/Documen
 <2> Maximum response size to cache (default: 2MB)
 <3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your usecase.
 
+=== Basic Caching Setup (RestClient)
+
+`CachingClientHttpRequestInterceptor` is the `RestClient` equivalent of `CachingExchangeFilterFunction`, offering the same caching behavior for blocking clients.
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=setup-cache-restclient]
+----
+<1> This is a Spring Cache (ConcurrentMapCache, Caffeine, Redis, etc.)
+<2> Add the interceptor to your RestClient
+
+=== Advanced Caching Options (RestClient)
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=advanced-cache-restclient]
+----
+<1> Custom function to generate cache keys from requests
+<2> Maximum response size to cache (default: 2MB)
+<3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your usecase.
+
 == Rate Limit Metrics
 
 Pulpogato provides `MetricsExchangeFunction` to capture GitHub API rate limit information as Micrometer metrics.
@@ -342,6 +436,25 @@ All metrics are tagged with the `resource` (e.g., "core", "search", "graphql").
 [source,java,indent=0]
 ----
 include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=advanced-metrics]
+----
+<1> Custom metric name prefix
+<2> Additional tags to add to all metrics
+
+=== Basic Metrics Setup (RestClient)
+
+`MetricsClientHttpRequestInterceptor` is the `RestClient` equivalent of `MetricsExchangeFunction`, offering the same rate-limit metrics for blocking clients.
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=setup-metrics-restclient]
+----
+<1> This is a Micrometer MeterRegistry (SimpleMeterRegistry, PrometheusMeterRegistry, etc.) It could be injected from Spring.
+
+=== Advanced Metrics Options (RestClient)
+
+[source,java,indent=0]
+----
+include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=advanced-metrics-restclient]
 ----
 <1> Custom metric name prefix
 <2> Additional tags to add to all metrics

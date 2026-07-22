@@ -29,8 +29,93 @@ import javax.lang.model.element.Modifier
 
 private const val PACKAGE_SPRING_FORMAT_SUPPORT = "org.springframework.format.support"
 private const val PACKAGE_SPRING_WEBCLIENT = "org.springframework.web.reactive.function.client"
+private const val PACKAGE_SPRING_WEBCLIENT_ADAPTER = "org.springframework.web.reactive.function.client.support"
+private const val PACKAGE_SPRING_RESTCLIENT = "org.springframework.web.client"
+private const val PACKAGE_SPRING_RESTCLIENT_ADAPTER = "org.springframework.web.client.support"
+private const val PACKAGE_SPRING_HTTP_CLIENT = "org.springframework.http.client"
 private const val PACKAGE_SPRING_HTTP = "org.springframework.http"
 private const val PACKAGE_PULPOGATO_CLIENT = "io.github.pulpogato.common.client"
+
+/**
+ * Captures the handful of ways a generated `RestClients` container class differs depending on
+ * the underlying Spring HTTP client - {@code WebClient} (blocking or reactive) or the synchronous
+ * {@code RestClient} - so [PathsBuilder.buildClientsContainer] can emit all three from one
+ * `TypeSpec`-building function instead of duplicating it per client technology.
+ */
+private interface ClientContainerSpec {
+    val clientClassName: ClassName
+    val builderClassName: ClassName
+    val adapterClassName: ClassName
+    val filterInterfaceName: ClassName
+    val clientFieldName: String
+    val filterParamName: String
+    val filterApplyMethodName: String
+    val chainNoun: String
+    val defaultFilters: List<Pair<ClassName, String>>
+    val exampleSnippet: String
+}
+
+private object WebClientContainerSpec : ClientContainerSpec {
+    override val clientClassName: ClassName = ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient")
+    override val builderClassName: ClassName = ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient", "Builder")
+    override val adapterClassName: ClassName = ClassName.get(PACKAGE_SPRING_WEBCLIENT_ADAPTER, "WebClientAdapter")
+    override val filterInterfaceName: ClassName = ClassName.get(PACKAGE_SPRING_WEBCLIENT, "ExchangeFilterFunction")
+    override val clientFieldName = "restWebClient"
+    override val filterParamName = "filters"
+    override val filterApplyMethodName = "filter"
+    override val chainNoun = "filter"
+    override val defaultFilters: List<Pair<ClassName, String>> =
+        listOf(
+            ClassName.get(PACKAGE_PULPOGATO_CLIENT, "RedirectExchangeFunction") to
+                "follows 3xx redirects, e.g. for renamed repositories",
+            ClassName.get(PACKAGE_PULPOGATO_CLIENT, "DefaultHeadersExchangeFunction") to
+                "adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers",
+            ClassName.get(PACKAGE_PULPOGATO_CLIENT, "NoContentExchangeFunction") to
+                "handles 204 responses",
+        )
+    override val exampleSnippet: String =
+        """
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build();
+
+        RestClients clients = new RestClients(webClient);
+        UsersApi users = clients.getUsersApi();
+        var response = users.getAuthenticated();
+        """.trimIndent()
+}
+
+private object RestClientContainerSpec : ClientContainerSpec {
+    override val clientClassName: ClassName = ClassName.get(PACKAGE_SPRING_RESTCLIENT, "RestClient")
+    override val builderClassName: ClassName = ClassName.get(PACKAGE_SPRING_RESTCLIENT, "RestClient", "Builder")
+    override val adapterClassName: ClassName = ClassName.get(PACKAGE_SPRING_RESTCLIENT_ADAPTER, "RestClientAdapter")
+    override val filterInterfaceName: ClassName = ClassName.get(PACKAGE_SPRING_HTTP_CLIENT, "ClientHttpRequestInterceptor")
+    override val clientFieldName = "restClient"
+    override val filterParamName = "interceptors"
+    override val filterApplyMethodName = "requestInterceptor"
+    override val chainNoun = "interceptor"
+    override val defaultFilters: List<Pair<ClassName, String>> =
+        listOf(
+            ClassName.get(PACKAGE_PULPOGATO_CLIENT, "RedirectClientHttpRequestInterceptor") to
+                "follows 3xx redirects, e.g. for renamed repositories",
+            ClassName.get(PACKAGE_PULPOGATO_CLIENT, "DefaultHeadersClientHttpRequestInterceptor") to
+                "adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers",
+            ClassName.get(PACKAGE_PULPOGATO_CLIENT, "NoContentClientHttpRequestInterceptor") to
+                "handles 204 responses",
+        )
+    override val exampleSnippet: String =
+        """
+        RestClient restClient = RestClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build();
+
+        RestClients clients = new RestClients(restClient);
+        UsersApi users = clients.getUsersApi();
+        var response = users.getAuthenticated();
+        """.trimIndent()
+}
 
 /**
  * A builder class that generates REST API client code based on OpenAPI specifications.
@@ -97,95 +182,8 @@ class PathsBuilder {
         apiDir.mkdirs()
         val openAPI = context.openAPI
 
-        val restClients =
-            TypeSpec
-                .classBuilder("RestClients")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
-                .addJavadoc(
-                    """
-                    Central entry point for accessing all GitHub REST APIs.
-
-                    <p>Construct with a pre-configured {@link WebClient}, then call {@code get<Xxx>Api()}
-                    to obtain a typed API interface. Example:
-
-                    <pre>{@code
-                    WebClient webClient = WebClient.builder()
-                            .baseUrl("https://api.github.com")
-                            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                            .build();
-
-                    RestClients clients = new RestClients(webClient);
-                    UsersApi users = clients.getUsersApi();
-                    ResponseEntity<User> response = users.getAuthenticated();
-                    }</pre>
-                    """.trimIndent(),
-                ).addField(
-                    FieldSpec
-                        .builder(
-                            ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"),
-                            "conversionService",
-                            Modifier.PRIVATE,
-                            Modifier.FINAL,
-                        ).addAnnotation(nonNull())
-                        .build(),
-                ).addField(
-                    FieldSpec
-                        .builder(
-                            ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
-                            "factory",
-                            Modifier.PRIVATE,
-                            Modifier.FINAL,
-                        ).addAnnotation(nonNull())
-                        .build(),
-                ).addField(
-                    FieldSpec
-                        .builder(
-                            ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
-                            "restWebClient",
-                            Modifier.PRIVATE,
-                            Modifier.FINAL,
-                        ).addAnnotation(nonNull())
-                        .build(),
-                ).addMethod(
-                    MethodSpec
-                        .methodBuilder("getConversionService")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(nonNull())
-                        .returns(ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"))
-                        .addStatement("return this.conversionService")
-                        .addJavadoc("Returns the conversion service used for parameter conversion.")
-                        .build(),
-                ).addMethod(
-                    MethodSpec
-                        .methodBuilder("getRestWebClient")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(nonNull())
-                        .returns(ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"))
-                        .addStatement("return this.restWebClient")
-                        .addJavadoc("Returns the WebClient used for REST API calls.")
-                        .build(),
-                ).addMethod(
-                    MethodSpec
-                        .methodBuilder("computeApi")
-                        .addModifiers(Modifier.PRIVATE)
-                        .addTypeVariable(TypeVariableName.get("T"))
-                        .addParameter(
-                            ParameterSpec
-                                .builder(
-                                    ParameterizedTypeName.get(
-                                        ClassName.get(Class::class.java),
-                                        TypeVariableName.get("T"),
-                                    ),
-                                    "clazz",
-                                ).build(),
-                        ).returns(TypeVariableName.get("T"))
-                        .addStatement("return factory.createClient(clazz)")
-                        .build(),
-                )
-
-        // List to collect API field initializations
-        val apiFieldInitializers = mutableListOf<Pair<String, ClassName>>()
+        // List to collect API field initializations (field name, type, description)
+        val apiFieldInitializers = mutableListOf<Triple<String, ClassName, String?>>()
 
         openAPI.paths
             .flatMap { (path, pathItem) ->
@@ -224,73 +222,193 @@ class PathsBuilder {
                     JavaFile.builder(packageName, typeClassBuilt).build().writeTo(testDir)
                 }
 
-                // Add a field without an initializer (will be initialized in constructor)
+                // Store field initialization for later (will be added to the container's constructor)
                 val fieldName = interfaceName.camelCase()
-                val apiField =
+                apiFieldInitializers.add(Triple(fieldName, typeRef, apiDescription))
+            }
+
+        buildClientsContainer(context, packageName, enumConvertersPackageName, apiFieldInitializers, mainDir, WebClientContainerSpec)
+
+        // The blocking API interfaces (ResponseEntity<T> returns) are adapter-agnostic, so the
+        // synchronous RestClient variant reuses them as-is - only the container class differs.
+        if (!reactiveReturnTypes) {
+            buildClientsContainer(
+                context,
+                "$packageName.restclient",
+                enumConvertersPackageName,
+                apiFieldInitializers,
+                mainDir,
+                RestClientContainerSpec,
+            )
+        }
+    }
+
+    /**
+     * Generates a `RestClients` container class exposing all the generated API interfaces,
+     * wired to whichever Spring HTTP client [spec] describes ({@code WebClient} or the
+     * synchronous {@code RestClient}).
+     *
+     * @param context The generation context, used for the {@code @Generated} annotation
+     * @param packageName The target Java package name for the generated `RestClients` class
+     * @param enumConvertersPackageName The target Java package name for generated enum converter classes
+     * @param apiFieldInitializers The (field name, API interface type, description) triples collected
+     * while building the API interfaces
+     * @param mainDir The directory where generated source files will be written
+     * @param spec Describes the client technology this container is built on top of
+     */
+    private fun buildClientsContainer(
+        context: Context,
+        packageName: String,
+        enumConvertersPackageName: String,
+        apiFieldInitializers: List<Triple<String, ClassName, String?>>,
+        mainDir: File,
+        spec: ClientContainerSpec,
+    ) {
+        val clientType = spec.clientClassName
+        val fieldName = spec.clientFieldName
+        val getterName = "get" + fieldName.pascalCase()
+
+        val restClients =
+            TypeSpec
+                .classBuilder("RestClients")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
+                .addJavadoc(
+                    """
+                    Central entry point for accessing all GitHub REST APIs.
+
+                    <p>Construct with a pre-configured {@link ${clientType.simpleName()}}, then call
+                    {@code get<Xxx>Api()} to obtain a typed API interface. Example:
+
+                    <pre>{@code
+                    ${spec.exampleSnippet}
+                    }</pre>
+                    """.trimIndent(),
+                ).addField(
                     FieldSpec
-                        .builder(typeRef, fieldName, Modifier.PRIVATE, Modifier.FINAL)
-                        .addJavadoc($$"$L", apiDescription ?: "")
-                        .build()
-                restClients.addField(apiField)
-
-                // Store field initialization for later (will be added to constructor)
-                apiFieldInitializers.add(Pair(fieldName, typeRef))
-
-                // Add explicit getter
-                val getterName = "get" + interfaceName.pascalCase()
-                restClients.addMethod(
+                        .builder(
+                            ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"),
+                            "conversionService",
+                            Modifier.PRIVATE,
+                            Modifier.FINAL,
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addField(
+                    FieldSpec
+                        .builder(
+                            ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
+                            "factory",
+                            Modifier.PRIVATE,
+                            Modifier.FINAL,
+                        ).addAnnotation(nonNull())
+                        .build(),
+                ).addField(
+                    FieldSpec
+                        .builder(clientType, fieldName, Modifier.PRIVATE, Modifier.FINAL)
+                        .addAnnotation(nonNull())
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .methodBuilder("getConversionService")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(nonNull())
+                        .returns(ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"))
+                        .addStatement("return this.conversionService")
+                        .addJavadoc("Returns the conversion service used for parameter conversion.")
+                        .build(),
+                ).addMethod(
                     MethodSpec
                         .methodBuilder(getterName)
                         .addModifiers(Modifier.PUBLIC)
-                        .returns(typeRef)
+                        .addAnnotation(nonNull())
+                        .returns(clientType)
                         .addStatement($$"return this.$N", fieldName)
-                        .addJavadoc($$"$L", apiDescription ?: "")
+                        .addJavadoc($$"Returns the $L used for REST API calls.", clientType.simpleName())
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .methodBuilder("computeApi")
+                        .addModifiers(Modifier.PRIVATE)
+                        .addTypeVariable(TypeVariableName.get("T"))
+                        .addParameter(
+                            ParameterSpec
+                                .builder(
+                                    ParameterizedTypeName.get(
+                                        ClassName.get(Class::class.java),
+                                        TypeVariableName.get("T"),
+                                    ),
+                                    "clazz",
+                                ).build(),
+                        ).returns(TypeVariableName.get("T"))
+                        .addStatement("return factory.createClient(clazz)")
                         .build(),
                 )
-            }
 
-        // Add a constructor that accepts an explicit filter chain and initializes all API fields
+        apiFieldInitializers.forEach { (apiFieldName, typeRef, apiDescription) ->
+            restClients.addField(
+                FieldSpec
+                    .builder(typeRef, apiFieldName, Modifier.PRIVATE, Modifier.FINAL)
+                    .addJavadoc($$"$L", apiDescription ?: "")
+                    .build(),
+            )
+
+            restClients.addMethod(
+                MethodSpec
+                    .methodBuilder("get" + typeRef.simpleName())
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(typeRef)
+                    .addStatement($$"return this.$N", apiFieldName)
+                    .addJavadoc($$"$L", apiDescription ?: "")
+                    .build(),
+            )
+        }
+
+        val defaultFilterDoc =
+            spec.defaultFilters.joinToString("\n") { (className, description) ->
+                "  <li>{@code ${className.simpleName()}} ($description)</li>"
+            }
+        val defaultFilterSeeDoc = spec.defaultFilters.joinToString("\n") { (className, _) -> "@see ${className.canonicalName()}" }
+
         val constructorBuilder =
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addJavadoc(
                     """
-                    Constructs a client with an explicit filter chain.
+                    Constructs a client with an explicit ${spec.chainNoun} chain.
 
-                    <p>The given {@code filters} are applied, in order, to {@code restWebClient}.
-                    Use this constructor to customize, reorder, or omit the default filters
-                    ({@code RedirectExchangeFunction}, {@code DefaultHeadersExchangeFunction},
-                    {@code NoContentExchangeFunction}) applied by {@link #RestClients(WebClient)}.
+                    <p>The given {@code ${spec.filterParamName}} are applied, in order, to {@code $fieldName}.
+                    Use this constructor to customize, reorder, or omit the default ${spec.chainNoun}s
+                    applied by {@link #RestClients(${clientType.simpleName()})}.
 
-                    @see io.github.pulpogato.common.client.RedirectExchangeFunction
-                    @see io.github.pulpogato.common.client.DefaultHeadersExchangeFunction
-                    @see io.github.pulpogato.common.client.NoContentExchangeFunction
+                    $defaultFilterSeeDoc
                     """.trimIndent(),
                 ).addParameter(
                     ParameterSpec
-                        .builder(
-                            ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
-                            "restWebClient",
-                        ).addAnnotation(nonNull())
+                        .builder(clientType, fieldName)
+                        .addAnnotation(nonNull())
                         .build(),
                 ).addParameter(
                     ParameterSpec
                         .builder(
                             ParameterizedTypeName.get(
                                 ClassName.get("java.util", "List"),
-                                ClassName.get(PACKAGE_SPRING_WEBCLIENT, "ExchangeFilterFunction"),
+                                spec.filterInterfaceName,
                             ),
-                            "filters",
+                            spec.filterParamName,
                         ).addAnnotation(nonNull())
                         .build(),
                 ).addStatement(
-                    $$"$T builder = restWebClient.mutate()",
-                    ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient", "Builder"),
+                    $$"$T builder = $N.mutate()",
+                    spec.builderClassName,
+                    fieldName,
                 ).addStatement(
-                    "filters.forEach(builder::filter)",
+                    $$"$N.forEach(builder::$N)",
+                    spec.filterParamName,
+                    spec.filterApplyMethodName,
                 ).addStatement(
-                    "this.restWebClient = builder.build()",
+                    $$"this.$N = builder.build()",
+                    fieldName,
                 ).addStatement(
                     $$"this.conversionService = new $T()",
                     ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "DefaultFormattingConversionService"),
@@ -302,53 +420,46 @@ class PathsBuilder {
                     ClassName.get("io.github.pulpogato.common", "StringOrInteger", "StringConverter"),
                 ).addStatement(
                     $$"""
-                    this.factory = $T.builderFor($T.create(this.restWebClient))
+                    this.factory = $T.builderFor($T.create(this.$N))
                             .conversionService(this.conversionService)
                             .build()
                     """.trimIndent(),
                     ClassName.get("org.springframework.web.service.invoker", "HttpServiceProxyFactory"),
-                    ClassName.get("org.springframework.web.reactive.function.client.support", "WebClientAdapter"),
+                    spec.adapterClassName,
+                    fieldName,
                 )
 
-        // Initialize all API fields in the constructor
-        apiFieldInitializers.forEach { (fieldName, typeRef) ->
-            constructorBuilder.addStatement($$"this.$N = computeApi($T.class)", fieldName, typeRef)
+        apiFieldInitializers.forEach { (apiFieldName, typeRef, _) ->
+            constructorBuilder.addStatement($$"this.$N = computeApi($T.class)", apiFieldName, typeRef)
         }
 
         restClients.addMethod(constructorBuilder.build())
 
-        // Convenience constructor that applies the default filter chain
         restClients.addMethod(
             MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(
                     ParameterSpec
-                        .builder(
-                            ClassName.get(PACKAGE_SPRING_WEBCLIENT, "WebClient"),
-                            "restWebClient",
-                        ).addAnnotation(nonNull())
+                        .builder(clientType, fieldName)
+                        .addAnnotation(nonNull())
                         .build(),
                 ).addJavadoc(
                     """
-                    Constructs a client with the default filter chain: 
+                    Constructs a client with the default ${spec.chainNoun} chain:
                     <ul>
-                      <li>{@code RedirectExchangeFunction}
-                    (follows 3xx redirects, e.g. for renamed repositories)</li>
-                      <li>{@code DefaultHeadersExchangeFunction}
-                    (adds {@code X-GitHub-Api-Version} and {@code X-Pulpogato-Version} headers)</li>
-                      <li>{@code NoContentExchangeFunction} (handles 204 responses)</li>
+                    $defaultFilterDoc
                     </ul>
 
-                    @see #RestClients(WebClient, List)
+                    @see #RestClients(${clientType.simpleName()}, List)
                     """.trimIndent(),
                 ).addStatement(
                     $$"this($N, $T.of(new $T(), new $T(), new $T()))",
-                    "restWebClient",
+                    fieldName,
                     ClassName.get("java.util", "List"),
-                    ClassName.get(PACKAGE_PULPOGATO_CLIENT, "RedirectExchangeFunction"),
-                    ClassName.get(PACKAGE_PULPOGATO_CLIENT, "DefaultHeadersExchangeFunction"),
-                    ClassName.get(PACKAGE_PULPOGATO_CLIENT, "NoContentExchangeFunction"),
+                    spec.defaultFilters[0].first,
+                    spec.defaultFilters[1].first,
+                    spec.defaultFilters[2].first,
                 ).build(),
         )
 

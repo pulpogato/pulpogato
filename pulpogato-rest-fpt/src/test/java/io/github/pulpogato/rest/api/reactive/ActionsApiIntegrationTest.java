@@ -62,8 +62,6 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testCreateWorkflowDispatch() {
         RestClients restClients = new RestClients(webClient);
-        // Next statement was for testing if converters can be added in user-land.
-        // restClients.getConversionService().addConverter(new StringOrInteger.StringConverter());
         var api = restClients.getActionsApi();
 
         var response = api.createWorkflowDispatch(
@@ -85,8 +83,6 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testCreateWorkflowDispatchWithResponse() {
         RestClients restClients = new RestClients(webClient);
-        // Next statement was for testing if converters can be added in user-land.
-        // restClients.getConversionService().addConverter(new StringOrInteger.StringConverter());
         var api = restClients.getActionsApi();
 
         var response = api.createWorkflowDispatch(
