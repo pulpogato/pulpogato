@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.asciidoctor)
 }
 
-tasks.asciidoctor {
+tasks.asciidoctor.configure {
     notCompatibleWithConfigurationCache("Asciidoctor Gradle Plugin is not compatible with the configuration cache.")
     sourceDir(file("src"))
     sources {

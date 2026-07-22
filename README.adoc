@@ -320,7 +320,7 @@ To run asciidoctor locally, run this command.
 
 [source, bash]
 ----
-./gradlew asciidoctorDocs
+./gradlew :pulpogato-docs:asciidoctor
 ----
 
 This task uses the Gradle Asciidoctor plugin and writes output to `pulpogato-docs/build/index.html`.
