@@ -1,10 +1,10 @@
-package io.github.pulpogato.graphql;
+package io.github.pulpogato.graphql.restclient;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import com.netflix.graphql.dgs.client.DgsWebClientGraphQLClient;
+import com.netflix.graphql.dgs.client.DgsRestClientGraphQLClient;
 import com.netflix.graphql.dgs.client.Jackson2DgsJsonMapperAdapter;
 import com.netflix.graphql.dgs.client.Jackson3DgsJsonMapperAdapter;
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
@@ -24,48 +24,19 @@ import io.github.pulpogato.graphql.types.User;
 import io.github.pulpogato.test.BaseIntegrationTest;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
-import org.intellij.lang.annotations.Language;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class FindOpenPullRequestsTest extends BaseIntegrationTest {
-    // tag::query[]
-    @Language("graphql")
-    public static final String OPEN_PRS = """
-        query findOpenPullRequests($owner: String!, $repo: String!, $branch: String!) {
-          repository(owner: $owner, name: $repo, followRenames: false) {
-            pullRequests(
-                first: 100, states: [OPEN], baseRefName: $branch,
-                orderBy: {field: UPDATED_AT, direction: DESC}
-            ) {
-              totalCount
-              nodes {
-                id
-                number
-                headRefName
-                headRefOid
-                baseRefOid
-                mergeable
-                author {
-                  __typename
-                  login
-                }
-                url
-                autoMergeRequest {
-                  enabledBy {
-                    __typename
-                    login
-                  }
-                  mergeMethod
-                }
-              }
-            }
-          }
-        }
-        """;
-    // end::query[]
+class FindOpenPullRequestsTest extends BaseIntegrationTest {
+
+    @Override
+    protected @NonNull Optional<Package> getTestResourceRootPackage() {
+        return Optional.of(io.github.pulpogato.graphql.FindOpenPullRequestsTest.class.getPackage());
+    }
 
     static Stream<Arguments> mappers() {
         return Stream.of(
@@ -76,23 +47,94 @@ public class FindOpenPullRequestsTest extends BaseIntegrationTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("mappers")
     void testFindOpenPullRequestsQuery(String mapperName, DgsJsonMapper mapper) {
-        var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
-        // tag::execute[]
-        var graphQLClient = new DgsWebClientGraphQLClient(graphqlWebClient, h -> {}, mapper);
+        var graphqlRestClient = restClient.mutate().baseUrl("/graphql").build();
+        // tag::execute-restclient[]
+        var graphQLClient = new DgsRestClientGraphQLClient(graphqlRestClient, h -> {}, mapper);
 
         var variables = LinkedHashMapBuilder.of(
-                entry("owner", "pulpogato"), // <1>
-                entry("repo", "pulpogato"),
-                entry("branch", "main"));
-        var response = graphQLClient.reactiveExecuteQuery(OPEN_PRS, variables).block();
-        // end::execute[]
+                entry("owner", "pulpogato"), entry("repo", "pulpogato"), entry("branch", "main"));
+        var response =
+                graphQLClient.executeQuery(io.github.pulpogato.graphql.FindOpenPullRequestsTest.OPEN_PRS, variables);
+        // end::execute-restclient[]
 
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEmpty();
 
-        // tag::extract[]
         var repository = response.extractValueAsObject("repository", Repository.class);
-        // end::extract[]
+        assertThat(repository).isNotNull();
+
+        var pullRequests = repository.getPullRequests();
+        assertThat(pullRequests).isNotNull();
+        assertThat(pullRequests.getTotalCount()).isEqualTo(5);
+
+        var nodes = pullRequests.getNodes();
+        assertThat(nodes).isNotNull().hasSize(5);
+
+        assertOnResponse(nodes);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("mappers")
+    void testFindOpenPullRequestsTypedQuery(String mapperName, DgsJsonMapper mapper) {
+        var graphqlRestClient = restClient.mutate().baseUrl("/graphql").build();
+        var graphQLClient = new DgsRestClientGraphQLClient(graphqlRestClient, h -> {}, mapper);
+
+        var query = RepositoryGraphQLQuery.newRequest()
+                .followRenames(false)
+                .owner("pulpogato")
+                .name("pulpogato")
+                .build();
+        var repoProjection = new RepositoryProjectionRoot<>();
+        var prProjection = repoProjection.pullRequests(
+                /*after*/ null,
+                /*baseRefName*/ "main",
+                /*before*/ null,
+                /*first*/ 100,
+                /*headRefName*/ null,
+                /*labels*/ null,
+                /*last*/ null,
+                IssueOrder.newBuilder()
+                        .field(IssueOrderField.UPDATED_AT)
+                        .direction(OrderDirection.DESC)
+                        .build(),
+                /*states*/ null);
+        var nodesProjection = prProjection.totalCount().nodes();
+
+        nodesProjection
+                /* enter */
+                .id()
+                .number()
+                .headRefName()
+                .headRefOid()
+                .baseRefOid()
+                .url()
+                .mergeable();
+
+        nodesProjection
+                /* enter */
+                .author()
+                .__typename()
+                .login();
+        var autoMergeRequest = nodesProjection
+                /* enter */
+                .autoMergeRequest();
+        autoMergeRequest
+                /* enter */
+                .mergeMethod();
+        autoMergeRequest
+                /* enter */
+                .enabledBy()
+                /* enter */
+                .__typename()
+                .login();
+
+        var typedQuery = new GraphQLQueryRequest(query, repoProjection);
+        var response = graphQLClient.executeQuery(typedQuery.serialize());
+
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEmpty();
+
+        var repository = response.extractValueAsObject("repository", Repository.class);
         assertThat(repository).isNotNull();
 
         var pullRequests = repository.getPullRequests();
@@ -203,82 +245,5 @@ public class FindOpenPullRequestsTest extends BaseIntegrationTest {
                         .url(URI.create("https://github.com/pulpogato/pulpogato/pull/730"))
                         .autoMergeRequest(null)
                         .build());
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("mappers")
-    void testFindOpenPullRequestsTypedQuery(String mapperName, DgsJsonMapper mapper) {
-        var graphqlWebClient = webClient.mutate().baseUrl("/graphql").build();
-        // tag::execute-typed-query[]
-        var graphQLClient = new DgsWebClientGraphQLClient(graphqlWebClient, h -> {}, mapper);
-
-        var query = RepositoryGraphQLQuery.newRequest()
-                .followRenames(false)
-                .owner("pulpogato")
-                .name("pulpogato")
-                .build();
-        var repoProjection = new RepositoryProjectionRoot<>();
-        var prProjection = repoProjection.pullRequests(
-                /*after*/ null,
-                /*baseRefName*/ "main",
-                /*before*/ null,
-                /*first*/ 100,
-                /*headRefName*/ null,
-                /*labels*/ null,
-                /*last*/ null,
-                IssueOrder.newBuilder()
-                        .field(IssueOrderField.UPDATED_AT)
-                        .direction(OrderDirection.DESC)
-                        .build(),
-                /*states*/ null);
-        var nodesProjection = prProjection.totalCount().nodes();
-
-        nodesProjection
-                /* enter */
-                .id()
-                .number()
-                .headRefName()
-                .headRefOid()
-                .baseRefOid()
-                .url()
-                .mergeable();
-
-        nodesProjection
-                /* enter */
-                .author()
-                .__typename()
-                .login();
-        var autoMergeRequest = nodesProjection
-                /* enter */
-                .autoMergeRequest();
-        autoMergeRequest
-                /* enter */
-                .mergeMethod();
-        autoMergeRequest
-                /* enter */
-                .enabledBy()
-                /* enter */
-                .__typename()
-                .login();
-
-        var typedQuery = new GraphQLQueryRequest(query, repoProjection);
-        var response =
-                graphQLClient.reactiveExecuteQuery(typedQuery.serialize()).block();
-        // end::execute-typed-query[]
-
-        assertThat(response).isNotNull();
-        assertThat(response.getErrors()).isEmpty();
-
-        var repository = response.extractValueAsObject("repository", Repository.class);
-        assertThat(repository).isNotNull();
-
-        var pullRequests = repository.getPullRequests();
-        assertThat(pullRequests).isNotNull();
-        assertThat(pullRequests.getTotalCount()).isEqualTo(5);
-
-        var nodes = pullRequests.getNodes();
-        assertThat(nodes).isNotNull().hasSize(5);
-
-        assertOnResponse(nodes);
     }
 }

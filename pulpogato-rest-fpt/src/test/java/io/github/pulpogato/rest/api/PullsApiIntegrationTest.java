@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class PullsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
-    void testGetActionsCacheUsage() {
+    void testListPullRequests() {
         var api = new RestClients(webClient).getPullsApi();
         var response = api.list(
                 "example",

@@ -7,8 +7,9 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
 import lombok.Builder;
+import lombok.Getter;
 import org.jspecify.annotations.NonNull;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.NoOpCache;
@@ -58,49 +59,14 @@ import reactor.core.publisher.Mono;
 public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
     /**
-     * Name of the custom header indicating cache status.
-     */
-    public static final String CACHE_HEADER_NAME = "X-Pulpogato-Cache";
-
-    /**
      * Default maximum size for cacheable responses (2MB).
      */
     public static final int DEFAULT_MAX_CACHEABLE_SIZE = 2 * 1024 * 1024;
-
-    private static final Pattern MAX_AGE_PATTERN = Pattern.compile("max-age=(\\d+)");
 
     // Use a 16MB buffer limit for exchange strategies to handle responses larger than the cache limit
     private static final ExchangeStrategies LARGE_BUFFER_STRATEGIES = ExchangeStrategies.builder()
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
             .build();
-    public static final String CACHE_STATUS = "cache.status";
-    public static final String CACHE_HIT = "HIT";
-    public static final String CACHE_REVALIDATED = "REVALIDATED";
-    public static final String CACHE_SKIP = "SKIP";
-    public static final String CACHE_MISS = "MISS";
-
-    /**
-     * {@code cache.status} value on a {@code pulpogato.cache.get} span for a cached entry that
-     * exists but will be revalidated or refetched (expired, or {@link #alwaysRevalidate}).
-     */
-    public static final String CACHE_STALE = "STALE";
-
-    /**
-     * {@code cache.status} value on a {@code pulpogato.cache.put} span for a response written to the cache.
-     */
-    public static final String CACHE_STORED = "STORED";
-
-    // Observation names for the two cache operations. They wrap only the cache read/write, so on a
-    // MISS/REVALIDATE they sit as siblings of the network exchange span rather than wrapping it.
-    private static final String OBSERVATION_CACHE_GET = "pulpogato.cache.get";
-    private static final String OBSERVATION_CACHE_PUT = "pulpogato.cache.put";
-    private static final String URI = "uri";
-
-    // High-cardinality tag carrying the value produced by the configured CacheKeyMapper. Lets
-    // operations on the same entry be correlated, including entries that share a path but differ
-    // by query, headers, or identity. The built-in mappers hash it; a custom mapper controls its
-    // content, so it may expose whatever that mapper returns.
-    private static final String CACHE_KEY = "cache.key";
 
     private static final String OBSERVATION_CONTEXT_KEY = "micrometer.observation";
 
@@ -146,6 +112,13 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     @Builder.Default
     private final ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
+    @Getter(lazy = true)
+    private final HttpCacheEngine engine = engine();
+
+    private HttpCacheEngine engine() {
+        return new HttpCacheEngine(cache, clock, observationRegistry, maxCacheableSize, alwaysRevalidate);
+    }
+
     @Override
     @NonNull
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
@@ -166,13 +139,13 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
     private Mono<ClientResponse> doFilter(ClientRequest request, ExchangeFunction next, Observation parent) {
         var cacheKey = cacheKeyMapper.apply(request);
-        var cached = lookup(cacheKey, request, parent);
+        var cached = getEngine().lookup(cacheKey, request.url().toString(), parent);
 
         // If we have a fresh cached response and not forcing revalidation, return it
         if (cached != null && !cached.isExpired(clock.millis()) && !alwaysRevalidate) {
             return Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
                     .headers(h -> h.putAll(cached.getHeaders()))
-                    .header(CACHE_HEADER_NAME, CACHE_HIT)
+                    .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_HIT)
                     .body(Flux.just(bufferFactory.wrap(cached.getBody())))
                     .build());
         }
@@ -194,11 +167,17 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
             // On 304 the stored representation is still valid: refresh its freshness and merge the
             // updated header fields (RFC 9111 4.3.4), then serve the cached body.
             if (response.statusCode().value() == 304 && cached != null) {
-                var refreshed = refreshFromNotModified(cacheKey, request, cached, response, parent);
+                var refreshed = getEngine()
+                        .refreshFromNotModified(
+                                cacheKey,
+                                request.url().toString(),
+                                cached,
+                                toMap(response.headers().asHttpHeaders()),
+                                parent);
                 return response.releaseBody()
                         .then(Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
                                 .headers(h -> h.putAll(refreshed.getHeaders()))
-                                .header(CACHE_HEADER_NAME, CACHE_REVALIDATED)
+                                .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_REVALIDATED)
                                 .body(Flux.just(bufferFactory.wrap(refreshed.getBody())))
                                 .build()));
             }
@@ -212,73 +191,6 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         });
     }
 
-    /**
-     * Applies a 304 Not Modified to the stored entry per
-     * <a href="https://www.rfc-editor.org/rfc/rfc9111#section-4.3.4">RFC 9111 section 4.3.4</a>:
-     * header fields from the 304 replace the corresponding stored fields, and the freshness lifetime
-     * restarts from now so the entry can serve fresh hits again instead of revalidating on every
-     * subsequent request. The refreshed entry is written back to the cache inside a
-     * {@code pulpogato.cache.put} span.
-     */
-    private CachedResponse refreshFromNotModified(
-            String cacheKey,
-            ClientRequest request,
-            CachedResponse cached,
-            ClientResponse notModified,
-            Observation parent) {
-        var updateHeaders = notModified.headers().asHttpHeaders();
-
-        // Overlay the 304's header fields onto the stored headers (case-insensitively via HttpHeaders).
-        var merged = new HttpHeaders();
-        cached.getHeaders().forEach(merged::addAll);
-        updateHeaders.forEach((name, values) -> {
-            // A 304 Not Modified response doesn't carry a body, so a Content-Length it sends
-            // (often 0) must not overwrite the length of the stored representation we are about
-            // to serve.
-            if (!HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) {
-                merged.put(name, new ArrayList<>(values));
-            }
-        });
-
-        var headerMap = HashMap.<String, List<String>>newHashMap(merged.size());
-        merged.forEach((name, values) -> headerMap.put(name, new ArrayList<>(values)));
-
-        // Recompute caching metadata from the merged headers so any refreshed ETag, Last-Modified, or
-        // Cache-Control the server sent on the 304 is reflected. When the 304 omits a header, the
-        // merged headers retain the stored value; if even that is absent, fall back to the entry's
-        // existing metadata so revalidation never discards known freshness information. A header is
-        // absent exactly when getFirst returns null, so a present-but-updated value still wins.
-        var mergedCacheControl = merged.getFirst(HttpHeaders.CACHE_CONTROL);
-        var etag = merged.getETag() != null ? merged.getETag() : cached.getEtag();
-        var lastModified = merged.getFirst(HttpHeaders.LAST_MODIFIED) != null
-                ? merged.getFirst(HttpHeaders.LAST_MODIFIED)
-                : cached.getLastModified();
-        var maxAge = mergedCacheControl != null ? parseMaxAge(mergedCacheControl) : cached.getMaxAgeSeconds();
-
-        var refreshed = new CachedResponse(cached.getBody(), headerMap, etag, lastModified, maxAge, clock.millis());
-        recordPut(parent, request, cacheKey, CACHE_STORED, () -> cache.put(cacheKey, refreshed));
-        return refreshed;
-    }
-
-    /**
-     * Reads the cache entry inside a {@code pulpogato.cache.get} span, tagging the outcome
-     * ({@link #CACHE_HIT}/{@link #CACHE_STALE}/{@link #CACHE_MISS}). The span wraps only the read,
-     * so it captures the cache backend's lookup latency without enclosing the network exchange.
-     */
-    private CachedResponse lookup(String cacheKey, ClientRequest request, Observation parent) {
-        var observation = Observation.createNotStarted(OBSERVATION_CACHE_GET, observationRegistry)
-                .parentObservation(parent)
-                .highCardinalityKeyValue(URI, request.url().toString())
-                .highCardinalityKeyValue(CACHE_KEY, cacheKey);
-        return observation.observe(() -> {
-            var cached = cache.get(cacheKey, CachedResponse.class);
-            var freshHit = cached != null && !cached.isExpired(clock.millis()) && !alwaysRevalidate;
-            observation.lowCardinalityKeyValue(
-                    CACHE_STATUS, cached == null ? CACHE_MISS : (freshHit ? CACHE_HIT : CACHE_STALE));
-            return cached;
-        });
-    }
-
     private Mono<ClientResponse> cacheResponse(
             String cacheKey, ClientRequest request, ClientResponse response, Observation parent) {
         var headers = response.headers().asHttpHeaders();
@@ -286,23 +198,17 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         var lastModified = headers.getFirst("Last-Modified");
         var cacheControl = headers.getFirst("Cache-Control");
 
-        var maxAge = parseMaxAge(cacheControl);
+        var maxAge = HttpCacheEngine.parseMaxAge(cacheControl);
 
-        // Only cache if there are caching headers
-        if (etag == null && lastModified == null && maxAge < 0) {
-            return Mono.just(response);
-        }
-
-        // Check Content-Length if available - skip caching if too large
-        var contentLength = headers.getContentLength();
-        if (contentLength > maxCacheableSize) {
+        // Only cache if there are caching headers, and the (known) length is within the limit
+        if (!getEngine().shouldCache(etag, lastModified, maxAge, headers.getContentLength())) {
             return Mono.just(response);
         }
 
         // Copy headers to a plain Map for serialization.
-        // Optimized with pre-allocated HashMap to avoid resizing.
-        var headerMap = HashMap.<String, List<String>>newHashMap(headers.size());
-        headers.forEach((key, values) -> headerMap.put(key, new ArrayList<>(values)));
+        var headerMap = toMap(headers);
+
+        var uri = request.url().toString();
 
         // Buffer the response body and check size
         return response.body(BodyExtractors.toDataBuffers())
@@ -317,11 +223,11 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                 .defaultIfEmpty(new byte[0])
                 .map(body -> {
                     // If the response is too large, skip caching but still return the data
-                    if (body.length > maxCacheableSize) {
-                        recordPut(parent, request, cacheKey, CACHE_SKIP, null);
+                    if (getEngine().exceedsMaxCacheableSize(body.length)) {
+                        getEngine().recordPut(cacheKey, uri, HttpCacheEngine.CACHE_SKIP, null, parent);
                         return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
                                 .headers(h -> h.putAll(headerMap))
-                                .header(CACHE_HEADER_NAME, CACHE_SKIP)
+                                .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_SKIP)
                                 .body(Flux.just(bufferFactory.wrap(body)))
                                 .build();
                     }
@@ -329,38 +235,25 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                     // Cache and return
                     var cachedResponse =
                             new CachedResponse(body, headerMap, etag, lastModified, maxAge, clock.millis());
-                    recordPut(parent, request, cacheKey, CACHE_STORED, () -> cache.put(cacheKey, cachedResponse));
+                    getEngine()
+                            .recordPut(
+                                    cacheKey,
+                                    uri,
+                                    HttpCacheEngine.CACHE_STORED,
+                                    () -> cache.put(cacheKey, cachedResponse),
+                                    parent);
 
                     return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
                             .headers(h -> h.putAll(headerMap))
-                            .header(CACHE_HEADER_NAME, CACHE_MISS)
+                            .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_MISS)
                             .body(Flux.just(bufferFactory.wrap(body)))
                             .build();
                 });
     }
 
-    /**
-     * Records a {@code pulpogato.cache.put} span for the store phase, tagging it with the outcome
-     * ({@link #CACHE_STORED} or {@link #CACHE_SKIP}). When {@code store} is non-null it runs inside
-     * the span so the span captures the write latency of the cache backend; a null {@code store} records
-     * a zero-work span documenting that the response was not cached.
-     */
-    private void recordPut(Observation parent, ClientRequest request, String cacheKey, String status, Runnable store) {
-        var observation = Observation.createNotStarted(OBSERVATION_CACHE_PUT, observationRegistry)
-                .parentObservation(parent)
-                .highCardinalityKeyValue(URI, request.url().toString())
-                .highCardinalityKeyValue(CACHE_KEY, cacheKey)
-                .lowCardinalityKeyValue(CACHE_STATUS, status);
-        observation.observe(store != null ? store : () -> {});
-    }
-
-    private static long parseMaxAge(String cacheControl) {
-        if (cacheControl != null) {
-            var matcher = MAX_AGE_PATTERN.matcher(cacheControl);
-            if (matcher.find()) {
-                return Long.parseLong(matcher.group(1));
-            }
-        }
-        return -1;
+    private static Map<String, List<String>> toMap(HttpHeaders headers) {
+        var map = HashMap.<String, List<String>>newHashMap(headers.size());
+        headers.forEach((name, values) -> map.put(name, new ArrayList<>(values)));
+        return map;
     }
 }

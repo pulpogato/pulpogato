@@ -1,0 +1,584 @@
+package io.github.pulpogato.rest.api.restclient;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.pulpogato.common.NullableOptional;
+import io.github.pulpogato.common.Paginate;
+import io.github.pulpogato.common.SingularOrPlural;
+import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
+import io.github.pulpogato.rest.api.ReposApi;
+import io.github.pulpogato.rest.schemas.ContentFile;
+import io.github.pulpogato.rest.schemas.CustomPropertyValue;
+import io.github.pulpogato.rest.schemas.FullRepository;
+import io.github.pulpogato.rest.schemas.RulesetVersion;
+import io.github.pulpogato.rest.schemas.SecurityAndAnalysis;
+import io.github.pulpogato.rest.schemas.ShortBranch;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
+
+class ReposApiIntegrationTest extends BaseApiIntegrationTest {
+    private static final String COMMIT_SHA = "2667e9ae0adcdbf378fe6273658b57f4e5d24a39";
+    private static final String PARENT_COMMIT_SHA = "67fb7bd13ce7094ec06532bdf774b75cfaeec8bc";
+    private static final String BASEHEAD = PARENT_COMMIT_SHA + "..." + COMMIT_SHA;
+
+    @Test
+    void testListTags() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.listTags("pulpogato", "pulpogato", 100L, 1L);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        var tags = response.getBody();
+        assertThat(tags).hasSize(2);
+        assertThat(tags.get(0).getName()).isEqualTo("v0.2.0");
+        assertThat(tags.get(1).getName()).isEqualTo("v0.1.0");
+    }
+
+    @Test
+    void testListBranchesPaginated() {
+        var api = new RestClients(restClient).getReposApi();
+        var perPage = 5L;
+
+        var branches = new Paginate()
+                .from(25, page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
+                        .getBody())
+                .toList();
+
+        var allBranches = api.listBranches("jenkinsci", "gradle-jpi-plugin", null, 100L, 1L)
+                .getBody();
+        assertThat(allBranches).isNotEmpty();
+        assertThat(branches).hasSize(24);
+        assertThat(branches)
+                .extracting(ShortBranch::getName)
+                .containsExactlyElementsOf(
+                        allBranches.stream().map(ShortBranch::getName).toList());
+        assertThat(branches)
+                .filteredOn(ShortBranch::getName, "main")
+                .extracting(ShortBranch::getIsProtected)
+                .containsExactly(true);
+    }
+
+    @Test
+    void testListBranchesPaginatedRespectsMaxPages() {
+        var api = new RestClients(restClient).getReposApi();
+        var perPage = 1L;
+
+        var branches = new Paginate()
+                .from(1, page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
+                        .getBody())
+                .toList();
+
+        assertThat(branches).extracting(ShortBranch::getName).containsExactly("gh-pages");
+    }
+
+    @Test
+    void testListBranchesPaginatedNoResults() {
+        var api = new RestClients(restClient).getReposApi();
+
+        var branches = new Paginate()
+                .from(10, page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
+                        .getBody())
+                .toList();
+
+        assertThat(branches).isEmpty();
+    }
+
+    @Test
+    void testListCommits() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.listCommits("pulpogato", "pulpogato", null, null, null, null, null, null, 10L, 1L);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        var commits = response.getBody();
+        assertThat(commits).hasSize(10);
+        var commit = commits.getFirst();
+        assertThat(commit.getSha()).isEqualTo("2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
+        assertThat(commit.getCommit().getMessage())
+                .isEqualTo(
+                        "Merge pull request #206 from pulpogato/test-listOrgApps\n\ntest: Add test for listAppInstallations in an org");
+        assertThat(commit.getCommitter().getValue().getSimpleUser().getLogin()).isEqualTo("web-flow");
+        assertThat(commit.getAuthor().getValue().getSimpleUser().getLogin()).isEqualTo("rahulsom");
+    }
+
+    @Test
+    void testGetCommit() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getCommit("pulpogato", "pulpogato", 1L, 1L, COMMIT_SHA);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var commit = response.getBody();
+        assertThat(commit.getSha()).isEqualTo(COMMIT_SHA);
+    }
+
+    @Test
+    void testGetCommitDiff() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getCommitDiff("pulpogato", "pulpogato", null, null, COMMIT_SHA);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("@@");
+    }
+
+    @Test
+    void testGetCommitPatch() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getCommitPatch("pulpogato", "pulpogato", null, null, COMMIT_SHA);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("index ");
+    }
+
+    @Test
+    void testGetCommitSha() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getCommitSha("pulpogato", "pulpogato", null, null, COMMIT_SHA);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().trim()).isEqualTo(COMMIT_SHA);
+    }
+
+    @Test
+    void testCompareCommitsDiff() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.compareCommitsDiff("pulpogato", "pulpogato", null, null, BASEHEAD);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("@@");
+    }
+
+    @Test
+    void testCompareCommitsPatch() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.compareCommitsPatch("pulpogato", "pulpogato", null, null, BASEHEAD);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isNotEmpty();
+        assertThat(response.getBody()).contains("diff --git ").contains("index ");
+    }
+
+    @Test
+    void testGetContentObject() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getContentObject("pulpogato", "pulpogato", "README.adoc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("README.adoc");
+        assertThat(body.getType()).isEqualTo("file");
+        assertThat(body.getPath()).isEqualTo("README.adoc");
+
+        var content = body.getContent().replace("\n", "");
+        assertThat(content).isNotNull();
+        var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
+        assertThat(decoded).startsWith("= Pulpogato");
+    }
+
+    @Test
+    void testGetContent() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getContent("pulpogato", "pulpogato", "README.adoc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getContentFile().getName()).isEqualTo("README.adoc");
+        assertThat(body.getContentFile().getType()).isEqualTo(ContentFile.Type.FILE);
+        assertThat(body.getContentFile().getPath()).isEqualTo("README.adoc");
+
+        var content = body.getContentFile().getContent().replace("\n", "");
+        assertThat(content).isNotNull();
+        var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
+        assertThat(decoded).startsWith("= Pulpogato");
+    }
+
+    @Test
+    void testGetContentRaw() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getContentRaw("pulpogato", "pulpogato", "README.adoc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        String stringRepresentation = new String(response.getBody(), StandardCharsets.UTF_8);
+        assertThat(stringRepresentation).startsWith("= Pulpogato");
+    }
+
+    @Test
+    void testGetContentHtml() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getContentHtml("pulpogato", "pulpogato", "README.adoc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains("<");
+        assertThat(response.getBody()).containsIgnoringCase("Pulpogato");
+    }
+
+    @Test
+    void testGetContentRawBinary() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getContentRaw("rahulsom", "lgtmin", ".appcfg_oauth2_tokens_java.enc", null);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).hasSize(214);
+    }
+
+    @Test
+    void testGet() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.get("pulpogato", "pulpogato");
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("pulpogato");
+        assertThat(body.getFullName()).isEqualTo("pulpogato/pulpogato");
+        assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
+    }
+
+    @Test
+    void testGetAfterRename() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.get("pulpogato", "create-demo");
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("rename-demo");
+        assertThat(body.getFullName()).isEqualTo("pulpogato/rename-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
+    }
+
+    @Test
+    void testGetBranch() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getBranch("pulpogato", "pulpogato", "main");
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("main");
+        assertThat(body.getIsProtected()).isTrue();
+    }
+
+    @Test
+    void testGetBranchProtection() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.getBranchProtection("pulpogato", "pulpogato", "main");
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getRequiredStatusChecks().getContexts()).containsExactly("jenkins/pulpogato");
+    }
+
+    @Test
+    void testCreateRepositoryInOrg() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.createInOrg(
+                "pulpogato",
+                ReposApi.CreateInOrgRequestBody.builder()
+                        .name("create-demo")
+                        .description("create demo")
+                        .homepage("https://github.com/pulpogato/create-demo")
+                        .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        assertThat(body.getFullName()).isEqualTo("pulpogato/create-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
+    }
+
+    @Test
+    void testCreateRepositoryInOrgWithCustomProperties() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.createInOrg(
+                "example",
+                ReposApi.CreateInOrgRequestBody.builder()
+                        .name("rsomasunderam-custom-props-demo")
+                        .description("create demo")
+                        .customProperties(Map.of("custom_boolean_prop", "false"))
+                        .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
+        assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("example");
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    static class TestCustomProperties {
+        private Boolean customBooleanProp;
+
+        public Map<String, Object> toMap() {
+            return Map.ofEntries(Map.entry("custom_boolean_prop", this.customBooleanProp));
+        }
+
+        public static TestCustomProperties fromMap(Map<String, Object> map) {
+            return TestCustomProperties.builder()
+                    .customBooleanProp((Boolean) map.get("custom_boolean_prop"))
+                    .build();
+        }
+    }
+
+    @SuperBuilder(toBuilder = true)
+    @Getter
+    @Setter
+    static class ExtendedCreateInOrgRequestBody extends ReposApi.CreateInOrgRequestBody {
+        @JsonIgnore
+        private TestCustomProperties typedCustomProperties;
+
+        public ExtendedCreateInOrgRequestBody normalize() {
+            return this.toBuilder()
+                    .customProperties(typedCustomProperties.toMap())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    static class ExtendedFullRepository extends FullRepository {
+        @JsonIgnore
+        public TestCustomProperties getTypedCustomProperties() {
+            return TestCustomProperties.fromMap(this.getCustomProperties());
+        }
+    }
+
+    @Test
+    void testCreateRepositoryInOrgWithExtendedCustomProperties() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.createInOrg(
+                "example",
+                ExtendedCreateInOrgRequestBody.builder()
+                        .name("rsomasunderam-custom-props-demo")
+                        .description("create demo")
+                        .typedCustomProperties(TestCustomProperties.builder()
+                                .customBooleanProp(false)
+                                .build())
+                        .build()
+                        .normalize());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull().isInstanceOf(FullRepository.class);
+
+        var objectMapper = new ObjectMapper();
+        var body = objectMapper.convertValue(response.getBody(), ExtendedFullRepository.class);
+
+        assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
+        assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner().getLogin()).isEqualTo("example");
+        assertThat(body.getTypedCustomProperties().getCustomBooleanProp()).isFalse();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValues() {
+        var api = new RestClients(restClient).getReposApi();
+
+        var customPropertyValue = CustomPropertyValue.builder()
+                .propertyName("audit_pci")
+                .value(SingularOrPlural.singular("out_of_scope"))
+                .build();
+
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
+                .properties(List.of(customPropertyValue))
+                .build();
+
+        var response =
+                api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValuesWithMultipleProperties() {
+        var api = new RestClients(restClient).getReposApi();
+
+        var environmentProperty = CustomPropertyValue.builder()
+                .propertyName("some_string")
+                .value(SingularOrPlural.singular("string value"))
+                .build();
+
+        var teamProperty = CustomPropertyValue.builder()
+                .propertyName("audit_sox")
+                .value(SingularOrPlural.singular("in_scope"))
+                .build();
+
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
+                .properties(List.of(environmentProperty, teamProperty))
+                .build();
+
+        var response =
+                api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValuesWithArrayValue() {
+        var api = new RestClients(restClient).getReposApi();
+
+        var tagsProperty = CustomPropertyValue.builder()
+                .propertyName("plural_value")
+                .value(SingularOrPlural.plural(List.of("apple", "banana")))
+                .build();
+
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
+                .properties(List.of(tagsProperty))
+                .build();
+
+        var response =
+                api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testCreateOrUpdateCustomPropertiesValuesEmptyProperties() {
+        var api = new RestClients(restClient).getReposApi();
+        var requestBody = ReposApi.CustomPropertiesForReposCreateOrUpdateRepositoryValuesRequestBody.builder()
+                .properties(List.of())
+                .build();
+
+        var response =
+                api.customPropertiesForReposCreateOrUpdateRepositoryValues("corp", "rsomasunderam-test", requestBody);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+    }
+
+    @Test
+    void testArchiveRepository() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.update(
+                "pulpogato",
+                "create-demo",
+                ReposApi.UpdateRequestBody.builder().archived(true).build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        assertThat(body.getArchived()).isTrue();
+    }
+
+    @Test
+    void testUnarchiveRepository() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.update(
+                "pulpogato",
+                "create-demo",
+                ReposApi.UpdateRequestBody.builder().archived(false).build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        assertThat(body.getArchived()).isFalse();
+    }
+
+    @Test
+    void testSetSecurityAndAnalysis() {
+        var api = new RestClients(restClient).getReposApi();
+        final var requestedSecurityAndAnalysis = ReposApi.UpdateRequestBody.SecurityAndAnalysis.builder()
+                .secretScanning(ReposApi.UpdateRequestBody.SecurityAndAnalysis.SecretScanning.builder()
+                        .status(SecurityAndAnalysis.SecretScanning.Status.ENABLED.getValue())
+                        .build())
+                .secretScanningPushProtection(
+                        ReposApi.UpdateRequestBody.SecurityAndAnalysis.SecretScanningPushProtection.builder()
+                                .status(SecurityAndAnalysis.SecretScanningPushProtection.Status.ENABLED.getValue())
+                                .build())
+                .secretScanningNonProviderPatterns(
+                        ReposApi.UpdateRequestBody.SecurityAndAnalysis.SecretScanningNonProviderPatterns.builder()
+                                .status(SecurityAndAnalysis.SecretScanningNonProviderPatterns.Status.ENABLED.getValue())
+                                .build())
+                .build();
+        var response = api.update(
+                "pulpogato",
+                "create-demo",
+                ReposApi.UpdateRequestBody.builder()
+                        .securityAndAnalysis(NullableOptional.of(requestedSecurityAndAnalysis))
+                        .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        final var securityAndAnalysis = body.getSecurityAndAnalysis();
+        assertThat(securityAndAnalysis).isNotNull();
+
+        assertThat(securityAndAnalysis.getSecretScanning()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanning().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanning.Status.ENABLED);
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanningPushProtection.Status.ENABLED);
+    }
+
+    @Test
+    void testClearSecurityAndAnalysis() {
+        var api = new RestClients(restClient).getReposApi();
+        var response = api.update(
+                "pulpogato",
+                "create-demo",
+                ReposApi.UpdateRequestBody.builder()
+                        .securityAndAnalysis(NullableOptional.ofNull())
+                        .build());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
+        var body = response.getBody();
+        assertThat(body.getName()).isEqualTo("create-demo");
+        final var securityAndAnalysis = body.getSecurityAndAnalysis();
+        assertThat(securityAndAnalysis).isNotNull();
+
+        assertThat(securityAndAnalysis.getAdvancedSecurity()).isNull();
+        assertThat(securityAndAnalysis.getCodeSecurity()).isNull();
+        assertThat(securityAndAnalysis.getDependabotSecurityUpdates()).isNotNull();
+        assertThat(securityAndAnalysis.getDependabotSecurityUpdates().getStatus())
+                .isEqualTo(SecurityAndAnalysis.DependabotSecurityUpdates.Status.DISABLED);
+        assertThat(securityAndAnalysis.getSecretScanning()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanning().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanning.Status.ENABLED);
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanningPushProtection().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanningPushProtection.Status.ENABLED);
+        assertThat(securityAndAnalysis.getSecretScanningNonProviderPatterns()).isNotNull();
+        assertThat(securityAndAnalysis.getSecretScanningNonProviderPatterns().getStatus())
+                .isEqualTo(SecurityAndAnalysis.SecretScanningNonProviderPatterns.Status.DISABLED);
+        assertThat(securityAndAnalysis.getSecretScanningAiDetection()).isNull();
+    }
+
+    private static final Long DEFAULT_BRANCH_RULESET_ID = 1115480L;
+    private static final Long RULESET_VERSION_ID = 41470112L;
+
+    /**
+     * Locks in the public API of an {@code allOf} schema returned by a REST endpoint.
+     *
+     * <p>{@code GET /repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}} returns
+     * {@code ruleset-version-with-state}, described as
+     * {@code allOf: [{$ref: ruleset-version}, {properties: {state}}]}, which the codegen models as
+     * {@code RulesetVersionWithState extends RulesetVersion}. The inherited version fields and the
+     * added {@code state} must both be reachable on the same object; if the generator regressed to the
+     * old wrapper-with-an-indexed-field shape this test would not compile.
+     */
+    @Test
+    void testGetRepoRulesetVersion() {
+        var api = new RestClients(restClient).getReposApi();
+        var response =
+                api.getRepoRulesetVersion("pulpogato", "pulpogato", DEFAULT_BRANCH_RULESET_ID, RULESET_VERSION_ID);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        var version = response.getBody();
+        assertThat(version).isNotNull();
+
+        // The generated type extends the referenced RulesetVersion, so it is-a RulesetVersion...
+        assertThat(version).isInstanceOf(RulesetVersion.class);
+
+        // ...exposing the inherited version fields directly on the same object...
+        assertThat(version.getVersionId()).isEqualTo(RULESET_VERSION_ID);
+        assertThat(version.getUpdatedAt()).isNotNull();
+
+        // ...plus the inline allOf member (state) as the subclass's own accessor.
+        assertThat(version.getState()).isNotNull().isNotEmpty();
+    }
+}

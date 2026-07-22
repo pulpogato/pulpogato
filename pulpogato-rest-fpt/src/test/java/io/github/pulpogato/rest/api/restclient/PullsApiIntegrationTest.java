@@ -1,8 +1,9 @@
-package io.github.pulpogato.rest.api.reactive;
+package io.github.pulpogato.rest.api.restclient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
+import io.github.pulpogato.rest.api.PullsApi;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -10,18 +11,17 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testListPullRequests() {
-        var api = new RestClients(webClient).getPullsApi();
+        var api = new RestClients(restClient).getPullsApi();
         var response = api.list(
-                        "example",
-                        "cisys-jenkins-bom",
-                        PullsApi.ListState.ALL,
-                        "johnburns:NEBULA-3674",
-                        null,
-                        null,
-                        null,
-                        null,
-                        null)
-                .block();
+                "example",
+                "cisys-jenkins-bom",
+                PullsApi.ListState.ALL,
+                "johnburns:NEBULA-3674",
+                null,
+                null,
+                null,
+                null,
+                null);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
@@ -36,16 +36,15 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testRequestReviewers() {
-        var api = new RestClients(webClient).getPullsApi();
+        var api = new RestClients(restClient).getPullsApi();
         var response = api.requestReviewers(
-                        "corp",
-                        "cisys-jenkins-bom",
-                        168L,
-                        PullsApi.RequestReviewersRequestBody.builder()
-                                .reviewers(List.of("sghill", "egoh"))
-                                .teamReviewers(List.of("team-ascii"))
-                                .build())
-                .block();
+                "corp",
+                "cisys-jenkins-bom",
+                168L,
+                PullsApi.RequestReviewersRequestBody.builder()
+                        .reviewers(List.of("sghill", "egoh"))
+                        .teamReviewers(List.of("team-ascii"))
+                        .build());
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
@@ -56,8 +55,8 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testGetDiff() {
-        var api = new RestClients(webClient).getPullsApi();
-        var response = api.getDiff("pulpogato", "pulpogato", 988L).block();
+        var api = new RestClients(restClient).getPullsApi();
+        var response = api.getDiff("pulpogato", "pulpogato", 988L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
@@ -68,8 +67,8 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testGetPatch() {
-        var api = new RestClients(webClient).getPullsApi();
-        var response = api.getPatch("pulpogato", "pulpogato", 988L).block();
+        var api = new RestClients(restClient).getPullsApi();
+        var response = api.getPatch("pulpogato", "pulpogato", 988L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();

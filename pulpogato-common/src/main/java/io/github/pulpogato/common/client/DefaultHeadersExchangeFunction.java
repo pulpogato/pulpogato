@@ -1,12 +1,9 @@
 package io.github.pulpogato.common.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -34,8 +31,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class DefaultHeadersExchangeFunction implements ExchangeFilterFunction {
 
-    private final String pulpogatoVersion;
-    private final String githubApiVersion;
+    private final Map<String, String> headers;
 
     /**
      * Creates a new instance with default headers loaded from {@code pulpogato-headers.properties}.
@@ -43,29 +39,14 @@ public class DefaultHeadersExchangeFunction implements ExchangeFilterFunction {
      * {@code pulpogato.version} and {@code github.api.version}.
      */
     public DefaultHeadersExchangeFunction() {
-        this(loadProperty("pulpogato.version"), loadProperty("github.api.version"));
-    }
-
-    private static String loadProperty(String key) {
-        try (InputStream input = new ClassPathResource("pulpogato-headers.properties").getInputStream()) {
-            Properties properties = new Properties();
-            properties.load(input);
-            return properties.getProperty(key, null);
-        } catch (IOException e) {
-            return null;
-        }
+        this(PulpogatoHeadersLoader.loadHeaders());
     }
 
     @Override
     @NonNull
     public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
         ClientRequest.Builder builder = ClientRequest.from(request);
-        if (githubApiVersion != null) {
-            builder.header("X-GitHub-Api-Version", githubApiVersion);
-        }
-        if (pulpogatoVersion != null) {
-            builder.header("X-Pulpogato-Version", pulpogatoVersion);
-        }
+        headers.forEach(builder::header);
         return next.exchange(builder.build());
     }
 }
