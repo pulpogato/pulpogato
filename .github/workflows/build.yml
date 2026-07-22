@@ -59,7 +59,7 @@ jobs:
 
       - name: Build Main Project
         if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-        run: ./gradlew build asciidoctorDocs --max-workers=$MAX_WORKERS --continue
+        run: ./gradlew build :pulpogato-docs:asciidoctor --max-workers=$MAX_WORKERS --continue
 
       - name: Run Pitest (Renovate PRs Only)
         if: github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
@@ -73,7 +73,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pcodegen.format=true build asciidoctorDocs snapshot --max-workers=$MAX_WORKERS
+        run: ./gradlew -Pcodegen.format=true build :pulpogato-docs:asciidoctor snapshot --max-workers=$MAX_WORKERS
 
       - name: Deploy docs to ghpages
         uses: peaceiris/actions-gh-pages@v4

@@ -179,10 +179,3 @@ tasks.register("pitest") {
     notCompatibleWithConfigurationCache("Delegates to a task that invokes a separate Gradle build.")
     dependsOn(pitestPlugin)
 }
-
-tasks.register<Exec>("asciidoctorDocs") {
-    description = "Generate Asciidoctor HTML docs"
-    group = "documentation"
-    notCompatibleWithConfigurationCache("Invokes a separate Gradle build to avoid configuration cache issues.")
-    commandLine("./gradlew", "--no-configuration-cache", ":pulpogato-docs:asciidoctor")
-}
