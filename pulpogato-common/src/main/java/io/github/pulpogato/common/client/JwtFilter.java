@@ -3,7 +3,6 @@ package io.github.pulpogato.common.client;
 import java.time.Clock;
 import lombok.Builder;
 import lombok.Getter;
-import org.jspecify.annotations.NonNull;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -48,8 +47,7 @@ public class JwtFilter implements ExchangeFilterFunction {
     private final JwtTokenCache tokenCache = new JwtTokenCache(jwtFactory, clock);
 
     @Override
-    @NonNull
-    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         var jwt = getTokenCache().getOrGenerateJwt();
         var newRequest = ClientRequest.from(request)
                 .header("Authorization", "Bearer " + jwt)

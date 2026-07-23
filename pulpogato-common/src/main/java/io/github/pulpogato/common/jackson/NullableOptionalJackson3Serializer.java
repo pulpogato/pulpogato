@@ -1,6 +1,7 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.NullableOptional;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdSerializer;
@@ -32,7 +33,7 @@ public class NullableOptionalJackson3Serializer extends StdSerializer<NullableOp
     }
 
     @Override
-    public boolean isEmpty(SerializationContext provider, NullableOptional<?> value) {
+    public boolean isEmpty(SerializationContext provider, @Nullable NullableOptional<?> value) {
         // Return true for NOT_SET to skip serialization entirely
         return value == null || value.isNotSet();
     }

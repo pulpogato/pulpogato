@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Shared deserialization logic for <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
@@ -97,6 +98,8 @@ public class FancyDeserializerSupport<T> {
 
     private final JsonReader reader;
     private final Predicate<Exception> isParsingException;
+
+    @Nullable
     private final Class<?> enumAlternativeType;
 
     /**
@@ -163,7 +166,7 @@ public class FancyDeserializerSupport<T> {
      * @param hint          The token type hint, or {@code null} for default String-first ordering
      * @return The deserialized value, or null if all attempts fail
      */
-    public T deserialize(ContextReader contextReader, TokenHint hint) {
+    public T deserialize(ContextReader contextReader, @Nullable TokenHint hint) {
         final var returnValue = initializer.get();
         var inProgress = IN_PROGRESS.get();
         inProgress.add(type);
@@ -190,7 +193,7 @@ public class FancyDeserializerSupport<T> {
         }
     }
 
-    private void deserializeScalar(ContextReader contextReader, TokenHint hint, T returnValue) {
+    private void deserializeScalar(ContextReader contextReader, @Nullable TokenHint hint, T returnValue) {
         if (hint == TokenHint.BOOLEAN) {
             deserializeBoolThenNumberThenString(contextReader, returnValue);
         } else if (hint == TokenHint.NUMBER) {
@@ -381,7 +384,7 @@ public class FancyDeserializerSupport<T> {
                 || clazz.isPrimitive();
     }
 
-    private static boolean isJsonTokenCompatible(String json, Class<?> clazz) {
+    private static boolean isJsonTokenCompatible(@Nullable String json, Class<?> clazz) {
         if (json == null || json.isEmpty()) return true;
         int i = 0;
         while (i < json.length() && Character.isWhitespace(json.charAt(i))) i++;
@@ -397,6 +400,7 @@ public class FancyDeserializerSupport<T> {
         return true;
     }
 
+    @Nullable
     private static <T> Class<?> detectEnumAlternativeType(List<SettableField<T, ?>> fields) {
         Class<?> candidate = null;
         for (var field : fields) {

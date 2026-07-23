@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.NoOpCache;
 import org.springframework.http.HttpHeaders;
@@ -110,9 +110,7 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
     }
 
     @Override
-    @NonNull
-    public ClientHttpResponse intercept(
-            @NonNull HttpRequest request, @NonNull byte[] body, @NonNull ClientHttpRequestExecution execution)
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         return switch (request.getMethod().name()) {
             case "GET", "QUERY" -> getResponseWithCache(request, body, execution);
@@ -171,7 +169,7 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
     }
 
     private ClientHttpResponse cacheResponse(
-            String cacheKey, String uri, ClientHttpResponse response, Observation parent) throws IOException {
+            String cacheKey, String uri, ClientHttpResponse response, @Nullable Observation parent) throws IOException {
         var headers = response.getHeaders();
         var etag = headers.getETag();
         var lastModified = headers.getFirst("Last-Modified");
@@ -243,13 +241,11 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         }
 
         @Override
-        @NonNull
         public HttpStatusCode getStatusCode() {
             return statusCode;
         }
 
         @Override
-        @NonNull
         public String getStatusText() {
             return statusCode instanceof HttpStatus httpStatus ? httpStatus.getReasonPhrase() : "";
         }
@@ -260,13 +256,11 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         }
 
         @Override
-        @NonNull
         public InputStream getBody() {
             return new ByteArrayInputStream(body);
         }
 
         @Override
-        @NonNull
         public HttpHeaders getHeaders() {
             return headers;
         }

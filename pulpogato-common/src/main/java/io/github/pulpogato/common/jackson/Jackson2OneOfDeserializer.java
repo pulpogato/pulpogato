@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A Jackson 2 deserializer for a non-discriminated {@code oneOf} modeled as a sealed interface.
@@ -44,6 +45,7 @@ public class Jackson2OneOfDeserializer<T> extends StdDeserializer<T> {
     }
 
     @Override
+    @Nullable
     public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         final var map = ctxt.readValue(p, Map.class);
         final var json = om.writeValueAsString(map);

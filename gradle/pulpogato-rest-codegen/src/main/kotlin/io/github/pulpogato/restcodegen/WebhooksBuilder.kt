@@ -15,6 +15,7 @@ import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import com.palantir.javapoet.WildcardTypeName
 import io.github.pulpogato.restcodegen.Annotations.generated
+import io.github.pulpogato.restcodegen.Annotations.nullable
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.className
@@ -247,6 +248,11 @@ class WebhooksBuilder {
 
         val constructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).addParameter(builderType, "builder")
 
+        // The builder is public API and doesn't enforce that every header gets set before build(), so
+        // even "universal" headers can reach here unset - every field/getter needs to admit @Nullable.
+        val nullableString = Types.STRING.annotated(nullable())
+        val nullableExtraHeadersType = extraHeadersType.annotated(nullable())
+
         headerFields.forEach { field ->
             val nullability =
                 when {
@@ -256,7 +262,7 @@ class WebhooksBuilder {
                 }
             classBuilder.addField(
                 FieldSpec
-                    .builder(Types.STRING, field.fieldName, Modifier.PRIVATE, Modifier.FINAL)
+                    .builder(nullableString, field.fieldName, Modifier.PRIVATE, Modifier.FINAL)
                     .addJavadoc($$"'$L' header$L\n", field.headerName, nullability)
                     .build(),
             )
@@ -264,14 +270,14 @@ class WebhooksBuilder {
                 MethodSpec
                     .methodBuilder("get${field.fieldName.pascalCase()}")
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(Types.STRING)
+                    .returns(nullableString)
                     .addStatement($$"return $L", field.fieldName)
                     .build(),
             )
         }
         classBuilder.addField(
             FieldSpec
-                .builder(extraHeadersType, "extraHeaders", Modifier.PRIVATE, Modifier.FINAL)
+                .builder(nullableExtraHeadersType, "extraHeaders", Modifier.PRIVATE, Modifier.FINAL)
                 .addJavadoc(
                     "any other headers on the request, keyed by header name, for headers GitHub adds after " +
                         "this library was built\n",
@@ -281,7 +287,7 @@ class WebhooksBuilder {
             MethodSpec
                 .methodBuilder("getExtraHeaders")
                 .addModifiers(Modifier.PUBLIC)
-                .returns(extraHeadersType)
+                .returns(nullableExtraHeadersType)
                 .addStatement("return extraHeaders")
                 .build(),
         )
@@ -313,20 +319,23 @@ class WebhooksBuilder {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build())
 
+        val nullableString = Types.STRING.annotated(nullable())
+        val nullableExtraHeadersType = extraHeadersType.annotated(nullable())
+
         headerFields.forEach { field ->
-            builderClassBuilder.addField(FieldSpec.builder(Types.STRING, field.fieldName, Modifier.PRIVATE).build())
+            builderClassBuilder.addField(FieldSpec.builder(nullableString, field.fieldName, Modifier.PRIVATE).build())
             builderClassBuilder.addMethod(
                 MethodSpec
                     .methodBuilder(field.fieldName)
                     .addModifiers(Modifier.PUBLIC)
                     .returns(builderType)
-                    .addParameter(Types.STRING, field.fieldName)
+                    .addParameter(nullableString, field.fieldName)
                     .addStatement($$"this.$L = $L", field.fieldName, field.fieldName)
                     .addStatement("return this")
                     .build(),
             )
         }
-        builderClassBuilder.addField(FieldSpec.builder(extraHeadersType, "extraHeaders", Modifier.PRIVATE).build())
+        builderClassBuilder.addField(FieldSpec.builder(nullableExtraHeadersType, "extraHeaders", Modifier.PRIVATE).build())
         builderClassBuilder.addMethod(
             MethodSpec
                 .methodBuilder("extraHeaders")
@@ -381,10 +390,16 @@ class WebhooksBuilder {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(Types.OBJECT)
                 .addParameter(ClassName.get("org.springframework.core", "MethodParameter"), "parameter")
-                .addParameter(ClassName.get("org.springframework.web.method.support", "ModelAndViewContainer"), "mavContainer")
-                .addParameter(webRequestType, "webRequest")
-                .addParameter(ClassName.get("org.springframework.web.bind.support", "WebDataBinderFactory"), "binderFactory")
-                .addException(Types.EXCEPTION)
+                .addParameter(
+                    ParameterSpec
+                        .builder(ClassName.get("org.springframework.web.method.support", "ModelAndViewContainer").annotated(nullable()), "mavContainer")
+                        .build(),
+                ).addParameter(webRequestType, "webRequest")
+                .addParameter(
+                    ParameterSpec
+                        .builder(ClassName.get("org.springframework.web.bind.support", "WebDataBinderFactory").annotated(nullable()), "binderFactory")
+                        .build(),
+                ).addException(Types.EXCEPTION)
                 .addCode(constructorCall.build())
                 .build()
 

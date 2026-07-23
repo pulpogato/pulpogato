@@ -9,6 +9,8 @@ commons-text = "1.15.0"
 dgs = "8.6.0"
 dgsClient = "12.0.1"
 download = "5.7.0"
+errorprone = "2.50.0"
+errorpronePlugin = "5.1.0"
 groovy = "5.0.7"
 jackson2 = "2.22.1"
 jackson3 = "3.2.1"
@@ -23,6 +25,8 @@ junitPlatformLauncher = "6.1.2"
 lombok = "1.18.46"
 micrometer = "1.17.0"
 mockito = "5.23.0"
+nullaway = "0.13.7"
+nullawayPlugin = "3.1.0"
 palantirJavaFormat = "2.96.0"
 pitest = "1.25.8"
 pitestJunit5Plugin = "1.2.3"
@@ -48,6 +52,7 @@ commonmarkTables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables
 commonsLang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 commonsText = { group = "org.apache.commons", name = "commons-text", version.ref = "commons-text" }
 dgsClient = { group = "com.netflix.graphql.dgs", name = "graphql-dgs-client", version.ref = "dgsClient" }
+errorprone = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorprone" }
 glassfishJson = { group = "org.glassfish", name = "javax.json", version.ref = "glassfishJson" }
 groovy = { group = "org.apache.groovy", name = "groovy-all", version.ref = "groovy" }
 httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "httpclient5" }
@@ -70,6 +75,7 @@ junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-l
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockitoJunitJupiter = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
+nullaway = { group = "com.uber.nullaway", name = "nullaway", version.ref = "nullaway" }
 micrometerCore = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer" }
 micrometerObservation = { group = "io.micrometer", name = "micrometer-observation", version.ref = "micrometer" }
 micrometerObservationTest = { group = "io.micrometer", name = "micrometer-observation-test", version.ref = "micrometer" }
@@ -94,7 +100,9 @@ springBoot = ["springBootTest", "springBootWeb", "springBootWebflux", "springBoo
 [plugins]
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
 download = { id = "de.undercouch.download", version.ref = "download" }
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorpronePlugin" }
 javaLibrary = { id = "java-library" }
+nullaway = { id = "net.ltgt.nullaway", version.ref = "nullawayPlugin" }
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitestPlugin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }

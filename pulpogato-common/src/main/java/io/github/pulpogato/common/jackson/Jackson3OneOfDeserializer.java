@@ -3,6 +3,7 @@ package io.github.pulpogato.common.jackson;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
@@ -42,6 +43,7 @@ public class Jackson3OneOfDeserializer<T> extends StdDeserializer<T> {
     }
 
     @Override
+    @Nullable
     public T deserialize(JsonParser p, DeserializationContext ctxt) {
         final var map = ctxt.readValue(p, Map.class);
         final var json = om.writeValueAsString(map);

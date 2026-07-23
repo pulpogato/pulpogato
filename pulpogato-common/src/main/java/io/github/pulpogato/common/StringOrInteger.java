@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
@@ -30,7 +31,10 @@ import tools.jackson.databind.ser.std.StdSerializer;
 @EqualsAndHashCode
 @ToString
 public class StringOrInteger implements PulpogatoType {
+    @Nullable
     private String stringValue;
+
+    @Nullable
     private Long integerValue;
 
     /**
@@ -148,8 +152,11 @@ public class StringOrInteger implements PulpogatoType {
      * Returns the string value if present, otherwise returns the string representation of the
      * integer value, or {@code null} if both are absent.
      */
-    public static class StringConverter implements Converter<StringOrInteger, String> {
+    public static class StringConverter implements Converter<StringOrInteger, @Nullable String> {
         @Override
+        @Nullable
+        // Converter.convert() isn't JSpecify-annotated, but Spring's own javadoc allows a null return.
+        @SuppressWarnings("NullAway")
         public String convert(StringOrInteger source) {
             if (source.getStringValue() != null) {
                 return source.getStringValue();

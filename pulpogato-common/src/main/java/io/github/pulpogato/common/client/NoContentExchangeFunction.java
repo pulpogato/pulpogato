@@ -1,6 +1,5 @@
 package io.github.pulpogato.common.client;
 
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -18,8 +17,7 @@ import reactor.core.publisher.Mono;
 public class NoContentExchangeFunction implements ExchangeFilterFunction {
 
     @Override
-    @NonNull
-    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         return next.exchange(request).map(response -> {
             if (response.statusCode().isSameCodeAs(HttpStatus.NO_CONTENT)) {
                 return response.mutate().body(Flux.empty()).build();

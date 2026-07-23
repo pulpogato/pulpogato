@@ -3,7 +3,6 @@ package io.github.pulpogato.common.client;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -43,8 +42,7 @@ public class DefaultHeadersExchangeFunction implements ExchangeFilterFunction {
     }
 
     @Override
-    @NonNull
-    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         ClientRequest.Builder builder = ClientRequest.from(request);
         headers.forEach(builder::header);
         return next.exchange(builder.build());

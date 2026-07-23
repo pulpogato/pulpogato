@@ -1,15 +1,22 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import net.ltgt.gradle.errorprone.errorprone
+import net.ltgt.gradle.nullaway.nullaway
 
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
+    alias(libs.plugins.errorprone)
+    alias(libs.plugins.nullaway)
 }
 
-val mockitoAgent by configurations.creating
+val mockitoAgent = configurations.create("mockitoAgent")
 
 dependencies {
+    errorprone(libs.errorprone)
+    errorprone(libs.nullaway)
+
     compileOnly(libs.jspecify)
     compileOnly(libs.lombok)
     compileOnly(libs.micrometerCore)
@@ -55,8 +62,21 @@ java {
 
 description = "Common utilities for Pulpogato REST types"
 
+nullaway {
+    onlyNullMarked = true
+}
+
 tasks.withType<JavaCompile> {
     options.isIncremental = true
+    options.errorprone {
+        disableAllChecks = true
+        nullaway { error() }
+    }
+}
+
+tasks.named<JavaCompile>("compileTestJava") {
+    // Test sources aren't @NullMarked, so there's nothing for NullAway to check here.
+    options.errorprone.enabled = false
 }
 
 testlogger {

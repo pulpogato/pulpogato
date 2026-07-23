@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A builder class for constructing code representations of objects with properties.
@@ -49,7 +49,7 @@ public class CodeBuilder {
      * @param value the property's value
      * @return the current CodeBuilder instance for method chaining
      */
-    public CodeBuilder addProperty(String name, Object value) {
+    public CodeBuilder addProperty(String name, @Nullable Object value) {
         if (value != null) {
             properties.put(name, value);
         }
@@ -80,7 +80,7 @@ public class CodeBuilder {
      * @param value the value to render
      * @return a string representing the code for the value
      */
-    public static String render(Object value) {
+    public static String render(@Nullable Object value) {
         if (value == null) {
             return "null";
         }
@@ -104,24 +104,24 @@ public class CodeBuilder {
         };
     }
 
-    private static @NonNull String getMessage(Object value) {
+    private static String getMessage(Object value) {
         String name = value.getClass().getName();
         return "Unsupported type in CodeBuilder.render: " + name + " (value=" + value + ")";
     }
 
-    private static @NonNull String formatMap(Map<?, ?> map) {
+    private static String formatMap(Map<?, ?> map) {
         return map.entrySet().stream()
                 .map(entry -> "\n" + indentOnly("io.github.pulpogato.common.util.LinkedHashMapBuilder.entry(")
                         + render(entry.getKey()) + ", " + render(entry.getValue()) + ")")
                 .collect(Collectors.joining(",", "io.github.pulpogato.common.util.LinkedHashMapBuilder.of(", ")"));
     }
 
-    private static @NonNull String formatDateTime(OffsetDateTime odt) {
+    private static String formatDateTime(OffsetDateTime odt) {
         final var formattedDate = odt.format(DATE_TIME_FORMATTER);
         return "OffsetDateTime.parse(\"" + formattedDate + "\")";
     }
 
-    private static @NonNull String formatList(List<?> list) {
+    private static String formatList(List<?> list) {
         return list.stream().map(it -> "\n" + indentOnly(render(it))).collect(Collectors.joining(",", "List.of(", ")"));
     }
 

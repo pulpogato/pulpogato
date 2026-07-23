@@ -86,7 +86,7 @@ class SchemasBuilderTest {
 
         // The composite member gains a getter that reads from whichever branch is populated.
         assertThat(readGenerated("WebhookComboComposite"))
-            .contains("public SimpleUser getSender()")
+            .contains("public @Nullable SimpleUser getSender()")
             .contains("getWebhookComboComposite0()")
             .contains("getWebhookComboComposite1()")
     }
@@ -98,7 +98,7 @@ class SchemasBuilderTest {
         // `creator` is `allOf: [{$ref: simple-user}]`, which adds nothing, so the field is typed
         // directly as the referenced type with no synthetic wrapper class.
         assertThat(readGenerated("CreatorWrapper"))
-            .contains("private SimpleUser creator;")
+            .contains("private @Nullable SimpleUser creator;")
             .doesNotContain("class Creator implements")
     }
 

@@ -3,7 +3,6 @@ package io.github.pulpogato.common.client;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
@@ -24,9 +23,7 @@ import org.springframework.http.client.ClientHttpResponse;
 public class NoContentClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 
     @Override
-    @NonNull
-    public ClientHttpResponse intercept(
-            @NonNull HttpRequest request, @NonNull byte[] body, @NonNull ClientHttpRequestExecution execution)
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         ClientHttpResponse response = execution.execute(request, body);
         if (response.getStatusCode().isSameCodeAs(HttpStatus.NO_CONTENT)) {
@@ -44,13 +41,11 @@ public class NoContentClientHttpRequestInterceptor implements ClientHttpRequestI
         }
 
         @Override
-        @NonNull
         public HttpStatusCode getStatusCode() throws IOException {
             return delegate.getStatusCode();
         }
 
         @Override
-        @NonNull
         public String getStatusText() throws IOException {
             return delegate.getStatusText();
         }
@@ -61,13 +56,11 @@ public class NoContentClientHttpRequestInterceptor implements ClientHttpRequestI
         }
 
         @Override
-        @NonNull
         public InputStream getBody() {
             return new ByteArrayInputStream(new byte[0]);
         }
 
         @Override
-        @NonNull
         public HttpHeaders getHeaders() {
             return delegate.getHeaders();
         }

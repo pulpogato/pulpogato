@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -49,7 +48,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
      * @param singular the single value to wrap
      * @return a new SingularOrPlural instance containing the single value
      */
-    public static <T> SingularOrPlural<T> singular(@NonNull T singular) {
+    public static <T> SingularOrPlural<T> singular(T singular) {
         return new SingularOrPlural<>(singular, null);
     }
 
@@ -60,7 +59,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
      * @param plural the list of values to wrap
      * @return a new SingularOrPlural instance containing the list of values
      */
-    public static <T> SingularOrPlural<T> plural(@NonNull List<T> plural) {
+    public static <T> SingularOrPlural<T> plural(List<T> plural) {
         return new SingularOrPlural<>(null, plural);
     }
 

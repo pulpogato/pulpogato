@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -39,9 +38,7 @@ public class DefaultHeadersClientHttpRequestInterceptor implements ClientHttpReq
     }
 
     @Override
-    @NonNull
-    public ClientHttpResponse intercept(
-            @NonNull HttpRequest request, @NonNull byte[] body, @NonNull ClientHttpRequestExecution execution)
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         headers.forEach((name, value) -> request.getHeaders().set(name, value));
         return execution.execute(request, body);

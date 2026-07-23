@@ -2,7 +2,6 @@ package io.github.pulpogato.common.client;
 
 import java.io.IOException;
 import java.net.URI;
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -22,9 +21,7 @@ public class RedirectClientHttpRequestInterceptor implements ClientHttpRequestIn
     private static final int MAX_REDIRECTS = 5;
 
     @Override
-    @NonNull
-    public ClientHttpResponse intercept(
-            @NonNull HttpRequest request, @NonNull byte[] body, @NonNull ClientHttpRequestExecution execution)
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         return execute(request, body, execution, MAX_REDIRECTS);
     }
@@ -38,7 +35,6 @@ public class RedirectClientHttpRequestInterceptor implements ClientHttpRequestIn
             response.close();
             HttpRequest redirected = new HttpRequestWrapper(request) {
                 @Override
-                @NonNull
                 public URI getURI() {
                     return request.getURI().resolve(location);
                 }
