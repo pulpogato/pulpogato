@@ -8,15 +8,21 @@ import org.junit.jupiter.api.Test;
 
 public class GitApiIntegrationTest extends BaseApiIntegrationTest {
     /**
+     * <p>
      * Tests creating a tree that moves a file by:
-     * 1. Adding a new entry with the existing blob SHA at a new path
-     * 2. Deleting the old entry by setting sha to null
-     *
-     * This test reproduces the issue described in https://github.com/pulpogato/pulpogato/issues/742
+     * </p>
+     * <ol>
+     *    <li>Adding a new entry with the existing blob SHA at a new path</li>
+     *    <li>Deleting the old entry by setting sha to null</li>
+     * </ol>
+     * <p>
+     * This test reproduces the issue described in {@code https://github.com/pulpogato/pulpogato/issues/742}
      * where @JsonInclude(NON_NULL) prevents null sha values from being serialized,
      * causing the GitHub API to reject the request.
-     *
-     * Using live data from https://github.com/pulpogato/create-demo repository.
+     * </p>
+     * <p>
+     * Using live data from {@code https://github.com/pulpogato/create-demo} repository.
+     * </p>
      */
     @Test
     void testCreateTreeWithFileMove() {
