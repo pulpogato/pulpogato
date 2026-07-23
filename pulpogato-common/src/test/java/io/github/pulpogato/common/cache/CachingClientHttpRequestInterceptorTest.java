@@ -18,6 +18,8 @@ import java.time.Clock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -100,49 +102,31 @@ class CachingClientHttpRequestInterceptorTest {
         return new TestClientHttpResponse(HttpStatus.NOT_MODIFIED, headers, new byte[0]);
     }
 
+    @RequiredArgsConstructor
     private static final class TestHttpRequest implements HttpRequest {
+        @Getter
         private final HttpMethod method;
-        private final URI uri;
+
+        @Getter
         private final HttpHeaders headers = new HttpHeaders();
+
+        @Getter
         private final Map<String, Object> attributes = new HashMap<>();
 
-        private TestHttpRequest(HttpMethod method, URI uri) {
-            this.method = method;
-            this.uri = uri;
-        }
-
-        @Override
-        public HttpMethod getMethod() {
-            return method;
-        }
+        private final URI uri;
 
         @Override
         public URI getURI() {
             return uri;
         }
-
-        @Override
-        public HttpHeaders getHeaders() {
-            return headers;
-        }
-
-        @Override
-        public Map<String, Object> getAttributes() {
-            return attributes;
-        }
     }
 
+    @RequiredArgsConstructor
     private static final class TestClientHttpResponse implements ClientHttpResponse {
         private final HttpStatusCode statusCode;
         private final HttpHeaders headers;
         private final byte[] body;
         private boolean closed;
-
-        private TestClientHttpResponse(HttpStatusCode statusCode, HttpHeaders headers, byte[] body) {
-            this.statusCode = statusCode;
-            this.headers = headers;
-            this.body = body;
-        }
 
         @Override
         public HttpStatusCode getStatusCode() {
