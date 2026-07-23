@@ -5,9 +5,11 @@ import io.github.pulpogato.common.jackson.NullableOptionalJackson2Serializer;
 import io.github.pulpogato.common.jackson.NullableOptionalJackson3Deserializer;
 import io.github.pulpogato.common.jackson.NullableOptionalJackson3Serializer;
 import io.github.pulpogato.common.util.CodeBuilder;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.EqualsAndHashCode;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A three-state wrapper for nullable fields that distinguishes between:
@@ -51,9 +53,11 @@ public final class NullableOptional<T> implements PulpogatoType {
     }
 
     private final State state;
+
+    @Nullable
     private final T value;
 
-    private NullableOptional(State state, T value) {
+    private NullableOptional(State state, @Nullable T value) {
         this.state = state;
         this.value = value;
     }
@@ -84,15 +88,12 @@ public final class NullableOptional<T> implements PulpogatoType {
      * Returns a NullableOptional with the specified non-null value.
      * When serialized to JSON, the field will be present with the value.
      *
-     * @param value the non-null value to wrap
+     * @param value the non-null value to wrap; passing null is a compile-time NullAway
+     *     violation under {@code @NullMarked}, not a runtime check (use ofNull() instead)
      * @param <T> the type of the value
      * @return a NullableOptional in VALUE state
-     * @throws IllegalArgumentException if value is null (use ofNull() instead)
      */
     public static <T> NullableOptional<T> of(T value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null. Use ofNull() for explicit null.");
-        }
         return new NullableOptional<>(State.VALUE, value);
     }
 
@@ -110,7 +111,7 @@ public final class NullableOptional<T> implements PulpogatoType {
      * @param <T> the type of the value
      * @return a NullableOptional in NULL state if value is null, VALUE state otherwise
      */
-    public static <T> NullableOptional<T> ofNullable(T value) {
+    public static <T> NullableOptional<T> ofNullable(@Nullable T value) {
         return value == null ? ofNull() : of(value);
     }
 
@@ -151,7 +152,7 @@ public final class NullableOptional<T> implements PulpogatoType {
         if (state != State.VALUE) {
             throw new IllegalStateException("No value present. State is: " + state);
         }
-        return value;
+        return Objects.requireNonNull(value);
     }
 
     /**
@@ -161,7 +162,7 @@ public final class NullableOptional<T> implements PulpogatoType {
      * @return the value if present, otherwise defaultValue
      */
     public T orElse(T defaultValue) {
-        return state == State.VALUE ? value : defaultValue;
+        return state == State.VALUE ? Objects.requireNonNull(value) : defaultValue;
     }
 
     /**
@@ -169,6 +170,7 @@ public final class NullableOptional<T> implements PulpogatoType {
      *
      * @return the value if present, otherwise null
      */
+    @Nullable
     public T orElseNull() {
         return state == State.VALUE ? value : null;
     }
@@ -180,7 +182,7 @@ public final class NullableOptional<T> implements PulpogatoType {
      */
     public void ifValue(Consumer<? super T> consumer) {
         if (state == State.VALUE) {
-            consumer.accept(value);
+            consumer.accept(Objects.requireNonNull(value));
         }
     }
 
@@ -194,9 +196,9 @@ public final class NullableOptional<T> implements PulpogatoType {
      */
     public <U> NullableOptional<U> map(Function<? super T, ? extends U> mapper) {
         return switch (state) {
-            case VALUE -> NullableOptional.of(mapper.apply(value));
+            case VALUE -> NullableOptional.of(mapper.apply(Objects.requireNonNull(value)));
             case NULL -> NullableOptional.ofNull();
-            case null, default -> NullableOptional.notSet();
+            default -> NullableOptional.notSet();
         };
     }
 

@@ -3,8 +3,10 @@ package io.github.pulpogato.common.client;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Framework-agnostic JWT caching shared by {@link JwtFilter} and
@@ -23,7 +25,11 @@ class JwtTokenCache {
     private final Clock clock;
 
     private final ReentrantLock lock = new ReentrantLock();
+
+    @Nullable
     private volatile String cachedToken;
+
+    @Nullable
     private volatile Instant tokenExpiresAt;
 
     JwtTokenCache(JwtFactory jwtFactory, Clock clock) {
@@ -34,7 +40,7 @@ class JwtTokenCache {
     String getOrGenerateJwt() {
         var checkTime = clock.instant();
         if (isCachedTokenValid(checkTime)) {
-            return cachedToken;
+            return Objects.requireNonNull(cachedToken);
         }
 
         lock.lock();
@@ -42,22 +48,25 @@ class JwtTokenCache {
             // Double-check after acquiring lock
             var generateTime = clock.instant();
             if (isCachedTokenValid(generateTime)) {
-                return cachedToken;
+                return Objects.requireNonNull(cachedToken);
             }
 
             tokenExpiresAt = generateTime.plus(TOKEN_VALIDITY);
-            cachedToken = jwtFactory.create(generateTime.minus(CLOCK_DRIFT), tokenExpiresAt);
-            String maskedToken = cachedToken.substring(Math.max(0, cachedToken.length() - 8));
+            cachedToken = jwtFactory.create(generateTime.minus(CLOCK_DRIFT), Objects.requireNonNull(tokenExpiresAt));
+            String validToken = Objects.requireNonNull(cachedToken);
+            String maskedToken = validToken.substring(Math.max(0, validToken.length() - 8));
             log.debug("Generated new JWT token that expires at {}: '...{}'", tokenExpiresAt, maskedToken);
-            return cachedToken;
+            return validToken;
         } finally {
             lock.unlock();
         }
     }
 
     private boolean isCachedTokenValid(Instant checkTime) {
-        return cachedToken != null
-                && tokenExpiresAt != null
-                && checkTime.isBefore(tokenExpiresAt.minus(REFRESH_BUFFER));
+        if (cachedToken == null || tokenExpiresAt == null) {
+            return false;
+        }
+        var expiry = Objects.requireNonNull(tokenExpiresAt);
+        return checkTime.isBefore(expiry.minus(REFRESH_BUFFER));
     }
 }

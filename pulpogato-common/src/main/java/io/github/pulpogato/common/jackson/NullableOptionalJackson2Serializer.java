@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.github.pulpogato.common.NullableOptional;
 import java.io.IOException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Custom Jackson serializer for {@link NullableOptional} that handles three-state serialization:
@@ -34,7 +35,7 @@ public class NullableOptionalJackson2Serializer extends StdSerializer<NullableOp
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, NullableOptional<?> value) {
+    public boolean isEmpty(SerializerProvider provider, @Nullable NullableOptional<?> value) {
         // Return true for NOT_SET to skip serialization entirely
         return value == null || value.isNotSet();
     }

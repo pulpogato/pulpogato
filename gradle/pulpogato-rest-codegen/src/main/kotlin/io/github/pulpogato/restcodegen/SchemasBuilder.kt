@@ -438,7 +438,7 @@ class SchemasBuilder {
         typeSpec
             .fieldSpecs()
             .filter { Modifier.STATIC !in it.modifiers() }
-            .associate { it.name() to it.type().withoutAnnotations() }
+            .associate { it.name() to it.type() }
 
     /**
      * For a composite (`oneOf`/`anyOf`) body, the (getter-name, branch-type) pairs of its inline branch

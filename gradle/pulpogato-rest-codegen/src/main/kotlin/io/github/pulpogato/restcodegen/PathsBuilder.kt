@@ -11,7 +11,6 @@ import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
-import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.nullable
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
@@ -79,7 +78,6 @@ private object WebClientContainerSpec : ClientContainerSpec {
                 .baseUrl("https://api.github.com")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
-
         RestClients clients = new RestClients(webClient);
         UsersApi users = clients.getUsersApi();
         var response = users.getAuthenticated();
@@ -110,7 +108,6 @@ private object RestClientContainerSpec : ClientContainerSpec {
                 .baseUrl("https://api.github.com")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
-
         RestClients clients = new RestClients(restClient);
         UsersApi users = clients.getUsersApi();
         var response = users.getAuthenticated();
@@ -291,8 +288,7 @@ class PathsBuilder {
                             "conversionService",
                             Modifier.PRIVATE,
                             Modifier.FINAL,
-                        ).addAnnotation(nonNull())
-                        .build(),
+                        ).build(),
                 ).addField(
                     FieldSpec
                         .builder(
@@ -300,18 +296,15 @@ class PathsBuilder {
                             "factory",
                             Modifier.PRIVATE,
                             Modifier.FINAL,
-                        ).addAnnotation(nonNull())
-                        .build(),
+                        ).build(),
                 ).addField(
                     FieldSpec
                         .builder(clientType, fieldName, Modifier.PRIVATE, Modifier.FINAL)
-                        .addAnnotation(nonNull())
                         .build(),
                 ).addMethod(
                     MethodSpec
                         .methodBuilder("getConversionService")
                         .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(nonNull())
                         .returns(ClassName.get(PACKAGE_SPRING_FORMAT_SUPPORT, "FormattingConversionService"))
                         .addStatement("return this.conversionService")
                         .addJavadoc("Returns the conversion service used for parameter conversion.")
@@ -320,7 +313,6 @@ class PathsBuilder {
                     MethodSpec
                         .methodBuilder(getterName)
                         .addModifiers(Modifier.PUBLIC)
-                        .addAnnotation(nonNull())
                         .returns(clientType)
                         .addStatement($$"return this.$N", fieldName)
                         .addJavadoc($$"Returns the $L used for REST API calls.", clientType.simpleName())
@@ -386,7 +378,6 @@ class PathsBuilder {
                 ).addParameter(
                     ParameterSpec
                         .builder(clientType, fieldName)
-                        .addAnnotation(nonNull())
                         .build(),
                 ).addParameter(
                     ParameterSpec
@@ -396,8 +387,7 @@ class PathsBuilder {
                                 spec.filterInterfaceName,
                             ),
                             spec.filterParamName,
-                        ).addAnnotation(nonNull())
-                        .build(),
+                        ).build(),
                 ).addStatement(
                     $$"$T builder = $N.mutate()",
                     spec.builderClassName,
@@ -442,7 +432,6 @@ class PathsBuilder {
                 .addParameter(
                     ParameterSpec
                         .builder(clientType, fieldName)
-                        .addAnnotation(nonNull())
                         .build(),
                 ).addJavadoc(
                     """
@@ -716,11 +705,12 @@ class PathsBuilder {
             respRef.annotations().filter {
                 (it.type() as ClassName).simpleName() != "JsonFormat"
             }
-        val bodyNullabilityAnnotation = if (responseBodyNullable) nullable() else nonNull()
         val exchangeAnnotation =
             atomicMethod.method.name
                 .lowercase()
                 .pascalCase() + "Exchange"
+        val bodyType = respRef.withoutAnnotations().annotated(suitableAnnotations)
+        val nullableBodyType = if (responseBodyNullable) bodyType.annotated(nullable()) else bodyType
         return MethodSpec
             .methodBuilder(methodName)
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
@@ -733,7 +723,6 @@ class PathsBuilder {
                     .addMember("accept", $$"$S", contentType)
                     .build(),
             ).addAnnotation(generated(0, context))
-            .addAnnotation(nonNull())
             .addParameters(parameterSpecs)
             .returns(
                 if (reactiveReturnTypes) {
@@ -741,13 +730,13 @@ class PathsBuilder {
                         ClassName.get("reactor.core.publisher", "Mono"),
                         ParameterizedTypeName.get(
                             ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                            respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(nonNull()),
+                            nullableBodyType,
                         ),
                     )
                 } else {
                     ParameterizedTypeName.get(
                         ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                        respRef.withoutAnnotations().annotated(suitableAnnotations).annotated(bodyNullabilityAnnotation),
+                        nullableBodyType,
                     )
                 },
             ).build()
@@ -797,13 +786,13 @@ class PathsBuilder {
                         ClassName.get("reactor.core.publisher", "Mono"),
                         ParameterizedTypeName.get(
                             ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                            ClassName.get("java.lang", "Void").annotated(nonNull()),
+                            ClassName.get("java.lang", "Void"),
                         ),
                     )
                 } else {
                     ParameterizedTypeName.get(
                         ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                        ClassName.get("java.lang", "Void").annotated(nonNull()),
+                        ClassName.get("java.lang", "Void"),
                     )
                 },
             ).build()
@@ -931,14 +920,14 @@ class PathsBuilder {
                                 .addMember("value", $$"$S", theParameter.name)
                                 .addMember("required", $$"$L", theParameter.required)
                                 .build(),
-                            if (theParameter.required) nonNull() else nullable(),
-                        )
+                        ).apply {
+                            if (!theParameter.required) add(nullable())
+                        }
                     }
 
                     "body" -> {
                         mutableListOf(
                             AnnotationSpec.builder(webBind("RequestBody")).build(),
-                            nonNull(),
                         )
                     }
 
@@ -948,14 +937,12 @@ class PathsBuilder {
                                 .builder(webBind("PathVariable"))
                                 .addMember("value", $$"$S", theParameter.name)
                                 .build(),
-                            nonNull(),
                         )
                     }
 
                     "header" -> {
                         mutableListOf(
                             AnnotationSpec.builder(webBind("RequestHeader")).build(),
-                            nonNull(),
                         )
                     }
 

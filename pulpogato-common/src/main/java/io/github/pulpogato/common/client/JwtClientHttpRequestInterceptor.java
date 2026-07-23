@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.Clock;
 import lombok.Builder;
 import lombok.Getter;
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -50,9 +49,7 @@ public class JwtClientHttpRequestInterceptor implements ClientHttpRequestInterce
     private final JwtTokenCache tokenCache = new JwtTokenCache(jwtFactory, clock);
 
     @Override
-    @NonNull
-    public ClientHttpResponse intercept(
-            @NonNull HttpRequest request, @NonNull byte[] body, @NonNull ClientHttpRequestExecution execution)
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         var jwt = getTokenCache().getOrGenerateJwt();
         request.getHeaders().set("Authorization", "Bearer " + jwt);

@@ -3,6 +3,8 @@ import io.github.pulpogato.buildsupport.PropertiesFileValueClosure
 import io.github.pulpogato.buildsupport.WriteInfoPropertiesTask
 import io.github.pulpogato.restcodegen.DownloadSchemaTask
 import nebula.plugin.info.InfoBrokerPlugin
+import net.ltgt.gradle.errorprone.errorprone
+import net.ltgt.gradle.nullaway.nullaway
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import kotlin.jvm.java
 
@@ -12,9 +14,14 @@ plugins {
     alias(libs.plugins.testLogger)
     id("jacoco")
     id("io.github.pulpogato.rest-codegen")
+    alias(libs.plugins.errorprone)
+    alias(libs.plugins.nullaway)
 }
 
 dependencies {
+    errorprone(libs.errorprone)
+    errorprone(libs.nullaway)
+
     compileOnly(libs.jspecify)
     compileOnly(libs.springBootWeb)
     compileOnly(libs.springBootWebflux)
@@ -142,8 +149,29 @@ tasks.jacocoTestReport {
     }
 }
 
+nullaway {
+    // Rely on JSpecify @NullMarked package-info.java files rather than an AnnotatedPackages allowlist.
+    // Generated sources aren't null-marked yet, so this is currently a no-op until that lands.
+    onlyNullMarked = true
+}
+
 tasks.withType<JavaCompile> {
     options.isIncremental = true
+    // Error Prone's analysis on the large volume of generated sources needs more heap than the
+    // forked javac's default, or compilation OOMs.
+    options.isFork = true
+    options.forkOptions.jvmArgs = listOf("-Xmx4g")
+    options.errorprone {
+        disableAllChecks = true
+        nullaway { error() }
+    }
+}
+
+tasks.named<JavaCompile>("compileTestJava") {
+    // Test sources aren't @NullMarked, so there's nothing for NullAway to check here.
+    options.errorprone.enabled = false
+    // Error Prone is off for this task, so it doesn't need the forked 4g heap either.
+    options.isFork = false
 }
 
 val addSchemaInfoToBroker =

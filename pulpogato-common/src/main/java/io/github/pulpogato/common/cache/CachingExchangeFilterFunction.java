@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.NoOpCache;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -120,8 +120,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     }
 
     @Override
-    @NonNull
-    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         // Only cache GET requests
         return switch (request.method().name()) {
             case "GET", "QUERY" -> getResponseWithCache(request, next);
@@ -129,15 +128,14 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         };
     }
 
-    private @NonNull Mono<ClientResponse> getResponseWithCache(
-            @NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    private Mono<ClientResponse> getResponseWithCache(ClientRequest request, ExchangeFunction next) {
         // Read the parent observation from the reactive context so the cache.get/cache.put spans
         // are parented to the client request span. Reading it explicitly avoids relying on a
         // ThreadLocal that may be absent on the thread this runs on (e.g. boundedElastic).
         return Mono.deferContextual(ctx -> doFilter(request, next, ctx.getOrDefault(OBSERVATION_CONTEXT_KEY, null)));
     }
 
-    private Mono<ClientResponse> doFilter(ClientRequest request, ExchangeFunction next, Observation parent) {
+    private Mono<ClientResponse> doFilter(ClientRequest request, ExchangeFunction next, @Nullable Observation parent) {
         var cacheKey = cacheKeyMapper.apply(request);
         var cached = getEngine().lookup(cacheKey, request.url().toString(), parent);
 
@@ -192,7 +190,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     }
 
     private Mono<ClientResponse> cacheResponse(
-            String cacheKey, ClientRequest request, ClientResponse response, Observation parent) {
+            String cacheKey, ClientRequest request, ClientResponse response, @Nullable Observation parent) {
         var headers = response.headers().asHttpHeaders();
         var etag = headers.getETag();
         var lastModified = headers.getFirst("Last-Modified");

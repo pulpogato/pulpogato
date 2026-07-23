@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Custom deserializer for {@link OffsetDateTime} objects.
@@ -32,6 +33,7 @@ public class OffsetDateTimeJackson2Deserializer extends StdDeserializer<OffsetDa
      * @throws IOException if an I/O error occurs
      */
     @Override
+    @Nullable
     public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
             throws IOException {
         var currentToken = jsonParser.getCurrentToken();

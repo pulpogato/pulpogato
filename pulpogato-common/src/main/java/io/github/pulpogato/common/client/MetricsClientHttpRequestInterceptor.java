@@ -7,7 +7,7 @@ import java.time.Clock;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -50,15 +50,14 @@ public class MetricsClientHttpRequestInterceptor implements ClientHttpRequestInt
             new RateLimitMetricsRecorder(registry, clock, prefix, defaultTags);
 
     @Override
-    @NonNull
-    public ClientHttpResponse intercept(
-            @NonNull HttpRequest request, @NonNull byte[] body, @NonNull ClientHttpRequestExecution execution)
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         var response = execution.execute(request, body);
         getRecorder().recordMetrics(headerName -> getFirstHeader(response, headerName));
         return response;
     }
 
+    @Nullable
     private String getFirstHeader(ClientHttpResponse response, String headerName) {
         List<String> headerValues = response.getHeaders().get(headerName);
         if (headerValues != null && !headerValues.isEmpty()) {

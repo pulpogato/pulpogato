@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.DeserializationContext;
@@ -30,6 +31,7 @@ public class OffsetDateTimeJackson3Deserializer extends StdDeserializer<OffsetDa
      * @return the deserialized {@code OffsetDateTime} object, or {@code null} if the input is {@code null} or cannot be parsed
      */
     @Override
+    @Nullable
     public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
         var currentToken = jsonParser.currentToken();
 

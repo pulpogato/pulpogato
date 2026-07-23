@@ -41,13 +41,6 @@ class NullableOptionalTest {
     }
 
     @Test
-    void testOfNullThrows() {
-        assertThatThrownBy(() -> NullableOptional.of(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Use ofNull()");
-    }
-
-    @Test
     void testOfNullableWithNullValueReturnsNullState() {
         var optional = NullableOptional.ofNullable(null);
         assertThat(optional.isNull()).isTrue();

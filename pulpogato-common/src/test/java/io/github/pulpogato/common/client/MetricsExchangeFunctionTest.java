@@ -167,10 +167,10 @@ class MetricsExchangeFunctionTest {
     void testRateLimitMetricsWithMissingHeaders() {
         // GIVEN
         given(headers.header("x-ratelimit-limit")).willReturn(List.of("5000"));
-        given(headers.header("x-ratelimit-remaining")).willReturn(null);
-        given(headers.header("x-ratelimit-used")).willReturn(null);
-        given(headers.header("x-ratelimit-reset")).willReturn(null);
-        given(headers.header("x-ratelimit-resource")).willReturn(null);
+        given(headers.header("x-ratelimit-remaining")).willReturn(List.of());
+        given(headers.header("x-ratelimit-used")).willReturn(List.of());
+        given(headers.header("x-ratelimit-reset")).willReturn(List.of());
+        given(headers.header("x-ratelimit-resource")).willReturn(List.of());
         given(response.headers()).willReturn(headers);
 
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(Mono.just(response));

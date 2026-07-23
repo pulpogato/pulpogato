@@ -19,7 +19,6 @@ import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonEmpty
 import io.github.pulpogato.restcodegen.Annotations.jsonIncludeNonNull
 import io.github.pulpogato.restcodegen.Annotations.jsonProperty
 import io.github.pulpogato.restcodegen.Annotations.jsonValue
-import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.nullableOptionalDeserializer
 import io.github.pulpogato.restcodegen.Annotations.nullableOptionalSerializer
 import io.github.pulpogato.restcodegen.Annotations.serializerAnnotationForJackson2
@@ -792,8 +791,12 @@ private fun buildFieldSpec(
     classRef: ClassName,
 ): FieldSpec {
     val typeName = referenceAndDefinition(context, keyValuePair, "", classRef)!!.first
+    val strippedType = typeName.withoutAnnotations()
+    // Only one alternative field is populated at a time for a oneOf/anyOf branch, so every branch
+    // field but the active one is null - NullAway needs that spelled out explicitly.
+    val fieldType = if (strippedType.isPrimitive) strippedType else strippedType.annotated(Annotations.nullable())
     return FieldSpec
-        .builder(typeName.withoutAnnotations(), keyValuePair.key.unkeywordize().camelCase(), Modifier.PRIVATE)
+        .builder(fieldType, keyValuePair.key.unkeywordize().camelCase(), Modifier.PRIVATE)
         .addAnnotations(typeName.annotations())
         .addJavadoc($$"$L", schemaJavadoc(keyValuePair).split("\n").dropLastWhile { it.isEmpty() }.joinToString("\n"))
         .addAnnotation(generated(0, context))
@@ -1125,10 +1128,6 @@ private fun generateSetter(
     val methodName = "set${fieldName.pascalCase()}"
     val fieldType = field.type()
 
-    // Check if this is a NullableOptional field by checking the string representation
-    val typeString = fieldType.toString()
-    val isNullableOptional = typeString.startsWith("io.github.pulpogato.common.NullableOptional<")
-
     val builder =
         MethodSpec
             .methodBuilder(methodName)
@@ -1137,11 +1136,7 @@ private fun generateSetter(
             .addParameter(
                 ParameterSpec
                     .builder(fieldType, fieldName)
-                    .apply {
-                        if (isNullableOptional) {
-                            addAnnotation(nonNull())
-                        }
-                    }.build(),
+                    .build(),
             ).addStatement($$"this.$N = $N", fieldName, fieldName)
 
     // Add Javadoc if present
@@ -1285,7 +1280,7 @@ private fun generateFillValuesFromInstanceIntoBuilderMethod(
 /**
  * Generates fluent setter method(s) for abstract builder with @JsonProperty annotation.
  * For NullableOptional fields, generates two methods:
- * 1. Main method accepting NullableOptional<T> with @NonNull annotation
+ * 1. Main method accepting NullableOptional<T>
  * 2. Convenience method accepting T with @Nullable annotation
  * Returns (B)this.self() for type-safe chaining.
  */
@@ -1312,11 +1307,7 @@ private fun generateAbstractBuilderSetter(
             .addParameter(
                 ParameterSpec
                     .builder(fieldType, fieldName)
-                    .apply {
-                        if (isNullableOptional) {
-                            addAnnotation(nonNull())
-                        }
-                    }.build(),
+                    .build(),
             ).addStatement($$"this.$N = $N", fieldName, fieldName)
             .addStatement("return this.self()")
 
@@ -1426,43 +1417,20 @@ private fun generateBuilderClass(
         )
     }
 
-    // Add fields to builder (same as parent, but non-final)
+    // Add fields to builder (same as parent, but non-final). NullableOptional fields need the same
+    // notSet() default here as on the built type's own field, otherwise an unset builder field is
+    // null (violating NullableOptional's never-null contract) and NullAway flags it as uninitialized.
     fields.forEach { field ->
+        val isNullableOptional = field.type().toString().startsWith("io.github.pulpogato.common.NullableOptional<")
         val builderField =
             FieldSpec
                 .builder(field.type(), field.name(), Modifier.PRIVATE)
-                .build()
+                .apply {
+                    if (isNullableOptional) {
+                        initializer($$"$T.notSet()", Types.NULLABLE_OPTIONAL)
+                    }
+                }.build()
         builder.addField(builderField)
-    }
-
-    // Check for fields with @Builder.Default annotation (initializers)
-    val fieldsWithDefaults =
-        fields.filter { field ->
-            field.annotations().any { annotation ->
-                annotation.type().toString().contains("Builder.Default")
-            }
-        }
-
-    // Add constructor if there are default fields
-    if (fieldsWithDefaults.isNotEmpty()) {
-        val constructorBuilder =
-            MethodSpec
-                .constructorBuilder()
-
-        fieldsWithDefaults.forEach { field ->
-            // Try to extract initializer from annotations
-            // For NullableOptional.notSet(), we need to initialize it
-            val fieldType = field.type()
-            if (fieldType.toString().startsWith("io.github.pulpogato.common.NullableOptional")) {
-                constructorBuilder.addStatement(
-                    $$"this.$N = $T.notSet()",
-                    field.name(),
-                    ClassName.get("io.github.pulpogato.common", "NullableOptional"),
-                )
-            }
-        }
-
-        builder.addMethod(constructorBuilder.build())
     }
 
     // Add $fillValuesFrom method
@@ -1677,8 +1645,10 @@ private fun addFieldIfNew(
                     .addAnnotation(jsonIncludeNonEmpty())
                     .initializer($$"$T.notSet()", Types.NULLABLE_OPTIONAL)
         } else {
-            // Keep existing behavior for non-nullable or simple types
-            actualTypeName = typeName.withoutAnnotations()
+            // Every field here is reachable via a no-arg constructor or a builder that hasn't set
+            // it yet, so NullAway needs @Nullable on the type regardless of the OpenAPI `required` list.
+            val strippedType = typeName.withoutAnnotations()
+            actualTypeName = if (strippedType.isPrimitive) strippedType else strippedType.annotated(Annotations.nullable())
             builder =
                 FieldSpec
                     .builder(actualTypeName, fieldName, Modifier.PRIVATE)
@@ -1801,19 +1771,17 @@ private fun buildEnumConverter(enumClassName: ClassName): TypeSpec {
         .addSuperinterface(
             ParameterizedTypeName.get(
                 ClassName.get("org.springframework.core.convert.converter", "Converter"),
-                enumClassName.annotated(nonNull()),
-                ClassName.get(String::class.java).annotated(nonNull()),
+                enumClassName,
+                ClassName.get(String::class.java),
             ),
         ).addMethod(
             MethodSpec
                 .methodBuilder("convert")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override::class.java)
-                .addAnnotation(ClassName.get("org.jspecify.annotations", "NonNull"))
                 .addParameter(
                     ParameterSpec
                         .builder(enumClassName, "source")
-                        .addAnnotation(ClassName.get("org.jspecify.annotations", "NonNull"))
                         .build(),
                 ).returns(ClassName.get(String::class.java))
                 .addStatement("return source.getValue()")

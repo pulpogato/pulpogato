@@ -184,6 +184,16 @@ open class GenerateJavaTask : DefaultTask() {
         SchemasBuilder().buildSchemas(context, main, schemasPackage, enumConverters)
         EnumConvertersBuilder().buildEnumConverters(context, main, enumConverterPackageName, enumConverters)
 
+        // NullAway (via onlyNullMarked) only checks packages carrying this marker, so generated
+        // packages need their own package-info.java rather than relying on an AnnotatedPackages allowlist.
+        listOf(
+            "$packageNamePrefix.rest.api",
+            "$packageNamePrefix.rest.api.reactive",
+            "$packageNamePrefix.rest.api.restclient",
+            schemasPackage,
+            "$packageNamePrefix.rest.webhooks",
+        ).forEach { writeNullMarkedPackageInfo(main, it) }
+
         // Format generated Java code
         val javaFiles = collectJavaFiles(main)
         val testJavaFiles = collectJavaFiles(test)
@@ -207,6 +217,25 @@ open class GenerateJavaTask : DefaultTask() {
         if (!dir.mkdirs() && !dir.exists()) {
             error("Failed to create generated output directory: ${dir.absolutePath}")
         }
+    }
+
+    /**
+     * Writes a `package-info.java` marking the given generated package `@NullMarked`.
+     */
+    private fun writeNullMarkedPackageInfo(
+        mainDir: File,
+        packageName: String,
+    ) {
+        val packageDir = File(mainDir, packageName.replace('.', '/'))
+        packageDir.mkdirs()
+        File(packageDir, "package-info.java").writeText(
+            """
+            @NullMarked
+            package $packageName;
+
+            import org.jspecify.annotations.NullMarked;
+            """.trimIndent() + "\n",
+        )
     }
 
     /**

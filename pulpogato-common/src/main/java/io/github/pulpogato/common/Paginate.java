@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Flux;
@@ -44,12 +43,11 @@ public class Paginate {
      * @param totalPages   function that takes an API response and returns the total number of pages available
      * @return a stream containing all items from the fetched pages
      */
-    @NonNull
     public <T, R> Stream<T> from(
             final long maxPages,
             final LongFunction<@Nullable R> fetchPage,
-            final Function<@NonNull R, @NonNull Stream<T>> extractItems,
-            final ToIntFunction<@NonNull R> totalPages) {
+            final Function<R, Stream<T>> extractItems,
+            final ToIntFunction<R> totalPages) {
         return from(maxPages, fetchPage, extractItems, (page, response) -> page < totalPages.applyAsInt(response));
     }
 
@@ -70,7 +68,6 @@ public class Paginate {
      * @param fetchPage function that takes a page number (1-based) and returns the list of items for that page
      * @return a stream containing all items from the fetched pages
      */
-    @NonNull
     public <T> Stream<T> from(final long maxPages, final LongFunction<@Nullable List<T>> fetchPage) {
         return from(maxPages, fetchPage, (page, items) -> !items.isEmpty());
     }
@@ -91,12 +88,11 @@ public class Paginate {
      *                    whether another page should be fetched
      * @return a stream containing all items from the fetched pages
      */
-    @NonNull
     public <T, R> Stream<T> from(
             final long maxPages,
             final LongFunction<@Nullable R> fetchPage,
-            final Function<@NonNull R, @NonNull Stream<T>> extractItems,
-            final BiPredicate<Long, @NonNull R> hasNextPage) {
+            final Function<R, Stream<T>> extractItems,
+            final BiPredicate<Long, R> hasNextPage) {
         Iterator<R> iterator = new PageStreamIterator<>(maxPages, fetchPage, hasNextPage);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
                 .filter(Objects::nonNull)
@@ -115,11 +111,10 @@ public class Paginate {
      *                    -> items.size() == perPage} to stop as soon as a short page is seen
      * @return a stream containing all items from the fetched pages
      */
-    @NonNull
     public <T> Stream<T> from(
             final long maxPages,
             final LongFunction<@Nullable List<T>> fetchPage,
-            final BiPredicate<Long, @NonNull List<T>> hasNextPage) {
+            final BiPredicate<Long, List<T>> hasNextPage) {
         return from(maxPages, fetchPage, List::stream, hasNextPage);
     }
 
@@ -137,7 +132,6 @@ public class Paginate {
      * @param fetchPage function that takes a page number (1-based) and returns the response for that page
      * @return a stream containing all items from the fetched pages
      */
-    @NonNull
     public <T> Stream<T> fromLinkHeader(
             final long maxPages, final LongFunction<@Nullable ResponseEntity<List<T>>> fetchPage) {
         return from(
@@ -176,12 +170,11 @@ public class Paginate {
      * @param totalPages   function that takes an API response and returns the total number of pages available
      * @return a flux containing all items from the fetched pages
      */
-    @NonNull
     public <T, R> Flux<T> fromReactive(
             final long maxPages,
             final LongFunction<@Nullable Mono<R>> fetchPage,
-            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
-            final ToIntFunction<@NonNull R> totalPages) {
+            final Function<R, Flux<T>> extractItems,
+            final ToIntFunction<R> totalPages) {
         return fetchReactive(
                 maxPages, fetchPage, extractItems, (page, response) -> page < totalPages.applyAsInt(response));
     }
@@ -197,7 +190,6 @@ public class Paginate {
      * @param fetchPage function that takes a page number (1-based) and returns the list of items for that page
      * @return a flux containing all items from the fetched pages
      */
-    @NonNull
     public <T> Flux<T> fromReactive(final long maxPages, final LongFunction<@Nullable Mono<List<T>>> fetchPage) {
         return fromReactive(maxPages, fetchPage, (page, items) -> !items.isEmpty());
     }
@@ -218,12 +210,11 @@ public class Paginate {
      *                     whether another page should be fetched
      * @return a flux containing all items from the fetched pages
      */
-    @NonNull
     public <T, R> Flux<T> fromReactive(
             final long maxPages,
             final LongFunction<@Nullable Mono<R>> fetchPage,
-            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
-            final BiPredicate<Long, @NonNull R> hasNextPage) {
+            final Function<R, Flux<T>> extractItems,
+            final BiPredicate<Long, R> hasNextPage) {
         return fetchReactive(maxPages, fetchPage, extractItems, hasNextPage);
     }
 
@@ -239,11 +230,10 @@ public class Paginate {
      *                    -> items.size() == perPage} to stop as soon as a short page is seen
      * @return a flux containing all items from the fetched pages
      */
-    @NonNull
     public <T> Flux<T> fromReactive(
             final long maxPages,
             final LongFunction<@Nullable Mono<List<T>>> fetchPage,
-            final BiPredicate<Long, @NonNull List<T>> hasNextPage) {
+            final BiPredicate<Long, List<T>> hasNextPage) {
         return fetchReactive(maxPages, fetchPage, Flux::fromIterable, hasNextPage);
     }
 
@@ -260,7 +250,6 @@ public class Paginate {
      * @param fetchPage function that takes a page number (1-based) and returns the response for that page
      * @return a flux containing all items from the fetched pages
      */
-    @NonNull
     public <T> Flux<T> fromLinkHeaderReactive(
             final long maxPages, final LongFunction<@Nullable Mono<ResponseEntity<List<T>>>> fetchPage) {
         return fetchReactive(
@@ -295,8 +284,8 @@ public class Paginate {
     private <T, R> Flux<T> fetchReactive(
             final long maxPages,
             final LongFunction<@Nullable Mono<R>> fetchPage,
-            final Function<@NonNull R, @NonNull Flux<T>> extractItems,
-            final BiPredicate<Long, @NonNull R> hasMorePages) {
+            final Function<R, Flux<T>> extractItems,
+            final BiPredicate<Long, R> hasMorePages) {
         return fetchPageOrEmpty(fetchPage, 1L)
                 .map(response -> new PageResult<>(1L, response))
                 .expand(current -> {
@@ -320,7 +309,7 @@ public class Paginate {
     private static class PageStreamIterator<R> implements Iterator<R> {
         private final long maxPages;
         private final LongFunction<@Nullable R> fetchPage;
-        private final BiPredicate<Long, @NonNull R> hasNextPage;
+        private final BiPredicate<Long, R> hasNextPage;
         private long page = 1;
         private boolean done = false;
 
@@ -330,6 +319,7 @@ public class Paginate {
         }
 
         @Override
+        @Nullable
         public R next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();

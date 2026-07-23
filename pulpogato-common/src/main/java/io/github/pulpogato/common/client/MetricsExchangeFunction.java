@@ -6,7 +6,7 @@ import java.time.Clock;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -67,8 +67,7 @@ public class MetricsExchangeFunction implements ExchangeFilterFunction {
             new RateLimitMetricsRecorder(registry, clock, prefix, defaultTags);
 
     @Override
-    @NonNull
-    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         return next.exchange(request).doOnNext(this::recordRateLimitMetrics);
     }
 
@@ -76,9 +75,10 @@ public class MetricsExchangeFunction implements ExchangeFilterFunction {
         getRecorder().recordMetrics(headerName -> getFirstHeader(response, headerName));
     }
 
+    @Nullable
     private String getFirstHeader(ClientResponse response, String headerName) {
         List<String> headerValues = response.headers().header(headerName);
-        if (headerValues != null && !headerValues.isEmpty()) {
+        if (!headerValues.isEmpty()) {
             return headerValues.getFirst();
         }
         return null;

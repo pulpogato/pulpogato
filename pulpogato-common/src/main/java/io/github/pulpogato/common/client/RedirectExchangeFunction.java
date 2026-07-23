@@ -1,7 +1,6 @@
 package io.github.pulpogato.common.client;
 
 import java.net.URI;
-import org.jspecify.annotations.NonNull;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -18,8 +17,7 @@ public class RedirectExchangeFunction implements ExchangeFilterFunction {
     private static final int MAX_REDIRECTS = 5;
 
     @Override
-    @NonNull
-    public Mono<ClientResponse> filter(@NonNull ClientRequest request, @NonNull ExchangeFunction next) {
+    public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         return exchange(request, next, MAX_REDIRECTS);
     }
 

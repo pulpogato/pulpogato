@@ -1,6 +1,7 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.NullableOptional;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.BeanProperty;
@@ -22,6 +23,7 @@ public class NullableOptionalJackson3Deserializer extends StdDeserializer<Nullab
     /**
      * The type of the value contained in the NullableOptional.
      */
+    @Nullable
     private final JavaType valueType;
 
     /**
@@ -32,13 +34,13 @@ public class NullableOptionalJackson3Deserializer extends StdDeserializer<Nullab
         this.valueType = null;
     }
 
-    private NullableOptionalJackson3Deserializer(JavaType valueType) {
+    private NullableOptionalJackson3Deserializer(@Nullable JavaType valueType) {
         super(NullableOptional.class);
         this.valueType = valueType;
     }
 
     @Override
-    public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+    public ValueDeserializer<?> createContextual(DeserializationContext ctxt, @Nullable BeanProperty property) {
         JavaType type = property != null ? property.getType().containedType(0) : null;
         return new NullableOptionalJackson3Deserializer(type);
     }
