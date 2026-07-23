@@ -11,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.pulpogato.common.jackson.Jackson2OneOfDeserializer;
 import io.github.pulpogato.common.jackson.Jackson3OneOfDeserializer;
 import java.util.List;
+import lombok.Data;
 import org.junit.jupiter.api.Test;
 
 class NullableOptionalTest {
@@ -246,8 +247,9 @@ class NullableOptionalTest {
         }
     }
 
+    @Data
     static class ColorWrapper {
-        public NullableOptional<Color> color = NullableOptional.notSet();
+        private NullableOptional<Color> color = NullableOptional.notSet();
     }
 
     @Test
