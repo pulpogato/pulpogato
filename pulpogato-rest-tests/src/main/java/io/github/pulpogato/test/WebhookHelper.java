@@ -75,10 +75,10 @@ public class WebhookHelper {
         return false;
     }
 
-    public static void testWebhook(String hookname, String filename, MockMvc mvc) throws Exception {
+    public static void testWebhook(String webhookName, String filename, MockMvc mvc) throws Exception {
         final MvcResult mvcResult = mvc.perform(WebhookHelper.buildRequest(filename))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.webhookName").value(hookname))
+                .andExpect(jsonPath("$.webhookName").value(webhookName))
                 .andReturn();
 
         final TestWebhookResponse response =
