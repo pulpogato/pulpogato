@@ -386,7 +386,7 @@ include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/Documen
 ----
 <1> Custom function to generate cache keys from requests
 <2> Maximum response size to cache (default: 2MB)
-<3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your usecase.
+<3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your use case.
 
 === Basic Caching Setup (RestClient)
 
@@ -407,7 +407,7 @@ include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/Documen
 ----
 <1> Custom function to generate cache keys from requests
 <2> Maximum response size to cache (default: 2MB)
-<3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your usecase.
+<3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your use case.
 
 == Rate Limit Metrics
 
