@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,35 +38,22 @@ class JwtClientHttpRequestInterceptorTest {
         return new TestHttpRequest(method, URI.create(uri));
     }
 
+    @RequiredArgsConstructor
     private static final class TestHttpRequest implements HttpRequest {
+        @Getter
         private final HttpMethod method;
-        private final URI uri;
+
+        @Getter
         private final HttpHeaders headers = new HttpHeaders();
+
+        @Getter
         private final java.util.Map<String, Object> attributes = new java.util.HashMap<>();
 
-        private TestHttpRequest(HttpMethod method, URI uri) {
-            this.method = method;
-            this.uri = uri;
-        }
-
-        @Override
-        public HttpMethod getMethod() {
-            return method;
-        }
+        private final URI uri;
 
         @Override
         public URI getURI() {
             return uri;
-        }
-
-        @Override
-        public HttpHeaders getHeaders() {
-            return headers;
-        }
-
-        @Override
-        public java.util.Map<String, Object> getAttributes() {
-            return attributes;
         }
     }
 
