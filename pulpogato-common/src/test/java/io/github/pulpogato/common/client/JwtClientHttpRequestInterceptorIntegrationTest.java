@@ -14,7 +14,7 @@ import org.springframework.web.client.RestClient;
  * By default, this test will be skipped unless the following environment variables are set:</p>
  * <ul>
  *     <li><code>GITHUB_BASE_URL</code>: The base URL for the
- *     GitHub API (e.g., <code>https://api.github.com</code> or a GitHub Enterprise URL).</li>
+ *     GitHub API (e.g., {@code https://api.github.com} or a GitHub Enterprise URL).</li>
  *     <li><code>GITHUB_APP_ID</code>: The numeric ID of the GitHub App to authenticate as.</li>
  *     <li><code>GITHUB_APP_PRIVATE_KEY_PATH</code>: The file path to the PEM-encoded private key for the GitHub App.</li>
  * </ul>
