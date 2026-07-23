@@ -139,7 +139,6 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testListPublicEventsForUser() {
         var api = new RestClients(restClient).getActivityApi();
-        // Using octocat as a well-known GitHub user
         var response = api.listPublicEventsForUser("rahulsom", 5L, 1L);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
