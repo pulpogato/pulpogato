@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,16 +40,12 @@ class JwtClientHttpRequestInterceptorTest {
     }
 
     @RequiredArgsConstructor
+    @Getter
+    @NullMarked
     private static final class TestHttpRequest implements HttpRequest {
-        @Getter
         private final HttpMethod method;
-
-        @Getter
         private final HttpHeaders headers = new HttpHeaders();
-
-        @Getter
         private final java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-
         private final URI uri;
 
         @Override

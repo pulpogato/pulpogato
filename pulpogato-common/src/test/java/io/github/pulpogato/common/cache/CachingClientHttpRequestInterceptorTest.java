@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -103,16 +104,12 @@ class CachingClientHttpRequestInterceptorTest {
     }
 
     @RequiredArgsConstructor
+    @NullMarked
+    @Getter
     private static final class TestHttpRequest implements HttpRequest {
-        @Getter
         private final HttpMethod method;
-
-        @Getter
         private final HttpHeaders headers = new HttpHeaders();
-
-        @Getter
         private final Map<String, Object> attributes = new HashMap<>();
-
         private final URI uri;
 
         @Override
@@ -122,16 +119,12 @@ class CachingClientHttpRequestInterceptorTest {
     }
 
     @RequiredArgsConstructor
+    @NullMarked
+    @Getter
     private static final class TestClientHttpResponse implements ClientHttpResponse {
         private final HttpStatusCode statusCode;
         private final HttpHeaders headers;
         private final byte[] body;
-        private boolean closed;
-
-        @Override
-        public HttpStatusCode getStatusCode() {
-            return statusCode;
-        }
 
         @Override
         public String getStatusText() {
@@ -139,18 +132,11 @@ class CachingClientHttpRequestInterceptorTest {
         }
 
         @Override
-        public void close() {
-            closed = true;
-        }
+        public void close() {}
 
         @Override
         public InputStream getBody() {
             return new ByteArrayInputStream(body);
-        }
-
-        @Override
-        public HttpHeaders getHeaders() {
-            return headers;
         }
     }
 
