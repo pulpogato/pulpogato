@@ -49,10 +49,10 @@ class Jackson3OneOfDeserializerTest {
         var om = new ObjectMapper();
         var result = om.readValue(json, Wrapper.class);
         assertThat(result.shape).isInstanceOf(expectedType);
-        if (result.shape instanceof Circle c) {
-            assertThat(c.radius()).isEqualTo(radius);
-        } else if (result.shape instanceof Square s) {
-            assertThat(s.side()).isEqualTo(side);
+        if (result.shape instanceof Circle(double radius1)) {
+            assertThat(radius1).isEqualTo(radius);
+        } else if (result.shape instanceof Square(double side1)) {
+            assertThat(side1).isEqualTo(side);
         }
     }
 
