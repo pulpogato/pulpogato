@@ -224,7 +224,7 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
 
     private static HttpHeaders headersWith(Map<String, List<String>> source, String extraName, String extraValue) {
         var headers = new HttpHeaders();
-        source.forEach((name, values) -> headers.addAll(name, values));
+        source.forEach(headers::addAll);
         headers.set(extraName, extraValue);
         return headers;
     }
