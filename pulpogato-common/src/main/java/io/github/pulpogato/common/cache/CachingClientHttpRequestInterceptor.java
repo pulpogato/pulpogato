@@ -189,10 +189,9 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
 
         var statusCode = response.getStatusCode();
         byte[] responseBody;
-        try (InputStream is = response.getBody()) {
+        try (response;
+                InputStream is = response.getBody()) {
             responseBody = is.readAllBytes();
-        } finally {
-            response.close();
         }
 
         // If the response is too large, skip caching but still return the data
