@@ -100,10 +100,13 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(commits).hasSize(10);
         var commit = commits.getFirst();
         assertThat(commit.getSha()).isEqualTo("2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
+        assertThat(commit.getCommit()).isNotNull();
         assertThat(commit.getCommit().getMessage())
                 .isEqualTo(
                         "Merge pull request #206 from pulpogato/test-listOrgApps\n\ntest: Add test for listAppInstallations in an org");
+        assertThat(commit.getCommitter().getValue().getSimpleUser()).isNotNull();
         assertThat(commit.getCommitter().getValue().getSimpleUser().getLogin()).isEqualTo("web-flow");
+        assertThat(commit.getAuthor().getValue().getSimpleUser()).isNotNull();
         assertThat(commit.getAuthor().getValue().getSimpleUser().getLogin()).isEqualTo("rahulsom");
     }
 
@@ -178,6 +181,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(body.getType()).isEqualTo("file");
         assertThat(body.getPath()).isEqualTo("README.adoc");
 
+        assertThat(body.getContent()).isNotNull();
         var content = body.getContent().replace("\n", "");
         assertThat(content).isNotNull();
         var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
@@ -191,10 +195,12 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
+        assertThat(body.getContentFile()).isNotNull();
         assertThat(body.getContentFile().getName()).isEqualTo("README.adoc");
         assertThat(body.getContentFile().getType()).isEqualTo(ContentFile.Type.FILE);
         assertThat(body.getContentFile().getPath()).isEqualTo("README.adoc");
 
+        assertThat(body.getContentFile().getContent()).isNotNull();
         var content = body.getContentFile().getContent().replace("\n", "");
         assertThat(content).isNotNull();
         var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
@@ -239,6 +245,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("pulpogato");
         assertThat(body.getFullName()).isEqualTo("pulpogato/pulpogato");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
     }
 
@@ -251,6 +258,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("rename-demo");
         assertThat(body.getFullName()).isEqualTo("pulpogato/rename-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
     }
 
@@ -272,6 +280,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
+        assertThat(body.getRequiredStatusChecks()).isNotNull();
         assertThat(body.getRequiredStatusChecks().getContexts()).containsExactly("jenkins/pulpogato");
     }
 
@@ -290,6 +299,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("create-demo");
         assertThat(body.getFullName()).isEqualTo("pulpogato/create-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
     }
 
@@ -308,6 +318,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("example");
     }
 
@@ -373,6 +384,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("example");
         assertThat(body.getTypedCustomProperties().getCustomBooleanProp()).isFalse();
     }

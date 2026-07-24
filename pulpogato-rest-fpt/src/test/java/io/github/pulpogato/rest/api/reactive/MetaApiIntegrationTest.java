@@ -14,6 +14,7 @@ class MetaApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getMetaApi();
         var response = api.root().block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(Root.class);
 
@@ -28,6 +29,7 @@ class MetaApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getMetaApi();
         var response = api.get().block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ApiOverview.class);
 

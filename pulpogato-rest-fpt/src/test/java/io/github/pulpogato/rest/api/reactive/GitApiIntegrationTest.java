@@ -59,6 +59,7 @@ public class GitApiIntegrationTest extends BaseApiIntegrationTest {
                                 .build())
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getSha()).isNotNull();

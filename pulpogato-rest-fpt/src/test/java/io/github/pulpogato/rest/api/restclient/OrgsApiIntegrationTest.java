@@ -19,6 +19,7 @@ class OrgsApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(installations.getInstallations()).hasSize(1);
         var installation = installations.getInstallations().getFirst();
         assertThat(installation.getAccount()).isNotNull();
+        assertThat(installation.getAccount().getValue().getSimpleUser()).isNotNull();
         assertThat(installation.getAccount().getValue().getSimpleUser().getLogin())
                 .isEqualTo("pulpogato");
         assertThat(installation.getAppSlug()).isEqualTo("renovate");
@@ -32,8 +33,10 @@ class OrgsApiIntegrationTest extends BaseApiIntegrationTest {
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getInstallations()).isNotNull();
 
         var installation = response.getBody().getInstallations().getFirst();
+        assertThat(installation.getPermissions()).isNotNull();
         assertThat(installation.getPermissions().getOrganizationCopilotSeatManagement())
                 .isEqualTo(AppPermissions.OrganizationCopilotSeatManagement.READ);
     }

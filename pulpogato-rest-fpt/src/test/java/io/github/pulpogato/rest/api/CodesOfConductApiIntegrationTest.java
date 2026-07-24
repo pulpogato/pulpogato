@@ -23,7 +23,7 @@ class CodesOfConductApiIntegrationTest extends BaseApiIntegrationTest {
         var firstCode = codesOfConduct.getFirst();
         assertThat(firstCode.getKey()).isEqualTo("django");
         assertThat(firstCode.getName()).isEqualTo("Django");
-        assertThat(firstCode.getUrl().toString()).isEqualTo("https://api.github.com/codes_of_conduct/django");
+        assertThat(firstCode.getUrl()).hasToString("https://api.github.com/codes_of_conduct/django");
 
         // Check for common codes of conduct
         var codeKeys = codesOfConduct.stream().map(CodeOfConduct::getKey).toList();
@@ -43,8 +43,7 @@ class CodesOfConductApiIntegrationTest extends BaseApiIntegrationTest {
         var codeOfConduct = response.getBody();
         assertThat(codeOfConduct.getKey()).isEqualTo("contributor_covenant");
         assertThat(codeOfConduct.getName()).contains("Contributor Covenant");
-        assertThat(codeOfConduct.getUrl().toString())
-                .isEqualTo("https://api.github.com/codes_of_conduct/contributor_covenant");
+        assertThat(codeOfConduct.getUrl()).hasToString("https://api.github.com/codes_of_conduct/contributor_covenant");
         assertThat(codeOfConduct.getBody()).isNotNull().contains("Our Pledge").contains("community");
     }
 
@@ -59,8 +58,8 @@ class CodesOfConductApiIntegrationTest extends BaseApiIntegrationTest {
         var codeOfConduct = response.getBody();
         assertThat(codeOfConduct.getKey()).isEqualTo("citizen_code_of_conduct");
         assertThat(codeOfConduct.getName()).contains("Citizen Code");
-        assertThat(codeOfConduct.getUrl().toString())
-                .isEqualTo("https://api.github.com/codes_of_conduct/citizen_code_of_conduct");
+        assertThat(codeOfConduct.getUrl())
+                .hasToString("https://api.github.com/codes_of_conduct/citizen_code_of_conduct");
         assertThat(codeOfConduct.getBody()).isNotNull().isNotEmpty();
     }
 }

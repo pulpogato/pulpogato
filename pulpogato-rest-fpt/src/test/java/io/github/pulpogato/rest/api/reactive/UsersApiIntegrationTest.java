@@ -25,6 +25,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         var responseEntityMono = api.getAuthenticated(); // <4>
         var authenticated = responseEntityMono.block(); // <5>
         // end::getAuthenticatedPublic[]
+        assertThat(authenticated).isNotNull();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PublicUser.class);
         // tag::getBody[]
@@ -45,6 +46,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetAuthenticatedPrivate() {
         var api = new RestClients(webClient).getUsersApi();
         var authenticated = api.getAuthenticated().block();
+        assertThat(authenticated).isNotNull();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PrivateUser.class);
         var body = authenticated.getBody();
@@ -65,6 +67,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
                 .location("San Francisco Bay Area")
                 .build();
         var authenticated = api.updateAuthenticated(update).block();
+        assertThat(authenticated).isNotNull();
         assertThat(authenticated.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(authenticated.getBody()).isNotNull().isInstanceOf(PrivateUser.class);
         var body = authenticated.getBody();
@@ -77,6 +80,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListBlockedEmpty() {
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L).block();
+        assertThat(blocked).isNotNull();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNotNull().isInstanceOf(List.class);
         var blockedBody = blocked.getBody();
@@ -87,6 +91,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListBlockedValid() {
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.listBlockedByAuthenticatedUser(5L, 0L).block();
+        assertThat(blocked).isNotNull();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNotNull().isInstanceOf(List.class);
         var blockedBody = blocked.getBody();
@@ -100,6 +105,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testCheckBlocked() {
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.checkBlocked("some-blocked-user").block();
+        assertThat(blocked).isNotNull();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNull();
     }
@@ -139,6 +145,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.block("gooduser").block();
 
+        assertThat(blocked).isNotNull();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNull();
     }
@@ -148,6 +155,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getUsersApi();
         var blocked = api.unblock("gooduser").block();
 
+        assertThat(blocked).isNotNull();
         assertThat(blocked.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(blocked.getBody()).isNull();
     }
@@ -156,6 +164,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListFollowers() {
         var api = new RestClients(webClient).getUsersApi();
         var followers = api.listFollowersForAuthenticatedUser(5L, 0L).block();
+        assertThat(followers).isNotNull();
         assertThat(followers.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(followers.getBody()).isNotNull().isInstanceOf(List.class);
         var followersBody = followers.getBody();
@@ -169,6 +178,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListGpgKeysForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
         var gpgKeys = api.listGpgKeysForAuthenticatedUser(5L, 0L).block();
+        assertThat(gpgKeys).isNotNull();
         assertThat(gpgKeys.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(gpgKeys.getBody()).isNotNull().isInstanceOf(List.class);
         var gpgKeysBody = gpgKeys.getBody();
@@ -183,6 +193,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetGpgKeyForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
         var gpgKey = api.getGpgKeyForAuthenticatedUser(175109L).block();
+        assertThat(gpgKey).isNotNull();
         assertThat(gpgKey.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(gpgKey.getBody()).isNotNull();
         var gpgKeyBody = gpgKey.getBody();
@@ -195,6 +206,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListPublicEmailsForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
         var response = api.listPublicEmailsForAuthenticatedUser(5L, 0L).block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
         var emails = response.getBody();
@@ -217,6 +229,7 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testListEmailsForAuthenticatedUser() {
         var api = new RestClients(webClient).getUsersApi();
         var response = api.listEmailsForAuthenticatedUser(5L, 0L).block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
         var emails = response.getBody();

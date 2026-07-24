@@ -15,6 +15,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getLicensesApi();
         var response = api.getAllCommonlyUsed(null, null, null).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -39,6 +40,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getLicensesApi();
         var response = api.get("mit").block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(License.class);
 
@@ -59,6 +61,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getLicensesApi();
         var response = api.get("apache-2.0").block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(License.class);
 
@@ -74,6 +77,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getLicensesApi();
         var response = api.getAllCommonlyUsed(true, null, null).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 

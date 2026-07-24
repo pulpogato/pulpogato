@@ -19,6 +19,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getActionsApi();
         var response = api.getActionsCacheUsage("pulpogato", "pulpogato").block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheUsageByRepository.class);
 
@@ -34,6 +35,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.getActionsCacheList("pulpogato", "pulpogato", null, null, null, null, null, null)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheList.class);
 
@@ -48,6 +50,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.getActionsCacheList("pulpogato", "pulpogato", 10L, 0L, null, null, null, null)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(ActionsCacheList.class);
 
@@ -75,6 +78,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
                                 .build())
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         var body = response.getBody();
         assertThat(body).isNull();
@@ -97,6 +101,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
                                 .build())
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         var body = response.getBody();
         assertThat(body).isNotNull();
@@ -127,6 +132,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
                         null,
                         null)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();
@@ -159,6 +165,7 @@ class ActionsApiIntegrationTest extends BaseApiIntegrationTest {
                         null,
                         null)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getBody())
                 .as("Workflow runs response should not be null")
                 .isNotNull();

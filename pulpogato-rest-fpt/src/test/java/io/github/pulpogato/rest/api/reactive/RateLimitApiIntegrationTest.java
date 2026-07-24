@@ -13,6 +13,7 @@ class RateLimitApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getRateLimitApi();
         var response = api.get().block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(RateLimitOverview.class);
 
@@ -20,26 +21,31 @@ class RateLimitApiIntegrationTest extends BaseApiIntegrationTest {
 
         // Verify resources structure
         var resources = rateLimitOverview.getResources();
+        assertThat(resources).isNotNull();
 
         // Verify core rate limit information
+        assertThat(resources.getCore()).isNotNull();
         assertThat(resources.getCore().getLimit()).isEqualTo(5000);
         assertThat(resources.getCore().getRemaining()).isEqualTo(4992);
         assertThat(resources.getCore().getReset()).isEqualTo(1749014024);
         assertThat(resources.getCore().getUsed()).isEqualTo(8);
 
         // Verify search rate limit information
+        assertThat(resources.getSearch()).isNotNull();
         assertThat(resources.getSearch().getLimit()).isEqualTo(30);
         assertThat(resources.getSearch().getRemaining()).isEqualTo(30);
         assertThat(resources.getSearch().getReset()).isEqualTo(1749011183);
         assertThat(resources.getSearch().getUsed()).isZero();
 
         // Verify GraphQL rate limit information
+        assertThat(resources.getGraphql()).isNotNull();
         assertThat(resources.getGraphql().getLimit()).isEqualTo(5000);
         assertThat(resources.getGraphql().getRemaining()).isEqualTo(5000);
         assertThat(resources.getGraphql().getReset()).isEqualTo(1749014723);
         assertThat(resources.getGraphql().getUsed()).isZero();
 
         // Verify the legacy rate object
+        assertThat(rateLimitOverview.getRate()).isNotNull();
         assertThat(rateLimitOverview.getRate().getLimit()).isEqualTo(5000);
         assertThat(rateLimitOverview.getRate().getRemaining()).isEqualTo(4992);
         assertThat(rateLimitOverview.getRate().getReset()).isEqualTo(1749014024);
