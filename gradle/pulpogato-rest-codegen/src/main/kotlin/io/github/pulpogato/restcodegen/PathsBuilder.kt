@@ -11,7 +11,6 @@ import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
-import io.github.pulpogato.restcodegen.Annotations.nonNull
 import io.github.pulpogato.restcodegen.Annotations.nullable
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
@@ -729,11 +728,10 @@ class PathsBuilder {
                 if (reactiveReturnTypes) {
                     ParameterizedTypeName.get(
                         ClassName.get("reactor.core.publisher", "Mono"),
-                        ParameterizedTypeName
-                            .get(
-                                ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                                nullableBodyType,
-                            ).annotated(nonNull()),
+                        ParameterizedTypeName.get(
+                            ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
+                            nullableBodyType,
+                        ),
                     )
                 } else {
                     ParameterizedTypeName.get(
@@ -786,11 +784,10 @@ class PathsBuilder {
                 if (reactiveReturnTypes) {
                     ParameterizedTypeName.get(
                         ClassName.get("reactor.core.publisher", "Mono"),
-                        ParameterizedTypeName
-                            .get(
-                                ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                                ClassName.get("java.lang", "Void"),
-                            ).annotated(nonNull()),
+                        ParameterizedTypeName.get(
+                            ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
+                            ClassName.get("java.lang", "Void"),
+                        ),
                     )
                 } else {
                     ParameterizedTypeName.get(

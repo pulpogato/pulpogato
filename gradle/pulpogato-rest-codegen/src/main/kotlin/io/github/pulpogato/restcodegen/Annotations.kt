@@ -202,11 +202,6 @@ object Annotations {
             .builder(ClassName.get("org.jspecify.annotations", "Nullable"))
             .build()
 
-    fun nonNull(): AnnotationSpec =
-        AnnotationSpec
-            .builder(ClassName.get("org.jspecify.annotations", "NonNull"))
-            .build()
-
     fun deprecated(since: String): AnnotationSpec =
         AnnotationSpec
             .builder(ClassName.get("java.lang", "Deprecated"))
