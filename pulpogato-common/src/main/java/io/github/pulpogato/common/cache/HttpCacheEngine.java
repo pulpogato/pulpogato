@@ -154,7 +154,7 @@ class HttpCacheEngine {
 
     private static @Nullable String getFirst(Map<String, List<String>> headers, String name) {
         var values = headers.get(name);
-        return values != null && !values.isEmpty() ? values.get(0) : null;
+        return values != null && !values.isEmpty() ? values.getFirst() : null;
     }
 
     static long parseMaxAge(@Nullable String cacheControl) {
