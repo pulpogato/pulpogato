@@ -27,7 +27,7 @@ import org.springframework.web.reactive.function.client.WebClient;
         })
 @Slf4j
 public class BaseIntegrationTest {
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SpringJavaInjectionPointsAutowiringInspection"})
     @Autowired
     private WebApplicationContext webApplicationContext;
 
