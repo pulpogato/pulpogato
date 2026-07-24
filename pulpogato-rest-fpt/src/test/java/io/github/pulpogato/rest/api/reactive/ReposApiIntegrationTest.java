@@ -34,6 +34,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     void testListTags() {
         var api = new RestClients(webClient).getReposApi();
         var response = api.listTags("pulpogato", "pulpogato", 100L, 1L).block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
         var tags = response.getBody();
@@ -47,16 +48,20 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getReposApi();
         var response = api.listCommits("pulpogato", "pulpogato", null, null, null, null, null, null, 10L, 1L)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
         var commits = response.getBody();
         assertThat(commits).hasSize(10);
         var commit = commits.getFirst();
         assertThat(commit.getSha()).isEqualTo("2667e9ae0adcdbf378fe6273658b57f4e5d24a39");
+        assertThat(commit.getCommit()).isNotNull();
         assertThat(commit.getCommit().getMessage())
                 .isEqualTo(
                         "Merge pull request #206 from pulpogato/test-listOrgApps\n\ntest: Add test for listAppInstallations in an org");
+        assertThat(commit.getCommitter().getValue().getSimpleUser()).isNotNull();
         assertThat(commit.getCommitter().getValue().getSimpleUser().getLogin()).isEqualTo("web-flow");
+        assertThat(commit.getAuthor().getValue().getSimpleUser()).isNotNull();
         assertThat(commit.getAuthor().getValue().getSimpleUser().getLogin()).isEqualTo("rahulsom");
     }
 
@@ -65,6 +70,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getReposApi();
         var response =
                 api.getCommit("pulpogato", "pulpogato", 1L, 1L, COMMIT_SHA).block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var commit = response.getBody();
@@ -77,6 +83,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.getCommitDiff("pulpogato", "pulpogato", null, null, COMMIT_SHA)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
         assertThat(response.getBody()).contains("diff --git ").contains("@@");
@@ -88,6 +95,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.getCommitPatch("pulpogato", "pulpogato", null, null, COMMIT_SHA)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
         assertThat(response.getBody()).contains("diff --git ").contains("index ");
@@ -99,6 +107,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.getCommitSha("pulpogato", "pulpogato", null, null, COMMIT_SHA)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().trim()).isEqualTo(COMMIT_SHA);
@@ -110,6 +119,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.compareCommitsDiff("pulpogato", "pulpogato", null, null, BASEHEAD)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
         assertThat(response.getBody()).contains("diff --git ").contains("@@");
@@ -121,6 +131,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.compareCommitsPatch("pulpogato", "pulpogato", null, null, BASEHEAD)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
         assertThat(response.getBody()).contains("diff --git ").contains("index ");
@@ -131,6 +142,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getReposApi();
         var response = api.getContentObject("pulpogato", "pulpogato", "README.adoc", null)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
@@ -138,6 +150,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(body.getType()).isEqualTo("file");
         assertThat(body.getPath()).isEqualTo("README.adoc");
 
+        assertThat(body.getContent()).isNotNull();
         var content = body.getContent().replace("\n", "");
         assertThat(content).isNotNull();
         var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
@@ -149,13 +162,16 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getReposApi();
         var response =
                 api.getContent("pulpogato", "pulpogato", "README.adoc", null).block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
+        assertThat(body.getContentFile()).isNotNull();
         assertThat(body.getContentFile().getName()).isEqualTo("README.adoc");
         assertThat(body.getContentFile().getType()).isEqualTo(ContentFile.Type.FILE);
         assertThat(body.getContentFile().getPath()).isEqualTo("README.adoc");
 
+        assertThat(body.getContentFile().getContent()).isNotNull();
         var content = body.getContentFile().getContent().replace("\n", "");
         assertThat(content).isNotNull();
         var decoded = new String(Base64.getDecoder().decode(content), StandardCharsets.UTF_8);
@@ -166,11 +182,13 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     void testGet() {
         var api = new RestClients(webClient).getReposApi();
         var response = api.get("pulpogato", "pulpogato").block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("pulpogato");
         assertThat(body.getFullName()).isEqualTo("pulpogato/pulpogato");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
     }
 
@@ -178,6 +196,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetBranch() {
         var api = new RestClients(webClient).getReposApi();
         var response = api.getBranch("pulpogato", "pulpogato", "main").block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
@@ -189,9 +208,11 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetBranchProtection() {
         var api = new RestClients(webClient).getReposApi();
         var response = api.getBranchProtection("pulpogato", "pulpogato", "main").block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
+        assertThat(body.getRequiredStatusChecks()).isNotNull();
         assertThat(body.getRequiredStatusChecks().getContexts()).containsExactly("jenkins/pulpogato");
     }
 
@@ -202,7 +223,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var branches = new Paginate()
                 .fromReactive(25, page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
-                        .map(ResponseEntity::getBody))
+                        .mapNotNull(ResponseEntity::getBody))
                 .collectList()
                 .block();
 
@@ -229,7 +250,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var branches = new Paginate()
                 .fromReactive(1, page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
-                        .map(ResponseEntity::getBody))
+                        .mapNotNull(ResponseEntity::getBody))
                 .collectList()
                 .block();
 
@@ -242,7 +263,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         var branches = new Paginate()
                 .fromReactive(10, page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
-                        .map(ResponseEntity::getBody))
+                        .mapNotNull(ResponseEntity::getBody))
                 .collectList()
                 .block();
 
@@ -260,11 +281,13 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                                 .homepage("https://github.com/pulpogato/create-demo")
                                 .build())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("create-demo");
         assertThat(body.getFullName()).isEqualTo("pulpogato/create-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("pulpogato");
     }
 
@@ -279,11 +302,13 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                                 .customProperties(Map.of("custom_boolean_prop", "false"))
                                 .build())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("example");
     }
 
@@ -342,6 +367,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                                 .build()
                                 .normalize())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(FullRepository.class);
 
@@ -350,6 +376,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
         assertThat(body.getName()).isEqualTo("rsomasunderam-custom-props-demo");
         assertThat(body.getFullName()).isEqualTo("example/rsomasunderam-custom-props-demo");
+        assertThat(body.getOwner()).isNotNull();
         assertThat(body.getOwner().getLogin()).isEqualTo("example");
         assertThat(body.getTypedCustomProperties().getCustomBooleanProp()).isFalse();
     }
@@ -370,6 +397,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues(
                         "corp", "rsomasunderam-test", requestBody)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
@@ -394,6 +422,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues(
                         "corp", "rsomasunderam-test", requestBody)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
@@ -413,6 +442,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues(
                         "corp", "rsomasunderam-test", requestBody)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
@@ -426,6 +456,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var response = api.customPropertiesForReposCreateOrUpdateRepositoryValues(
                         "corp", "rsomasunderam-test", requestBody)
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
@@ -437,6 +468,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                         "create-demo",
                         ReposApi.UpdateRequestBody.builder().archived(true).build())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
@@ -452,6 +484,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                         "create-demo",
                         ReposApi.UpdateRequestBody.builder().archived(false).build())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
@@ -482,6 +515,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                                 .securityAndAnalysis(NullableOptional.of(requestedSecurityAndAnalysis))
                                 .build())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
@@ -507,6 +541,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
                                 .securityAndAnalysis(NullableOptional.ofNull())
                                 .build())
                 .block();
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         var body = response.getBody();

@@ -14,6 +14,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getActivityApi();
         var response = api.listPublicEvents(10L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -23,7 +24,9 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50486820386");
         assertThat(firstEvent.getType()).isEqualTo("PushEvent");
+        assertThat(firstEvent.getActor()).isNotNull();
         assertThat(firstEvent.getActor().getLogin()).isEqualTo("james2037");
+        assertThat(firstEvent.getRepo()).isNotNull();
         assertThat(firstEvent.getRepo().getName()).isEqualTo("james2037/mcp-php-server");
         assertThat(firstEvent.getCreatedAt()).isEqualTo("2025-06-04T04:24:53Z");
     }
@@ -33,6 +36,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getActivityApi();
         var response = api.getFeeds().block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(Feed.class);
 
@@ -59,6 +63,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         // Using GitHub's own organization as an example
         var response = api.listPublicOrgEvents("github", 5L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -68,7 +73,9 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50473417741");
         assertThat(firstEvent.getType()).isEqualTo("IssueCommentEvent");
+        assertThat(firstEvent.getActor()).isNotNull();
         assertThat(firstEvent.getActor().getLogin()).isEqualTo("Sharra-writes");
+        assertThat(firstEvent.getRepo()).isNotNull();
         assertThat(firstEvent.getRepo().getName()).isEqualTo("github/docs");
         assertThat(firstEvent.getCreatedAt()).isNotNull();
 
@@ -83,6 +90,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         // Using a popular repository as an example
         var response = api.listRepoEvents("octocat", "Hello-World", 5L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -92,7 +100,9 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50472301049");
         assertThat(firstEvent.getType()).isEqualTo("ForkEvent");
+        assertThat(firstEvent.getActor()).isNotNull();
         assertThat(firstEvent.getActor().getLogin()).isEqualTo("antoniovial");
+        assertThat(firstEvent.getRepo()).isNotNull();
         assertThat(firstEvent.getRepo().getName()).isEqualTo("octocat/Hello-World");
         assertThat(firstEvent.getCreatedAt()).isNotNull();
     }
@@ -103,6 +113,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var response =
                 api.listReposStarredByAuthenticatedUser(null, null, 10L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -114,6 +125,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(firstRepo.getId()).isEqualTo(825463572L);
         assertThat(firstRepo.getName()).isEqualTo("pulpogato");
         assertThat(firstRepo.getFullName()).isEqualTo("pulpogato/pulpogato");
+        assertThat(firstRepo.getOwner()).isNotNull();
         assertThat(firstRepo.getOwner().getLogin()).isEqualTo("pulpogato");
         assertThat(firstRepo.getHtmlUrl()).hasToString("https://github.com/pulpogato/pulpogato");
     }
@@ -123,6 +135,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getActivityApi();
         var response = api.listWatchedReposForAuthenticatedUser(10L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -134,6 +147,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(firstRepo.getId()).isEqualTo(1006911L);
         assertThat(firstRepo.getName()).isEqualTo("bash-utils");
         assertThat(firstRepo.getFullName()).isEqualTo("rahulsom/bash-utils");
+        assertThat(firstRepo.getOwner()).isNotNull();
         assertThat(firstRepo.getOwner().getLogin()).isEqualTo("rahulsom");
     }
 
@@ -142,6 +156,7 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getActivityApi();
         var response = api.listPublicEventsForUser("rahulsom", 5L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -151,7 +166,9 @@ class ActivityApiIntegrationTest extends BaseApiIntegrationTest {
         var firstEvent = events.getFirst();
         assertThat(firstEvent.getId()).isEqualTo("50486444578");
         assertThat(firstEvent.getType()).isEqualTo("PushEvent");
+        assertThat(firstEvent.getActor()).isNotNull();
         assertThat(firstEvent.getActor().getLogin()).isEqualTo("rahulsom");
+        assertThat(firstEvent.getRepo()).isNotNull();
         assertThat(firstEvent.getRepo().getName()).isEqualTo("pulpogato/pulpogato");
         assertThat(firstEvent.getCreatedAt()).isNotNull();
     }

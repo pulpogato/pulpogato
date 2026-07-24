@@ -13,6 +13,7 @@ class EmojisApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getEmojisApi();
         var response = api.get().block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(Map.class);
 

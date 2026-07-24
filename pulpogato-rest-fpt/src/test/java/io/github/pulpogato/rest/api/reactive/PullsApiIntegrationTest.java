@@ -23,6 +23,7 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
                         null)
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -47,6 +48,7 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
                                 .build())
                 .block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
 
@@ -59,6 +61,7 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getPullsApi();
         var response = api.getDiff("pulpogato", "pulpogato", 988L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
 
@@ -71,6 +74,7 @@ class PullsApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getPullsApi();
         var response = api.getPatch("pulpogato", "pulpogato", 988L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isNotEmpty();
 

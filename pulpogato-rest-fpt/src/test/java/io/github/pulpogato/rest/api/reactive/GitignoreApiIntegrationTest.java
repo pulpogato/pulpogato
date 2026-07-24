@@ -14,6 +14,7 @@ class GitignoreApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getGitignoreApi();
         var response = api.getAllTemplates().block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(List.class);
 
@@ -26,6 +27,7 @@ class GitignoreApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getGitignoreApi();
         var response = api.getTemplate("Java").block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(GitignoreTemplate.class);
 
@@ -39,6 +41,7 @@ class GitignoreApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getGitignoreApi();
         var response = api.getTemplate("Python").block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull().isInstanceOf(GitignoreTemplate.class);
 

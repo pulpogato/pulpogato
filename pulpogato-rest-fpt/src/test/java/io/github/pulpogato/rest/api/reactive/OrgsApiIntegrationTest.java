@@ -11,6 +11,7 @@ class OrgsApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getOrgsApi();
         var response = api.listAppInstallations("corp", 100L, 1L).block();
 
+        assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
 
@@ -18,6 +19,7 @@ class OrgsApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(installations.getInstallations()).hasSize(1);
         var installation = installations.getInstallations().getFirst();
         assertThat(installation.getAccount()).isNotNull();
+        assertThat(installation.getAccount().getValue().getSimpleUser()).isNotNull();
         assertThat(installation.getAccount().getValue().getSimpleUser().getLogin())
                 .isEqualTo("pulpogato");
         assertThat(installation.getAppSlug()).isEqualTo("renovate");

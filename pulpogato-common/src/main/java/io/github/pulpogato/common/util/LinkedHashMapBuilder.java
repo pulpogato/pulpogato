@@ -3,6 +3,7 @@ package io.github.pulpogato.common.util;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A utility class for building LinkedHashMap instances in a concise manner.
@@ -25,7 +26,7 @@ public class LinkedHashMapBuilder {
      * @param <V>   the type of value
      * @return a Map.Entry containing the provided key and value
      */
-    public static <K, V> Map.Entry<K, V> entry(K key, V value) {
+    public static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
         return new AbstractMap.SimpleEntry<>(key, value);
     }
 
