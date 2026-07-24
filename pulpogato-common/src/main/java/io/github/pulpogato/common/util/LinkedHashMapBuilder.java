@@ -26,7 +26,7 @@ public class LinkedHashMapBuilder {
      * @param <V>   the type of value
      * @return a Map.Entry containing the provided key and value
      */
-    public static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
+    public static <K, V> Map.Entry<@Nullable K, @Nullable V> entry(@Nullable K key, @Nullable V value) {
         return new AbstractMap.SimpleEntry<>(key, value);
     }
 
