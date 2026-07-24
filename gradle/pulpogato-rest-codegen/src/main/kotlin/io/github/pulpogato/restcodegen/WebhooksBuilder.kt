@@ -137,7 +137,6 @@ class WebhooksBuilder {
                         subcategory,
                         requestBodyTypes,
                         builders,
-                        v.first().value,
                     )
                     // Only a discriminable supertype implements WebhookEvent; a non-discriminable group's
                     // synthetic dispatcher reads JsonNode instead, which has no typed body to publish here.
@@ -535,7 +534,6 @@ class WebhooksBuilder {
         subcategory: String,
         requestBodyTypes: Map<String, Pair<String, ClassName>>,
         builders: WebhookBuilderParams,
-        pathItem: PathItem,
     ) {
         val supertype = builders.supertype
         val syntheticContext = context.withSchemaStack("#", "synthetic")
