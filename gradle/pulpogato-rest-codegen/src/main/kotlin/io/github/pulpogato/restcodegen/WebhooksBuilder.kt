@@ -674,6 +674,7 @@ class WebhooksBuilder {
             .classBuilder("WebhooksIntegrationTest")
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.webmvc.test.autoconfigure", "WebMvcTest")).build())
             .addAnnotation(AnnotationSpec.builder(ClassName.get("org.springframework.boot.webmvc.test.autoconfigure", "AutoConfigureMockMvc")).build())
+            .addAnnotation(AnnotationSpec.builder(ClassName.get("org.jspecify.annotations", "NullMarked")).build())
             .addAnnotation(
                 AnnotationSpec
                     .builder(ClassName.get("org.springframework.test.context", "ContextConfiguration"))
