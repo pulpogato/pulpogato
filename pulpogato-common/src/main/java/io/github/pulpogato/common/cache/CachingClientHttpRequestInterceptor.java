@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.NoOpCache;
@@ -228,22 +229,13 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         return headers;
     }
 
+    @RequiredArgsConstructor
+    @Getter
     private static final class BufferedClientHttpResponse implements ClientHttpResponse {
 
         private final HttpStatusCode statusCode;
         private final HttpHeaders headers;
         private final byte[] body;
-
-        private BufferedClientHttpResponse(HttpStatusCode statusCode, HttpHeaders headers, byte[] body) {
-            this.statusCode = statusCode;
-            this.headers = headers;
-            this.body = body;
-        }
-
-        @Override
-        public HttpStatusCode getStatusCode() {
-            return statusCode;
-        }
 
         @Override
         public String getStatusText() {
@@ -258,11 +250,6 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         @Override
         public InputStream getBody() {
             return new ByteArrayInputStream(body);
-        }
-
-        @Override
-        public HttpHeaders getHeaders() {
-            return headers;
         }
     }
 }
