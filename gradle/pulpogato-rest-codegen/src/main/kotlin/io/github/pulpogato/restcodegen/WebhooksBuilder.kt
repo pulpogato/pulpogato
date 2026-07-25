@@ -8,7 +8,6 @@ import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.ParameterSpec
-import com.palantir.javapoet.ParameterSpec.builder
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
@@ -928,7 +927,8 @@ class WebhooksBuilder {
         val type = schema.className()
 
         ctx.methodSpecBuilder.addParameter(
-            builder(webhookHeadersType, "headers")
+            ParameterSpec
+                .builder(webhookHeadersType, "headers")
                 .addAnnotation(generated(0, ctx.context.withSchemaStack("parameters")))
                 .build(),
         )
