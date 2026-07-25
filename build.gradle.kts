@@ -41,6 +41,7 @@ plugins {
     alias(libs.plugins.spotless).apply(false)
     alias(libs.plugins.asciidoctor).apply(false)
     id("io.github.pulpogato.build-support")
+    id("org.sonarqube") version "7.3.1.8318"
 }
 
 repositories {
@@ -178,4 +179,11 @@ tasks.register("pitest") {
     group = "verification"
     notCompatibleWithConfigurationCache("Delegates to a task that invokes a separate Gradle build.")
     dependsOn(pitestPlugin)
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "pulpogato_pulpogato")
+        property("sonar.organization", "pulpogato")
+    }
 }
