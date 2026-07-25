@@ -194,12 +194,10 @@ public class FancyDeserializerSupport<T> {
     }
 
     private void deserializeScalar(ContextReader contextReader, @Nullable TokenHint hint, T returnValue) {
-        if (hint == TokenHint.BOOLEAN) {
-            deserializeBoolThenNumberThenString(contextReader, returnValue);
-        } else if (hint == TokenHint.NUMBER) {
-            deserializeNumberThenString(contextReader, returnValue);
-        } else {
-            deserializeStringThenNumber(contextReader, returnValue);
+        switch (hint) {
+            case TokenHint.BOOLEAN -> deserializeBoolThenNumberThenString(contextReader, returnValue);
+            case TokenHint.NUMBER -> deserializeNumberThenString(contextReader, returnValue);
+            case null, default -> deserializeStringThenNumber(contextReader, returnValue);
         }
     }
 
