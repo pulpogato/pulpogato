@@ -532,11 +532,6 @@ class PathsBuilder {
                 .filter { (responseCode, apiResponse) ->
                     !apiResponse.content.isNullOrEmpty() && responseCode.startsWith("2")
                 }.toMutableMap()
-        val hasNoContent204Success =
-            atomicMethod.operation.responses.any { (responseCode, apiResponse) ->
-                responseCode == HttpStatus.SC_NO_CONTENT.toString() && apiResponse.content.isNullOrEmpty()
-            }
-
         if (successResponses.size > 1 && successResponses.containsKey(HttpStatus.SC_NO_CONTENT.toString())) {
             successResponses.remove(HttpStatus.SC_NO_CONTENT.toString())
         }
@@ -594,7 +589,6 @@ class PathsBuilder {
                             parameterSpecs,
                             respRef,
                             reactiveReturnTypes,
-                            responseBodyNullable = hasNoContent204Success,
                         ),
                     )
                 }
@@ -687,7 +681,6 @@ class PathsBuilder {
      * @param parameterSpecs The list of parameter specifications for the method
      * @param respRef The type name reference for the response type
      * @param reactiveReturnTypes Whether the generated method should return a reactive ({@code Mono}) type
-     * @param responseBodyNullable Whether the response body should be annotated as nullable (e.g. when a 204 response is also possible)
      * @return A MethodSpec object representing the generated method
      */
     private fun buildNonVoidMethod(
@@ -699,7 +692,6 @@ class PathsBuilder {
         parameterSpecs: List<ParameterSpec>,
         respRef: TypeName,
         reactiveReturnTypes: Boolean,
-        responseBodyNullable: Boolean = false,
     ): MethodSpec {
         val suitableAnnotations =
             respRef.annotations().filter {
@@ -710,7 +702,6 @@ class PathsBuilder {
                 .lowercase()
                 .pascalCase() + "Exchange"
         val bodyType = respRef.withoutAnnotations().annotated(suitableAnnotations)
-        val nullableBodyType = if (responseBodyNullable) bodyType.annotated(nullable()) else bodyType
         return MethodSpec
             .methodBuilder(methodName)
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
@@ -730,13 +721,13 @@ class PathsBuilder {
                         ClassName.get("reactor.core.publisher", "Mono"),
                         ParameterizedTypeName.get(
                             ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                            nullableBodyType,
+                            bodyType,
                         ),
                     )
                 } else {
                     ParameterizedTypeName.get(
                         ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"),
-                        nullableBodyType,
+                        bodyType,
                     )
                 },
             ).build()
