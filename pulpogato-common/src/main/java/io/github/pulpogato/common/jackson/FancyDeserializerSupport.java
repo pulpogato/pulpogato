@@ -9,7 +9,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 
@@ -20,6 +22,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> The type being deserialized
  */
 @Slf4j
+@RequiredArgsConstructor
 public class FancyDeserializerSupport<T> {
 
     /**
@@ -84,52 +87,46 @@ public class FancyDeserializerSupport<T> {
      */
     private static final ThreadLocal<Set<Class<?>>> IN_PROGRESS = ThreadLocal.withInitial(HashSet::new);
 
+    /**
+     * The class being deserialized.
+     */
     private final Class<T> type;
+
+    /**
+     * Supplier that creates a new instance.
+     */
     private final Supplier<T> initializer;
 
+    /**
+     * The deserialization mode (anyOf, oneOf, allOf).
+     */
     @Getter
     private final Mode mode;
 
+    /**
+     * The fields that can be set.
+     */
     @Getter
     private final List<SettableField<T, ?>> fields;
 
+    /**
+     * Jackson-version-specific JSON writer.
+     */
     @Getter
     private final JsonWriter writer;
 
+    /**
+     * Jackson-version-specific JSON reader.
+     */
     private final JsonReader reader;
-    private final Predicate<Exception> isParsingException;
-
-    @Nullable
-    private final Class<?> enumAlternativeType;
 
     /**
-     * Constructs the support instance.
-     *
-     * @param type               The class being deserialized
-     * @param initializer        Supplier that creates a new instance
-     * @param mode               The deserialization mode (anyOf, oneOf, allOf)
-     * @param fields             The fields that can be set
-     * @param writer             Jackson-version-specific JSON writer
-     * @param reader             Jackson-version-specific JSON reader
-     * @param isParsingException Predicate that identifies Jackson parsing exceptions
+     * Predicate that identifies Jackson parsing exceptions.
      */
-    public FancyDeserializerSupport(
-            Class<T> type,
-            Supplier<T> initializer,
-            Mode mode,
-            List<SettableField<T, ?>> fields,
-            JsonWriter writer,
-            JsonReader reader,
-            Predicate<Exception> isParsingException) {
-        this.type = type;
-        this.initializer = initializer;
-        this.mode = mode;
-        this.fields = fields;
-        this.writer = writer;
-        this.reader = reader;
-        this.isParsingException = isParsingException;
-        this.enumAlternativeType = detectEnumAlternativeType(fields);
-    }
+    private final Predicate<Exception> isParsingException;
+
+    @Getter(lazy = true, value = AccessLevel.PRIVATE)
+    private final Class<?> enumAlternativeType = detectEnumAlternativeType(fields);
 
     /**
      * Hint about the current JSON token type, supplied by the calling deserializer when it can read
@@ -416,13 +413,16 @@ public class FancyDeserializerSupport<T> {
     }
 
     private Object coerceListValuesIfNeeded(Class<?> clazz, Object value) {
-        if (clazz != List.class || enumAlternativeType == null || !(value instanceof List<?> list) || list.isEmpty()) {
+        if (clazz != List.class
+                || getEnumAlternativeType() == null
+                || !(value instanceof List<?> list)
+                || list.isEmpty()) {
             return value;
         }
 
         final var converted = new ArrayList<>(list.size());
         for (var item : list) {
-            if (enumAlternativeType.isInstance(item)) {
+            if (getEnumAlternativeType().isInstance(item)) {
                 converted.add(item);
                 continue;
             }
@@ -431,7 +431,7 @@ public class FancyDeserializerSupport<T> {
             }
             try {
                 final var itemJson = writer.writeValueAsString(item);
-                converted.add(reader.readValue(itemJson, enumAlternativeType));
+                converted.add(reader.readValue(itemJson, getEnumAlternativeType()));
             } catch (Exception e) {
                 ensureParsingException(e);
                 return value;
