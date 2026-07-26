@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -45,7 +46,15 @@ public class ProxyController {
         this.restTemplate = new RestTemplate(requestFactory);
     }
 
-    @RequestMapping("/**")
+    @RequestMapping(
+            path = "/**",
+            method = {
+                RequestMethod.GET,
+                RequestMethod.POST,
+                RequestMethod.PUT,
+                RequestMethod.PATCH,
+                RequestMethod.DELETE
+            })
     @SuppressWarnings("unused")
     public ResponseEntity<byte[]> mirrorRest(
             @RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request)
