@@ -106,7 +106,7 @@ public class ProxyController {
                         .build());
         return ResponseEntity.status(exchange.getStatusCode())
                 .headers(exchange.getHeaders())
-                .body(responseBodyBytes != null ? responseBodyBytes : new byte[0]);
+                .body(responseBodyBytes);
     }
 
     /** Format bytes as a hexdump string (lowercase hex, 16 bytes per line). */
@@ -176,7 +176,7 @@ public class ProxyController {
             byte[] errorBody = e.getResponseBodyAsByteArray();
             return ResponseEntity.status(e.getStatusCode())
                     .headers(e.getResponseHeaders())
-                    .body(errorBody != null ? errorBody : new byte[0]);
+                    .body(errorBody);
         }
     }
 
