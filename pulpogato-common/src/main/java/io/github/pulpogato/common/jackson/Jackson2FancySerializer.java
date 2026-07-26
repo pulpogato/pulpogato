@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A serializer that can handle <code>anyOf</code>, <code>allOf</code>, and <code>oneOf</code>.
@@ -32,7 +32,7 @@ public class Jackson2FancySerializer<T> extends StdSerializer<T> {
      * @param <T>    The type of the object
      * @param <X>    The type of the field
      */
-    public record GettableField<T, X>(Class<X> type, Function<T, X> getter) {}
+    public record GettableField<T, X>(Class<X> type, NullableFunction<T, X> getter) {}
 
     private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -43,7 +43,7 @@ public class Jackson2FancySerializer<T> extends StdSerializer<T> {
      * @param mode   The mode of serialization
      * @param fields The fields that can be read from the class
      */
-    public Jackson2FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, ?>> fields) {
+    public Jackson2FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, @Nullable ?>> fields) {
         super(vc);
         this.mode = mode;
         this.fields = fields;
@@ -57,7 +57,7 @@ public class Jackson2FancySerializer<T> extends StdSerializer<T> {
     /**
      * The fields that can be read from the class
      */
-    private final transient List<GettableField<T, ?>> fields;
+    private final transient List<GettableField<T, @Nullable ?>> fields;
 
     /**
      * Serializes the value when used as a polymorphic subtype (e.g. a sealed webhook supertype).
