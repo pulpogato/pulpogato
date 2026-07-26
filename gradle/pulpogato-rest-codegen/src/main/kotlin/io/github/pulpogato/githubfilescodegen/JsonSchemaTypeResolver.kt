@@ -333,17 +333,7 @@ object JsonSchemaTypeResolver {
             indexedElements.mapIndexed { filteredIndex, indexedElement ->
                 val element = indexedElement.value
                 val elementCtx = ctx.withSchemaStack("oneOf", indexedElement.index.toString())
-                val resolved =
-                    if (element.has($$"$ref")) {
-                        resolveType(elementCtx, name, element, parentPackage)
-                    } else if (element.has("type") && element["type"].asString() == "object" && element.has("properties")) {
-                        val variantName = "${name}Variant$filteredIndex"
-                        resolveType(elementCtx, variantName, element, parentPackage)
-                    } else if (element.has("type")) {
-                        resolveType(elementCtx, name, element, parentPackage)
-                    } else {
-                        resolveType(elementCtx, "${name}Variant$filteredIndex", element, parentPackage)
-                    }
+                val resolved = resolveVariantType(elementCtx, name, element, parentPackage, filteredIndex)
                 resolved.typeName to generatedSchemaRef(elementCtx)
             }
         val variants = buildUnionVariants(variantCandidates)
@@ -511,26 +501,7 @@ object JsonSchemaTypeResolver {
             indexedElements.mapIndexed { filteredIndex, indexedElement ->
                 val element = indexedElement.value
                 val elementCtx = ctx.withSchemaStack("anyOf", indexedElement.index.toString())
-                val resolved =
-                    when {
-                        element.has($$"$ref") -> {
-                            resolveType(elementCtx, name, element, parentPackage)
-                        }
-
-                        element.has("type") &&
-                            element["type"].asString() == "object" &&
-                            element.has("properties") -> {
-                            resolveType(elementCtx, "${name}Variant$filteredIndex", element, parentPackage)
-                        }
-
-                        element.has("type") -> {
-                            resolveType(elementCtx, name, element, parentPackage)
-                        }
-
-                        else -> {
-                            resolveType(elementCtx, "${name}Variant$filteredIndex", element, parentPackage)
-                        }
-                    }
+                val resolved = resolveVariantType(elementCtx, name, element, parentPackage, filteredIndex)
                 element to resolved.typeName
             }
         val resolvedTypes = resolvedElements.map { it.second }.distinct()
@@ -818,6 +789,34 @@ object JsonSchemaTypeResolver {
         return ResolvedType(className, unionSpec)
     }
 
+    private fun resolveVariantType(
+        ctx: JsonSchemaContext,
+        name: String,
+        element: JsonNode,
+        parentPackage: String,
+        variantIndex: Int,
+    ): ResolvedType {
+        val variantName =
+            when {
+                element.has($$"$ref") -> {
+                    name
+                }
+
+                element.has("type") && element["type"].asString() == "object" && element.has("properties") -> {
+                    "${name}Variant$variantIndex"
+                }
+
+                element.has("type") -> {
+                    name
+                }
+
+                else -> {
+                    "${name}Variant$variantIndex"
+                }
+            }
+        return resolveType(ctx, variantName, element, parentPackage)
+    }
+
     private fun resolveByType(
         ctx: JsonSchemaContext,
         name: String,
@@ -827,16 +826,14 @@ object JsonSchemaTypeResolver {
     ): ResolvedType =
         when (type) {
             "string" -> {
-                val format = node["format"]?.asString()
-                when (format) {
+                when (node["format"]?.asString()) {
                     "date-time" -> ResolvedType(ClassName.get(java.time.OffsetDateTime::class.java))
                     else -> ResolvedType(Types.STRING)
                 }
             }
 
             "integer" -> {
-                val format = node["format"]?.asString()
-                when (format) {
+                when (node["format"]?.asString()) {
                     "int32" -> ResolvedType(Types.INTEGER)
                     else -> ResolvedType(Types.LONG)
                 }
