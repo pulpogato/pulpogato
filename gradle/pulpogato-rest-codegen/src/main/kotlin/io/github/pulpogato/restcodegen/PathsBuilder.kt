@@ -23,6 +23,7 @@ import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.responses.ApiResponse
 import org.apache.http.HttpStatus
+import org.intellij.lang.annotations.Language
 import java.io.File
 import javax.lang.model.element.Modifier
 
@@ -72,6 +73,8 @@ private object WebClientContainerSpec : ClientContainerSpec {
             ClassName.get(PACKAGE_PULPOGATO_CLIENT, "NoContentExchangeFunction") to
                 "handles 204 responses",
         )
+
+    @Language("java")
     override val exampleSnippet: String =
         """
         WebClient webClient = WebClient.builder()
@@ -102,6 +105,8 @@ private object RestClientContainerSpec : ClientContainerSpec {
             ClassName.get(PACKAGE_PULPOGATO_CLIENT, "NoContentClientHttpRequestInterceptor") to
                 "handles 204 responses",
         )
+
+    @Language("java")
     override val exampleSnippet: String =
         """
         RestClient restClient = RestClient.builder()
