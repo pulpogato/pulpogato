@@ -9,6 +9,7 @@ import io.github.pulpogato.restcodegen.ext.pascalCase
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.node.ArrayNode
 import tools.jackson.databind.node.ObjectNode
+import java.time.OffsetDateTime
 
 /**
  * Core recursive type resolver for JSON Schema → Java type mapping.
@@ -463,12 +464,7 @@ object JsonSchemaTypeResolver {
             return false
         }
         return when (typeNode.asString()) {
-            "string",
-            "boolean",
-            "number",
-            "integer",
-            -> true
-
+            "string", "boolean", "number", "integer" -> true
             else -> false
         }
     }
@@ -759,10 +755,7 @@ object JsonSchemaTypeResolver {
                 val variantCtx = ctx.withSchemaStack("type", index.toString())
                 val variantName =
                     when (schemaType) {
-                        "array",
-                        "object",
-                        -> "${name}Variant$index"
-
+                        "array", "object" -> "${name}Variant$index"
                         else -> name
                     }
                 val resolved = resolveByType(variantCtx, variantName, schemaType, node, parentPackage)
@@ -796,24 +789,10 @@ object JsonSchemaTypeResolver {
         parentPackage: String,
         variantIndex: Int,
     ): ResolvedType {
-        val variantName =
-            when {
-                element.has($$"$ref") -> {
-                    name
-                }
+        fun shouldReturnName(): Boolean =
+            element.has($$"$ref") || (element.has("type") && (!(element["type"].asString() == "object" && element.has("properties"))))
 
-                element.has("type") && element["type"].asString() == "object" && element.has("properties") -> {
-                    "${name}Variant$variantIndex"
-                }
-
-                element.has("type") -> {
-                    name
-                }
-
-                else -> {
-                    "${name}Variant$variantIndex"
-                }
-            }
+        val variantName = if (shouldReturnName()) name else "${name}Variant$variantIndex"
         return resolveType(ctx, variantName, element, parentPackage)
     }
 
@@ -825,39 +804,15 @@ object JsonSchemaTypeResolver {
         parentPackage: String,
     ): ResolvedType =
         when (type) {
-            "string" -> {
-                when (node["format"]?.asString()) {
-                    "date-time" -> ResolvedType(ClassName.get(java.time.OffsetDateTime::class.java))
-                    else -> ResolvedType(Types.STRING)
-                }
-            }
-
-            "integer" -> {
-                when (node["format"]?.asString()) {
-                    "int32" -> ResolvedType(Types.INTEGER)
-                    else -> ResolvedType(Types.LONG)
-                }
-            }
-
-            "number" -> {
-                ResolvedType(Types.BIG_DECIMAL)
-            }
-
-            "boolean" -> {
-                ResolvedType(Types.BOOLEAN)
-            }
-
-            "array" -> {
-                resolveArray(ctx, name, node, parentPackage)
-            }
-
-            "object" -> {
-                resolveObject(ctx, name, node, parentPackage)
-            }
-
-            else -> {
-                ResolvedType(Types.OBJECT)
-            }
+            "string" if node["format"]?.asString() == "date-time" -> ResolvedType(ClassName.get(OffsetDateTime::class.java))
+            "string" -> ResolvedType(Types.STRING)
+            "integer" if node["format"]?.asString() == "int32" -> ResolvedType(Types.INTEGER)
+            "integer" -> ResolvedType(Types.LONG)
+            "number" -> ResolvedType(Types.BIG_DECIMAL)
+            "boolean" -> ResolvedType(Types.BOOLEAN)
+            "array" -> resolveArray(ctx, name, node, parentPackage)
+            "object" -> resolveObject(ctx, name, node, parentPackage)
+            else -> ResolvedType(Types.OBJECT)
         }
 
     private fun resolveArray(

@@ -27,9 +27,8 @@ abstract class TransformGraphqlSchemaTask : DefaultTask() {
                 .readLines()
                 .joinToString(separator = "\n") { currentLine ->
                     currentLine
-                        .replace(Regex("<(https?:.+?)>")) { match ->
-                            "<a href=\"${match.groupValues[1]}\">${match.groupValues[1]}</a>"
-                        }.replace("< ", "&lt; ")
+                        .replace(Regex("<(https?:.+?)>")) { match -> buildLink(match.groupValues[1]) }
+                        .replace("< ", "&lt; ")
                         .replace("> ", "&gt; ")
                         .replace("<= ", "&lt;= ")
                         .replace(">= ", "&gt;= ")
@@ -39,4 +38,6 @@ abstract class TransformGraphqlSchemaTask : DefaultTask() {
         target.parentFile.mkdirs()
         target.writeText(transformed)
     }
+
+    private fun buildLink(uri: String): String = "<a href=\"$uri\">$uri</a>"
 }
