@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ public class Jackson3FancySerializer<T> extends StdSerializer<T> {
      * @param <T>    The type of the object
      * @param <X>    The type of the field
      */
-    public record GettableField<T, X>(Class<X> type, Function<T, X> getter) {}
+    public record GettableField<T, X>(Class<X> type, NullableFunction<T, X> getter) {}
 
     private static final ObjectMapper om = new ObjectMapper();
 
@@ -40,7 +40,7 @@ public class Jackson3FancySerializer<T> extends StdSerializer<T> {
      * @param mode   The mode of serialization
      * @param fields The fields that can be read from the class
      */
-    public Jackson3FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, ?>> fields) {
+    public Jackson3FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, @Nullable ?>> fields) {
         super(vc);
         this.mode = mode;
         this.fields = fields;
