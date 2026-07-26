@@ -3,7 +3,6 @@ package io.github.pulpogato.common;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiPredicate;
@@ -95,7 +94,6 @@ public class Paginate {
             final BiPredicate<Long, R> hasNextPage) {
         Iterator<R> iterator = new PageStreamIterator<>(maxPages, fetchPage, hasNextPage);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
-                .filter(Objects::nonNull)
                 .flatMap(extractItems);
     }
 
@@ -319,14 +317,16 @@ public class Paginate {
         }
 
         @Override
-        @Nullable
         public R next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
             var currentPage = page++;
             var response = fetchPage.apply(currentPage);
-            if (response == null || !hasNextPage.test(currentPage, response)) {
+            if (response == null) {
+                throw new NoSuchElementException();
+            }
+            if (!hasNextPage.test(currentPage, response)) {
                 done = true;
             }
             return response;
