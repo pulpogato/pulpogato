@@ -30,7 +30,7 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(firstLicense.getKey()).isEqualTo("agpl-3.0");
         assertThat(firstLicense.getName()).isEqualTo("GNU Affero General Public License v3.0");
         assertThat(firstLicense.getUrl()).isNotNull();
-        assertThat(firstLicense.getUrl().toString()).isEqualTo("https://api.github.com/licenses/agpl-3.0");
+        assertThat(firstLicense.getUrl()).hasToString("https://api.github.com/licenses/agpl-3.0");
     }
 
     @Test
@@ -84,6 +84,6 @@ class LicensesApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(firstFeatured.getKey()).isEqualTo("apache-2.0");
         assertThat(firstFeatured.getName()).isEqualTo("Apache License 2.0");
         assertThat(firstFeatured.getUrl()).isNotNull();
-        assertThat(firstFeatured.getUrl().toString()).isEqualTo("https://api.github.com/licenses/apache-2.0");
+        assertThat(firstFeatured.getUrl()).hasToString("https://api.github.com/licenses/apache-2.0");
     }
 }
