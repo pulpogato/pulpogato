@@ -8,7 +8,7 @@ import io.github.pulpogato.rest.api.GitApi;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class GitApiIntegrationTest extends BaseApiIntegrationTest {
+class GitApiIntegrationTest extends BaseApiIntegrationTest {
     /**
      * <p>
      * Tests creating a tree that moves a file by:
