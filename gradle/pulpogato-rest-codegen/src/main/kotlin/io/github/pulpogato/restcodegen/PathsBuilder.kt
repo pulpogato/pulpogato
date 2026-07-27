@@ -218,10 +218,18 @@ class PathsBuilder {
                     )
                 }
 
-                JavaFile.builder(packageName, pathInterface.build()).build().writeTo(mainDir)
+                JavaFile
+                    .builder(packageName, pathInterface.build())
+                    .skipJavaLangImports(true)
+                    .build()
+                    .writeTo(mainDir)
                 val typeClassBuilt = testClass.build()
                 if (typeClassBuilt.methodSpecs().isNotEmpty() || typeClassBuilt.typeSpecs().isNotEmpty()) {
-                    JavaFile.builder(packageName, typeClassBuilt).build().writeTo(testDir)
+                    JavaFile
+                        .builder(packageName, typeClassBuilt)
+                        .skipJavaLangImports(true)
+                        .build()
+                        .writeTo(testDir)
                 }
 
                 // Store field initialization for later (will be added to the container's constructor)
@@ -457,7 +465,11 @@ class PathsBuilder {
                 ).build(),
         )
 
-        JavaFile.builder(packageName, restClients.build()).build().writeTo(mainDir)
+        JavaFile
+            .builder(packageName, restClients.build())
+            .skipJavaLangImports(true)
+            .build()
+            .writeTo(mainDir)
     }
 
     /**
