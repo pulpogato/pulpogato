@@ -77,7 +77,11 @@ class SchemasBuilder {
                         typeSpec
                     }
 
-                JavaFile.builder(packageName, taggedTypeSpec).build().writeTo(mainDir)
+                JavaFile
+                    .builder(packageName, taggedTypeSpec)
+                    .skipJavaLangImports(true)
+                    .build()
+                    .writeTo(mainDir)
 
                 // If this is an enum, add its converter to the set
                 if (it.enumConstants().isNotEmpty() && typeName is ClassName) {
@@ -210,7 +214,11 @@ class SchemasBuilder {
 
         nestedTypes.forEach { builder.addType(it) }
 
-        JavaFile.builder(packageName, builder.build()).build().writeTo(mainDir)
+        JavaFile
+            .builder(packageName, builder.build())
+            .skipJavaLangImports(true)
+            .build()
+            .writeTo(mainDir)
     }
 
     /**

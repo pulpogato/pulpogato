@@ -109,6 +109,10 @@ class EnumConvertersBuilder {
         )
 
         // Write the class to file
-        JavaFile.builder(apiPackageName, enumConvertersClass.build()).build().writeTo(mainDir)
+        JavaFile
+            .builder(apiPackageName, enumConvertersClass.build())
+            .skipJavaLangImports(true)
+            .build()
+            .writeTo(mainDir)
     }
 }
