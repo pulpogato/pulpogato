@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class TapeTest {
 
     @Test
-    void serializedTapeOmitsNullBodyIsBinary() throws Exception {
+    void serializedTapeOmitsNullBodyIsBinary() {
         var response = Exchange.Response.builder()
                 .statusCode(200)
                 .headers(java.util.Map.of("Content-Type", "application/json"))
@@ -32,7 +32,7 @@ class TapeTest {
     }
 
     @Test
-    void serializedTapeIncludesTrueBodyIsBinary() throws Exception {
+    void serializedTapeIncludesTrueBodyIsBinary() {
         var response = Exchange.Response.builder()
                 .statusCode(200)
                 .headers(java.util.Map.of("Content-Type", "application/vnd.github.raw+json"))
