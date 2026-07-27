@@ -1,5 +1,6 @@
 package io.github.pulpogato.common.client;
 
+import io.github.pulpogato.common.jackson.NullableFunction;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import java.time.Clock;
@@ -7,9 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.function.LongConsumer;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Framework-agnostic rate-limit metrics recording shared by {@link MetricsExchangeFunction} and
@@ -38,7 +37,7 @@ class RateLimitMetricsRecorder {
         this.defaultTags = defaultTags;
     }
 
-    void recordMetrics(Function<String, @Nullable String> headerLookup) {
+    void recordMetrics(NullableFunction<String, String> headerLookup) {
         var resource = headerLookup.apply(RATE_LIMIT_RESOURCE);
 
         List<Tag> tags = new ArrayList<>(defaultTags);
@@ -57,7 +56,7 @@ class RateLimitMetricsRecorder {
     }
 
     private void withNumericHeader(
-            Function<String, @Nullable String> headerLookup, String headerName, LongConsumer consumer) {
+            NullableFunction<String, String> headerLookup, String headerName, LongConsumer consumer) {
         var value = headerLookup.apply(headerName);
         if (value != null) {
             try {

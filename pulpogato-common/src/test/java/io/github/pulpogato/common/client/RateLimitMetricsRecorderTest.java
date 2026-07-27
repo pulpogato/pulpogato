@@ -2,13 +2,13 @@ package io.github.pulpogato.common.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.pulpogato.common.jackson.NullableFunction;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
-import java.util.function.UnaryOperator;
 import org.junit.jupiter.api.Test;
 
 class RateLimitMetricsRecorderTest {
@@ -22,7 +22,7 @@ class RateLimitMetricsRecorderTest {
         return new RateLimitMetricsRecorder(registry, clock, "github.api.rateLimit", List.of());
     }
 
-    private UnaryOperator<String> lookup(Map<String, String> headers) {
+    private NullableFunction<String, String> lookup(Map<String, String> headers) {
         return headers::get;
     }
 
