@@ -3,6 +3,7 @@ package io.github.pulpogato.common.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.internal.DefaultGauge;
@@ -131,8 +132,8 @@ class MetricsExchangeFunctionTest {
                 .verifyComplete();
 
         // GIVEN - second response with different values
-        ClientResponse response2 = org.mockito.Mockito.mock(ClientResponse.class);
-        ClientResponse.Headers headers2 = org.mockito.Mockito.mock(ClientResponse.Headers.class);
+        ClientResponse response2 = mock(ClientResponse.class);
+        ClientResponse.Headers headers2 = mock(ClientResponse.Headers.class);
         given(headers2.header("x-ratelimit-limit")).willReturn(List.of("5000"));
         given(headers2.header("x-ratelimit-remaining")).willReturn(List.of("4990"));
         given(headers2.header("x-ratelimit-used")).willReturn(List.of("10"));
@@ -148,9 +149,8 @@ class MetricsExchangeFunctionTest {
 
         // THEN - still only 4 meters, values reflect the second response
         var meters = meterRegistry.getMeters();
-        assertThat(meters).hasSize(4);
-
         assertThat(meters)
+                .hasSize(4)
                 .anySatisfy(meter -> {
                     assertThat(meter.getId().getName()).isEqualTo("github.api.rateLimit.remaining");
                     var gauge = (DefaultGauge) meter;

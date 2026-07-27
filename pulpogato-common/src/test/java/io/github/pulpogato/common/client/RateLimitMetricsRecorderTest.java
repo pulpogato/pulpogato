@@ -50,7 +50,7 @@ class RateLimitMetricsRecorderTest {
                         lookup(Map.of("x-ratelimit-reset", String.valueOf(pastReset), "x-ratelimit-resource", "core")));
 
         assertThat(registry.get("github.api.rateLimit.secondsToReset").gauge().value())
-                .isEqualTo(0);
+                .isZero();
     }
 
     @Test
