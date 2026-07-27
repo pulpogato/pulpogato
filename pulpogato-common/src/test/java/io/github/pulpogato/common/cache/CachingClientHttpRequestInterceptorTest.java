@@ -132,7 +132,9 @@ class CachingClientHttpRequestInterceptorTest {
         }
 
         @Override
-        public void close() {}
+        public void close() {
+            // no-op
+        }
 
         @Override
         public InputStream getBody() {
@@ -747,8 +749,8 @@ class CachingClientHttpRequestInterceptorTest {
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_MISS)
                     .hasHighCardinalityKeyValue("uri", TEST_URL)
-                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
-            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY)
+                    .backToTestObservationRegistry()
                     .hasObservationWithNameEqualTo(CACHE_PUT)
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STORED)
@@ -771,8 +773,8 @@ class CachingClientHttpRequestInterceptorTest {
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
                     .that()
-                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_HIT);
-            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_HIT)
+                    .backToTestObservationRegistry()
                     .hasNumberOfObservationsWithNameEqualTo(CACHE_PUT, 0);
         }
 
@@ -792,8 +794,8 @@ class CachingClientHttpRequestInterceptorTest {
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
                     .that()
-                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STALE);
-            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STALE)
+                    .backToTestObservationRegistry()
                     .hasObservationWithNameEqualTo(CACHE_PUT)
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STORED)

@@ -736,8 +736,8 @@ class CachingExchangeFilterFunctionTest {
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_MISS)
                     .hasHighCardinalityKeyValue("uri", TEST_URL)
-                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
-            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY)
+                    .backToTestObservationRegistry()
                     .hasObservationWithNameEqualTo(CACHE_PUT)
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STORED)
@@ -761,8 +761,8 @@ class CachingExchangeFilterFunctionTest {
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
                     .that()
-                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_HIT);
-            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_HIT)
+                    .backToTestObservationRegistry()
                     .hasNumberOfObservationsWithNameEqualTo(CACHE_PUT, 0);
         }
 
@@ -784,9 +784,8 @@ class CachingExchangeFilterFunctionTest {
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
                     .that()
-                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STALE);
-            // The refreshed entry is written back per RFC 9111 4.3.4.
-            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STALE)
+                    .backToTestObservationRegistry()
                     .hasObservationWithNameEqualTo(CACHE_PUT)
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STORED)
