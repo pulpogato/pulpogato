@@ -89,16 +89,7 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
     }
 
     private int countRecognizedKeys(Set<String> inputKeys, Set<String> knownKeys) {
-        if (inputKeys.isEmpty() || knownKeys.isEmpty()) {
-            return 0;
-        }
-        var score = 0;
-        for (var key : inputKeys) {
-            if (knownKeys.contains(key)) {
-                score++;
-            }
-        }
-        return score;
+        return (int) inputKeys.stream().filter(knownKeys::contains).count();
     }
 
     private Set<String> stringKeys(Map<?, ?> inputMap) {
@@ -185,9 +176,6 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
     }
 
     private <X> boolean setFieldLenient(SettableField<T, X> field, String string, T retval) {
-        if (lenientReader == null) {
-            return false;
-        }
         return setFieldWithReader(field, string, retval, lenientReader);
     }
 }
