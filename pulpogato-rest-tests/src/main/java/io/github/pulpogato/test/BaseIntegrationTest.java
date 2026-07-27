@@ -26,7 +26,7 @@ import org.springframework.web.reactive.function.client.WebClient;
             "logging.pattern.console=%d{HH:mm:ss.SSS} %-5level %-42logger{36} - %msg%n"
         })
 @Slf4j
-public class BaseIntegrationTest {
+public abstract class BaseIntegrationTest {
     @SuppressWarnings({"unused", "SpringJavaInjectionPointsAutowiringInspection"})
     @Autowired
     private WebApplicationContext webApplicationContext;
