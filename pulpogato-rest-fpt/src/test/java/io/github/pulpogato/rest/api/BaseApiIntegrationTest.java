@@ -4,7 +4,7 @@ import io.github.pulpogato.test.BaseIntegrationTest;
 import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 
-public class BaseApiIntegrationTest extends BaseIntegrationTest {
+public abstract class BaseApiIntegrationTest extends BaseIntegrationTest {
 
     @Override
     protected @NonNull Optional<Package> getTestResourceRootPackage() {
