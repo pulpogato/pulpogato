@@ -581,10 +581,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
         var version = response.getBody();
-        assertThat(version).isNotNull();
-
-        // The generated type extends the referenced RulesetVersion, so it is-a RulesetVersion...
-        assertThat(version).isInstanceOf(RulesetVersion.class);
+        assertThat(version).isNotNull().isInstanceOf(RulesetVersion.class);
 
         // ...exposing the inherited version fields directly on the same object...
         assertThat(version.getVersionId()).isEqualTo(RULESET_VERSION_ID);
