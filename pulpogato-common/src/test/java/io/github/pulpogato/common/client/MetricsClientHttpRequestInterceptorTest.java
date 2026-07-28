@@ -131,9 +131,8 @@ class MetricsClientHttpRequestInterceptorTest {
         assertThat(result2).isEqualTo(response2);
 
         var meters = meterRegistry.getMeters();
-        assertThat(meters).hasSize(4);
-
         assertThat(meters)
+                .hasSize(4)
                 .anySatisfy(meter -> {
                     assertThat(meter.getId().getName()).isEqualTo("github.api.rateLimit.remaining");
                     var gauge = (DefaultGauge) meter;
