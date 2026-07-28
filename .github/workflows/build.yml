@@ -26,7 +26,7 @@ jobs:
       pages: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -34,15 +34,15 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: git fetch --tags
 
-      - uses: gradle/actions/wrapper-validation@v6
+      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5
         with:
           java-version: 21
           distribution: zulu
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
 
       - name: Extract GitHub API Version
         id: api-version
@@ -50,7 +50,7 @@ jobs:
 
       - name: Cache Downloaded Schemas
         id: schema-cache
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             */build/generated-src/main/resources/schema.json
@@ -85,7 +85,7 @@ jobs:
         run: ./gradlew -Pcodegen.format=true build :pulpogato-docs:asciidoctor snapshot --max-workers=$MAX_WORKERS
 
       - name: Deploy docs to ghpages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -104,7 +104,7 @@ jobs:
         env: *env
         run: ./gradlew -Prelease.useLastTag=true -Pcodegen.format=true build final --max-workers=$MAX_WORKERS
 
-      - uses: actions/attest-build-provenance@v4
+      - uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         with:
           subject-path: "build/repos/**/*.jar,build/repos/**/*.pom,build/repos/**/*.module"
