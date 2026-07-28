@@ -16,9 +16,9 @@ class CodeBuilderTest {
 
         String rendered = CodeBuilder.render(map);
 
-        assertThat(rendered).contains("io.github.pulpogato.common.util.LinkedHashMapBuilder.of");
         assertThat(rendered)
-                .contains("io.github.pulpogato.common.util.LinkedHashMapBuilder.entry(\"key1\", \"value1\")");
-        assertThat(rendered).contains("io.github.pulpogato.common.util.LinkedHashMapBuilder.entry(\"key2\", null)");
+                .contains("io.github.pulpogato.common.util.LinkedHashMapBuilder.of")
+                .contains("io.github.pulpogato.common.util.LinkedHashMapBuilder.entry(\"key1\", \"value1\")")
+                .contains("io.github.pulpogato.common.util.LinkedHashMapBuilder.entry(\"key2\", null)");
     }
 }
