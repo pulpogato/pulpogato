@@ -72,10 +72,12 @@ class WebhooksBuilder {
         val headerFields = collectHeaderFields(context)
         JavaFile
             .builder(webhooksPackage, buildWebhookHeadersType(context, headerFields))
+            .skipJavaLangImports(true)
             .build()
             .writeTo(mainDir)
         JavaFile
             .builder(webhooksPackage, buildWebhookHeadersResolverType(context, headerFields))
+            .skipJavaLangImports(true)
             .build()
             .writeTo(mainDir)
 
@@ -149,6 +151,7 @@ class WebhooksBuilder {
                 if (interfaceSpec.methodSpecs().isNotEmpty()) {
                     JavaFile
                         .builder(webhooksPackage, interfaceSpec)
+                        .skipJavaLangImports(true)
                         .build()
                         .writeTo(mainDir)
 
@@ -162,12 +165,14 @@ class WebhooksBuilder {
                 if (testClassSpec.typeSpecs().isNotEmpty()) {
                     JavaFile
                         .builder(webhooksPackage, testClassSpec)
+                        .skipJavaLangImports(true)
                         .build()
                         .writeTo(testDir)
                 }
             }
         JavaFile
             .builder(webhooksPackage, buildWebhookEventTypes(requestBodyTypeByEventName))
+            .skipJavaLangImports(true)
             .build()
             .writeTo(mainDir)
 
@@ -175,6 +180,7 @@ class WebhooksBuilder {
         val integrationTestBuilder = buildIntegrationTest(context, testConfig.build())
         JavaFile
             .builder(webhooksPackage, integrationTestBuilder.build())
+            .skipJavaLangImports(true)
             .build()
             .writeTo(testDir)
     }

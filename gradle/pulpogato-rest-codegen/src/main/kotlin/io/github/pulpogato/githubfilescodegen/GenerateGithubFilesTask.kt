@@ -160,6 +160,7 @@ open class GenerateGithubFilesTask : DefaultTask() {
             val javaFile =
                 JavaFile
                     .builder(pkg, typeSpec)
+                    .skipJavaLangImports(true)
                     .build()
             javaFile.writeTo(outDir)
         }
