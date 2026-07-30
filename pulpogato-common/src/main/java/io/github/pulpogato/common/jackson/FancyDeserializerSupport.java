@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -124,9 +123,6 @@ public class FancyDeserializerSupport<T> {
      * Predicate that identifies Jackson parsing exceptions.
      */
     private final Predicate<Exception> isParsingException;
-
-    @Getter(lazy = true, value = AccessLevel.PRIVATE)
-    private final Class<?> enumAlternativeType = detectEnumAlternativeType(fields);
 
     /**
      * Hint about the current JSON token type, supplied by the calling deserializer when it can read
@@ -413,16 +409,14 @@ public class FancyDeserializerSupport<T> {
     }
 
     private Object coerceListValuesIfNeeded(Class<?> clazz, Object value) {
-        if (clazz != List.class
-                || getEnumAlternativeType() == null
-                || !(value instanceof List<?> list)
-                || list.isEmpty()) {
+        Class<?> enumAlternativeType = detectEnumAlternativeType(fields);
+        if (clazz != List.class || enumAlternativeType == null || !(value instanceof List<?> list) || list.isEmpty()) {
             return value;
         }
 
         final var converted = new ArrayList<>(list.size());
         for (var item : list) {
-            if (getEnumAlternativeType().isInstance(item)) {
+            if (enumAlternativeType.isInstance(item)) {
                 converted.add(item);
                 continue;
             }
@@ -431,7 +425,7 @@ public class FancyDeserializerSupport<T> {
             }
             try {
                 final var itemJson = writer.writeValueAsString(item);
-                converted.add(reader.readValue(itemJson, getEnumAlternativeType()));
+                converted.add(reader.readValue(itemJson, enumAlternativeType));
             } catch (Exception e) {
                 ensureParsingException(e);
                 return value;
