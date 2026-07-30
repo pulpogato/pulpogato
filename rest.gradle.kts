@@ -5,14 +5,12 @@ import io.github.pulpogato.restcodegen.DownloadSchemaTask
 import nebula.plugin.info.InfoBrokerPlugin
 import net.ltgt.gradle.errorprone.errorprone
 import net.ltgt.gradle.nullaway.nullaway
-import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
-import kotlin.jvm.java
 
 plugins {
     alias(libs.plugins.javaLibrary)
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.testLogger)
-    id("jacoco")
+    id("io.github.pulpogato.build-support")
     id("io.github.pulpogato.rest-codegen")
     alias(libs.plugins.errorprone)
     alias(libs.plugins.nullaway)
@@ -46,10 +44,29 @@ val variant = project.name.replace("${rootProject.name}-rest-", "")
 
 description = "REST types for $variant"
 
+// Every REST variant generates identical package/class names (codegen.packageName is uniformly
+// "io.github.pulpogato"), which makes Sonar's JaCoCo coverage sensor unable to tell one variant's
+// generated file from another's and report spurious "not found in project sources" warnings.
+// sonar.skip does not prevent this (it doesn't affect the auto-detected sonar.sources/sonar.tests
+// of other modules), so explicitly empty this module's own contribution instead. Since coverage is
+// representative across variants, only the fpt (default) variant is left in the scan.
+if (variant != "fpt") {
+    sonar {
+        properties {
+            property("sonar.sources", "")
+            property("sonar.tests", "")
+        }
+    }
+}
+
 codegen {
     packageName.set("io.github.pulpogato")
-    mainDir.set(file("${project.layout.buildDirectory.get()}/generated-src/main/java"))
-    testDir.set(file("${project.layout.buildDirectory.get()}/generated-src/test/java"))
+    // Sonar's Gradle plugin unconditionally drops any sonar.sources/sonar.tests entry whose path
+    // contains the literal substring "build/generated" (org.sonarqube.gradle.SonarTask.containsValidSources),
+    // regardless of what any of our own sonar.properties overrides say. That silently excluded even
+    // the fpt variant's generated code from every scan so far, so it lives under "codegen-src" instead.
+    mainDir.set(file("${project.layout.buildDirectory.get()}/codegen-src/main/java"))
+    testDir.set(file("${project.layout.buildDirectory.get()}/codegen-src/test/java"))
     apiCommit.set(project.ext.get("gh.api.commit").toString())
     apiVersion.set(project.ext.get("gh.api.version").toString())
     apiRepository.set(project.ext.get("gh.api.repo").toString())
@@ -59,12 +76,15 @@ codegen {
 
 sourceSets {
     named("main") {
-        java.srcDir("${project.layout.buildDirectory.get()}/generated-src/main/java")
+        java.srcDir("${project.layout.buildDirectory.get()}/codegen-src/main/java")
         resources.srcDir("${project.layout.buildDirectory.get()}/generated-src/main/resources")
     }
     named("test") {
-        java.srcDir("${project.layout.buildDirectory.get()}/generated-src/test/java")
-        resources.srcDir("${project.layout.buildDirectory.get()}/generated-src/test/resources")
+        java.srcDir("${project.layout.buildDirectory.get()}/codegen-src/test/java")
+        // testResourcesDir in RestCodegenPlugin is derived from codegen.testDir's parent, so this
+        // must track the codegen-src rename above — the codegen task writes large example JSON
+        // fixtures here that tests load from the classpath at runtime.
+        resources.srcDir("${project.layout.buildDirectory.get()}/codegen-src/test/resources")
     }
 }
 
@@ -124,28 +144,6 @@ dependencies {
 tasks {
     test {
         jvmArgs("-javaagent:${mockitoAgent.asPath}")
-    }
-}
-
-// Coverage is a CI/reporting concern, not needed on every local build. Keeping it off the default path
-// avoids both the Jacoco agent overhead during test execution and the report task (~19s) on the critical path.
-// Enable with -Pcoverage=true (or set it in CI).
-val coverageEnabled = providers.gradleProperty("coverage").map(String::toBoolean).getOrElse(false)
-
-tasks.test {
-    extensions.configure<JacocoTaskExtension> {
-        isEnabled = coverageEnabled
-    }
-    if (coverageEnabled) {
-        finalizedBy(tasks.jacocoTestReport)
-    }
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    reports {
-        xml.required = true
-        html.required = true
     }
 }
 

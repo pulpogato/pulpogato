@@ -3,6 +3,7 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 plugins {
     java
     alias(libs.plugins.testLogger)
+    id("io.github.pulpogato.build-support")
 }
 
 dependencies {

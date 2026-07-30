@@ -185,5 +185,9 @@ sonar {
     properties {
         property("sonar.projectKey", "pulpogato_pulpogato")
         property("sonar.organization", "pulpogato")
+        // The generated REST/GraphQL/github-files sources live under each module's build/ dir, which
+        // is gitignored. The scanner excludes gitignored files by default regardless of sonar.sources,
+        // so this has to be disabled for the generated sources to be analyzed at all.
+        property("sonar.scm.exclusions.disabled", "true")
     }
 }

@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.pitest)
     alias(libs.plugins.errorprone)
     alias(libs.plugins.nullaway)
+    id("io.github.pulpogato.build-support")
 }
 
 val mockitoAgent = configurations.create("mockitoAgent")
