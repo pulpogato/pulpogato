@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.download)
     alias(libs.plugins.testLogger)
     id("io.github.pulpogato.github-files-codegen")
+    id("io.github.pulpogato.build-support")
 }
 
 val schemastoreRepo = project.ext["schemastore.repo"].toString()
@@ -195,7 +196,7 @@ tasks.named("javadocJar") { dependsOn("generateGithubFilesTypes") }
 
 sourceSets {
     named("main") {
-        java.srcDir(project.layout.buildDirectory.dir("generated-src/main/java"))
+        java.srcDir(project.layout.buildDirectory.dir("codegen-src/main/java"))
         resources.srcDir(project.layout.buildDirectory.dir("generated-src/main/resources"))
     }
 }

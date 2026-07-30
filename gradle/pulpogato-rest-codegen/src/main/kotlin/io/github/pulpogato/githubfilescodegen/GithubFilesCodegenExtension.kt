@@ -17,11 +17,16 @@ open class GithubFilesCodegenExtension(
     /** Base Java package name for generated types. */
     val packageName: Property<String> = project.objects.property(String::class.java)
 
-    /** Output directory for generated Java sources. */
+    /**
+     * Output directory for generated Java sources.
+     *
+     * Defaults to a "codegen-src" dir rather than "generated-src" because Sonar's Gradle plugin
+     * unconditionally drops any sonar.sources/sonar.tests entry whose path contains "build/generated".
+     */
     val outputDir: Property<String> =
         project.objects.property(String::class.java).convention(
             project.layout.buildDirectory
-                .dir("generated-src/main/java")
+                .dir("codegen-src/main/java")
                 .map { it.asFile.absolutePath },
         )
 

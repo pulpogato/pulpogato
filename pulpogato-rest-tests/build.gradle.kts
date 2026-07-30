@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.javaLibrary)
     id("io.github.pulpogato.issue-statuses")
+    id("io.github.pulpogato.build-support")
 }
 
 dependencies {

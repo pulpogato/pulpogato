@@ -42,6 +42,22 @@ val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")
 
 description = "GraphQL types for $projectVariant"
 
+// Every GraphQL variant generates identical package/class names (packageName is uniformly
+// "io.github.pulpogato.graphql"), which makes Sonar's JaCoCo coverage sensor unable to tell one
+// variant's generated file from another's and report spurious "not found in project sources"
+// warnings. sonar.skip does not prevent this (it doesn't affect the auto-detected
+// sonar.sources/sonar.tests of other modules), so explicitly empty this module's own contribution
+// instead. Since coverage is representative across variants, only the fpt (default) variant is left
+// in the scan.
+if (projectVariant != "fpt") {
+    sonar {
+        properties {
+            property("sonar.sources", "")
+            property("sonar.tests", "")
+        }
+    }
+}
+
 sourceSets {
     named("main") {
         resources.srcDir(layout.buildDirectory.dir("generated-src/main/resources"))
@@ -94,6 +110,13 @@ infoBrokerPlugin.add("GitHub-Schema-SHA256", PropertiesFileValueClosure(schemaIn
 tasks.named<GenerateJavaTask>("generateJava") {
     dependsOn(transformSchema)
 
+    // Sonar's Gradle plugin unconditionally drops any sonar.sources/sonar.tests entry whose path
+    // contains the literal substring "build/generated" (org.sonarqube.gradle.SonarTask.containsValidSources),
+    // regardless of what any of our own sonar.properties overrides say. The DGS codegen plugin defaults
+    // its output under "<generatedSourcesDir>/generated/sources/dgs-codegen", which matches that filter
+    // and silently excluded even the fpt variant's generated code from every scan so far.
+    generatedSourcesDir = "${project.layout.buildDirectory.get()}/codegen"
+
     schemaPaths = mutableListOf(transformedSchemaLocation.get().asFile)
     packageName = "io.github.pulpogato.graphql"
     generateClientv2 = true
@@ -119,12 +142,7 @@ tasks.named<GenerateJavaTask>("generateJava") {
             "X509Certificate" to "java.lang.String",
         )
     doLast(
-        PatchDgsGeneratedSourcesAction(
-            layout.buildDirectory
-                .dir("generated/sources/dgs-codegen")
-                .get()
-                .asFile,
-        ),
+        PatchDgsGeneratedSourcesAction(getOutputDir()),
     )
 }
 
