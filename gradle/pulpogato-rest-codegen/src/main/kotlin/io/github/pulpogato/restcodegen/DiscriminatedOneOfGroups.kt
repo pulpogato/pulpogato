@@ -13,7 +13,7 @@ import io.swagger.v3.oas.models.media.Schema
  * are collapsed into a single entry.
  *
  * Shared by [SchemasBuilder] (which emits the interfaces and tags member classes) and
- * [SchemaExtensions] (which returns the interface type instead of a wrapper class when a
+ * `SchemaExtensions` (which returns the interface type instead of a wrapper class when a
  * discriminated oneOf is encountered inline in a path response).
  */
 object DiscriminatedOneOfGroups {

@@ -4,7 +4,7 @@ package io.github.pulpogato.issues
  * Represents the status of a GitHub issue.
  * This class holds information about a GitHub issue's state, number, and URL.
  *
- * Kept as mutable [var]s with an all-args primary constructor so that the plain
+ * Kept as mutable `var`s with an all-args primary constructor so that the plain
  * [com.fasterxml.jackson.databind.ObjectMapper] (no Kotlin module registered) can
  * deserialize `gh issue view` JSON via either the constructor or the setters.
  */

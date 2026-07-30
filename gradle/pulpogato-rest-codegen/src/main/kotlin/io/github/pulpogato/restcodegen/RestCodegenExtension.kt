@@ -11,7 +11,7 @@ import org.gradle.api.provider.Property
  * allowing users to specify input schemas, output directories, package names, and other
  * generation parameters through the Gradle build configuration.
  *
- * @property project The Gradle project this extension is associated with
+ * @param project The Gradle project this extension is associated with
  */
 open class RestCodegenExtension(
     project: Project,
