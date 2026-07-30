@@ -374,9 +374,12 @@ The filter handles:
 The response includes an `X-Pulpogato-Cache` header indicating the cache status:
 
 * `HIT` - Response served from cache without server request
-* `MISS` - Response fetched from server and cached
-* `REVALIDATED` - Server returned 304, cached response body returned
+* `MISS` - No prior cache entry; response fetched from server and cached
+* `REVALIDATED` - Cache entry was stale; server returned 304, confirming it was still valid, and the cached response body is returned
+* `INVALIDATED` - Cache entry was stale; server returned a fresh 200, invalidating the stored value, which is replaced with the new response
 * `SKIP` - Response too large to cache (still returned to caller)
+
+When an `ObservationRegistry` is configured, each lookup and store is also recorded as a Micrometer observation (`pulpogato.cache.get` / `pulpogato.cache.put`) tagged with a matching `cache.status` (`HIT`/`STALE`/`MISS` on the get, `STORED`/`REVALIDATED`/`INVALIDATED`/`SKIP` on the put), so the same HIT/MISS/REVALIDATED/INVALIDATED outcomes shown in the header are also visible in metrics and tracing.
 
 === Advanced Caching Options
 
