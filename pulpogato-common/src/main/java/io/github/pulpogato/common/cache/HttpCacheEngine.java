@@ -32,6 +32,7 @@ class HttpCacheEngine {
     static final String CACHE_STALE = "STALE";
     static final String CACHE_MISS = "MISS";
     static final String CACHE_STORED = "STORED";
+    static final String CACHE_INVALIDATED = "INVALIDATED";
     static final String CACHE_SKIP = "SKIP";
 
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("max-age=(\\d+)");
@@ -100,14 +101,16 @@ class HttpCacheEngine {
         var maxAge = parsedMaxAge >= 0 ? parsedMaxAge : cached.getMaxAgeSeconds();
 
         var refreshed = new CachedResponse(cached.getBody(), merged, etag, lastModified, maxAge, clock.millis());
-        recordPut(cacheKey, uri, CACHE_STORED, () -> cache.put(cacheKey, refreshed), parent);
+        recordPut(cacheKey, uri, CACHE_REVALIDATED, () -> cache.put(cacheKey, refreshed), parent);
         return refreshed;
     }
 
     /**
      * Records a {@code pulpogato.cache.put} span for the store phase, tagging it with the outcome
-     * (e.g. {@link #CACHE_STORED} or {@link #CACHE_SKIP}). When {@code store} is non-null it runs
-     * inside the span so the span captures the write latency of the cache backend; a null
+     * ({@link #CACHE_STORED} for a cold miss, {@link #CACHE_REVALIDATED} when a stale entry's 304
+     * confirmed it was still valid, {@link #CACHE_INVALIDATED} when a stale entry's revalidation
+     * request instead got back a fresh 200, or {@link #CACHE_SKIP}). When {@code store} is non-null
+     * it runs inside the span so the span captures the write latency of the cache backend; a null
      * {@code store} records a zero-work span documenting that the response was not cached.
      */
     void recordPut(String cacheKey, String uri, String status, @Nullable Runnable store, @Nullable Observation parent) {

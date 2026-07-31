@@ -314,7 +314,7 @@ class CachingExchangeFilterFunctionTest {
         }
 
         @Test
-        @DisplayName("200 response after revalidation updates cache")
+        @DisplayName("200 response after revalidation invalidates and updates cache")
         void okResponseAfterRevalidationUpdatesCache() {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
@@ -329,7 +329,7 @@ class CachingExchangeFilterFunctionTest {
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
-                    .containsExactly("MISS");
+                    .containsExactly("INVALIDATED");
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
@@ -767,7 +767,7 @@ class CachingExchangeFilterFunctionTest {
         }
 
         @Test
-        @DisplayName("Stale entry revalidated with 304 records a cache.get STALE span and a cache.put STORED span")
+        @DisplayName("Stale entry revalidated with 304 records a cache.get STALE span and a cache.put REVALIDATED span")
         void revalidationRecordsStaleLookupAndRefresh() {
             when(clock.millis()).thenReturn(CURRENT_TIME);
             when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
@@ -788,7 +788,35 @@ class CachingExchangeFilterFunctionTest {
                     .backToTestObservationRegistry()
                     .hasObservationWithNameEqualTo(CACHE_PUT)
                     .that()
-                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STORED)
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_REVALIDATED)
+                    .hasHighCardinalityKeyValue("uri", TEST_URL)
+                    .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
+        }
+
+        @Test
+        @DisplayName("Stale entry that gets a fresh 200 records a cache.put INVALIDATED span")
+        void invalidationRecordsStaleLookupAndReplace() {
+            when(clock.millis()).thenReturn(CURRENT_TIME);
+            when(cacheKeyMapper.apply(any(ClientRequest.class))).thenReturn(CACHE_KEY);
+            // Cached long enough ago to be expired against its 60s max-age.
+            when(cache.get(CACHE_KEY, CachedResponse.class))
+                    .thenReturn(new CachedResponse(
+                            RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME - 100_000));
+            when(exchangeFunction.exchange(any(ClientRequest.class)))
+                    .thenReturn(Mono.just(createResponse("\"new-etag\"", null, null)));
+
+            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction)
+                    .block();
+
+            TestObservationRegistryAssert.assertThat(observationRegistry)
+                    .hasObservationWithNameEqualTo(CACHE_GET)
+                    .that()
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_STALE)
+                    .backToTestObservationRegistry()
+                    .hasObservationWithNameEqualTo(CACHE_PUT)
+                    .that()
+                    .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_INVALIDATED)
                     .hasHighCardinalityKeyValue("uri", TEST_URL)
                     .hasHighCardinalityKeyValue("cache.key", CACHE_KEY);
         }

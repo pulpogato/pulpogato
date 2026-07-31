@@ -42,7 +42,8 @@ import reactor.core.publisher.Mono;
  * is returned. Per <a href="https://www.rfc-editor.org/rfc/rfc9111#section-4.3.4">RFC 9111
  * section 4.3.4</a>, a 304 also refreshes the stored entry: the header fields from the 304 replace
  * the corresponding stored fields and the freshness lifetime restarts, so a validated entry can
- * serve fresh hits again instead of revalidating on every subsequent request.
+ * serve fresh hits again instead of revalidating on every subsequent request. If the server instead
+ * returns a fresh 200 for a stale entry, the stored value is invalidated and replaced.
  *
  * <p>Responses larger than {@link #maxCacheableSize} are not cached but are still returned
  * successfully. This prevents memory issues with very large responses.
@@ -182,7 +183,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
             // Cache the response if it has caching headers
             if (response.statusCode().is2xxSuccessful()) {
-                return cacheResponse(cacheKey, request, response, parent);
+                return cacheResponse(cacheKey, request, response, cached != null, parent);
             }
 
             return Mono.just(response);
@@ -190,7 +191,11 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     }
 
     private Mono<ClientResponse> cacheResponse(
-            String cacheKey, ClientRequest request, ClientResponse response, @Nullable Observation parent) {
+            String cacheKey,
+            ClientRequest request,
+            ClientResponse response,
+            boolean wasCached,
+            @Nullable Observation parent) {
         var headers = response.headers().asHttpHeaders();
         var etag = headers.getETag();
         var lastModified = headers.getFirst("Last-Modified");
@@ -230,20 +235,18 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                                 .build();
                     }
 
-                    // Cache and return
+                    // Cache and return. A prior cached entry that reached here (rather than the 304 branch)
+                    // means the live API returned a fresh 200 for a stale lookup, i.e. it invalidated the
+                    // stored value.
                     var cachedResponse =
                             new CachedResponse(body, headerMap, etag, lastModified, maxAge, clock.millis());
-                    getEngine()
-                            .recordPut(
-                                    cacheKey,
-                                    uri,
-                                    HttpCacheEngine.CACHE_STORED,
-                                    () -> cache.put(cacheKey, cachedResponse),
-                                    parent);
+                    var putStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_STORED;
+                    var headerStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_MISS;
+                    getEngine().recordPut(cacheKey, uri, putStatus, () -> cache.put(cacheKey, cachedResponse), parent);
 
                     return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
                             .headers(h -> h.putAll(headerMap))
-                            .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_MISS)
+                            .header(HttpCacheEngine.CACHE_HEADER_NAME, headerStatus)
                             .body(Flux.just(bufferFactory.wrap(body)))
                             .build();
                 });
