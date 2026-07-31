@@ -1832,15 +1832,21 @@ This can significantly reduce API calls and improve performance.</p>
 <p><code>HIT</code> - Response served from cache without server request</p>
 </li>
 <li>
-<p><code>MISS</code> - Response fetched from server and cached</p>
+<p><code>MISS</code> - No prior cache entry; response fetched from server and cached</p>
 </li>
 <li>
-<p><code>REVALIDATED</code> - Server returned 304, cached response body returned</p>
+<p><code>REVALIDATED</code> - Cache entry was stale; server returned 304, confirming it was still valid, and the cached response body is returned</p>
+</li>
+<li>
+<p><code>INVALIDATED</code> - Cache entry was stale; server returned a fresh 200, invalidating the stored value, which is replaced with the new response</p>
 </li>
 <li>
 <p><code>SKIP</code> - Response too large to cache (still returned to caller)</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>When an <code>ObservationRegistry</code> is configured, each lookup and store is also recorded as a Micrometer observation (<code>pulpogato.cache.get</code> / <code>pulpogato.cache.put</code>) tagged with a matching <code>cache.status</code> (<code>HIT</code>/<code>STALE</code>/<code>MISS</code> on the get, <code>STORED</code>/<code>REVALIDATED</code>/<code>INVALIDATED</code>/<code>SKIP</code> on the put), so the same HIT/MISS/REVALIDATED/INVALIDATED outcomes shown in the header are also visible in metrics and tracing.</p>
 </div>
 </div>
 <div class="sect2">
