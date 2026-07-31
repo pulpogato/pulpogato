@@ -1,0 +1,32 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Adds the missing allow_auto_merge property to the repos/update request body until upstream spec is fixed: https://github.com/github/rest-api-description/issues/6902"
+  },
+  "components": {
+    "schemas": { }
+  },
+  "paths": {
+    "/repos/{owner}/{repo}": {
+      "patch": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "allow_auto_merge": {
+                    "type": "boolean",
+                    "description": "Either `true` to allow auto-merge on pull requests, or `false` to disallow auto-merge. https://github.com/github/rest-api-description/issues/6902",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
