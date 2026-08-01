@@ -21,7 +21,7 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
             .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
 
-    private final transient FancyDeserializerSupport<T> support;
+    private final FancyDeserializerSupport<T> support;
 
     /**
      * Constructs a deserializer
