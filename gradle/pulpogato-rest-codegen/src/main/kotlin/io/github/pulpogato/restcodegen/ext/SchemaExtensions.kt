@@ -1472,7 +1472,7 @@ private fun generateBuilderClass(
 }
 
 /**
- * Generates private nested implementation class for SuperBuilder pattern.
+ * Generates public nested implementation class for SuperBuilder pattern.
  */
 private fun generateBuilderImplClass(className: ClassName): TypeSpec {
     val builderName = "${className.simpleName()}Builder"
@@ -1490,7 +1490,7 @@ private fun generateBuilderImplClass(className: ClassName): TypeSpec {
 
     return TypeSpec
         .classBuilder(implName)
-        .addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
         .superclass(superclass)
         .addMethod(
             MethodSpec
@@ -1510,6 +1510,18 @@ private fun generateBuilderImplClass(className: ClassName): TypeSpec {
 }
 
 /**
+ * Gets the builder type for a given class, parameterized with the class type bound rather than raw wildcards.
+ */
+private fun createBuilder(className: ClassName): ParameterizedTypeName {
+    val builderClassName = className.nestedClass("${className.simpleName()}Builder")
+    return ParameterizedTypeName.get(
+        builderClassName,
+        WildcardTypeName.subtypeOf(className),
+        WildcardTypeName.subtypeOf(Types.OBJECT),
+    )
+}
+
+/**
  * Generates static factory method for builder.
  */
 private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec =
@@ -1521,28 +1533,15 @@ private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec =
         .build()
 
 /**
- * Gets the wildcard builder type for a given class.
- */
-private fun createBuilder(className: ClassName): ParameterizedTypeName {
-    val builderClassName = className.nestedClass("${className.simpleName()}Builder")
-    return ParameterizedTypeName.get(
-        builderClassName,
-        WildcardTypeName.subtypeOf(Types.OBJECT),
-        WildcardTypeName.subtypeOf(Types.OBJECT),
-    )
-}
-
-/**
  * Generates toBuilder() method for copying instances.
  */
 private fun generateToBuilderMethod(className: ClassName): MethodSpec {
-    val wildcardBuilder = createBuilder(className)
     val implClassName = className.nestedClass("${className.simpleName()}BuilderImpl")
 
     return MethodSpec
         .methodBuilder("toBuilder")
         .addModifiers(Modifier.PUBLIC)
-        .returns(wildcardBuilder)
+        .returns(createBuilder(className))
         .addStatement($$$"return (new $T()).$$fillValuesFrom(this)", implClassName)
         .build()
 }
