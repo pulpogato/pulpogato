@@ -499,6 +499,7 @@ private fun addStandardMethodsAndBuilderLogic(
     builder: TypeSpec.Builder,
     fieldSpecs: List<FieldSpec>,
     classRef: ClassName,
+    context: Context,
     superType: ClassName? = null,
 ) {
     // Generate all methods
@@ -518,15 +519,15 @@ private fun addStandardMethodsAndBuilderLogic(
     // A subclass always needs an all-args constructor so its SuperBuilder can wire up the
     // inherited base via super(b), even when it adds no fields of its own.
     if (fieldSpecs.isNotEmpty() || superType != null) {
-        builder.addMethod(generateAllArgsConstructor(classRef, fieldSpecs, superType))
+        builder.addMethod(generateAllArgsConstructor(classRef, fieldSpecs, context, superType))
     }
 
     // Add builder pattern
     builder
-        .addType(generateBuilderClass(classRef, fieldSpecs, superType))
+        .addType(generateBuilderClass(classRef, fieldSpecs, context, superType))
         .addType(generateBuilderImplClass(classRef))
-        .addMethod(generateBuilderFactoryMethod(classRef))
-        .addMethod(generateToBuilderMethod(classRef))
+        .addMethod(generateBuilderFactoryMethod(classRef, context))
+        .addMethod(generateToBuilderMethod(classRef, context))
 }
 
 private fun buildFancyObject(
@@ -569,7 +570,7 @@ private fun buildFancyObject(
     val builtType = theType.build()
     val fieldSpecs = builtType.fieldSpecs()
 
-    addStandardMethodsAndBuilderLogic(theType, fieldSpecs, classRef)
+    addStandardMethodsAndBuilderLogic(theType, fieldSpecs, classRef, context)
 
     // Add toCode method (existing logic)
     addToCodeMethod(fieldSpecs, theType, classRef)
@@ -624,7 +625,7 @@ private fun processNestedType(
             val parentStack = context.schemaStack.dropLast(2).toTypedArray()
             addPropertiesFromSchemas(context, entry, keyValuePair, rad.first as ClassName, builder, parentStack)
             val builtWithAllProperties = builder.addModifiers(Modifier.STATIC).build()
-            handleToCodeMethods(original, builtWithAllProperties, rad.first as ClassName, theType)
+            handleToCodeMethods(context, original, builtWithAllProperties, rad.first as ClassName, theType)
         } else {
             theType.addType(builder.addModifiers(Modifier.STATIC).build())
         }
@@ -695,6 +696,7 @@ private fun addPropertiesFromSchemas(
 }
 
 private fun handleToCodeMethods(
+    context: Context,
     original: TypeSpec,
     builtWithAllProperties: TypeSpec,
     className: ClassName,
@@ -705,7 +707,7 @@ private fun handleToCodeMethods(
 
     when {
         hasToCodeMethod && hasNewFields -> {
-            rebuildWithUpdatedMethods(builtWithAllProperties, className, theType)
+            rebuildWithUpdatedMethods(context, builtWithAllProperties, className, theType)
         }
 
         !hasToCodeMethod -> {
@@ -720,6 +722,7 @@ private fun handleToCodeMethods(
 }
 
 private fun rebuildWithUpdatedMethods(
+    context: Context,
     builtWithAllProperties: TypeSpec,
     className: ClassName,
     theType: TypeSpec.Builder,
@@ -750,7 +753,7 @@ private fun rebuildWithUpdatedMethods(
     // Now regenerate all methods with the complete field list
     val allFields = builtWithAllProperties.fieldSpecs()
 
-    addStandardMethodsAndBuilderLogic(builderWithoutOldBuilder, allFields, className)
+    addStandardMethodsAndBuilderLogic(builderWithoutOldBuilder, allFields, className, context)
 
     // Add toCode method
     addToCodeMethod(allFields, builderWithoutOldBuilder, className)
@@ -1001,7 +1004,7 @@ private fun buildAllOfObject(
 
     val fieldSpecs = builder.build().fieldSpecs()
 
-    addStandardMethodsAndBuilderLogic(builder, fieldSpecs, nameRef, superType)
+    addStandardMethodsAndBuilderLogic(builder, fieldSpecs, nameRef, context, superType)
     addToCodeMethod(fieldSpecs, builder, nameRef, baseProperties)
 
     return builder.build()
@@ -1034,7 +1037,7 @@ private fun buildSimpleObject(
     val builtClass = builder.build()
     val fields = builtClass.fieldSpecs()
 
-    addStandardMethodsAndBuilderLogic(builder, fields, nameRef)
+    addStandardMethodsAndBuilderLogic(builder, fields, nameRef, context)
 
     // Add toCode method (existing logic)
     addToCodeMethod(fields, builder, nameRef)
@@ -1162,6 +1165,7 @@ private fun generateNoArgsConstructor(): MethodSpec =
 private fun generateAllArgsConstructor(
     className: ClassName,
     fields: List<FieldSpec>,
+    context: Context,
     superType: ClassName? = null,
 ): MethodSpec {
     val builderClassName = className.nestedClass("${className.simpleName()}Builder")
@@ -1176,6 +1180,7 @@ private fun generateAllArgsConstructor(
         MethodSpec
             .constructorBuilder()
             .addModifiers(Modifier.PROTECTED)
+            .addAnnotation(generated(0, context))
             .addParameter(wildcardBuilder, "b")
 
     // Let the base SuperBuilder populate the inherited fields before we set our own.
@@ -1231,11 +1236,13 @@ private fun generateHashCode(): MethodSpec =
 private fun generateFillValuesFromMethod(
     bTypeVar: TypeVariableName,
     cTypeVar: TypeVariableName,
+    context: Context,
     callSuper: Boolean = false,
 ): MethodSpec =
     MethodSpec
         .methodBuilder($$"$fillValuesFrom")
         .addModifiers(Modifier.PROTECTED)
+        .addAnnotation(generated(0, context))
         .returns(bTypeVar)
         .addParameter(cTypeVar, "instance")
         .apply {
@@ -1254,6 +1261,7 @@ private fun generateFillValuesFromInstanceIntoBuilderMethod(
     className: ClassName,
     builderName: String,
     fields: List<FieldSpec>,
+    context: Context,
 ): MethodSpec {
     val wildcardBuilder =
         ParameterizedTypeName.get(
@@ -1266,6 +1274,7 @@ private fun generateFillValuesFromInstanceIntoBuilderMethod(
         MethodSpec
             .methodBuilder($$"$fillValuesFromInstanceIntoBuilder")
             .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+            .addAnnotation(generated(0, context))
             .returns(TypeName.VOID)
             .addParameter(className, "instance")
             .addParameter(wildcardBuilder, "b")
@@ -1385,6 +1394,7 @@ private fun generateAbstractBuilderSetter(
 private fun generateBuilderClass(
     className: ClassName,
     fields: List<FieldSpec>,
+    context: Context,
     superType: ClassName? = null,
 ): TypeSpec {
     val builderName = "${className.simpleName()}Builder"
@@ -1434,10 +1444,10 @@ private fun generateBuilderClass(
     }
 
     // Add $fillValuesFrom method
-    builder.addMethod(generateFillValuesFromMethod(bTypeVar, cTypeVar, callSuper = superType != null))
+    builder.addMethod(generateFillValuesFromMethod(bTypeVar, cTypeVar, context, callSuper = superType != null))
 
     // Add $fillValuesFromInstanceIntoBuilder static helper
-    builder.addMethod(generateFillValuesFromInstanceIntoBuilderMethod(className, builderName, fields))
+    builder.addMethod(generateFillValuesFromInstanceIntoBuilderMethod(className, builderName, fields, context))
 
     // Add fluent setter methods with @JsonProperty
     fields.forEach { field ->
@@ -1512,10 +1522,14 @@ private fun generateBuilderImplClass(className: ClassName): TypeSpec {
 /**
  * Generates static factory method for builder.
  */
-private fun generateBuilderFactoryMethod(className: ClassName): MethodSpec =
+private fun generateBuilderFactoryMethod(
+    className: ClassName,
+    context: Context,
+): MethodSpec =
     MethodSpec
         .methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+        .addAnnotation(generated(0, context))
         .returns(createBuilder(className))
         .addStatement($$"return new $T()", className.nestedClass("${className.simpleName()}BuilderImpl"))
         .build()
@@ -1535,13 +1549,17 @@ private fun createBuilder(className: ClassName): ParameterizedTypeName {
 /**
  * Generates toBuilder() method for copying instances.
  */
-private fun generateToBuilderMethod(className: ClassName): MethodSpec {
+private fun generateToBuilderMethod(
+    className: ClassName,
+    context: Context,
+): MethodSpec {
     val wildcardBuilder = createBuilder(className)
     val implClassName = className.nestedClass("${className.simpleName()}BuilderImpl")
 
     return MethodSpec
         .methodBuilder("toBuilder")
         .addModifiers(Modifier.PUBLIC)
+        .addAnnotation(generated(0, context))
         .returns(wildcardBuilder)
         .addStatement($$$"return (new $T()).$$fillValuesFrom(this)", implClassName)
         .build()
