@@ -64,11 +64,19 @@ class HttpCacheEngine {
                 .highCardinalityKeyValue(CACHE_KEY, cacheKey);
         return observation.observe(() -> {
             var cached = cache.get(cacheKey, CachedResponse.class);
-            var freshHit = cached != null && !cached.isExpired(clock.millis()) && !alwaysRevalidate;
-            observation.lowCardinalityKeyValue(
-                    CACHE_STATUS, cached == null ? CACHE_MISS : (freshHit ? CACHE_HIT : CACHE_STALE));
+            observation.lowCardinalityKeyValue(CACHE_STATUS, computeStatus(cached));
             return cached;
         });
+    }
+
+    private String computeStatus(@Nullable CachedResponse cached) {
+        if (cached == null) {
+            return CACHE_MISS;
+        } else if (cached.isExpired(clock.millis()) || alwaysRevalidate) {
+            return CACHE_STALE;
+        } else {
+            return CACHE_HIT;
+        }
     }
 
     /**
