@@ -101,8 +101,8 @@ class PaginateTest {
             var paginate = new Paginate();
             when(fetchPage.apply(1L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
-            assertThatThrownBy(() -> paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages)
-                            .toList())
+            Stream<String> stream = paginate.from(10, fetchPage, PaginateTest::getStream, Response::totalPages);
+            assertThatThrownBy(stream::toList)
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Failed to fetch page");
         }
