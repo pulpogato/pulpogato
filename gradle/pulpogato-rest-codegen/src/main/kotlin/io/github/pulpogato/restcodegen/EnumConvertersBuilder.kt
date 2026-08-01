@@ -95,6 +95,8 @@ class EnumConvertersBuilder {
             com.palantir.javapoet.MethodSpec
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
+                .addComment("Empty constructor")
+                .addJavadoc($$"$L", "Registry containing all enum converters for Spring Boot configuration.")
                 .build(),
         )
 
