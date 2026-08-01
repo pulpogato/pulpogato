@@ -24,7 +24,7 @@ public class Jackson2LenientFancyDeserializer<T> extends StdDeserializer<T> {
             .registerModule(new JavaTimeModule())
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-    private final transient LenientFancyDeserializerSupport<T> support;
+    private final LenientFancyDeserializerSupport<T> support;
 
     /**
      * Constructs a deserializer.
