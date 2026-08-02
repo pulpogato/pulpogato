@@ -24,6 +24,7 @@ import io.github.pulpogato.restcodegen.Annotations.nullableOptionalSerializer
 import io.github.pulpogato.restcodegen.Annotations.serializerAnnotationForJackson2
 import io.github.pulpogato.restcodegen.Annotations.serializerAnnotationForJackson3
 import io.github.pulpogato.restcodegen.Annotations.singleValueAsArray
+import io.github.pulpogato.restcodegen.Annotations.suppressWarnings
 import io.github.pulpogato.restcodegen.Annotations.typeGenerated
 import io.github.pulpogato.restcodegen.Context
 import io.github.pulpogato.restcodegen.MarkdownHelper
@@ -1530,6 +1531,7 @@ private fun generateBuilderFactoryMethod(
         .methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .addAnnotation(generated(0, context))
+        .addAnnotation(suppressWarnings("java:S1452"))
         .returns(createBuilder(className))
         .addStatement($$"return new $T()", className.nestedClass("${className.simpleName()}BuilderImpl"))
         .build()
@@ -1560,6 +1562,7 @@ private fun generateToBuilderMethod(
         .methodBuilder("toBuilder")
         .addModifiers(Modifier.PUBLIC)
         .addAnnotation(generated(0, context))
+        .addAnnotation(suppressWarnings("java:S1452"))
         .returns(wildcardBuilder)
         .addStatement($$$"return (new $T()).$$fillValuesFrom(this)", implClassName)
         .build()
