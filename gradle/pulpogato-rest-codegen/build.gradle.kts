@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.testLogger)
     alias(libs.plugins.pitest)
     alias(libs.plugins.spotless)
+    jacoco
 }
 
 repositories {
@@ -87,5 +88,11 @@ spotless {
         ktlint()
         target("src/**/*.kt", "*.kts")
         targetExclude("build/**")
+    }
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = false
     }
 }
