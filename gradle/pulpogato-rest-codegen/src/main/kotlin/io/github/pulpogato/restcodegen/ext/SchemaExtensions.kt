@@ -1244,6 +1244,7 @@ private fun generateFillValuesFromMethod(
         .methodBuilder($$"$fillValuesFrom")
         .addModifiers(Modifier.PROTECTED)
         .addAnnotation(generated(0, context))
+        .addAnnotation(suppressWarnings("java:S100"))
         .returns(bTypeVar)
         .addParameter(cTypeVar, "instance")
         .apply {
@@ -1276,6 +1277,7 @@ private fun generateFillValuesFromInstanceIntoBuilderMethod(
             .methodBuilder($$"$fillValuesFromInstanceIntoBuilder")
             .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
             .addAnnotation(generated(0, context))
+            .addAnnotation(suppressWarnings("java:S100"))
             .returns(TypeName.VOID)
             .addParameter(className, "instance")
             .addParameter(wildcardBuilder, "b")
