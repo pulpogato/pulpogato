@@ -282,44 +282,68 @@ public class FancyDeserializerSupport<T> {
      */
     protected final void setAllFields(String mapAsString, T returnValue) {
         if (mode == Mode.ONE_OF) {
-            // Object.class is a catch-all wildcard — skip it in the strict-match pass and fall back
-            // to it only when no more specific field matched.
-            SettableField<T, ?> match = null;
-            SettableField<T, ?> objectFallback = null;
+            setOneOfField(mapAsString, returnValue);
+        } else {
             for (var pair : fields) {
-                if (pair.type() == Object.class) {
-                    objectFallback = pair;
-                    continue;
-                }
-                // Scalar types (String, Number subclasses, Boolean) must match the JSON token type.
-                // Without this guard, Jackson's default coercion lets a JSON number satisfy String
-                // (and vice versa), producing spurious ambiguity in oneOf unions like String|BigDecimal.
-                if (isScalarType(pair.type()) && !isJsonTokenCompatible(mapAsString, pair.type())) {
-                    continue;
-                }
-                var probe = initializer.get();
-                if (setField(pair, mapAsString, probe)) {
-                    if (match != null) {
-                        log.debug(
-                                "Ambiguous oneOf for {}: both {} and {} matched; using first match",
-                                type.getSimpleName(),
-                                match.type().getSimpleName(),
-                                pair.type().getSimpleName());
-                        break;
-                    }
-                    match = pair;
-                }
+                setField(pair, mapAsString, returnValue);
+            }
+        }
+    }
+
+    /**
+     * Finds the single field whose type matches the JSON input and sets it on {@code returnValue}.
+     * {@link Object} fields are treated as a catch-all wildcard: skipped during the strict-match
+     * pass and used only when no more specific field matched. If more than one specific field
+     * matches, the first match wins and the ambiguity is logged rather than thrown.
+     *
+     * @param mapAsString the JSON string to deserialize
+     * @param returnValue the object being populated
+     */
+    private void setOneOfField(String mapAsString, T returnValue) {
+        SettableField<T, ?> match = null;
+        SettableField<T, ?> objectFallback = null;
+        for (var pair : fields) {
+            if (pair.type() == Object.class) {
+                objectFallback = pair;
+                continue;
+            }
+            if (!isOneOfCandidate(pair, mapAsString)) {
+                continue;
             }
             if (match != null) {
-                setField(match, mapAsString, returnValue);
-            } else if (objectFallback != null) {
-                setField(objectFallback, mapAsString, returnValue);
+                log.debug(
+                        "Ambiguous oneOf for {}: both {} and {} matched; using first match",
+                        type.getSimpleName(),
+                        match.type().getSimpleName(),
+                        pair.type().getSimpleName());
+                break;
             }
-            return;
+            match = pair;
         }
-        for (var pair : fields) {
-            setField(pair, mapAsString, returnValue);
+        if (match != null) {
+            setField(match, mapAsString, returnValue);
+        } else if (objectFallback != null) {
+            setField(objectFallback, mapAsString, returnValue);
         }
+    }
+
+    /**
+     * Checks whether a non-wildcard field is a viable oneOf match: its scalar type (if any) must
+     * be compatible with the JSON token, and the JSON must actually deserialize into it.
+     *
+     * @param pair        the field to probe
+     * @param mapAsString the JSON string to deserialize
+     * @return true if the field successfully deserializes and is a candidate match
+     */
+    private boolean isOneOfCandidate(SettableField<T, ?> pair, String mapAsString) {
+        // Scalar types (String, Number subclasses, Boolean) must match the JSON token type.
+        // Without this guard, Jackson's default coercion lets a JSON number satisfy String
+        // (and vice versa), producing spurious ambiguity in oneOf unions like String|BigDecimal.
+        if (isScalarType(pair.type()) && !isJsonTokenCompatible(mapAsString, pair.type())) {
+            return false;
+        }
+        var probe = initializer.get();
+        return setField(pair, mapAsString, probe);
     }
 
     /**
