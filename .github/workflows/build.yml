@@ -80,7 +80,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew --max-workers=$MAX_WORKERS -Pcodegen.format=true build :pulpogato-docs:asciidoctor snapshot
+        run: ./gradlew --max-workers=$MAX_WORKERS -Pcoverage=true -Pcodegen.format=true build :pulpogato-docs:asciidoctor jacocoTestReport snapshot
 
       - name: Run Sonar Analysis
         # always() so this still runs (and uploads whatever coverage/sources it can) even if the
