@@ -284,16 +284,18 @@ class PathsBuilder {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(generated(0, context.withSchemaStack("#", "paths")))
                 .addJavadoc(
-                    """
-                    Central entry point for accessing all GitHub REST APIs.
-
-                    <p>Construct with a pre-configured {@link ${clientType.simpleName()}}, then call
-                    {@code get<Xxx>Api()} to obtain a typed API interface. Example:
-
-                    <pre>{@code
-                    ${spec.exampleSnippet}
-                    }</pre>
-                    """.trimIndent(),
+                    listOf(
+                        "Central entry point for accessing all GitHub REST APIs.",
+                        "",
+                        """
+                        <p>Construct with a pre-configured {@link ${clientType.simpleName()}}, then call
+                        {@code get<Xxx>Api()} to obtain a typed API interface. Example:
+                        """.trimIndent(),
+                        "",
+                        "<pre>{@code",
+                        spec.exampleSnippet,
+                        "}</pre>",
+                    ).joinToString("\n"),
                 ).addField(
                     FieldSpec
                         .builder(
@@ -379,15 +381,17 @@ class PathsBuilder {
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addJavadoc(
-                    """
-                    Constructs a client with an explicit ${spec.chainNoun} chain.
-
-                    <p>The given {@code ${spec.filterParamName}} are applied, in order, to {@code $fieldName}.
-                    Use this constructor to customize, reorder, or omit the default ${spec.chainNoun}s
-                    applied by {@link #RestClients(${clientType.simpleName()})}.
-
-                    $defaultFilterSeeDoc
-                    """.trimIndent(),
+                    listOf(
+                        "Constructs a client with an explicit ${spec.chainNoun} chain.",
+                        "",
+                        """
+                        <p>The given {@code ${spec.filterParamName}} are applied, in order, to {@code $fieldName}.
+                        Use this constructor to customize, reorder, or omit the default ${spec.chainNoun}s
+                        applied by {@link #RestClients(${clientType.simpleName()})}.
+                        """.trimIndent(),
+                        "",
+                        defaultFilterSeeDoc,
+                    ).joinToString("\n"),
                 ).addParameter(
                     ParameterSpec
                         .builder(clientType, fieldName)
@@ -447,14 +451,14 @@ class PathsBuilder {
                         .builder(clientType, fieldName)
                         .build(),
                 ).addJavadoc(
-                    """
-                    Constructs a client with the default ${spec.chainNoun} chain:
-                    <ul>
-                    $defaultFilterDoc
-                    </ul>
-
-                    @see #RestClients(${clientType.simpleName()}, List)
-                    """.trimIndent(),
+                    listOf(
+                        "Constructs a client with the default ${spec.chainNoun} chain:",
+                        "<ul>",
+                        defaultFilterDoc,
+                        "</ul>",
+                        "",
+                        "@see #RestClients(${clientType.simpleName()}, List)",
+                    ).joinToString("\n"),
                 ).addStatement(
                     $$"this($N, $T.of(new $T(), new $T(), new $T()))",
                     fieldName,
