@@ -83,17 +83,7 @@ fun typesAre(
     vararg types: String,
 ) = types.toSet() == oneOf.flatMap { it.types ?: listOf() }.toSet()
 
-fun isAnyOfOnlyForValidation(
-    anyOf: List<Schema<Any>>,
-    parentSchema: Schema<*>,
-): Boolean = isOnlyForValidation(anyOf, parentSchema)
-
-fun isOneOfOnlyForValidation(
-    oneOf: List<Schema<Any>>,
-    parentSchema: Schema<*>,
-): Boolean = isOnlyForValidation(oneOf, parentSchema)
-
-private fun isOnlyForValidation(
+fun isOnlyForValidation(
     subSchemas: List<Schema<Any>>,
     parentSchema: Schema<*>,
 ): Boolean {
@@ -198,7 +188,7 @@ fun referenceAndDefinition(
             Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         }
 
-        anyOf != null && isAnyOfOnlyForValidation(anyOf, entry.value) -> {
+        anyOf != null && isOnlyForValidation(anyOf, entry.value) -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
         }
 
@@ -208,7 +198,7 @@ fun referenceAndDefinition(
             }
         }
 
-        oneOf != null && isOneOfOnlyForValidation(oneOf, entry.value) -> {
+        oneOf != null && isOnlyForValidation(oneOf, entry.value) -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
         }
 

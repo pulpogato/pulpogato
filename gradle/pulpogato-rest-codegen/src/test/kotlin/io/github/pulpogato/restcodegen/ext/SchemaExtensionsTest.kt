@@ -103,7 +103,7 @@ class SchemaExtensionsTest {
     }
 
     @Test
-    fun `isOneOfOnlyForValidation returns true for oneOf with only required constraints`() {
+    fun `isOnlyForValidation returns true for oneOf with only required constraints`() {
         val oneOfSchema1 =
             Schema<Any>().apply {
                 required = listOf("code_scanning_alerts")
@@ -124,11 +124,11 @@ class SchemaExtensionsTest {
                     )
             }
 
-        assertThat(isOneOfOnlyForValidation(listOf(oneOfSchema1, oneOfSchema2), parentSchema)).isTrue()
+        assertThat(isOnlyForValidation(listOf(oneOfSchema1, oneOfSchema2), parentSchema)).isTrue()
     }
 
     @Test
-    fun `isOneOfOnlyForValidation returns false for oneOf with type definitions`() {
+    fun `isOnlyForValidation returns false for oneOf with type definitions`() {
         val oneOfSchema1 =
             Schema<Any>().apply {
                 type = "object"
@@ -148,11 +148,11 @@ class SchemaExtensionsTest {
                 properties = mapOf("name" to Schema<Any>().apply { type = "string" })
             }
 
-        assertThat(isOneOfOnlyForValidation(listOf(oneOfSchema1, oneOfSchema2), parentSchema)).isFalse()
+        assertThat(isOnlyForValidation(listOf(oneOfSchema1, oneOfSchema2), parentSchema)).isFalse()
     }
 
     @Test
-    fun `isOneOfOnlyForValidation returns false when parent has no properties`() {
+    fun `isOnlyForValidation returns false when parent has no properties`() {
         val oneOfSchema =
             Schema<Any>().apply {
                 required = listOf("code_scanning_alerts")
@@ -160,6 +160,6 @@ class SchemaExtensionsTest {
 
         val parentSchema = Schema<Any>()
 
-        assertThat(isOneOfOnlyForValidation(listOf(oneOfSchema), parentSchema)).isFalse()
+        assertThat(isOnlyForValidation(listOf(oneOfSchema), parentSchema)).isFalse()
     }
 }
