@@ -54,7 +54,7 @@ public class Jackson3FancySerializer<T> extends StdSerializer<T> {
     /**
      * The fields that can be read from the class
      */
-    private final transient List<GettableField<T, ?>> fields;
+    private final List<GettableField<T, ?>> fields;
 
     /**
      * Serializes the value when used as a polymorphic subtype (e.g. a sealed webhook supertype).
