@@ -19,7 +19,7 @@ public class Jackson2FancyDeserializer<T> extends StdDeserializer<T> {
 
     private static final ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private final FancyDeserializerSupport<T> support;
+    private final transient FancyDeserializerSupport<T> support;
 
     /**
      * Constructs a deserializer

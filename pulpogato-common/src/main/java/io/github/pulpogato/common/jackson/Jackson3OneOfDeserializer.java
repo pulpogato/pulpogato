@@ -29,7 +29,7 @@ public class Jackson3OneOfDeserializer<T> extends StdDeserializer<T> {
             .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
 
-    private final transient List<Class<? extends T>> candidates;
+    private final List<Class<? extends T>> candidates;
 
     /**
      * Constructs a deserializer.
