@@ -15,6 +15,7 @@ import com.palantir.javapoet.TypeVariableName
 import com.palantir.javapoet.WildcardTypeName
 import io.github.pulpogato.restcodegen.Annotations.generated
 import io.github.pulpogato.restcodegen.Annotations.nullable
+import io.github.pulpogato.restcodegen.Annotations.suppressWarnings
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.className
@@ -527,6 +528,7 @@ class WebhooksBuilder {
         TypeSpec
             .classBuilder("${subcategory.pascalCase()}WebhooksTest")
             .addAnnotation(testExtension())
+            .addAnnotation(suppressWarnings(SonarRules.SIMILAR_TESTS))
 
     private fun getInterfaceBuilder(subcategory: String): TypeSpec.Builder =
         TypeSpec
@@ -958,6 +960,7 @@ class WebhooksBuilder {
                     .addMethods(ctx.tests)
                     .addAnnotation(generated(0, ctx.context.withSchemaStack("requestBody", "content", entry.key, "schema")))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
+                    .addAnnotation(suppressWarnings(SonarRules.SIMILAR_TESTS))
                     .build(),
             )
         }
