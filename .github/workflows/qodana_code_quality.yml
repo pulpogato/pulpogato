@@ -30,6 +30,7 @@ jobs:
           # Native mode so Gradle Daemon JVM criteria can use the JDK from setup-java
           # (Docker mode only has JBR 25 and cannot download toolchain 21 without URLs).
           args: --within-docker false
+          use-caches: false
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1577463682 }}
           QODANA_ENDPOINT: "https://qodana.cloud"
