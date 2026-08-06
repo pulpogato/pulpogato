@@ -12,6 +12,7 @@ import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
 import io.github.pulpogato.restcodegen.Annotations.generated
 import io.github.pulpogato.restcodegen.Annotations.nullable
+import io.github.pulpogato.restcodegen.Annotations.suppressWarnings
 import io.github.pulpogato.restcodegen.Annotations.testExtension
 import io.github.pulpogato.restcodegen.ext.camelCase
 import io.github.pulpogato.restcodegen.ext.pascalCase
@@ -489,6 +490,7 @@ class PathsBuilder {
         TypeSpec
             .classBuilder(interfaceName + "Test")
             .addAnnotation(testExtension())
+            .addAnnotation(suppressWarnings(SonarRules.SIMILAR_TESTS))
 
     /**
      * Creates an API interface builder with appropriate annotations and documentation.
@@ -595,6 +597,7 @@ class PathsBuilder {
                                 .classBuilder(methodName.pascalCase() + "Response")
                                 .addAnnotation(generated(0, context))
                                 .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
+                                .addAnnotation(suppressWarnings(SonarRules.SIMILAR_TESTS))
                                 .addMethods(testMethods)
                                 .addJavadoc($$"$L", "Tests {@link $typeRef#$methodName}")
                                 .build(),
@@ -1033,6 +1036,7 @@ class PathsBuilder {
                     .addJavadoc($$"$L", "Tests {@link $typeRef#${atomicMethod.operationName.camelCase()}}")
                     .addAnnotation(generated(0, context))
                     .addAnnotation(AnnotationSpec.builder(ClassName.get("org.junit.jupiter.api", "Nested")).build())
+                    .addAnnotation(suppressWarnings(SonarRules.SIMILAR_TESTS))
                     .addMethods(testMethods)
                     .build(),
             )

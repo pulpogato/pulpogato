@@ -17,4 +17,10 @@ object SonarRules {
      * which this codegen replicates by hand.
      */
     const val GENERIC_WILDCARD_RETURN = "java:S1452"
+
+    /**
+     * Sonar rule `java:S5976`: "Tests with similar assertions should be combined into a parameterized test".
+     * Suppressed on generated OpenAPI example tests because test cases are auto-generated as individual `@Test` methods for each schema example.
+     */
+    const val SIMILAR_TESTS = "java:S5976"
 }
