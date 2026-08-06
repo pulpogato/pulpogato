@@ -26,14 +26,18 @@ object Annotations {
             .addMember("value", $$"$S", property)
             .build()
 
-    // SuperBuilder's builder()/toBuilder() must return the wildcarded builder type since the
-    // caller's concrete self-type isn't known at that point; this is a known Sonar false positive
-    // for the Lombok @SuperBuilder pattern, which this codegen replicates by hand.
-    fun suppressWarnings(rule: String): AnnotationSpec =
-        AnnotationSpec
-            .builder(ClassName.get(SuppressWarnings::class.java))
-            .addMember("value", $$"$S", rule)
-            .build()
+    /**
+     * Creates a [SuppressWarnings] annotation spec for the given rule(s).
+     * @see SonarRules
+     */
+    fun suppressWarnings(vararg rules: String): AnnotationSpec {
+        require(rules.isNotEmpty()) { "At least one suppression rule must be provided." }
+        val builder = AnnotationSpec.builder(ClassName.get(SuppressWarnings::class.java))
+        for (rule in rules) {
+            builder.addMember("value", $$"$S", rule)
+        }
+        return builder.build()
+    }
 
     fun jsonSetterNullsAsEmpty(): AnnotationSpec =
         AnnotationSpec

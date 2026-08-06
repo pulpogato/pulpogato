@@ -33,6 +33,32 @@ class AnnotationsTest {
     }
 
     @Test
+    fun `suppressWarnings creates annotation with single rule`() {
+        val result = Annotations.suppressWarnings("unchecked")
+
+        assertThat(result.type().toString()).contains("SuppressWarnings")
+        assertThat(result.members()["value"].toString()).contains("\"unchecked\"")
+    }
+
+    @Test
+    fun `suppressWarnings creates annotation with multiple rules`() {
+        val result = Annotations.suppressWarnings("unchecked", "rawtypes")
+
+        assertThat(result.type().toString()).contains("SuppressWarnings")
+        assertThat(result.members()["value"].toString()).contains("\"unchecked\"")
+        assertThat(result.members()["value"].toString()).contains("\"rawtypes\"")
+    }
+
+    @Test
+    fun `suppressWarnings creates annotation with SonarRules constants`() {
+        val result = Annotations.suppressWarnings(SonarRules.METHOD_NAMING, SonarRules.GENERIC_WILDCARD_RETURN)
+
+        assertThat(result.type().toString()).contains("SuppressWarnings")
+        assertThat(result.members()["value"].toString()).contains("\"java:S100\"")
+        assertThat(result.members()["value"].toString()).contains("\"java:S1452\"")
+    }
+
+    @Test
     fun `serializerAnnotation creates annotation with correct using member`() {
         val result = Annotations.serializerAnnotationForJackson3("TestClass", mockTypeSpec)
 

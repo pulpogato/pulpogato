@@ -28,6 +28,7 @@ import io.github.pulpogato.restcodegen.Annotations.suppressWarnings
 import io.github.pulpogato.restcodegen.Annotations.typeGenerated
 import io.github.pulpogato.restcodegen.Context
 import io.github.pulpogato.restcodegen.MarkdownHelper
+import io.github.pulpogato.restcodegen.SonarRules
 import io.github.pulpogato.restcodegen.Types
 import io.swagger.v3.oas.models.media.Schema
 import javax.lang.model.element.Modifier
@@ -1234,7 +1235,7 @@ private fun generateFillValuesFromMethod(
         .methodBuilder($$"$fillValuesFrom")
         .addModifiers(Modifier.PROTECTED)
         .addAnnotation(generated(0, context))
-        .addAnnotation(suppressWarnings("java:S100"))
+        .addAnnotation(suppressWarnings(SonarRules.METHOD_NAMING))
         .returns(bTypeVar)
         .addParameter(cTypeVar, "instance")
         .apply {
@@ -1267,7 +1268,7 @@ private fun generateFillValuesFromInstanceIntoBuilderMethod(
             .methodBuilder($$"$fillValuesFromInstanceIntoBuilder")
             .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
             .addAnnotation(generated(0, context))
-            .addAnnotation(suppressWarnings("java:S100"))
+            .addAnnotation(suppressWarnings(SonarRules.METHOD_NAMING))
             .returns(TypeName.VOID)
             .addParameter(className, "instance")
             .addParameter(wildcardBuilder, "b")
@@ -1523,7 +1524,7 @@ private fun generateBuilderFactoryMethod(
         .methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .addAnnotation(generated(0, context))
-        .addAnnotation(suppressWarnings("java:S1452"))
+        .addAnnotation(suppressWarnings(SonarRules.GENERIC_WILDCARD_RETURN))
         .returns(createBuilder(className))
         .addStatement($$"return new $T()", className.nestedClass("${className.simpleName()}BuilderImpl"))
         .build()
@@ -1554,7 +1555,7 @@ private fun generateToBuilderMethod(
         .methodBuilder("toBuilder")
         .addModifiers(Modifier.PUBLIC)
         .addAnnotation(generated(0, context))
-        .addAnnotation(suppressWarnings("java:S1452"))
+        .addAnnotation(suppressWarnings(SonarRules.GENERIC_WILDCARD_RETURN))
         .returns(wildcardBuilder)
         .addStatement($$$"return (new $T()).$$fillValuesFrom(this)", implClassName)
         .build()
