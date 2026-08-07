@@ -39,11 +39,11 @@ jobs:
 
       - name: Run unignore script
         run: |-
-          uv run scripts/unignore.py
+          uv run --no-build --locked scripts/unignore.py
 
       - name: Run delete-customizations script
         run: |-
-          uv run scripts/delete-customizations.py
+          uv run --no-build --locked scripts/delete-customizations.py
 
       - name: Check for changes
         id: check

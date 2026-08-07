@@ -40,7 +40,8 @@ jobs:
       - name: Fetch artifacts from GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./scripts/republish-to-central.sh "${{ inputs.version }}"
+          VERSION: ${{ inputs.version }}
+        run: ./scripts/republish-to-central.sh "$VERSION"
 
       - name: Deploy to Maven Central
         env:
