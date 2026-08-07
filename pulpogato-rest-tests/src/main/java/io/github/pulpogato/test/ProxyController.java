@@ -166,15 +166,14 @@ public class ProxyController {
         if (githubToken == null) {
             throw new IllegalStateException("GITHUB_TOKEN is not set and no cached exchange found.");
         }
+        var requestUri = request.getRequestURI();
+        // The incoming path is mirrored onto the pinned GitHub host below, so it must not carry
+        // ".." segments that could let a caller escape the intended API path.
+        if (Arrays.asList(requestUri.split("/")).contains("..")) {
+            throw new IllegalArgumentException("Invalid request path: " + requestUri);
+        }
         var prefix = githubHost.equals(DEFAULT_SERVER) ? "" : "/api/v3";
-        return new URI(
-                "https",
-                null,
-                githubHost,
-                githubPort,
-                prefix + request.getRequestURI(),
-                request.getQueryString(),
-                null);
+        return new URI("https", null, githubHost, githubPort, prefix + requestUri, request.getQueryString(), null);
     }
 
     private ResponseEntity<byte[]> getLiveResponseBytes(

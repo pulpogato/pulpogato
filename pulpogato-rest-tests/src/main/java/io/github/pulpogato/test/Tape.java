@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,12 @@ public class Tape implements Closeable {
     public static Tape getTape(String tapeName) {
         var resourceName = "tapes/" + tapeName + ".yml";
         var fileName = "src/test/resources/" + resourceName;
+        // tapeName reaches here via the ProxyController's TapeName header, so it must stay
+        // confined to the tapes directory rather than escaping it via "../" segments.
+        var tapesDir = Path.of("src/test/resources/tapes").normalize();
+        if (!Path.of(fileName).normalize().startsWith(tapesDir)) {
+            throw new IllegalArgumentException("Invalid tape name: " + tapeName);
+        }
         createDirectory(fileName);
 
         List<Exchange> exchanges;
