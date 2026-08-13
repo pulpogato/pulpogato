@@ -23,4 +23,10 @@ object SonarRules {
      * Suppressed on generated OpenAPI example tests because test cases are auto-generated as individual `@Test` methods for each schema example.
      */
     const val SIMILAR_TESTS = "java:S5976"
+
+    /**
+     * Sonar rule `java:S1192`: "String literals should not be duplicated".
+     * Suppressed on generated code where string literals are intentionally duplicated for clarity or consistency.
+     */
+    const val STRING_LITERAL_DUPLICATION = "java:S1192"
 }

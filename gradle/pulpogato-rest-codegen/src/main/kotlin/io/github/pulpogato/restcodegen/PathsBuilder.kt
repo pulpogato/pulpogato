@@ -514,6 +514,7 @@ class PathsBuilder {
             .interfaceBuilder(interfaceName)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(generated(0, context.withSchemaStack("#", "tags", tagIndex)))
+            .addAnnotation(suppressWarnings(SonarRules.STRING_LITERAL_DUPLICATION))
             .addJavadoc(
                 buildString {
                     append(apiDescription ?: "API interface.")
