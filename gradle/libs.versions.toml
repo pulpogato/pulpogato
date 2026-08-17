@@ -33,7 +33,9 @@ pitestJunit5Plugin = "1.2.3"
 pitestPlugin = "1.19.0"
 reactor = "3.8.6"
 reflections = "0.10.2"
+roseau = "0.1.0"
 slf4j = "2.0.18"
+sonarqube = "7.4.0.8496"
 spotless = "8.10.0"
 spring = "7.0.8"
 springBoot = "4.1.0"
@@ -96,14 +98,16 @@ commonmark = ["commonmark", "commonmarkTables"]
 springBoot = ["springBootTest", "springBootWeb", "springBootWebflux", "springBootWebTest"]
 
 [plugins]
+asciidoctor = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
 download = { id = "de.undercouch.download", version.ref = "download" }
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorpronePlugin" }
 javaLibrary = { id = "java-library" }
 nullaway = { id = "net.ltgt.nullaway", version.ref = "nullawayPlugin" }
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitestPlugin" }
+roseau = { id = "io.github.rahulsom.roseau", version.ref = "roseau" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }
 waenaPublished = { id = "com.github.rahulsom.waena.published", version.ref = "waena" }
 waenaRoot = { id = "com.github.rahulsom.waena.root", version.ref = "waena" }
-asciidoctor = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }

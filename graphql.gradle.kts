@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.waenaPublished)
     alias(libs.plugins.download)
     id("io.github.pulpogato.build-support")
+    alias(libs.plugins.roseau)
 }
 
 dependencies {

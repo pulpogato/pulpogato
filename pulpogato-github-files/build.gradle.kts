@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.testLogger)
     id("io.github.pulpogato.github-files-codegen")
     id("io.github.pulpogato.build-support")
+    alias(libs.plugins.roseau)
 }
 
 val schemastoreRepo = project.ext["schemastore.repo"].toString()
