@@ -40,8 +40,9 @@ plugins {
     alias(libs.plugins.download).apply(false)
     alias(libs.plugins.spotless).apply(false)
     alias(libs.plugins.asciidoctor).apply(false)
+    alias(libs.plugins.roseau).apply(false)
     id("io.github.pulpogato.build-support")
-    id("org.sonarqube") version "7.4.0.8496"
+    alias(libs.plugins.sonarqube)
 }
 
 repositories {

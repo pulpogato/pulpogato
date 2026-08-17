@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.pitest)
     alias(libs.plugins.errorprone)
     alias(libs.plugins.nullaway)
+    alias(libs.plugins.roseau)
     id("io.github.pulpogato.build-support")
 }
 

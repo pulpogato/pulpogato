@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.testLogger)
     id("io.github.pulpogato.build-support")
     id("io.github.pulpogato.rest-codegen")
+    alias(libs.plugins.roseau)
     alias(libs.plugins.errorprone)
     alias(libs.plugins.nullaway)
 }
