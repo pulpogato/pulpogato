@@ -36,7 +36,12 @@ public class FancyDeserializerSupport<T> {
 
     /**
      * Reads a value from the JSON input (wraps parser + context).
+     *
+     * <p>Declares {@code throws Exception} because implementations bridge Jackson 2 (checked
+     * {@code IOException}) and Jackson 3 (unchecked {@code JacksonException}); those hierarchies
+     * share no narrower common checked type.
      */
+    @SuppressWarnings("java:S112")
     @FunctionalInterface
     public interface ContextReader {
         /**
@@ -51,7 +56,10 @@ public class FancyDeserializerSupport<T> {
 
     /**
      * Serializes a value to a JSON string.
+     *
+     * <p>See {@link ContextReader} for why this declares {@code throws Exception}.
      */
+    @SuppressWarnings("java:S112")
     @FunctionalInterface
     public interface JsonWriter {
         /**
@@ -66,7 +74,10 @@ public class FancyDeserializerSupport<T> {
 
     /**
      * Deserializes a JSON string to a typed value.
+     *
+     * <p>See {@link ContextReader} for why this declares {@code throws Exception}.
      */
+    @SuppressWarnings("java:S112")
     @FunctionalInterface
     public interface JsonReader {
         /**
@@ -183,6 +194,11 @@ public class FancyDeserializerSupport<T> {
             return returnValue;
         } finally {
             inProgress.remove(type);
+            // Recursive calls share the same Set, so only clear the ThreadLocal binding once
+            // the outermost call finishes; otherwise pooled threads never release the HashSet.
+            if (inProgress.isEmpty()) {
+                IN_PROGRESS.remove();
+            }
         }
     }
 
@@ -300,31 +316,40 @@ public class FancyDeserializerSupport<T> {
      * @param returnValue the object being populated
      */
     private void setOneOfField(String mapAsString, T returnValue) {
+        var match = findOneOfMatch(mapAsString);
+        if (match != null) {
+            setField(match, mapAsString, returnValue);
+        } else {
+            fields.stream()
+                    .filter(pair -> pair.type() == Object.class)
+                    .findFirst()
+                    .ifPresent(objectFallback -> setField(objectFallback, mapAsString, returnValue));
+        }
+    }
+
+    /**
+     * Finds the single non-wildcard field whose type matches the JSON input.
+     *
+     * @param mapAsString the JSON string to deserialize
+     * @return the matching field, or {@code null} if none match
+     */
+    private @Nullable SettableField<T, ?> findOneOfMatch(String mapAsString) {
         SettableField<T, ?> match = null;
-        SettableField<T, ?> objectFallback = null;
         for (var pair : fields) {
-            if (pair.type() == Object.class) {
-                objectFallback = pair;
+            if (pair.type() == Object.class || !isOneOfCandidate(pair, mapAsString)) {
                 continue;
             }
-            if (!isOneOfCandidate(pair, mapAsString)) {
-                continue;
-            }
-            if (match != null) {
+            if (match == null) {
+                match = pair;
+            } else {
                 log.debug(
                         "Ambiguous oneOf for {}: both {} and {} matched; using first match",
                         type.getSimpleName(),
                         match.type().getSimpleName(),
                         pair.type().getSimpleName());
-                break;
             }
-            match = pair;
         }
-        if (match != null) {
-            setField(match, mapAsString, returnValue);
-        } else if (objectFallback != null) {
-            setField(objectFallback, mapAsString, returnValue);
-        }
+        return match;
     }
 
     /**
