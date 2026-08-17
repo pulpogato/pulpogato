@@ -1,0 +1,18 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Removes the incomplete `status` enum on check-run-with-simple-check-suite (https://github.com/github/rest-api-description/issues/7003) so checkRunWithSimpleCheckSuite.status.schema.json can replace it with the complete enum."
+  },
+  "components": {
+    "schemas": {
+      "check-run-with-simple-check-suite": {
+        "properties": {
+          "status": null
+        }
+      }
+    }
+  },
+  "paths": { }
+}

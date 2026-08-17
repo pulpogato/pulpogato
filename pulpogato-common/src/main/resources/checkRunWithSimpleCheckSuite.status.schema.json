@@ -1,0 +1,23 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "The check-run-with-simple-check-suite schema (used for the check_run webhook payload) is missing the `waiting` and `requested` status values that the sibling check-run schema (used for REST API responses) already lists, so real check_run.status=\"waiting\" webhook deliveries fail to deserialize. See https://github.com/github/rest-api-description/issues/7003"
+  },
+  "components": {
+    "schemas": {
+      "check-run-with-simple-check-suite": {
+        "properties": {
+          "status": {
+            "description": "The phase of the lifecycle that the check is currently in.",
+            "type": "string",
+            "enum": [ "queued", "in_progress", "completed", "waiting", "requested", "pending" ],
+            "examples": [ "queued" ]
+          }
+        }
+      }
+    }
+  },
+  "paths": { }
+}
