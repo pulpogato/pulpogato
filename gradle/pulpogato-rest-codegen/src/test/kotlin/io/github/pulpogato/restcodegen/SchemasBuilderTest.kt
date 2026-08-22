@@ -221,7 +221,7 @@ class SchemasBuilderTest {
 
     private fun generate(openAPI: OpenAPI) {
         val context = Context(openAPI, "test", emptyList(), emptyMap())
-        SchemasBuilder().buildSchemas(context, tempDir.toFile(), packageName, mutableSetOf<ClassName>())
+        SchemasBuilder().buildSchemas(context, tempDir.toFile(), packageName, mutableSetOf())
     }
 
     private fun generatedFile(simpleName: String): File = File(tempDir.toFile(), "com/example/schemas/$simpleName.java")

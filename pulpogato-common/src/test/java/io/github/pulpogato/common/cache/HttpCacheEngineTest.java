@@ -69,12 +69,12 @@ class HttpCacheEngineTest {
         @Test
         @DisplayName("merges 304 headers over stored headers case-insensitively")
         void mergesHeadersCaseInsensitively() {
-            var stored = Map.<String, List<String>>of(
+            var stored = Map.of(
                     "ETag", List.of("\"old\""),
                     "Content-Type", List.of("application/json"));
             var cached = new CachedResponse(new byte[] {1, 2, 3}, stored, "\"old\"", null, 60, CURRENT_TIME - 10_000);
 
-            var notModifiedHeaders = Map.<String, List<String>>of(
+            var notModifiedHeaders = Map.of(
                     "etag", List.of("\"new\""),
                     "content-length", List.of("0"));
 
@@ -90,7 +90,7 @@ class HttpCacheEngineTest {
         @Test
         @DisplayName("falls back to the stored ETag/Last-Modified/max-age when the 304 omits them")
         void fallsBackToStoredMetadataWhenOmitted() {
-            var stored = Map.<String, List<String>>of("Content-Type", List.of("application/json"));
+            var stored = Map.of("Content-Type", List.of("application/json"));
             var cached = new CachedResponse(
                     new byte[0], stored, "\"stored-etag\"", "stored-last-modified", 60, CURRENT_TIME);
 
