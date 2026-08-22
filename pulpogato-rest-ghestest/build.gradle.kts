@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     testImplementation(libs.bundles.springBoot)
-    testImplementation(project(":${rootProject.name}-rest-ghes-3.17"))
+    testImplementation(project(":${rootProject.name}-rest-ghes-3.18"))
     testImplementation(project(":${rootProject.name}-rest-tests"))
 }
 
