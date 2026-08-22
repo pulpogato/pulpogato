@@ -75,6 +75,8 @@ allprojects {
         }
         yaml {
             prettier()
+                .npmExecutable("$rootDir/npmw")
+                .nodeExecutable("$rootDir/nodew")
             target("src/**/*.yaml", "*.yaml", "*.yml", ".github/**/*.yaml", ".github/**/*.yml")
             targetExclude("build/**")
         }
