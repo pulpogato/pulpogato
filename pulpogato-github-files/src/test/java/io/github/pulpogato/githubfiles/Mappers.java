@@ -1,6 +1,7 @@
 package io.github.pulpogato.githubfiles;
 
 import java.util.stream.Stream;
+import org.jspecify.annotations.NonNull;
 
 final class Mappers {
 
@@ -12,7 +13,7 @@ final class Mappers {
 
     record MapperPair(String name, Mapper yamlMapper, Mapper jsonMapper) {
         @Override
-        public String toString() {
+        public @NonNull String toString() {
             return name;
         }
     }
