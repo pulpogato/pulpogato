@@ -227,10 +227,16 @@ class NullableOptionalTest {
     @JsonDeserialize(using = ColorJackson2Deserializer.class)
     sealed interface Color permits RedColor, BlueColor {}
 
+    // The None.class reset prevents this class from inheriting the interface's deserializer,
+    // which would otherwise cause infinite recursion.
+    @SuppressWarnings("DefaultAnnotationParam")
     @tools.jackson.databind.annotation.JsonDeserialize(using = tools.jackson.databind.ValueDeserializer.None.class)
     @JsonDeserialize(using = JsonDeserializer.None.class)
     record RedColor(@JsonProperty("red") int red) implements Color {}
 
+    // The None.class reset prevents this class from inheriting the interface's deserializer,
+    // which would otherwise cause infinite recursion.
+    @SuppressWarnings("DefaultAnnotationParam")
     @tools.jackson.databind.annotation.JsonDeserialize(using = tools.jackson.databind.ValueDeserializer.None.class)
     @JsonDeserialize(using = JsonDeserializer.None.class)
     record BlueColor(@JsonProperty("blue") int blue) implements Color {}

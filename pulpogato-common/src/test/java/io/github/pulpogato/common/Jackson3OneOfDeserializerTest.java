@@ -21,9 +21,13 @@ class Jackson3OneOfDeserializerTest {
 
     // The None.class reset prevents this class from inheriting the interface's deserializer,
     // which would otherwise cause infinite recursion.
+    @SuppressWarnings("DefaultAnnotationParam")
     @JsonDeserialize(using = ValueDeserializer.None.class)
     record Circle(@JsonProperty("radius") double radius) implements Shape {}
 
+    // The None.class reset prevents this class from inheriting the interface's deserializer,
+    // which would otherwise cause infinite recursion.
+    @SuppressWarnings("DefaultAnnotationParam")
     @JsonDeserialize(using = ValueDeserializer.None.class)
     record Square(@JsonProperty("side") double side) implements Shape {}
 
