@@ -136,8 +136,6 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
         assertThat(error).isNotNull();
         assertThat(error.getMessage()).isEqualTo("Blocked user has already been blocked");
         assertThat(error.getDocumentationUrl()).isEqualTo("https://docs.github.com/rest/users/blocking#block-a-user");
-        System.out.println(error.toCode());
-        System.out.println(exception.getResponseBodyAsString());
     }
 
     @Test
