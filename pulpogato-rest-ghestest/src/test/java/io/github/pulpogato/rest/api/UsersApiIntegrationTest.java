@@ -17,10 +17,9 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
-        assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
 
-        assertThat(body).isInstanceOf(PublicUser.class);
+        assertThat(body).isNotNull().isInstanceOf(PublicUser.class);
         var user = (PublicUser) body;
 
         assertThat(user.getLogin()).isEqualTo("user1");
@@ -44,10 +43,8 @@ class UsersApiIntegrationTest extends BaseIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
-        assertThat(response.getBody()).isNotNull();
         var body = response.getBody();
-
-        assertThat(body).isInstanceOf(PublicUser.class);
+        assertThat(body).isNotNull().isInstanceOf(PublicUser.class);
         var user = (PublicUser) body;
 
         assertThat(user.getLogin()).isEqualTo("user2");
