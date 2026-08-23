@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.common.Paginate;
 import io.github.pulpogato.rest.schemas.RepoSearchResultItem;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class SearchApiIntegrationTest extends BaseApiIntegrationTest {
@@ -52,8 +54,9 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
                         8,
                         page -> api.repos("pulpogato", null, null, perPage, page)
                                 .getBody(),
-                        response -> response.getItems().stream(),
-                        response -> (int) Math.ceil(response.getTotalCount() / (double) perPage))
+                        response -> Optional.ofNullable(response.getItems()).orElse(List.of()).stream(),
+                        response -> (int) Math.ceil(
+                                Optional.ofNullable(response.getTotalCount()).orElse(0L) / (double) perPage))
                 .toList();
 
         // total_count is 20, but the maxPages cap of 8 (with per_page=1) stops us short of that
