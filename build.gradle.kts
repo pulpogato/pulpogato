@@ -1,4 +1,5 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.github.rahulsom.RoseauExtension
 import com.github.rahulsom.waena.WaenaExtension
 import io.github.pulpogato.buildsupport.UpdateRepositoryBranchPropertyTask
 
@@ -106,6 +107,16 @@ subprojects {
         // Tests are MockMvc-based (no bound ports) and data-driven, so they parallelize safely across forked JVMs.
         // Half the cores leaves headroom for codegen/compile work and Gradle's own worker leases during a full build.
         maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+    }
+    plugins.withId("io.github.rahulsom.roseau") {
+        configure<RoseauExtension> {
+            html.set(false)
+            json.set(true)
+            md.set(false)
+            csv.set(true)
+            cli.set(false)
+            verbosity.set(RoseauExtension.VerbosityLevel.NONE)
+        }
     }
 }
 
