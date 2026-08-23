@@ -1224,7 +1224,7 @@ Binding it requires registering the matching <code>WebhookHeadersArgumentResolve
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPullRequest</span><span class="o">(</span>
             <span class="nc">WebhookHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">WebhookPullRequest</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
-        <span class="kt">var</span> <span class="n">hookname</span> <span class="o">=</span>
+        <span class="kt">var</span> <span class="n">webhookName</span> <span class="o">=</span>
                 <span class="k">switch</span> <span class="o">(</span><span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
                     <span class="k">case</span> <span class="nc">WebhookPullRequestEdited</span> <span class="n">ignored</span> <span class="o">-&gt;</span> <span class="s">"pull-request-edited"</span><span class="o">;</span>
                     <span class="k">case</span> <span class="nc">WebhookPullRequestReviewRequested</span> <span class="n">ignored</span> <span class="o">-&gt;</span> <span class="s">"pull-request-review-requested"</span><span class="o">;</span>
@@ -1233,7 +1233,7 @@ Binding it requires registering the matching <code>WebhookHeadersArgumentResolve
                                 <span class="o">+</span> <span class="n">requestBody</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getSimpleName</span><span class="o">());</span>
                 <span class="o">};</span>
         <span class="k">return</span> <span class="nc">ResponseEntity</span><span class="o">.</span><span class="na">ok</span><span class="o">(</span><span class="nc">TestWebhookResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
-                <span class="o">.</span><span class="na">webhookName</span><span class="o">(</span><span class="n">hookname</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">webhookName</span><span class="o">(</span><span class="n">webhookName</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">requestBody</span><span class="o">))</span>
                 <span class="o">.</span><span class="na">build</span><span class="o">());</span>
     <span class="o">}</span>
@@ -1252,7 +1252,8 @@ Binding it requires registering the matching <code>WebhookHeadersArgumentResolve
     <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span><span class="o">;</span>
 
     <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPing</span><span class="o">(</span><span class="nc">WebhookHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">WebhookPing</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nd">@NonNull</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">TestWebhookResponse</span><span class="o">&gt;</span> <span class="nf">processPing</span><span class="o">(</span>
+            <span class="nd">@NonNull</span> <span class="nc">WebhookHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="nc">WebhookPing</span> <span class="n">requestBody</span><span class="o">)</span> <span class="o">{</span>
         <span class="k">return</span> <span class="nc">ResponseEntity</span><span class="o">.</span><span class="na">ok</span><span class="o">(</span><span class="nc">TestWebhookResponse</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
                 <span class="o">.</span><span class="na">webhookName</span><span class="o">(</span><span class="s">"ping"</span><span class="o">)</span>
                 <span class="o">.</span><span class="na">body</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">requestBody</span><span class="o">))</span>
