@@ -2,12 +2,14 @@ package io.github.pulpogato.rest.webhooks;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.pulpogato.rest.schemas.WebhookCheckRun;
+import io.github.pulpogato.rest.schemas.WebhookCheckRunCompleted;
 import io.github.pulpogato.rest.schemas.WebhookCheckRunCreated;
 import io.github.pulpogato.test.TestWebhookResponse;
 import io.github.pulpogato.test.WebhookHelper;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -36,8 +38,8 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>GitHub's {@code check-run} schema (used for REST API responses) lists {@code waiting} and
  * {@code requested} as valid {@code status} values, but the {@code check-run-with-simple-check-suite}
  * schema (used for the {@code check_run} webhook payload) doesn't, even at the latest revision of
- * github/rest-api-description (see https://github.com/github/rest-api-description/issues/7003). The
- * {@code checkRunWithSimpleCheckSuite.status.*.schema.json} additions in pulpogato-common patch the
+ * {@code github/rest-api-description} (see <a href="https://github.com/github/rest-api-description/issues/7003">#7003</a>).
+ * The {@code checkRunWithSimpleCheckSuite.status.*.schema.json} additions in pulpogato-common patch the
  * enum locally until upstream fixes it.
  */
 @WebMvcTest
@@ -53,8 +55,8 @@ class CheckRunWebhooksIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("files")
-    void doTest(String hookname, String filename) throws Exception {
-        WebhookHelper.testWebhook(hookname, filename, mvc);
+    void doTest(String webhookName, String filename) throws Exception {
+        WebhookHelper.testWebhook(webhookName, filename, mvc);
     }
 
     @Configuration
@@ -83,17 +85,18 @@ class CheckRunWebhooksIntegrationTest {
             private final ObjectMapper objectMapper;
 
             @Override
-            public ResponseEntity<TestWebhookResponse> processCheckRun(
-                    WebhookHeaders headers, WebhookCheckRun requestBody) {
-                var hookname =
+            public @NonNull ResponseEntity<TestWebhookResponse> processCheckRun(
+                    @NonNull WebhookHeaders headers, @NonNull WebhookCheckRun requestBody) {
+                var webhookName =
                         switch (requestBody) {
                             case WebhookCheckRunCreated ignored -> "check-run-created";
+                            case WebhookCheckRunCompleted ignored -> "check-run-completed";
                             default ->
                                 throw new UnsupportedOperationException("No test fixture for action: "
                                         + requestBody.getClass().getSimpleName());
                         };
                 return ResponseEntity.ok(TestWebhookResponse.builder()
-                        .webhookName(hookname)
+                        .webhookName(webhookName)
                         .body(objectMapper.writeValueAsString(requestBody))
                         .build());
             }
