@@ -22,6 +22,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 
+@SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 class MetricsClientHttpRequestInterceptorTest {
 

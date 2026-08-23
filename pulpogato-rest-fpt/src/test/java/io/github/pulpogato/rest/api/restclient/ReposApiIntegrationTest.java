@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -361,7 +362,7 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
     static class ExtendedFullRepository extends FullRepository {
         @JsonIgnore
         public TestCustomProperties getTypedCustomProperties() {
-            return TestCustomProperties.fromMap(this.getCustomProperties());
+            return TestCustomProperties.fromMap(Objects.requireNonNull(this.getCustomProperties()));
         }
     }
 

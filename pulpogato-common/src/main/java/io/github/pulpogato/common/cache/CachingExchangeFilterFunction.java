@@ -215,12 +215,12 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
         // Buffer the response body and check size
         return response.body(BodyExtractors.toDataBuffers())
-                .reduce(new ByteArrayOutputStream(), (baos, buffer) -> {
+                .reduce(new ByteArrayOutputStream(), (stream, buffer) -> {
                     var bytes = new byte[buffer.readableByteCount()];
                     buffer.read(bytes);
                     DataBufferUtils.release(buffer);
-                    baos.writeBytes(bytes);
-                    return baos;
+                    stream.writeBytes(bytes);
+                    return stream;
                 })
                 .map(ByteArrayOutputStream::toByteArray)
                 .defaultIfEmpty(new byte[0])

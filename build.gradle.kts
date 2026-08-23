@@ -99,7 +99,7 @@ subprojects {
     }
     tasks.withType<JavaCompile>().configureEach {
         // Codegen emits @Deprecated fields verbatim from GitHub's OpenAPI spec, so a stray
-        // reference to one anywhere in hand-written code is a real signal, not noise.
+        // reference to one anywhere in handwritten code is a real signal, not noise.
         options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Werror"))
     }
     tasks.withType<Test> {

@@ -133,7 +133,7 @@ class HttpCacheEngine {
     /**
      * Whether a response with the given caching headers and content length is eligible to be
      * cached: it must carry at least one of ETag, Last-Modified, or a max-age directive, and its
-     * (known) length must not exceed {@code maxCacheableSize}. An unknown content length (-1)
+     * (known) length must not exceed {@link #maxCacheableSize}. An unknown content length (-1)
      * never disqualifies a response on its own; the buffered body length is checked separately via
      * {@link #exceedsMaxCacheableSize(long)} once it's known.
      */

@@ -82,7 +82,7 @@ class HttpCacheEngineTest {
 
             assertThat(refreshed.getEtag()).isEqualTo("\"new\"");
             assertThat(refreshed.getHeaders()).containsEntry("Content-Type", List.of("application/json"));
-            // Content-Length must never be taken from a 304, which carries no body.
+            // Content-Length must never be taken from a 304, which does not carry a body.
             assertThat(refreshed.getHeaders()).doesNotContainKey("content-length");
             assertThat(refreshed.getHeaders()).doesNotContainKey("Content-Length");
         }
