@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.pulpogato.common.Paginate;
 import io.github.pulpogato.rest.api.BaseApiIntegrationTest;
 import io.github.pulpogato.rest.schemas.RepoSearchResultItem;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Flux;
@@ -57,8 +59,10 @@ class SearchApiIntegrationTest extends BaseApiIntegrationTest {
                         8,
                         page -> api.repos("pulpogato", null, null, perPage, page)
                                 .mapNotNull(ResponseEntity::getBody),
-                        response -> Flux.fromIterable(response.getItems()),
-                        response -> (int) Math.ceil(response.getTotalCount() / (double) perPage))
+                        response -> Flux.fromIterable(
+                                Optional.ofNullable(response.getItems()).orElse(List.of())),
+                        response -> (int) Math.ceil(
+                                Optional.ofNullable(response.getTotalCount()).orElse(0L) / (double) perPage))
                 .collectList()
                 .block();
 

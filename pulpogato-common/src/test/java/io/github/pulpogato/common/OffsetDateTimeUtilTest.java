@@ -30,6 +30,7 @@ class OffsetDateTimeUtilTest {
         assertThat(result.toEpochSecond()).isEqualTo(expectedEpochSecond);
     }
 
+    @SuppressWarnings("ConstantValue")
     @Test
     void shouldReturnNullForNullInput() {
         assertThat(OffsetDateTimeUtil.parseStringDateTime(null)).isNull();
