@@ -48,7 +48,7 @@ public class SingularOrPlural<T> implements PulpogatoType {
      * @param singular the single value to wrap
      * @return a new SingularOrPlural instance containing the single value
      */
-    public static <T> SingularOrPlural<T> singular(T singular) {
+    public static <T> SingularOrPlural<T> singular(@Nullable T singular) {
         return new SingularOrPlural<>(singular, null);
     }
 
