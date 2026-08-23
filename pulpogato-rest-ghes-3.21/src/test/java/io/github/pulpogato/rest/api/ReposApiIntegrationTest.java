@@ -10,7 +10,7 @@ class ReposApiIntegrationTest extends BaseIntegrationTest {
     /**
      * Guards the {@code repos.update.allowAutoMerge} schema addition, which exists because the GHES
      * descriptions omit {@code allow_auto_merge} from the repos/update request body even though the
-     * server accepts it: https://github.com/github/rest-api-description/issues/6902
+     * server accepts it: <a href="https://github.com/github/rest-api-description/issues/6902">#6902</a>
      *
      * <p>The tape matches on the serialized request body, so if the addition is dropped before the
      * upstream schema carries the property, {@code allowAutoMerge} silently disappears from the

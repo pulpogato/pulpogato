@@ -40,6 +40,7 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("resource")
 class CachingClientHttpRequestInterceptorTest {
 
     private static final String TEST_URL = "https://api.example.com/data";

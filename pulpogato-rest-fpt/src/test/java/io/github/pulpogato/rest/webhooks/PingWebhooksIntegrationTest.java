@@ -7,6 +7,7 @@ import io.github.pulpogato.test.WebhookHelper;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -73,7 +74,8 @@ class PingWebhooksIntegrationTest {
             private final ObjectMapper objectMapper;
 
             @Override
-            public ResponseEntity<TestWebhookResponse> processPing(WebhookHeaders headers, WebhookPing requestBody) {
+            public @NonNull ResponseEntity<TestWebhookResponse> processPing(
+                    @NonNull WebhookHeaders headers, @NonNull WebhookPing requestBody) {
                 return ResponseEntity.ok(TestWebhookResponse.builder()
                         .webhookName("ping")
                         .body(objectMapper.writeValueAsString(requestBody))

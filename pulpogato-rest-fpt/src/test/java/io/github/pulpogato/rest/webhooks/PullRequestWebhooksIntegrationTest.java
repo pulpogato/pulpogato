@@ -9,6 +9,7 @@ import io.github.pulpogato.test.WebhookHelper;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,6 +44,7 @@ import tools.jackson.databind.json.JsonMapper;
 @WebMvcTest
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = PullRequestWebhooksIntegrationTest.WebhookMvcConfigurer.class)
+@NullMarked
 class PullRequestWebhooksIntegrationTest {
     @Autowired
     MockMvc mvc;
@@ -53,8 +55,8 @@ class PullRequestWebhooksIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("files")
-    void doTest(String hookname, String filename) throws Exception {
-        WebhookHelper.testWebhook(hookname, filename, mvc);
+    void doTest(String webhookName, String filename) throws Exception {
+        WebhookHelper.testWebhook(webhookName, filename, mvc);
     }
 
     @SpringBootConfiguration
@@ -91,7 +93,7 @@ class PullRequestWebhooksIntegrationTest {
             @Override
             public ResponseEntity<TestWebhookResponse> processPullRequest(
                     WebhookHeaders headers, WebhookPullRequest requestBody) {
-                var hookname =
+                var webhookName =
                         switch (requestBody) {
                             case WebhookPullRequestEdited ignored -> "pull-request-edited";
                             case WebhookPullRequestReviewRequested ignored -> "pull-request-review-requested";
@@ -100,7 +102,7 @@ class PullRequestWebhooksIntegrationTest {
                                         + requestBody.getClass().getSimpleName());
                         };
                 return ResponseEntity.ok(TestWebhookResponse.builder()
-                        .webhookName(hookname)
+                        .webhookName(webhookName)
                         .body(objectMapper.writeValueAsString(requestBody))
                         .build());
             }

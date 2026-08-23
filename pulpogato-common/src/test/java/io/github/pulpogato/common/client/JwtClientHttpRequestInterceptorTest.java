@@ -2,7 +2,10 @@ package io.github.pulpogato.common.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.time.Clock;
@@ -22,6 +25,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 
+@SuppressWarnings("resource")
 class JwtClientHttpRequestInterceptorTest {
 
     private JwtFactory jwtFactory;

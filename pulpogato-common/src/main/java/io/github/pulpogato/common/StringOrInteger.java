@@ -155,7 +155,7 @@ public class StringOrInteger implements PulpogatoType {
     public static class StringConverter implements Converter<StringOrInteger, @Nullable String> {
         @Override
         @Nullable
-        // Converter.convert() isn't JSpecify-annotated, but Spring's own javadoc allows a null return.
+        // Converter.convert() isn't JSpecify-annotated, but Spring's own Javadoc allows a null return.
         @SuppressWarnings("NullAway")
         public String convert(StringOrInteger source) {
             if (source.getStringValue() != null) {
