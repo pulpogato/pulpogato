@@ -9,3 +9,7 @@ profile:
   name: qodana.recommended
 include:
   - name: CheckDependencyLicenses
+exclude:
+  - name: UsePropertyAccessSyntax
+    paths:
+      - pulpogato-docs/build.gradle.kts

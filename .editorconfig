@@ -16,8 +16,5 @@ ij_smart_tabs = false
 ij_visual_guides = 160
 ij_wrap_on_typing = false
 
-[*.yml]
-indent_size = 2
-
-[*.json]
+[{*.yml,*.yaml,*.json}]
 indent_size = 2
