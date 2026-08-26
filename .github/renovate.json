@@ -9,5 +9,28 @@
       ],
       "pinDigests": true
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "matchStrings": [
+        "selectNode +v(?<currentValue>.+?)\n"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)(npmw|yarnw|nodew)$/"
+      ],
+      "datasourceTemplate": "node",
+      "depNameTemplate": "node"
+    },
+    {
+      "customType": "regex",
+      "matchStrings": [
+        "selectTool +(?<depName>[^ ]+) +(?<currentValue>.+?)\n"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)(npmw|yarnw|nodew)$/"
+      ],
+      "datasourceTemplate": "npm"
+    }
   ]
 }
