@@ -186,12 +186,64 @@ open class GenerateJavaTask : DefaultTask() {
 
         // NullAway (via onlyNullMarked) only checks packages carrying this marker, so generated
         // packages need their own package-info.java rather than relying on an AnnotatedPackages allowlist.
+        val apiPackage = "$packageNamePrefix.rest.api"
+        val reactiveApiPackage = "$packageNamePrefix.rest.api.reactive"
+        val restclientApiPackage = "$packageNamePrefix.rest.api.restclient"
+        val webhooksPackage = "$packageNamePrefix.rest.webhooks"
         listOf(
-            "$packageNamePrefix.rest.api",
-            "$packageNamePrefix.rest.api.reactive",
-            "$packageNamePrefix.rest.api.restclient",
-            schemasPackage,
-            "$packageNamePrefix.rest.webhooks",
+            PackageInfo(
+                apiPackage,
+                """
+                Generated GitHub REST API client interfaces and a blocking {@code WebClient} entry point.
+
+                <p>Contains one typed interface per OpenAPI tag group (e.g. {@code UsersApi}),
+                plus {@link $apiPackage.RestClients} to obtain them from a configured
+                {@link org.springframework.web.reactive.function.client.WebClient}. Methods return
+                {@link org.springframework.http.ResponseEntity} for synchronous access.
+                """.trimIndent(),
+            ),
+            PackageInfo(
+                reactiveApiPackage,
+                """
+                Generated GitHub REST API client interfaces with reactive return types.
+
+                <p>Contains the same tag-group interfaces as {@link $apiPackage}, but methods return
+                {@link reactor.core.publisher.Mono} instead of {@link org.springframework.http.ResponseEntity}.
+                Use {@link $reactiveApiPackage.RestClients} as the entry point.
+                """.trimIndent(),
+            ),
+            PackageInfo(
+                restclientApiPackage,
+                """
+                Synchronous {@link org.springframework.web.client.RestClient} entry point for the
+                blocking API interfaces in {@link $apiPackage}.
+
+                <p>Contains {@link $restclientApiPackage.RestClients}, which wires the shared
+                {@code *Api} interfaces to a {@code RestClient} instead of {@code WebClient}.
+                """.trimIndent(),
+            ),
+            PackageInfo(
+                schemasPackage,
+                """
+                Generated data types from the OpenAPI {@code components.schemas} section.
+
+                <p>Includes request and response bodies, webhook payload types, and supporting
+                model classes. Types implement {@link io.github.pulpogato.common.PulpogatoType} where
+                applicable and use {@link io.github.pulpogato.common.NullableOptional} for fields
+                that distinguish absent from explicit {@code null} in JSON.
+                """.trimIndent(),
+            ),
+            PackageInfo(
+                webhooksPackage,
+                """
+                Generated types and Spring MVC helpers for receiving GitHub webhook deliveries.
+
+                <p>Includes {@link $webhooksPackage.WebhookHeaders} and
+                {@link $webhooksPackage.WebhookHeadersResolver} for binding delivery headers,
+                per-subcategory {@code *Webhooks} handler interfaces, and
+                {@link $webhooksPackage.WebhookEventTypes} to resolve event names to payload types.
+                """.trimIndent(),
+            ),
         ).forEach { writeNullMarkedPackageInfo(main, it) }
 
         // Format generated Java code
@@ -220,21 +272,34 @@ open class GenerateJavaTask : DefaultTask() {
     }
 
     /**
+     * Describes a generated package and the Javadoc to attach to its `package-info.java`.
+     */
+    private data class PackageInfo(
+        val packageName: String,
+        val javadoc: String,
+    )
+
+    /**
      * Writes a `package-info.java` marking the given generated package `@NullMarked`.
      */
     private fun writeNullMarkedPackageInfo(
         mainDir: File,
-        packageName: String,
+        packageInfo: PackageInfo,
     ) {
-        val packageDir = File(mainDir, packageName.replace('.', '/'))
+        val packageDir = File(mainDir, packageInfo.packageName.replace('.', '/'))
         packageDir.mkdirs()
+        val javadocBlock =
+            packageInfo.javadoc
+                .lines()
+                .joinToString(prefix = "/**\n", separator = "\n", postfix = "\n */\n") { " * $it" }
         File(packageDir, "package-info.java").writeText(
-            """
-            @NullMarked
-            package $packageName;
+            javadocBlock +
+                """
+                @NullMarked
+                package ${packageInfo.packageName};
 
-            import org.jspecify.annotations.NullMarked;
-            """.trimIndent() + "\n",
+                import org.jspecify.annotations.NullMarked;
+                """.trimIndent() + "\n",
         )
     }
 
