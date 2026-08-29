@@ -19,9 +19,8 @@ COLOR_RED=1
 
 if [ "${USE_TPUT:-}" = "" ]; then
   set +e
-  tput sgr0 >/dev/null 2>/tmp/tput.txt
-  if [ $? -eq 0 ]; then
-    if [ $(wc -c /tmp/tput.txt | sed -E 's/^ +//g' | tr -s " " | cut -d " " -f 1) -gt 3 ]; then
+  if tput sgr0 >/dev/null 2>/tmp/tput.txt; then
+    if [ "$(wc -c /tmp/tput.txt | sed -E 's/^ +//g' | tr -s " " | cut -d " " -f 1)" -gt "3" ]; then
       USE_TPUT=0
     else
       USE_TPUT=1
@@ -33,9 +32,9 @@ if [ "${USE_TPUT:-}" = "" ]; then
 fi
 log() {
   TS="$(date +'%Y-%m-%dT%H:%M:%S%z')"
-  if [ ${NTW_LOG_LEVEL} -ge $1 ]; then
+  if [ "${NTW_LOG_LEVEL}" -ge "$1" ]; then
     if [ "${USE_TPUT}" = "1" ]; then
-      COLOR_SET=$(tput setaf $2)
+      COLOR_SET=$(tput setaf "$2")
       COLOR_RESET=$(tput sgr0)
     else
       COLOR_SET=""
@@ -88,13 +87,13 @@ registryFromNpmrc() {
   done
 }
 
-if [ -z ${NTW_NPM_URL:-''} ]; then
+if [ -z "${NTW_NPM_URL:-}" ]; then
   npmrcUrl=$(registryFromNpmrc)
   if [ -n "$npmrcUrl" ]; then
     NTW_NPM_URL=$npmrcUrl
   fi
 fi
-if [ -z ${NTW_NPM_URL:-''} ]; then
+if [ -z "${NTW_NPM_URL:-}" ]; then
   NTW_NPM_URL="https://registry.npmjs.org/"
 fi
 info "NTW_NPM_URL: $NTW_NPM_URL"
@@ -225,52 +224,68 @@ update() {
   exec cp "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}"
 }
 
+# Usage:
+#   syncRepoCache
+# Pulls (or clones) the cached copy of the node-tool-wrapper repo at
+# ${NTW_HOME}/repo. Returns non-zero if the git operation failed.
+syncRepoCache() {
+  date +%s >"${NTW_HOME}/last-update-check"
+  set +e
+  if [ -d "${NTW_HOME}/repo" ]; then
+    (
+      cd "${NTW_HOME}/repo"
+      GIT_TERMINAL_PROMPT=0 with_timeout 30 git pull
+    )
+    git_result=$?
+  else
+    GIT_TERMINAL_PROMPT=0 with_timeout 30 git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
+    git_result=$?
+  fi
+  set -e
+
+  if [ $git_result -ne 0 ]; then
+    warn "Failed to update node-tool-wrapper repository. GitHub may be unavailable. Continuing with cached version."
+    return 1
+  fi
+}
+
 checkForUpdate() {
   debug "Checking for update..."
-  if [ ! -f "${NTW_HOME}/last-update-check" ]; then
+  local force=${1:-0}
+  if [ "$force" -eq 1 ]; then
+    debug "Force flag set. Setting do_update_cache to 1"
+    do_update_cache=1
+  elif [ ! -f "${NTW_HOME}/last-update-check" ]; then
     debug "No last-update-check file found. Setting do_update_cache to 1"
     echo 0 >"${NTW_HOME}/last-update-check"
     do_update_cache=1
   else
     debug "last-update-check file found. Reading"
     last_update_check=$(cat "${NTW_HOME}/last-update-check")
-    if [ $(($(date +%s) - $last_update_check)) -gt 604800 ]; then
-      debug "last-update-check is older than 7 days. Setting do_update_cache to 1"
+    LAST_UPDATED="$(date -r "$last_update_check" 2>/dev/null || date -d "@$last_update_check")"
+    if [ $(($(date +%s) - last_update_check)) -gt 604800 ]; then
+      debug "last-update-check ($LAST_UPDATED) is older than 7 days. Setting do_update_cache to 1"
       do_update_cache=1
     else
-      debug "last-update-check is younger than 7 days. Setting do_update_cache to 0"
+      debug "last-update-check ($LAST_UPDATED) is younger than 7 days. Setting do_update_cache to 0"
       do_update_cache=0
     fi
   fi
 
   if [ $do_update_cache -eq 1 ]; then
-    date +%s >"${NTW_HOME}/last-update-check"
-    set +e
-    if [ -d "${NTW_HOME}/repo" ]; then
-      (
-        cd "${NTW_HOME}/repo"
-        GIT_TERMINAL_PROMPT=0 with_timeout 30 git pull
-      )
-      git_result=$?
-    else
-      GIT_TERMINAL_PROMPT=0 with_timeout 30 git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
-      git_result=$?
-    fi
-    set -e
-
-    if [ $git_result -ne 0 ]; then
-      warn "Failed to update node-tool-wrapper repository. GitHub may be unavailable. Continuing with cached version."
-      return 0
-    fi
+    syncRepoCache || return 0
   fi
 
   if [ -f "${NTW_HOME}/repo/.ntw.sh" ]; then
-    cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run './${BASH_SOURCE[0]} update' to update"
+    cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run '${BASH_SOURCE[0]} update' to update"
   fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   debug "script ${BASH_SOURCE[0]} is top level ..."
+  if [ "${1:-}" = "--force" ]; then
+    checkForUpdate 1
+  fi
   if [ "$1" = "update" ]; then
     update
   fi
