@@ -16,7 +16,17 @@ else
     git checkout main
 fi
 
+annotate() {
+    local message="$1"
+    if [ "$CI" != "" ]; then
+        echo "::notice::${message}"
+    else
+        echo "${message}"
+    fi
+}
+
 # Updates a property via a Gradle task and creates/updates a PR if changed.
+# Sets PR_CREATED=true if a PR was created or updated, PR_CREATED=false if skipped.
 #
 # Arguments:
 #   $1 - Gradle task name (e.g. updateRestSchemaVersion)
@@ -39,6 +49,7 @@ update_and_pr() {
 
     if [ "${old_sha}" = "${new_sha}" ]; then
         echo "No changes to ${property_name}"
+        PR_CREATED=false
         return
     fi
 
@@ -71,6 +82,7 @@ update_and_pr() {
     if [ "$CI" != "" ]; then
         git branch -D "${branch_name}"
     fi
+    PR_CREATED=true
 }
 
 GH_API_REPO=$(grep "gh.api.repo=" gradle.properties | cut -d'=' -f2)
@@ -79,6 +91,11 @@ update_and_pr \
     "gh.api.commit" \
     "update-schema-version" \
     "${GH_API_REPO}"
+if [ "$PR_CREATED" = "true" ]; then
+    annotate "PR created/updated for gh.api.commit (REST API schema)"
+else
+    annotate "No PR needed for gh.api.commit (REST API schema) — already up to date"
+fi
 
 SCHEMASTORE_REPO=$(grep "schemastore.repo=" gradle.properties | cut -d'=' -f2)
 update_and_pr \
@@ -86,6 +103,11 @@ update_and_pr \
     "schemastore.commit" \
     "update-schemastore-version" \
     "${SCHEMASTORE_REPO}"
+if [ "$PR_CREATED" = "true" ]; then
+    annotate "PR created/updated for schemastore.commit (SchemaStore)"
+else
+    annotate "No PR needed for schemastore.commit (SchemaStore) — already up to date"
+fi
 
 GH_ACTIONS_TYPING_REPO=$(grep "gh.actions.typing.repo=" gradle.properties | cut -d'=' -f2)
 update_and_pr \
@@ -93,3 +115,8 @@ update_and_pr \
     "gh.actions.typing.commit" \
     "update-github-actions-typing-schema-version" \
     "${GH_ACTIONS_TYPING_REPO}"
+if [ "$PR_CREATED" = "true" ]; then
+    annotate "PR created/updated for gh.actions.typing.commit (GitHub Actions Typing schema)"
+else
+    annotate "No PR needed for gh.actions.typing.commit (GitHub Actions Typing schema) — already up to date"
+fi
