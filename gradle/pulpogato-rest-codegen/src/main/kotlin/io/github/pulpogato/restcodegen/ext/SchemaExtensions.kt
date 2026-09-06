@@ -69,15 +69,22 @@ private fun isSimpleType(typeName: TypeName): Boolean {
     }
 }
 
+/**
+ * Upstream sometimes spells a nullable branch as `["string", "null"]`. The enclosing property's own type union
+ * already carries the nullability, so a `"null"` here must not change which Java type the branch maps to.
+ */
+private fun Schema<*>.nonNullTypes(): Set<String> = types?.filterNotNull()?.filterNot { it == "null" }?.toSet() ?: emptySet()
+
 fun isSingleOrArray(
     oneOf: List<Schema<Any>>,
     type: String,
-) = isSingleOrArrayOfSameType(oneOf) && oneOf.first().types == setOf(type)
+) = isSingleOrArrayOfSameType(oneOf) && oneOf.first().nonNullTypes() == setOf(type)
 
 fun isSingleOrArrayOfSameType(oneOf: List<Schema<Any>>) =
     oneOf.size == 2 &&
-        oneOf.last().types == setOf("array") &&
-        oneOf.last().items.types == oneOf.first().types
+        oneOf.last().nonNullTypes() == setOf("array") &&
+        oneOf.first().nonNullTypes().isNotEmpty() &&
+        oneOf.last().items?.nonNullTypes() == oneOf.first().nonNullTypes()
 
 fun typesAre(
     oneOf: List<Schema<Any>>,
