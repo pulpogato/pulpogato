@@ -71,7 +71,8 @@ update_and_pr() {
             --body "${pr_body}" \
             --base main \
             --head "${branch_name}" \
-            --label "dependency"
+            --label "dependency" \
+            --reviewer @pulpogato/pulpogato-write
     else
         gh pr edit "${pr_number}" \
             --title "${commit_message}" \
