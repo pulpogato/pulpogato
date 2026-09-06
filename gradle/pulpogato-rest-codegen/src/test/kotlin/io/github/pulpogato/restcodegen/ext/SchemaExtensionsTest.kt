@@ -3,6 +3,9 @@ package io.github.pulpogato.restcodegen.ext
 import io.swagger.v3.oas.models.media.Schema
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class SchemaExtensionsTest {
     @Test
@@ -26,44 +29,14 @@ class SchemaExtensionsTest {
         assertThat(entry.className()).isEqualTo("TestKey")
     }
 
-    @Test
-    fun `isSingleOrArray returns true for valid single or array schema`() {
-        val singleSchema =
-            Schema<Any>().apply {
-                type = "string"
-            }
-        val arraySchema =
-            Schema<Any>().apply {
-                type = "array"
-                items = Schema<Any>().apply { type = "string" }
-            }
-
-        val oneOf = listOf(singleSchema, arraySchema)
-
-        // Set the types property for each schema
-        singleSchema.types = setOf("string")
-        arraySchema.types = setOf("array")
-        arraySchema.items.types = setOf("string")
-
-        assertThat(isSingleOrArray(oneOf, "string")).isTrue()
-    }
-
-    @Test
-    fun `isSingleOrArray returns false for invalid schemas`() {
-        val schema1 =
-            Schema<Any>().apply {
-                type = "integer"
-                types = setOf("integer")
-            }
-        val schema2 =
-            Schema<Any>().apply {
-                type = "string"
-                types = setOf("string")
-            }
-
-        val oneOf = listOf(schema1, schema2)
-
-        assertThat(isSingleOrArray(oneOf, "string")).isFalse()
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("singleOrArrayCases")
+    fun `isSingleOrArray detects a string-or-array-of-string oneOf`(
+        @Suppress("UNUSED_PARAMETER") description: String,
+        oneOf: List<Schema<Any>>,
+        expected: Boolean,
+    ) {
+        assertThat(isSingleOrArray(oneOf, "string")).isEqualTo(expected)
     }
 
     @Test
@@ -161,5 +134,30 @@ class SchemaExtensionsTest {
         val parentSchema = Schema<Any>()
 
         assertThat(isOnlyForValidation(listOf(oneOfSchema), parentSchema)).isFalse()
+    }
+
+    companion object {
+        private fun schema(vararg types: String) = Schema<Any>().apply { this.types = types.toSet() }
+
+        private fun arrayOfItems(items: Schema<Any>?) =
+            Schema<Any>().apply {
+                types = setOf("array")
+                this.items = items
+            }
+
+        @JvmStatic
+        fun singleOrArrayCases(): List<Arguments> =
+            listOf(
+                Arguments.of("plain string branch", listOf(schema("string"), arrayOfItems(schema("string"))), true),
+                // https://github.com/github/rest-api-description made custom-property-value.value's first
+                // branch `["string", "null"]`, which must still map to SingularOrPlural<String>.
+                Arguments.of("nullable string branch", listOf(schema("string", "null"), arrayOfItems(schema("string"))), true),
+                Arguments.of("nullable array items", listOf(schema("string"), arrayOfItems(schema("string", "null"))), true),
+                Arguments.of("second branch is not an array", listOf(schema("integer"), schema("string")), false),
+                Arguments.of("branch type is not string", listOf(schema("integer"), arrayOfItems(schema("integer"))), false),
+                Arguments.of("mismatched item type", listOf(schema("string"), arrayOfItems(schema("integer"))), false),
+                Arguments.of("array branch without items", listOf(schema("string"), arrayOfItems(null)), false),
+                Arguments.of("untyped branches", listOf(Schema<Any>(), arrayOfItems(Schema<Any>())), false),
+            )
     }
 }
