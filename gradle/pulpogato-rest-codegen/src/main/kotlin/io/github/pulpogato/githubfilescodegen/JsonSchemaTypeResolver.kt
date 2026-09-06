@@ -348,6 +348,12 @@ object JsonSchemaTypeResolver {
             return ResolvedType(variants[0].typeName)
         }
 
+        // Map|Map oneOf cannot be deserialized via raw Map.class (value types are erased).
+        // Prefer the richer Map value type, matching the old if/then/else merge behavior.
+        collapseMapOnlyUnion(ctx, variants)?.let {
+            return ResolvedType(it)
+        }
+
         val description = parentNode["description"]?.asString()
         val unionSpec =
             UnionGenerator.generate(
@@ -391,17 +397,118 @@ object JsonSchemaTypeResolver {
 
     private fun isValidationOnlyOneOf(oneOf: ArrayNode): Boolean = isValidationOnlyOneOf(oneOf.toList())
 
+    /**
+     * True when every oneOf/anyOf branch is a validation constraint rather than a distinct type shape.
+     *
+     * SchemaStore often encodes mutually-exclusive required fields as oneOf of:
+     * - `{ "required": ["uses"] }`
+     * - `{ "type": "object", "properties": { "uses": true }, "required": ["uses"] }`
+     * - `{ "not": { "properties": { "uses": true }, "required": ["uses"] } }`
+     * - `{ "anyOf": [ <validation-only>, ... ] }`
+     *
+     * Those must not become Java union variants; the parent object's `properties` are the real type.
+     */
     private fun isValidationOnlyOneOf(elements: List<JsonNode>): Boolean {
         if (elements.isEmpty()) {
             return false
         }
-        return elements.all { element ->
-            element.isObject &&
-                element.has("required") &&
-                element["required"].isArray &&
-                element.size() == 1
+        return elements.all(::isValidationOnlySchemaElement)
+    }
+
+    private fun isValidationOnlySchemaElement(element: JsonNode): Boolean {
+        if (element !is ObjectNode) {
+            return false
+        }
+        val meaningfulKeys = meaningfulSchemaKeys(element)
+        if (meaningfulKeys.isEmpty()) {
+            return false
+        }
+
+        // Classic: { "required": ["field"] }
+        if (meaningfulKeys == setOf("required") && element["required"].isArray) {
+            return true
+        }
+
+        // Presence marker: { "type": "object", "properties": { "field": true }, "required": ["field"] }
+        if (isPresenceMarkerObject(element, meaningfulKeys)) {
+            return true
+        }
+
+        // Negated presence / required constraint
+        if (meaningfulKeys == setOf("not")) {
+            val negated = element["not"]
+            if (negated !is ObjectNode) {
+                return false
+            }
+            val negatedKeys = meaningfulSchemaKeys(negated)
+            return (negatedKeys == setOf("required") && negated["required"].isArray) ||
+                isPresenceMarkerObject(negated, negatedKeys)
+        }
+
+        // Nested anyOf of validation-only constraints (composite action steps)
+        if (meaningfulKeys == setOf("anyOf") && element["anyOf"].isArray) {
+            return isValidationOnlyOneOf(element["anyOf"].toList())
+        }
+
+        return false
+    }
+
+    /**
+     * SchemaStore marks property presence with boolean `true` schemas rather than real type schemas.
+     * Those objects are still validation constraints when paired with matching `required`.
+     */
+    private fun isPresenceMarkerObject(
+        obj: ObjectNode,
+        meaningfulKeys: Set<String>,
+    ): Boolean {
+        val allowedKeys = setOf("type", "properties", "required")
+        if (!meaningfulKeys.all { it in allowedKeys }) {
+            return false
+        }
+        if ("properties" !in meaningfulKeys || "required" !in meaningfulKeys) {
+            return false
+        }
+        if ("type" in meaningfulKeys && !(obj["type"].isString && obj["type"].asString() == "object")) {
+            return false
+        }
+
+        val properties = obj["properties"]
+        val required = obj["required"]
+        if (!properties.isObject || !required.isArray || required.isEmpty) {
+            return false
+        }
+
+        val propertyNames = properties.propertyNames().toSet()
+        if (propertyNames.isEmpty()) {
+            return false
+        }
+        val allPresenceMarkers =
+            properties.properties().all { (_, value) ->
+                value.isBoolean && value.booleanValue()
+            }
+        if (!allPresenceMarkers) {
+            return false
+        }
+
+        return required.all { entry ->
+            entry.isString && entry.asString() in propertyNames
         }
     }
+
+    private val schemaMetadataKeys =
+        setOf(
+            $$"$comment",
+            "description",
+            "title",
+            "default",
+            "examples",
+            "example",
+            "deprecated",
+            "readOnly",
+            "writeOnly",
+        )
+
+    private fun meaningfulSchemaKeys(obj: ObjectNode): Set<String> = obj.propertyNames().filterNot { it in schemaMetadataKeys }.toSet()
 
     private fun isMetadataOnlySchemaElement(element: JsonNode): Boolean {
         if (!element.isObject) {
@@ -524,13 +631,17 @@ object JsonSchemaTypeResolver {
             return ResolvedType(variants[0].typeName)
         }
 
+        // A single JSON value can only match one scalar shape; SchemaStore often writes
+        // boolean|string as anyOf, but ANY_OF + Jackson coercion would set both fields.
+        val mode = if (variants.all { isSimpleTypeName(it.typeName) }) "ONE_OF" else "ANY_OF"
+
         val description = parentNode["description"]?.asString()
         val unionSpec =
             UnionGenerator.generate(
                 name,
                 variants,
                 description,
-                mode = "ANY_OF",
+                mode = mode,
                 schemaRef = generatedSchemaRef(ctx),
                 sourceFile = generatedSourceFile(ctx),
             )
@@ -999,6 +1110,34 @@ object JsonSchemaTypeResolver {
             )
         ctx.generatedTypes[unionClass.toString()] = unionSpec
         return unionClass
+    }
+
+    /**
+     * When every oneOf variant is `Map<String, SomeObject>`, collapse to a single Map using the
+     * richer value type. Fancy deserializers only see raw `Map.class`, so a Map|Map union would
+     * lose value typing and always pick the first variant.
+     */
+    private fun collapseMapOnlyUnion(
+        ctx: JsonSchemaContext,
+        variants: List<UnionGenerator.VariantSpec>,
+    ): TypeName? {
+        if (variants.size < 2) {
+            return null
+        }
+        val mapTypes =
+            variants.map { it.typeName }.filterIsInstance<ParameterizedTypeName>().takeIf { filtered ->
+                filtered.size == variants.size &&
+                    filtered.all {
+                        it.rawType() == Types.MAP && it.typeArguments().size >= 2
+                    }
+            } ?: return null
+
+        var preferred = mapTypes.first()
+        for (candidate in mapTypes.drop(1)) {
+            val chosen = choosePreferredParameterizedType(ctx, preferred, candidate)
+            preferred = chosen as? ParameterizedTypeName ?: return null
+        }
+        return preferred
     }
 
     private fun choosePreferredParameterizedType(
