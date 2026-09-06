@@ -1,5 +1,6 @@
 package io.github.pulpogato.githubfiles;
 
+import static io.github.pulpogato.githubfiles.workflows.GithubWorkflowOnVariant2IssueCommentType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.common.annotations.Generated;
@@ -602,8 +603,7 @@ class GithubWorkflowDeserializationTest {
             var on = wf.getOn().getGithubWorkflowOnVariant2();
             assertThat(on.getIssueComment()).isNotNull();
             assertThat(on.getIssueComment().getTypes()).isNotNull();
-            assertThat(on.getIssueComment().getTypes().getList()).containsExactly("created", "edited");
-            assertThat(on.getIssueComment().getTypes().getString()).isNull();
+            assertThat(on.getIssueComment().getTypes()).containsExactly(CREATED, EDITED);
         }
 
         @ParameterizedTest
