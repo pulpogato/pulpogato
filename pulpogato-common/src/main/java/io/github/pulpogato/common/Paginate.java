@@ -3,17 +3,18 @@ package io.github.pulpogato.common;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.ToIntFunction;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -142,16 +143,58 @@ public class Paginate {
                 (page, response) -> hasNextPage(response));
     }
 
-    /**
-     * Matches a {@code rel} link-param naming {@code next}, per RFC 8288: either the quoted form
-     * ({@code rel="next"}, optionally alongside other space-separated relation types) or the
-     * unquoted extension-token form ({@code rel=next}). Relation types are case-insensitive.
-     */
-    private static final Pattern REL_NEXT = Pattern.compile("(?i)rel\\s*=\\s*(\"[^\"]*\\bnext\\b[^\"]*\"|next\\b)");
-
     private static boolean hasNextPage(final ResponseEntity<?> response) {
-        String link = response.getHeaders().getFirst("Link");
-        return link != null && REL_NEXT.matcher(link).find();
+        return response.getHeaders().getOrEmpty(HttpHeaders.LINK).stream().anyMatch(Paginate::hasNextRelation);
+    }
+
+    private static boolean hasNextRelation(final String linkHeader) {
+        var segmentStart = 0;
+        var parameter = false;
+        var inUriReference = false;
+        var inQuotes = false;
+        var escaped = false;
+
+        for (var index = 0; index <= linkHeader.length(); index++) {
+            var end = index == linkHeader.length();
+            var character = end ? ',' : linkHeader.charAt(index);
+
+            if (!end && inQuotes && character == '\\' && !escaped) {
+                escaped = true;
+                continue;
+            }
+            if (!end && character == '"' && !inUriReference && !escaped) {
+                inQuotes = !inQuotes;
+            } else if (!end && !inQuotes && character == '<') {
+                inUriReference = true;
+            } else if (!end && !inQuotes && character == '>') {
+                inUriReference = false;
+            }
+            if (!end && escaped) {
+                escaped = false;
+                continue;
+            }
+            if (!inQuotes && !inUriReference && (character == ';' || character == ',')) {
+                if (parameter && isNextRelationParameter(linkHeader.substring(segmentStart, index))) {
+                    return true;
+                }
+                parameter = character == ';';
+                segmentStart = index + 1;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isNextRelationParameter(final String parameter) {
+        var equals = parameter.indexOf('=');
+        if (equals < 0 || !parameter.substring(0, equals).trim().equalsIgnoreCase("rel")) {
+            return false;
+        }
+        var value = parameter.substring(equals + 1).trim();
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            var relationTypes = value.substring(1, value.length() - 1).trim();
+            return Stream.of(relationTypes.split("\\s+")).anyMatch("next"::equalsIgnoreCase);
+        }
+        return value.equalsIgnoreCase("next");
     }
 
     /**
@@ -284,16 +327,22 @@ public class Paginate {
             final LongFunction<@Nullable Mono<R>> fetchPage,
             final Function<R, Flux<T>> extractItems,
             final BiPredicate<Long, R> hasMorePages) {
-        return fetchPageOrEmpty(fetchPage, 1L)
-                .map(response -> new PageResult<>(1L, response))
-                .expand(current -> {
-                    if (current.page() >= maxPages || !hasMorePages.test(current.page(), current.response())) {
-                        return Mono.empty();
-                    }
-                    var nextPage = current.page() + 1;
-                    return fetchPageOrEmpty(fetchPage, nextPage).map(response -> new PageResult<>(nextPage, response));
-                })
-                .concatMap(result -> extractItems.apply(result.response()));
+        return Flux.defer(() -> {
+            if (maxPages <= 0) {
+                return Flux.empty();
+            }
+            return fetchPageOrEmpty(fetchPage, 1L)
+                    .map(response -> new PageResult<>(1L, response))
+                    .expand(current -> {
+                        if (current.page() >= maxPages || !hasMorePages.test(current.page(), current.response())) {
+                            return Mono.empty();
+                        }
+                        var nextPage = current.page() + 1;
+                        return fetchPageOrEmpty(fetchPage, nextPage)
+                                .map(response -> new PageResult<>(nextPage, response));
+                    })
+                    .concatMap(result -> extractItems.apply(result.response()));
+        });
     }
 
     private static <R> Mono<R> fetchPageOrEmpty(final LongFunction<@Nullable Mono<R>> fetchPage, final long page) {
@@ -310,10 +359,23 @@ public class Paginate {
         private final BiPredicate<Long, R> hasNextPage;
         private long page = 1;
         private boolean done = false;
+        private boolean nextLoaded = false;
+        private @Nullable R nextResponse;
 
         @Override
         public boolean hasNext() {
-            return !done && page <= maxPages;
+            if (done || page > maxPages) {
+                return false;
+            }
+            if (!nextLoaded) {
+                nextResponse = fetchPage.apply(page);
+                nextLoaded = true;
+                if (nextResponse == null) {
+                    done = true;
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
@@ -322,10 +384,9 @@ public class Paginate {
                 throw new NoSuchElementException();
             }
             var currentPage = page++;
-            var response = fetchPage.apply(currentPage);
-            if (response == null) {
-                throw new NoSuchElementException();
-            }
+            var response = Objects.requireNonNull(nextResponse);
+            nextResponse = null;
+            nextLoaded = false;
             if (!hasNextPage.test(currentPage, response)) {
                 done = true;
             }
