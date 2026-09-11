@@ -72,7 +72,7 @@ update_and_pr() {
             --base main \
             --head "${branch_name}" \
             --label "dependency" \
-            --reviewer @pulpogato/pulpogato-write
+            --reviewer pulpogato/pulpogato-write
     else
         gh pr edit "${pr_number}" \
             --title "${commit_message}" \
