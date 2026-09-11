@@ -10,6 +10,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.ToIntFunction;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
@@ -143,58 +144,38 @@ public class Paginate {
                 (page, response) -> hasNextPage(response));
     }
 
+    /** Extracts each link-value's parameter section: matches a URI reference and captures everything after it
+     *  (up to the next {@code <}) as group 1. Since URI references are the only place where {@code ,} and
+     *  {@code ;} can appear outside of quoted strings, consuming them here means group 1 contains only
+     *  plain parameter text. */
+    private static final Pattern LINK_VALUE = Pattern.compile("<[^>]*>([^<]*)");
+
+    /** Scans a parameter section for a {@code rel=} value (group 1). The first alternative skips quoted
+     *  strings so their contents cannot be mistaken for a {@code rel} parameter. */
+    private static final Pattern LINK_REL =
+            Pattern.compile("\"[^\"]*\"|;\\s*rel\\s*=\\s*(\"[^\"]*\"|[^\\s;,]+)", Pattern.CASE_INSENSITIVE);
+
     private static boolean hasNextPage(final ResponseEntity<?> response) {
         return response.getHeaders().getOrEmpty(HttpHeaders.LINK).stream().anyMatch(Paginate::hasNextRelation);
     }
 
     private static boolean hasNextRelation(final String linkHeader) {
-        var segmentStart = 0;
-        var parameter = false;
-        var inUriReference = false;
-        var inQuotes = false;
-        var escaped = false;
-
-        for (var index = 0; index <= linkHeader.length(); index++) {
-            var end = index == linkHeader.length();
-            var character = end ? ',' : linkHeader.charAt(index);
-
-            if (!end && inQuotes && character == '\\' && !escaped) {
-                escaped = true;
-                continue;
-            }
-            if (!end && character == '"' && !inUriReference && !escaped) {
-                inQuotes = !inQuotes;
-            } else if (!end && !inQuotes && character == '<') {
-                inUriReference = true;
-            } else if (!end && !inQuotes && character == '>') {
-                inUriReference = false;
-            }
-            if (!end && escaped) {
-                escaped = false;
-                continue;
-            }
-            if (!inQuotes && !inUriReference && (character == ';' || character == ',')) {
-                if (parameter && isNextRelationParameter(linkHeader.substring(segmentStart, index))) {
+        var linkMatcher = LINK_VALUE.matcher(linkHeader);
+        while (linkMatcher.find()) {
+            var relMatcher = LINK_REL.matcher(linkMatcher.group(1));
+            while (relMatcher.find()) {
+                var relValue = relMatcher.group(1);
+                if (relValue == null) continue; // matched a quoted string — skip
+                if (relValue.startsWith("\"")) {
+                    // quoted value — strip quotes and check each space-delimited relation type
+                    var types = relValue.substring(1, relValue.length() - 1).trim();
+                    if (Stream.of(types.split("\\s+")).anyMatch("next"::equalsIgnoreCase)) return true;
+                } else if (relValue.equalsIgnoreCase("next")) {
                     return true;
                 }
-                parameter = character == ';';
-                segmentStart = index + 1;
             }
         }
         return false;
-    }
-
-    private static boolean isNextRelationParameter(final String parameter) {
-        var equals = parameter.indexOf('=');
-        if (equals < 0 || !parameter.substring(0, equals).trim().equalsIgnoreCase("rel")) {
-            return false;
-        }
-        var value = parameter.substring(equals + 1).trim();
-        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
-            var relationTypes = value.substring(1, value.length() - 1).trim();
-            return Stream.of(relationTypes.split("\\s+")).anyMatch("next"::equalsIgnoreCase);
-        }
-        return value.equalsIgnoreCase("next");
     }
 
     /**
