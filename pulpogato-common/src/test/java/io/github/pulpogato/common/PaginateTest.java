@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
@@ -176,6 +179,29 @@ class PaginateTest {
         }
 
         @Test
+        @DisplayName("Should return an empty stream when the first page is null")
+        void nullFirstPage() {
+            var paginate = new Paginate();
+            when(fetchListPage.apply(1L)).thenReturn(null);
+
+            var result = paginate.from(10, fetchListPage);
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should stop after collected pages when a subsequent page is null")
+        void nullSubsequentPage() {
+            var paginate = new Paginate();
+            when(fetchListPage.apply(1L)).thenReturn(List.of("1", "2", "3"));
+            when(fetchListPage.apply(2L)).thenReturn(null);
+
+            var result = paginate.from(10, fetchListPage);
+
+            assertThat(result).containsExactly("1", "2", "3");
+        }
+
+        @Test
         @DisplayName("Should respect max pages limit when there is no total page count")
         void limitPagesNoTotalPages() {
             var paginate = new Paginate();
@@ -315,14 +341,55 @@ class PaginateTest {
             verify(fetchPage, never()).apply(3L);
         }
 
-        @Test
-        @DisplayName("Should recognize an unquoted rel=next link-param per RFC 8288")
-        void unquotedRelNextIsRecognized() {
+        @ParameterizedTest
+        @ValueSource(
+                strings = {
+                    "<url>; rel=next",
+                    "<url>; rel=\"prev next\"",
+                    "<url>; REL=NEXT",
+                    "<url>; rel=\"prev\", <url>; rel=\"next\""
+                })
+        @DisplayName("Should recognize next relation types in valid Link header forms")
+        void nextRelationIsRecognized(String link) {
             var paginate = new Paginate();
-            when(fetchPage.apply(1L)).thenReturn(withLink(List.of("1", "2", "3"), "<url>; rel=next"));
+            when(fetchPage.apply(1L)).thenReturn(withLink(List.of("1", "2", "3"), link));
             when(fetchPage.apply(2L)).thenReturn(withLink(List.of("4", "5"), "<url>; rel=last"));
 
             var result = paginate.fromLinkHeader(10, fetchPage);
+            assertThat(result).containsExactly("1", "2", "3", "4", "5");
+        }
+
+        @ParameterizedTest
+        @ValueSource(
+                strings = {
+                    "<https://api.example/items?rel=next>; rel=last",
+                    "<https://api.example/items>; title=\"rel=next\"; rel=last",
+                    "<https://api.example/items>; rel=\"prev,next\""
+                })
+        @DisplayName("Should ignore next text outside the rel relation-type list")
+        void ignoresUnrelatedNextText(String link) {
+            var paginate = new Paginate();
+            when(fetchPage.apply(1L)).thenReturn(withLink(List.of("1", "2", "3"), link));
+
+            var result = paginate.fromLinkHeader(10, fetchPage);
+
+            assertThat(result).containsExactly("1", "2", "3");
+            verify(fetchPage, never()).apply(2L);
+        }
+
+        @Test
+        @DisplayName("Should inspect every Link header field")
+        void multipleLinkHeaderFields() {
+            var paginate = new Paginate();
+            var headers = new HttpHeaders();
+            headers.add(HttpHeaders.LINK, "<url>; rel=\"prev\"");
+            headers.add(HttpHeaders.LINK, "<url>; rel=\"next\"");
+            var firstPage = new ResponseEntity<>(List.of("1", "2", "3"), headers, HttpStatus.OK);
+            when(fetchPage.apply(1L)).thenReturn(firstPage);
+            when(fetchPage.apply(2L)).thenReturn(withLink(List.of("4", "5"), "<url>; rel=\"last\""));
+
+            var result = paginate.fromLinkHeader(10, fetchPage);
+
             assertThat(result).containsExactly("1", "2", "3", "4", "5");
         }
 
@@ -443,6 +510,35 @@ class PaginateTest {
         }
 
         @Test
+        @DisplayName("Should not fetch any page when max pages is zero")
+        void zeroMaxPagesReactive() {
+            var paginate = new Paginate();
+
+            var result = paginate.fromReactive(0, fetchReactivePage, PaginateTest::getFlux, Response::totalPages);
+
+            StepVerifier.create(result).verifyComplete();
+            verify(fetchReactivePage, never()).apply(1L);
+        }
+
+        @Test
+        @DisplayName("Should fetch the first page lazily for each subscription")
+        void firstPageIsDeferredPerSubscription() {
+            var paginate = new Paginate();
+            var fetchCount = new AtomicInteger();
+            LongFunction<Mono<Response>> fetchPage = page -> {
+                fetchCount.incrementAndGet();
+                return Mono.just(new Response(List.of("1"), 1));
+            };
+
+            var result = paginate.fromReactive(10, fetchPage, PaginateTest::getFlux, Response::totalPages);
+
+            assertThat(fetchCount).hasValue(0);
+            StepVerifier.create(result).expectNext("1").verifyComplete();
+            StepVerifier.create(result).expectNext("1").verifyComplete();
+            assertThat(fetchCount).hasValue(2);
+        }
+
+        @Test
         @DisplayName("Should return empty flux when there is no data")
         void noDataReactive() {
             var paginate = new Paginate();
@@ -467,10 +563,10 @@ class PaginateTest {
         }
 
         @Test
-        @DisplayName("Should propagate error thrown during first page fetch reactively")
+        @DisplayName("Should propagate an exception thrown while fetching the first page as a reactive error")
         void errorOnFirstPageReactive() {
             var paginate = new Paginate();
-            when(fetchReactivePage.apply(1L)).thenReturn(Mono.error(new RuntimeException("Failed to fetch page")));
+            when(fetchReactivePage.apply(1L)).thenThrow(new RuntimeException("Failed to fetch page"));
 
             var result = paginate.fromReactive(10, fetchReactivePage, PaginateTest::getFlux, Response::totalPages);
             StepVerifier.create(result).verifyErrorMessage("Failed to fetch page");
