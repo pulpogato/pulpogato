@@ -78,4 +78,4 @@ jobs:
           gh pr create \
               --base main \
               --fill \
-              --reviewer @pulpogato/pulpogato-write
+              --reviewer pulpogato/pulpogato-write
