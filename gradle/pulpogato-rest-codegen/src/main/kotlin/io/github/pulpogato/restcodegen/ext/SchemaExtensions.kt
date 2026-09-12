@@ -110,8 +110,8 @@ fun isOnlyForValidation(
 private fun findDiscriminatedGroup(
     context: Context,
     schema: Schema<*>,
-    oneOf: List<Schema<*>>?,
-) = if (oneOf != null && schema.discriminator != null) {
+    oneOf: List<Schema<*>>,
+) = if (schema.discriminator != null) {
     val memberKeys = oneOf.mapNotNull { it.`$ref`?.removePrefix(COMPONENTS_SCHEMAS_PREFIX) }
     if (memberKeys.size == oneOf.size) {
         context.discriminatedOneOfGroups.find { g -> g.memberSchemaKeys.toSet() == memberKeys.toSet() }
@@ -125,14 +125,26 @@ private fun findDiscriminatedGroup(
 private fun findNonDiscriminatedGroup(
     context: Context,
     schema: Schema<*>,
-    oneOf: List<Schema<*>>?,
-) = if (oneOf != null && schema.discriminator == null) {
+) = if (schema.discriminator == null) {
     // Interfaces are identified by where the oneOf occurs, so match on the current schema location
     // rather than the member set (two locations may share a member set but get distinct interfaces).
     context.nonDiscriminatedOneOfGroups.find { g -> g.locationRef == context.getSchemaStackRef() }
 } else {
     null
 }
+
+private fun <K, V> entry(
+    key: K,
+    value: V,
+): Map.Entry<K, V> = java.util.Map.entry(key, value)
+
+fun referenceAndDefinition(
+    context: Context,
+    name: String,
+    schema: Schema<*>,
+    prefix: String = "",
+    parentClass: ClassName? = null,
+): Pair<TypeName, TypeSpec?>? = referenceAndDefinition(context, entry(name, schema), prefix, parentClass)
 
 fun referenceAndDefinition(
     context: Context,
@@ -148,65 +160,55 @@ fun referenceAndDefinition(
         entry.value.types
             ?.filterNotNull()
             ?.filter { it != "null" }
+    val oneOf = entry.value.oneOf?.filterNotNull()
     val anyOf =
         entry.value.anyOf
             ?.filterNotNull()
             ?.filter { it.types != setOf("null") }
-    val oneOf = entry.value.oneOf?.filterNotNull()
     val allOf = entry.value.allOf?.filterNotNull()
-    val discriminatedGroup = findDiscriminatedGroup(context, entry.value, oneOf)
-    val nonDiscriminatedGroup = findNonDiscriminatedGroup(context, entry.value, oneOf)
 
     return when {
-        entry.key == "empty-object" -> {
-            Pair(Types.EMPTY_OBJECT, null)
+        entry.key == "empty-object" -> Pair(Types.EMPTY_OBJECT, null)
+        entry.value.`$ref` != null -> buildReferenceAndDefinitionFromRef(context, entry)
+        oneOf != null -> buildReferenceAndDefinitionFromOneOf(context, entry, oneOf, prefix, parentClass)
+        anyOf != null -> buildReferenceAndDefinitionFromAnyOf(context, entry, anyOf, prefix, parentClass)
+        allOf != null -> buildReferenceAndDefinitionFromAllOf(context, entry, allOf, prefix, parentClass)
+        types.isNullOrEmpty() -> buildReferenceAndDefinitionFromUntyped(context, entry, parentClass)
+        types.size == 1 -> buildReferenceAndDefinitionFromSingleType(context, entry, types.first(), prefix, parentClass)
+        types.toSet() == setOf("string", "integer") -> Pair(Types.STRING_OR_INTEGER, null)
+        else -> Pair(Types.TODO, null)
+    }
+}
+
+private fun buildReferenceAndDefinitionFromOneOf(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+    oneOf: List<Schema<Any>>,
+    prefix: String,
+    parentClass: ClassName?,
+): Pair<TypeName, TypeSpec?> {
+    val discriminatedGroup = findDiscriminatedGroup(context, entry.value, oneOf)
+    val nonDiscriminatedGroup = findNonDiscriminatedGroup(context, entry.value)
+
+    return when {
+        isSingleOrArray(oneOf, "string") -> {
+            Pair(
+                ParameterizedTypeName
+                    .get(Types.SINGULAR_OR_PLURAL, Types.STRING)
+                    .annotated(typeGenerated(), singleValueAsArray()),
+                null,
+            )
         }
 
-        entry.value.`$ref` != null -> {
-            buildReferenceAndDefinitionFromRef(context, entry)
-        }
-
-        anyOf != null && anyOf.size == 1 -> {
-            val anyOfValue = anyOf.first()
-            referenceAndDefinition(context, mapOf(entry.key to anyOfValue).entries.first(), "", null)!!
-        }
-
-        oneOf != null &&
-            isSingleOrArray(
-                oneOf,
-                "string",
-            ) -> {
-            Pair(ParameterizedTypeName.get(Types.SINGULAR_OR_PLURAL, Types.STRING).annotated(typeGenerated(), singleValueAsArray()), null)
-        }
-
-        oneOf != null &&
-            typesAre(
-                oneOf,
-                "string",
-                "integer",
-            ) && oneOf.any { it.format == "date-time" } -> {
+        typesAre(oneOf, "string", "integer") && oneOf.any { it.format == "date-time" } -> {
             Pair(Types.OFFSET_DATE_TIME.annotated(typeGenerated()), null)
         }
 
-        oneOf != null && typesAre(oneOf, "string", "integer") -> {
+        typesAre(oneOf, "string", "integer") -> {
             Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         }
 
-        anyOf != null && typesAre(anyOf, "string", "integer") -> {
-            Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
-        }
-
-        anyOf != null && isOnlyForValidation(anyOf, entry.value) -> {
-            buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
-        }
-
-        anyOf != null -> {
-            buildType("${prefix}${entry.className()}", parentClass) {
-                buildFancyObject(context, entry, anyOf, "anyOf", it)
-            }
-        }
-
-        oneOf != null && isOnlyForValidation(oneOf, entry.value) -> {
+        isOnlyForValidation(oneOf, entry.value) -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
         }
 
@@ -218,102 +220,131 @@ fun referenceAndDefinition(
             Pair(nonDiscriminatedGroup.supertype.annotated(typeGenerated()), null)
         }
 
-        oneOf != null -> {
+        else -> {
             buildType("${prefix}${entry.className()}", parentClass) {
                 buildFancyObject(context, entry, oneOf, "oneOf", it)
             }
         }
+    }
+}
 
-        allOf != null && allOf.size == 1 -> {
-            // A single-member allOf adds nothing structurally; collapse it to that member directly
-            // (GitHub commonly uses this just to attach a description to a $ref).
-            referenceAndDefinition(
-                context.withSchemaStack("allOf", "0"),
-                mapOf(entry.key to allOf.first()).entries.first(),
-                prefix,
-                parentClass,
-            )!!
+private fun buildReferenceAndDefinitionFromAnyOf(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+    anyOf: List<Schema<Any>>,
+    prefix: String,
+    parentClass: ClassName?,
+): Pair<TypeName, TypeSpec?> =
+    when {
+        anyOf.size == 1 -> {
+            referenceAndDefinition(context, entry.key, anyOf.first(), "", null)!!
         }
 
-        allOf != null -> {
-            val inlines = allOf.filter { it.`$ref` == null }
-            val refs = allOf.filter { it.`$ref` != null }
-            val allInlinesMergeable = inlines.isNotEmpty() && inlines.all { isMergeableInlineObject(it) }
-            val extendableRef = if (refs.size == 1) extendableRefName(context, refs.first()) else null
-            when {
-                // One extendable $ref plus inline property objects: model it as a subclass of the
-                // referenced type that adds the inline properties, instead of a wrapper with a
-                // meaningless "release1"-style field.
-                extendableRef != null && allInlinesMergeable -> {
-                    buildType("${prefix}${entry.className()}", parentClass) {
-                        buildAllOfObject(
-                            context,
-                            entry,
-                            allOf,
-                            it,
-                            ClassName.get("io.github.pulpogato.rest.schemas", extendableRef.pascalCase()),
-                            extendableRef,
-                        )
-                    }
-                }
-
-                // Only inline property objects: flatten their properties into a single object.
-                refs.isEmpty() && allInlinesMergeable -> {
-                    buildType("${prefix}${entry.className()}", parentClass) {
-                        buildAllOfObject(context, entry, allOf, it, null, null)
-                    }
-                }
-
-                // Anything else (e.g. multiple $refs) keeps the runtime merge serializer.
-                else -> {
-                    buildType("${prefix}${entry.className()}", parentClass) {
-                        buildFancyObject(context, entry, allOf, "allOf", it)
-                    }
-                }
-            }
+        typesAre(anyOf, "string", "integer") -> {
+            Pair(Types.STRING_OR_INTEGER.annotated(typeGenerated()), null)
         }
 
-        types == null && entry.value.properties != null -> {
-            referenceAndDefinition(context, mapOf(entry.key to entry.value.also { it.types = mutableSetOf("object") }).entries.first(), "", parentClass)!!
-        }
-
-        types == null && entry.value.properties != null && entry.value.properties.isEmpty() && entry.value.additionalProperties == false -> {
-            Pair(Types.VOID.annotated(typeGenerated()), null)
-        }
-
-        types == null && entry.value.properties != null && entry.value.properties.isNotEmpty() -> {
+        isOnlyForValidation(anyOf, entry.value) -> {
             buildType("${prefix}${entry.className()}", parentClass) { buildSimpleObject(context, entry, it) }
         }
 
-        types == null -> {
-            Pair(Types.OBJECT.annotated(typeGenerated()), null)
+        else -> {
+            buildType("${prefix}${entry.className()}", parentClass) {
+                buildFancyObject(context, entry, anyOf, "anyOf", it)
+            }
         }
+    }
 
-        types.isEmpty() -> {
-            Pair(Types.OBJECT.annotated(typeGenerated()), null)
-        }
+private fun buildReferenceAndDefinitionFromAllOf(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+    allOf: List<Schema<Any>>,
+    prefix: String,
+    parentClass: ClassName?,
+): Pair<TypeName, TypeSpec?> {
+    if (allOf.size == 1) {
+        // A single-member allOf adds nothing structurally; collapse it to that member directly
+        // (GitHub commonly uses this just to attach a description to a $ref).
+        return referenceAndDefinition(
+            context.withSchemaStack("allOf", "0"),
+            entry.key,
+            allOf.first(),
+            prefix,
+            parentClass,
+        )!!
+    }
 
-        types.size == 1 -> {
-            when (types.first()) {
-                "string" -> buildReferenceAndDefinitionFromString(context, entry, prefix, parentClass)
-                "integer" -> buildReferenceAndDefinitionFromInteger(entry)
-                "boolean" -> Pair(Types.BOOLEAN, null)
-                "number" -> buildReferenceAndDefinitionFromNumber(entry)
-                "array" -> buildReferenceAndDefinitionFromArray(context, entry, parentClass)
-                "object" -> buildReferenceAndDefinitionFromObject(context, entry, parentClass, prefix)
-                else -> throw RuntimeException("Unknown type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
+    val inlines = allOf.filter { it.`$ref` == null }
+    val refs = allOf.filter { it.`$ref` != null }
+    val allInlinesMergeable = inlines.isNotEmpty() && inlines.all { isMergeableInlineObject(it) }
+    val extendableRef = if (refs.size == 1) extendableRefName(context, refs.first()) else null
+
+    return when {
+        // One extendable $ref plus inline property objects: model it as a subclass of the
+        // referenced type that adds the inline properties, instead of a wrapper with a
+        // meaningless "release1"-style field.
+        extendableRef != null && allInlinesMergeable -> {
+            buildType("${prefix}${entry.className()}", parentClass) {
+                buildAllOfObject(
+                    context,
+                    entry,
+                    allOf,
+                    it,
+                    ClassName.get("io.github.pulpogato.rest.schemas", extendableRef.pascalCase()),
+                    extendableRef,
+                )
             }
         }
 
-        types.toSet() == setOf("string", "integer") -> {
-            Pair(Types.STRING_OR_INTEGER, null)
+        // Only inline property objects: flatten their properties into a single object.
+        refs.isEmpty() && allInlinesMergeable -> {
+            buildType("${prefix}${entry.className()}", parentClass) {
+                buildAllOfObject(context, entry, allOf, it, null, null)
+            }
         }
 
+        // Anything else (e.g. multiple $refs) keeps the runtime merge serializer.
         else -> {
-            Pair(Types.TODO, null)
+            buildType("${prefix}${entry.className()}", parentClass) {
+                buildFancyObject(context, entry, allOf, "allOf", it)
+            }
         }
     }
 }
+
+private fun buildReferenceAndDefinitionFromUntyped(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+    parentClass: ClassName?,
+): Pair<TypeName, TypeSpec?> =
+    if (entry.value.properties != null) {
+        referenceAndDefinition(
+            context,
+            entry.key,
+            entry.value.also { it.types = mutableSetOf("object") },
+            "",
+            parentClass,
+        )!!
+    } else {
+        Pair(Types.OBJECT.annotated(typeGenerated()), null)
+    }
+
+private fun buildReferenceAndDefinitionFromSingleType(
+    context: Context,
+    entry: Map.Entry<String, Schema<*>>,
+    type: String,
+    prefix: String,
+    parentClass: ClassName?,
+): Pair<TypeName, TypeSpec?>? =
+    when (type) {
+        "string" -> buildReferenceAndDefinitionFromString(context, entry, prefix, parentClass)
+        "integer" -> buildReferenceAndDefinitionFromInteger(entry)
+        "boolean" -> Pair(Types.BOOLEAN, null)
+        "number" -> buildReferenceAndDefinitionFromNumber(entry)
+        "array" -> buildReferenceAndDefinitionFromArray(context, entry, parentClass)
+        "object" -> buildReferenceAndDefinitionFromObject(context, entry, parentClass, prefix)
+        else -> throw RuntimeException("Unknown type for ${entry.key}, stack: ${context.getSchemaStackRef()}")
+    }
 
 @Suppress("UNCHECKED_CAST")
 private fun requireValue(entry1: Map.Entry<String, Schema<*>?>): Map.Entry<String, Schema<*>> = entry1 as Map.Entry<String, Schema<*>>
@@ -330,14 +361,15 @@ private fun buildReferenceAndDefinitionFromObject(
             if (additionalProperties is Schema<*>) {
                 referenceAndDefinition(
                     context.withSchemaStack("additionalProperties"),
-                    mapOf(entry.key to additionalProperties).entries.first(),
+                    entry.key,
+                    additionalProperties,
                     "",
                     parentClass,
                 )!!
                     .let { Pair(ParameterizedTypeName.get(Types.MAP, Types.STRING, it.first), it.second) }
             } else {
                 // additionalProperties is a non-Schema value (e.g. a bare `additionalProperties: true`)
-                // that we don't model yet. Emit the sentinel Todo type, which doesn't exist and so fails
+                // that we don't model yet. Emit the sentinel type, which doesn't exist and so fails
                 // the generated-code compile loudly, rather than silently producing a wrong mapping.
                 // No current GitHub schema variant reaches this branch.
                 Pair(Types.TODO, null)
@@ -361,7 +393,7 @@ private fun buildReferenceAndDefinitionFromArray(
     parentClass: ClassName?,
 ): Pair<TypeName, TypeSpec?>? {
     val context1 = context.withSchemaStack("items")
-    return referenceAndDefinition(context1, mapOf(entry.key to entry.value.items).entries.first(), "", parentClass)
+    return referenceAndDefinition(context1, entry.key, entry.value.items, "", parentClass)
         ?.let {
             val oldTypeGenerated =
                 it.first
@@ -750,7 +782,7 @@ private fun rebuildWithUpdatedMethods(
         }
 
     // Now regenerate all methods with the complete field list
-    val allFields = builtWithAllProperties.fieldSpecs()
+    val allFields = builtWithAllProperties.fieldSpecs().toList()
 
     addStandardMethodsAndBuilderLogic(builderWithoutOldBuilder, allFields, className, context)
 
@@ -1034,7 +1066,7 @@ private fun buildSimpleObject(
 
     // Get built class to access fields for method generation
     val builtClass = builder.build()
-    val fields = builtClass.fieldSpecs()
+    val fields = builtClass.fieldSpecs().toList()
 
     addStandardMethodsAndBuilderLogic(builder, fields, nameRef, context)
 
