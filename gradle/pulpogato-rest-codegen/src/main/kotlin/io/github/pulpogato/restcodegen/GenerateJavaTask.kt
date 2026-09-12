@@ -238,10 +238,7 @@ open class GenerateJavaTask : DefaultTask() {
                 """
                 Generated types and Spring MVC helpers for receiving GitHub webhook deliveries.
 
-                <p>Includes {@link $webhooksPackage.WebhookHeaders} and
-                {@link $webhooksPackage.WebhookHeadersResolver} for binding delivery headers,
-                per-subcategory {@code *Webhooks} handler interfaces, and
-                {@link $webhooksPackage.WebhookEventTypes} to resolve event names to payload types.
+                <p>Includes {@link WebhookHeaders} and {@link WebhookHeadersArgumentResolver} for binding delivery headers, per-subcategory {@code *Webhooks} handler interfaces, and {@link WebhookEventTypes} to resolve event names to payload types.
                 """.trimIndent(),
             ),
         ).forEach { writeNullMarkedPackageInfo(main, it) }
