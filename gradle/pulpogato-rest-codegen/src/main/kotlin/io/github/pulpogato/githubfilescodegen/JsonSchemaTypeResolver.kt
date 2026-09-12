@@ -388,11 +388,7 @@ object JsonSchemaTypeResolver {
                     variant.typeName == Types.LONG ||
                     variant.typeName == Types.BIG_DECIMAL
             }
-        if (uniqueSimpleTypes.size == 2 && hasString && (hasBoolean || hasNumeric)) {
-            return false
-        }
-
-        return true
+        return !(uniqueSimpleTypes.size == 2 && hasString && (hasBoolean || hasNumeric))
     }
 
     private fun isValidationOnlyOneOf(oneOf: ArrayNode): Boolean = isValidationOnlyOneOf(oneOf.toList())
@@ -408,12 +404,7 @@ object JsonSchemaTypeResolver {
      *
      * Those must not become Java union variants; the parent object's `properties` are the real type.
      */
-    private fun isValidationOnlyOneOf(elements: List<JsonNode>): Boolean {
-        if (elements.isEmpty()) {
-            return false
-        }
-        return elements.all(::isValidationOnlySchemaElement)
-    }
+    private fun isValidationOnlyOneOf(elements: List<JsonNode>): Boolean = elements.isNotEmpty() && elements.all(::isValidationOnlySchemaElement)
 
     private fun isValidationOnlySchemaElement(element: JsonNode): Boolean {
         if (element !is ObjectNode) {
@@ -486,13 +477,10 @@ object JsonSchemaTypeResolver {
             properties.properties().all { (_, value) ->
                 value.isBoolean && value.booleanValue()
             }
-        if (!allPresenceMarkers) {
-            return false
-        }
-
-        return required.all { entry ->
-            entry.isString && entry.asString() in propertyNames
-        }
+        return allPresenceMarkers &&
+            required.all { entry ->
+                entry.isString && entry.asString() in propertyNames
+            }
     }
 
     private val schemaMetadataKeys =
@@ -555,25 +543,18 @@ object JsonSchemaTypeResolver {
             },
         )
 
-    private fun isScalarOnlyOneOf(elements: List<JsonNode>): Boolean {
-        if (elements.isEmpty()) {
-            return false
-        }
-        return elements.all(::isScalarTypeOneOfElement)
-    }
+    private fun isScalarOnlyOneOf(elements: List<JsonNode>): Boolean = elements.isNotEmpty() && elements.all(::isScalarTypeOneOfElement)
 
     private fun isScalarTypeOneOfElement(element: JsonNode): Boolean {
         if (!element.isObject) {
             return false
         }
         val typeNode = element["type"]
-        if (typeNode == null || !typeNode.isString) {
-            return false
-        }
-        return when (typeNode.asString()) {
-            "string", "boolean", "number", "integer" -> true
-            else -> false
-        }
+        return !(typeNode == null || !typeNode.isString) &&
+            when (typeNode.asString()) {
+                "string", "boolean", "number", "integer" -> true
+                else -> false
+            }
     }
 
     private fun resolveAnyOf(
