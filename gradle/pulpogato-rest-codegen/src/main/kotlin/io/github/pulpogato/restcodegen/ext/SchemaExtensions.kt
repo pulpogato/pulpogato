@@ -94,18 +94,14 @@ fun typesAre(
 fun isOnlyForValidation(
     subSchemas: List<Schema<Any>>,
     parentSchema: Schema<*>,
-): Boolean {
-    if (parentSchema.properties == null || parentSchema.properties.isEmpty()) {
-        return false
-    }
-
-    return subSchemas.all { subSchema ->
-        (subSchema.properties == null || subSchema.properties.isEmpty()) &&
-            subSchema.`$ref` == null &&
-            (subSchema.types == null || subSchema.types.isEmpty()) &&
-            (subSchema.required != null || subSchema.additionalProperties == null)
-    }
-}
+): Boolean =
+    !(parentSchema.properties == null || parentSchema.properties.isEmpty()) &&
+        subSchemas.all { subSchema ->
+            (subSchema.properties == null || subSchema.properties.isEmpty()) &&
+                subSchema.`$ref` == null &&
+                (subSchema.types == null || subSchema.types.isEmpty()) &&
+                (subSchema.required != null || subSchema.additionalProperties == null)
+        }
 
 private fun findDiscriminatedGroup(
     context: Context,
