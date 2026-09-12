@@ -8,13 +8,18 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
       - "v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+"
   workflow_dispatch:
+    inputs:
+      max_workers:
+        description: "Maximum Gradle workers"
+        required: false
+        type: string
 
 jobs:
   build:
     name: "Build with Gradle"
     runs-on: ubuntu-26.04-arm
     env:
-      MAX_WORKERS: 3
+      MAX_WORKERS: ${{ inputs.max_workers || (github.run_attempt > 1 && '2' || '3') }}
 
     permissions:
       security-events: write
