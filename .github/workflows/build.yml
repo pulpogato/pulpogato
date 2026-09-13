@@ -119,3 +119,18 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         with:
           subject-path: "build/repos/**/*.jar,build/repos/**/*.pom,build/repos/**/*.module"
+
+      - name: Publish Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} already exists. Skipping release creation."
+            exit 0
+          fi
+          if [[ "${GITHUB_REF_NAME}" == *"-rc"* ]]; then
+            gh release create "${GITHUB_REF_NAME}" --generate-notes --prerelease
+          else
+            gh release create "${GITHUB_REF_NAME}" --generate-notes
+          fi
