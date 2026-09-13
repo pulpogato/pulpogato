@@ -54,6 +54,14 @@ Code generation is core to the project:
 ./scripts/update-schema-version.sh
 ```
 
+### Create a release
+```bash
+git tag <TAG>
+git push origin <TAG>
+```
+CI builds the project, publishes artifacts to GitHub Packages and Maven Central, generates provenance attestations, and then publishes the GitHub Release with generated notes.
+
+
 ### Build performance flags
 Both default to the fast path; opt in when you need the extra output.
 ```bash
