@@ -112,12 +112,34 @@ subprojects {
     }
     plugins.withId("io.github.rahulsom.roseau") {
         configure<RoseauExtension> {
-            html.set(false)
+            html.set(true)
             json.set(true)
-            md.set(false)
+            md.set(true)
             csv.set(true)
             cli.set(false)
             verbosity.set(RoseauExtension.VerbosityLevel.NONE)
+            excludeNames.set(
+                listOf(
+                    // Codegen emits a `*Converter` inner class per enum-like schema field; each one gains a
+                    // new abstract `convert(S)` method whenever the enum's values change. That's noise, not
+                    // an API break for consumers, since these converters aren't meant to be implemented externally.
+                    ".*\\$.*Converter",
+                    // Same story for the generated Jackson2/Jackson3 (de)serializer inner classes: their
+                    // base-class method set shifts across Jackson releases, but these types are never
+                    // implemented or called directly by consumers, so it's not a real API break.
+                    ".*\\$.*Jackson[23](Serializer|Deserializer)",
+                    // Generated model constructors churn constantly as fields are added/removed/reordered
+                    // to match GitHub's schema. Consumers use builders/setters, not these constructors
+                    // directly, so their signature changes aren't a real API break worth flagging.
+                    ".*\\.<init>\\(.*\\)",
+                    // oneOf/webhook supertypes are generated as sealed interfaces whose permitted
+                    // subtypes each implement toCode() concretely. Roseau sees the concrete method
+                    // "removed" when a type becomes one of these interfaces, but it's still declared
+                    // abstractly on PulpogatoType and reachable through the sealed supertype, so calls
+                    // through it keep resolving; this isn't a break for consumers.
+                    ".*\\.toCode\\(\\)",
+                ),
+            )
         }
     }
 }
