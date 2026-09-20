@@ -26,7 +26,6 @@ object Types {
     val BYTE_ARRAY: ArrayTypeName = ArrayTypeName.of(TypeName.BYTE)
     val URI: ClassName = ClassName.get(java.net.URI::class.java)
     val UUID: ClassName = ClassName.get(java.util.UUID::class.java)
-    val VOID: ClassName = ClassName.get(Void::class.java)
 
     // Time types
     val EPOCH_TIME: TypeName =
