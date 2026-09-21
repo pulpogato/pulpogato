@@ -7,6 +7,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -209,11 +210,6 @@ class HttpCacheEngine {
         return -1;
     }
 
-    private String cacheName() {
-        var name = cache.getName();
-        return name != null ? name : UNKNOWN;
-    }
-
     private static String serverAddress(String uri) {
         var host = URI.create(uri).getHost();
         return host != null ? host : UNKNOWN;
@@ -226,7 +222,7 @@ class HttpCacheEngine {
             return observation;
         }
         return observation
-                .lowCardinalityKeyValue(CACHE_NAME, cacheName())
+                .lowCardinalityKeyValue(CACHE_NAME, Objects.requireNonNullElse(cache.getName(), UNKNOWN))
                 .lowCardinalityKeyValue(CACHE_CLIENT, clientType)
                 .lowCardinalityKeyValue(SERVER_ADDRESS, serverAddress(uri))
                 .highCardinalityKeyValue(URI_TAG, uri)
