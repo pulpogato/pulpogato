@@ -1,7 +1,6 @@
 name: Trigger Jitpack Build
 
 on:
-  pull_request:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
@@ -22,6 +21,7 @@ jobs:
         run: |
           GROUP_ID="com.github.pulpogato.pulpogato"
           ARTIFACT_ID="pulpogato-common"
-          VERSION="${{github.ref#refs/tags/v}}"
-          URL="https://jitpack.io/${GROUP_ID//./\/}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.pom"
-          curl --connect-timeout 5 --max-time 5 $URL || echo "Jitpack build triggered for ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
+          VERSION="${GITHUB_REF_NAME#v}"
+          GROUP_PATH="${GROUP_ID//.//}"
+          URL="https://jitpack.io/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.pom"
+          curl --connect-timeout 5 --max-time 5 "${URL}" || echo "Jitpack build triggered for ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
