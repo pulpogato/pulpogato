@@ -708,6 +708,11 @@ class CachingExchangeFilterFunctionTest {
 
         private final TestObservationRegistry observationRegistry = TestObservationRegistry.create();
 
+        @BeforeEach
+        void setUp() {
+            when(cache.getName()).thenReturn("test-cache");
+        }
+
         private CachingExchangeFilterFunction observedFilter(int maxCacheableSize) {
             return CachingExchangeFilterFunction.builder()
                     .cache(cache)
@@ -735,7 +740,7 @@ class CachingExchangeFilterFunctionTest {
                     .hasObservationWithNameEqualTo(CACHE_GET)
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_MISS)
-                    .hasLowCardinalityKeyValue("cache.name", "unknown")
+                    .hasLowCardinalityKeyValue("cache.name", "test-cache")
                     .hasLowCardinalityKeyValue("cache.client", "WebClient")
                     .hasLowCardinalityKeyValue("server.address", "api.example.com")
                     .hasHighCardinalityKeyValue("uri", TEST_URL)

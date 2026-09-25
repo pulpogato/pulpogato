@@ -724,6 +724,11 @@ class CachingClientHttpRequestInterceptorTest {
 
         private final TestObservationRegistry observationRegistry = TestObservationRegistry.create();
 
+        @BeforeEach
+        void setUp() {
+            when(cache.getName()).thenReturn("test-cache");
+        }
+
         private CachingClientHttpRequestInterceptor observedInterceptor(int maxCacheableSize) {
             return CachingClientHttpRequestInterceptor.builder()
                     .cache(cache)
@@ -749,7 +754,7 @@ class CachingClientHttpRequestInterceptorTest {
                     .hasObservationWithNameEqualTo(CACHE_GET)
                     .that()
                     .hasLowCardinalityKeyValue(HttpCacheEngine.CACHE_STATUS, HttpCacheEngine.CACHE_MISS)
-                    .hasLowCardinalityKeyValue("cache.name", "unknown")
+                    .hasLowCardinalityKeyValue("cache.name", "test-cache")
                     .hasLowCardinalityKeyValue("cache.client", "RestClient")
                     .hasLowCardinalityKeyValue("server.address", "api.example.com")
                     .hasHighCardinalityKeyValue("uri", TEST_URL)
