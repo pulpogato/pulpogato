@@ -7,7 +7,6 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -222,7 +221,7 @@ class HttpCacheEngine {
             return observation;
         }
         return observation
-                .lowCardinalityKeyValue(CACHE_NAME, Objects.requireNonNullElse(cache.getName(), UNKNOWN))
+                .lowCardinalityKeyValue(CACHE_NAME, cache.getName())
                 .lowCardinalityKeyValue(CACHE_CLIENT, clientType)
                 .lowCardinalityKeyValue(SERVER_ADDRESS, serverAddress(uri))
                 .highCardinalityKeyValue(URI_TAG, uri)
