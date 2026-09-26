@@ -113,8 +113,9 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testCheckNotBlocked() {
         var api = new RestClients(webClient).getUsersApi();
-        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.checkBlocked("gooduser")
-                .block());
+        var exception = catchThrowableOfType(
+                WebClientResponseException.class,
+                () -> api.checkBlocked("gooduser").block());
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().is4xxClientError()).isTrue();
@@ -124,8 +125,9 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     @Test
     void testBlockUserFailed() {
         var api = new RestClients(webClient).getUsersApi();
-        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.block("some-blocked-user")
-                .block());
+        var exception = catchThrowableOfType(
+                WebClientResponseException.class,
+                () -> api.block("some-blocked-user").block());
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().value()).isEqualTo(422);
@@ -319,8 +321,9 @@ class UsersApiIntegrationTest extends BaseApiIntegrationTest {
     void testGetByUsername404() {
         var api = new RestClients(webClient).getUsersApi();
 
-        var exception = catchThrowableOfType(WebClientResponseException.class, () -> api.getByUsername("rahulsom1")
-                .block());
+        var exception = catchThrowableOfType(
+                WebClientResponseException.class,
+                () -> api.getByUsername("rahulsom1").block());
 
         assertThat(exception).isNotNull();
         assertThat(exception.getStatusCode().value()).isEqualTo(404);
