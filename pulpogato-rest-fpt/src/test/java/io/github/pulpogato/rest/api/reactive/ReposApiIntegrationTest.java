@@ -223,8 +223,10 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var perPage = 5L;
 
         var branches = new Paginate()
-                .fromReactive(25, page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
-                        .mapNotNull(ResponseEntity::getBody))
+                .fromReactive(
+                        25,
+                        page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
+                                .mapNotNull(ResponseEntity::getBody))
                 .collectList()
                 .block();
 
@@ -252,8 +254,10 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var perPage = 1L;
 
         var branches = new Paginate()
-                .fromReactive(1, page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
-                        .mapNotNull(ResponseEntity::getBody))
+                .fromReactive(
+                        1,
+                        page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
+                                .mapNotNull(ResponseEntity::getBody))
                 .collectList()
                 .block();
 
@@ -265,8 +269,10 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getReposApi();
 
         var branches = new Paginate()
-                .fromReactive(10, page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
-                        .mapNotNull(ResponseEntity::getBody))
+                .fromReactive(
+                        10,
+                        page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
+                                .mapNotNull(ResponseEntity::getBody))
                 .collectList()
                 .block();
 

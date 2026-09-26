@@ -48,8 +48,10 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var perPage = 5L;
 
         var branches = new Paginate()
-                .from(25, page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
-                        .getBody())
+                .from(
+                        25,
+                        page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
+                                .getBody())
                 .toList();
 
         var allBranches = api.listBranches("jenkinsci", "gradle-jpi-plugin", null, 100L, 1L)
@@ -72,8 +74,10 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var perPage = 1L;
 
         var branches = new Paginate()
-                .from(1, page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
-                        .getBody())
+                .from(
+                        1,
+                        page -> api.listBranches("pulpogato", "pulpogato", null, perPage, page)
+                                .getBody())
                 .toList();
 
         assertThat(branches).extracting(ShortBranch::getName).containsExactly("gh-pages");
@@ -84,8 +88,10 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
         var api = new RestClients(webClient).getReposApi();
 
         var branches = new Paginate()
-                .from(10, page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
-                        .getBody())
+                .from(
+                        10,
+                        page -> api.listBranches("pulpogato", "create-demo", true, 100L, page)
+                                .getBody())
                 .toList();
 
         assertThat(branches).isEmpty();
