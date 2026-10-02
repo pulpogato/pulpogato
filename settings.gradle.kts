@@ -41,11 +41,11 @@ val allVersions =
     listOf(
         "fpt",
         "ghec",
-        "ghes-3.18",
         "ghes-3.19",
         "ghes-3.20",
         "ghes-3.21",
         "ghes-3.22",
+        "ghes-3.23",
     )
 
 allVersions.forEach { ghVersion ->
