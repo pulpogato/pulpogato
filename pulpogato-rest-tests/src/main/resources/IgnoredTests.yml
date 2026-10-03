@@ -64,7 +64,6 @@
 - example: "#/components/examples/organization-simple/value"
   reason: "https://github.com/github/rest-api-description/issues/5542"
   versions:
-    - fpt
     - ghec
     - ghes-3.20
     - ghes-3.21
