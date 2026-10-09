@@ -49,6 +49,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
 
+      - name: Check REST codegen plugin
+        run: ./gradlew --project-dir gradle/pulpogato-rest-codegen check
+
       - name: Extract GitHub API Version
         id: api-version
         run: echo "version=$(grep 'gh.api.commit' gradle.properties | cut -d'=' -f2)" >> $GITHUB_OUTPUT

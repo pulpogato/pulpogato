@@ -219,7 +219,15 @@ Supports parsing Actions, Workflows, and Release configuration files.
 
 Install JDK 21 first.
 
-To build, run `./gradlew build`.
+The REST codegen plugin is a separate Gradle build.
+Run its checks before building the main project:
+
+[source,shell]
+----
+./gradlew --project-dir gradle/pulpogato-rest-codegen check
+./gradlew build
+----
+
 If you have low memory or CPU, you can customize parallelism with `--max-workers`.
 
 === Build performance
