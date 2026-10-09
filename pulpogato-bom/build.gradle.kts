@@ -23,3 +23,9 @@ dependencies {
         }
     }
 }
+
+// Nothing here for Sonar to analyze, but SonarCloud's DBD Java sensor still runs on every scanned
+// module and warns that sonar.java.binaries is empty.
+sonar {
+    isSkipProject = true
+}

@@ -26,3 +26,11 @@ testlogger {
     showSkipped = false
     showFailed = true
 }
+
+// The Sonar plugin only derives sonar.java.binaries from the main source set, which this test-only
+// module doesn't have, so SonarCloud's DBD Java sensor warns that the binaries are empty.
+sonar {
+    properties {
+        property("sonar.java.binaries", sourceSets["test"].output.classesDirs.files)
+    }
+}
