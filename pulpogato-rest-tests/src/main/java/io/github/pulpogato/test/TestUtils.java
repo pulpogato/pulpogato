@@ -243,13 +243,12 @@ public class TestUtils {
 
     static JsonValue normalizeNonStringTypes(final JsonValue valueSource, final JsonValue typeSource) {
 
-        String stringValue =
-                switch (valueSource.getValueType()) {
-                    case NUMBER -> ((JsonNumber) valueSource).numberValue().toString();
-                    case TRUE, FALSE -> Boolean.toString(valueSource == JsonValue.TRUE);
-                    case STRING -> ((JsonString) valueSource).getString();
-                    default -> valueSource.toString();
-                };
+        String stringValue = switch (valueSource.getValueType()) {
+            case NUMBER -> ((JsonNumber) valueSource).numberValue().toString();
+            case TRUE, FALSE -> Boolean.toString(valueSource == JsonValue.TRUE);
+            case STRING -> ((JsonString) valueSource).getString();
+            default -> valueSource.toString();
+        };
 
         return switch (typeSource.getValueType()) {
             case NUMBER -> getNumericValue(valueSource, stringValue);
