@@ -225,5 +225,8 @@ sonar {
         // is gitignored. The scanner excludes gitignored files by default regardless of sonar.sources,
         // so this has to be disabled for the generated sources to be analyzed at all.
         property("sonar.scm.exclusions.disabled", "true")
+        // Generated code repeats the same blocks thousands of times, so duplication there isn't
+        // actionable and floods the scan with "Too many duplication references" warnings.
+        property("sonar.cpd.exclusions", "**/build/codegen/**,**/build/codegen-src/**")
     }
 }
