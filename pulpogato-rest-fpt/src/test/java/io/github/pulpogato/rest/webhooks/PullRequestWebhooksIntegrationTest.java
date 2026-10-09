@@ -93,14 +93,13 @@ class PullRequestWebhooksIntegrationTest {
             @Override
             public ResponseEntity<TestWebhookResponse> processPullRequest(
                     WebhookHeaders headers, WebhookPullRequest requestBody) {
-                var webhookName =
-                        switch (requestBody) {
-                            case WebhookPullRequestEdited ignored -> "pull-request-edited";
-                            case WebhookPullRequestReviewRequested ignored -> "pull-request-review-requested";
-                            default ->
-                                throw new UnsupportedOperationException("No test fixture for action: "
-                                        + requestBody.getClass().getSimpleName());
-                        };
+                var webhookName = switch (requestBody) {
+                    case WebhookPullRequestEdited ignored -> "pull-request-edited";
+                    case WebhookPullRequestReviewRequested ignored -> "pull-request-review-requested";
+                    default ->
+                        throw new UnsupportedOperationException("No test fixture for action: "
+                                + requestBody.getClass().getSimpleName());
+                };
                 return ResponseEntity.ok(TestWebhookResponse.builder()
                         .webhookName(webhookName)
                         .body(objectMapper.writeValueAsString(requestBody))

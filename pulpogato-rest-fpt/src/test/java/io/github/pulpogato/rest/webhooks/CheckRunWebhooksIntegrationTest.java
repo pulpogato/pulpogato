@@ -87,14 +87,13 @@ class CheckRunWebhooksIntegrationTest {
             @Override
             public @NonNull ResponseEntity<TestWebhookResponse> processCheckRun(
                     @NonNull WebhookHeaders headers, @NonNull WebhookCheckRun requestBody) {
-                var webhookName =
-                        switch (requestBody) {
-                            case WebhookCheckRunCreated ignored -> "check-run-created";
-                            case WebhookCheckRunCompleted ignored -> "check-run-completed";
-                            default ->
-                                throw new UnsupportedOperationException("No test fixture for action: "
-                                        + requestBody.getClass().getSimpleName());
-                        };
+                var webhookName = switch (requestBody) {
+                    case WebhookCheckRunCreated ignored -> "check-run-created";
+                    case WebhookCheckRunCompleted ignored -> "check-run-completed";
+                    default ->
+                        throw new UnsupportedOperationException("No test fixture for action: "
+                                + requestBody.getClass().getSimpleName());
+                };
                 return ResponseEntity.ok(TestWebhookResponse.builder()
                         .webhookName(webhookName)
                         .body(objectMapper.writeValueAsString(requestBody))
