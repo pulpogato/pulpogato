@@ -87,6 +87,7 @@ class WebhooksBuilder {
         // straight to the typed supertype when the subcategory can be deserialized polymorphically.
         val supertypesBySubcategory = WebhookSupertypes.compute(openAPI, "$restPackage.schemas").associateBy { it.subcategory }
         val requestBodyTypeByEventName = linkedMapOf<String, ClassName>()
+        val dispatchRoutes = mutableListOf<WebhookDispatchRoute>()
         openAPI.webhooks
             .entries
             .groupBy {
@@ -148,6 +149,22 @@ class WebhooksBuilder {
                     }
                 }
 
+                val eventName = if (v.size == 1) v.single().key else subcategory.replace("-", "_")
+                val dispatchBodyType =
+                    if (v.size == 1) {
+                        requestBodyTypes.values.single().second
+                    } else {
+                        builders.supertype?.takeIf { it.discriminable }?.supertype ?: ClassName.get(JsonNode::class.java)
+                    }
+                dispatchRoutes.add(
+                    WebhookDispatchRoute(
+                        eventName,
+                        "${subcategory.pascalCase()}Webhooks",
+                        if (v.size == 1) requestBodyTypes.values.single().first else "process${subcategory.pascalCase()}",
+                        dispatchBodyType,
+                    ),
+                )
+
                 val interfaceSpec = interfaceBuilder.build()
                 if (interfaceSpec.methodSpecs().isNotEmpty()) {
                     JavaFile
@@ -176,6 +193,11 @@ class WebhooksBuilder {
             .skipJavaLangImports(true)
             .build()
             .writeTo(mainDir)
+        JavaFile
+            .builder(webhooksPackage, buildWebhookDispatcher(dispatchRoutes, webhooksPackage))
+            .skipJavaLangImports(true)
+            .build()
+            .writeTo(mainDir)
 
         val testConfig = buildTestConfig(testControllerBuilder.build())
         val integrationTestBuilder = buildIntegrationTest(context, testConfig.build())
@@ -190,6 +212,13 @@ class WebhooksBuilder {
         val headerName: String,
         val fieldName: String,
         val universal: Boolean,
+    )
+
+    private data class WebhookDispatchRoute(
+        val eventName: String,
+        val handlerName: String,
+        val methodName: String,
+        val bodyType: ClassName,
     )
 
     /**
@@ -524,6 +553,147 @@ class WebhooksBuilder {
             .build()
     }
 
+    private fun buildWebhookDispatcher(
+        routes: List<WebhookDispatchRoute>,
+        webhooksPackage: String,
+    ): TypeSpec {
+        val responseType =
+            ParameterizedTypeName.get(ClassName.get(PACKAGE_SPRING_HTTP, "ResponseEntity"), WildcardTypeName.subtypeOf(Types.OBJECT))
+        val dispatcherType = ClassName.get(webhooksPackage, "WebhookDispatcher")
+        val targetType = ClassName.get(webhooksPackage, "WebhookDispatcher", "DispatchTarget")
+        val objectMapperType = ClassName.get(ObjectMapper::class.java)
+        val objectsType = ClassName.get("java.util", "Objects")
+        val webhookHandlerType = ClassName.get(Types.COMMON_PACKAGE, "WebhookHandler")
+        val supportedEvents = CodeBlock.builder().add($$"$T.<String>of(\n", ClassName.get("java.util", "Set")).indent()
+        routes.forEachIndexed { index, route ->
+            supportedEvents.add($$"$S", route.eventName)
+            supportedEvents.add(if (index == routes.lastIndex) "\n" else ",\n")
+        }
+        supportedEvents.unindent().add(")")
+
+        val target =
+            TypeSpec
+                .interfaceBuilder("DispatchTarget")
+                .addModifiers(Modifier.PRIVATE)
+                .addAnnotation(ClassName.get("java.lang", "FunctionalInterface"))
+                .addMethod(
+                    MethodSpec
+                        .methodBuilder("handle")
+                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                        .returns(responseType)
+                        .addParameter(webhookHeadersType, "headers")
+                        .addParameter(Types.STRING, "json")
+                        .addException(Types.EXCEPTION)
+                        .build(),
+                ).build()
+
+        val builder =
+            TypeSpec
+                .classBuilder("WebhookDispatcher")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addJavadoc(
+                    "Routes a GitHub webhook delivery to registered handlers without an HTTP request. " +
+                        "Transport consumers supply the GitHub event name, JSON body, and delivery headers.\n",
+                ).addField(FieldSpec.builder(objectMapperType, "objectMapper", Modifier.PRIVATE, Modifier.FINAL).build())
+                .addField(
+                    FieldSpec
+                        .builder(ParameterizedTypeName.get(Types.MAP, Types.STRING, targetType), "handlers", Modifier.PRIVATE, Modifier.FINAL)
+                        .initializer($$"new $T<>()", ClassName.get("java.util", "HashMap"))
+                        .build(),
+                ).addField(
+                    FieldSpec
+                        .builder(
+                            ParameterizedTypeName.get(ClassName.get("java.util", "Set"), Types.STRING),
+                            "SUPPORTED_EVENTS",
+                            Modifier.PRIVATE,
+                            Modifier.STATIC,
+                            Modifier.FINAL,
+                        ).initializer(supportedEvents.build())
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
+                        .addParameter(objectMapperType, "objectMapper")
+                        .addStatement($$"this.objectMapper = $T.requireNonNull(objectMapper)", objectsType)
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
+                        .addParameter(objectMapperType, "objectMapper")
+                        .addParameter(ParameterizedTypeName.get(Types.LIST, webhookHandlerType), "webhookHandlers")
+                        .addStatement("this(objectMapper)")
+                        .addStatement($$"$T.requireNonNull(webhookHandlers)", objectsType)
+                        .beginControlFlow("for (var handler : webhookHandlers)")
+                        .apply {
+                            routes.forEach { route ->
+                                val handlerType =
+                                    ParameterizedTypeName.get(
+                                        ClassName.get(webhooksPackage, route.handlerName),
+                                        WildcardTypeName.subtypeOf(Types.OBJECT),
+                                    )
+                                val handlerName = route.handlerName.replaceFirstChar { it.lowercase() }
+                                beginControlFlow($$"if (handler instanceof $T $L)", handlerType, handlerName)
+                                addStatement($$"on$L($L)", route.handlerName.removeSuffix("Webhooks"), handlerName)
+                                endControlFlow()
+                            }
+                        }.endControlFlow()
+                        .build(),
+                ).addMethod(
+                    MethodSpec
+                        .methodBuilder("dispatch")
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(responseType)
+                        .addParameter(Types.STRING, "eventName")
+                        .addParameter(Types.STRING, "json")
+                        .addParameter(webhookHeadersType, "headers")
+                        .addException(Types.EXCEPTION)
+                        .addStatement($$"$T.requireNonNull(eventName)", objectsType)
+                        .addStatement("var handler = handlers.get(eventName)")
+                        .beginControlFlow("if (handler == null)")
+                        .beginControlFlow("if (!SUPPORTED_EVENTS.contains(eventName))")
+                        .addStatement($$"throw new $T($S + eventName)", IllegalArgumentException::class.java, "Unknown webhook event: ")
+                        .endControlFlow()
+                        .addStatement($$"throw new $T($S + eventName)", IllegalStateException::class.java, "No handler registered for webhook event: ")
+                        .endControlFlow()
+                        .addStatement("return handler.handle(headers, json)")
+                        .build(),
+                ).addType(target)
+
+        routes.forEach { route ->
+            val handlerType = ParameterizedTypeName.get(ClassName.get(webhooksPackage, route.handlerName), WildcardTypeName.subtypeOf(Types.OBJECT))
+            val body =
+                if (route.bodyType == ClassName.get(JsonNode::class.java)) {
+                    CodeBlock.of("objectMapper.readTree(json)")
+                } else {
+                    CodeBlock.of($$"objectMapper.readValue(json, $T.class)", route.bodyType)
+                }
+            builder.addMethod(
+                MethodSpec
+                    .methodBuilder("on${route.handlerName.removeSuffix("Webhooks")}")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(dispatcherType)
+                    .addParameter(handlerType, "handler")
+                    .addStatement($$"$T.requireNonNull(handler)", objectsType)
+                    .addStatement(
+                        $$"var previous = handlers.putIfAbsent($S, (headers, json) -> handler.$L(headers, $L))",
+                        route.eventName,
+                        route.methodName,
+                        body,
+                    ).beginControlFlow("if (previous != null)")
+                    .addStatement(
+                        $$"throw new $T($S)",
+                        IllegalStateException::class.java,
+                        "Multiple ${route.handlerName} handlers for webhook event: ${route.eventName}",
+                    ).endControlFlow()
+                    .addStatement("return this")
+                    .build(),
+            )
+        }
+        return builder.build()
+    }
+
     private fun getUnitTestBuilder(subcategory: String): TypeSpec.Builder =
         TypeSpec
             .classBuilder("${subcategory.pascalCase()}WebhooksTest")
@@ -535,6 +705,7 @@ class WebhooksBuilder {
             .interfaceBuilder("${subcategory.pascalCase()}Webhooks")
             .addModifiers(Modifier.PUBLIC)
             .addTypeVariable(TypeVariableName.get("T"))
+            .addSuperinterface(ClassName.get(Types.COMMON_PACKAGE, "WebhookHandler"))
 
     private fun buildSyntheticMethod(
         context: Context,
