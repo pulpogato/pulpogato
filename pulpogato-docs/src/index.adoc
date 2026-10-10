@@ -153,6 +153,31 @@ For single-event webhooks such as `ping`, the interface has exactly one method w
 include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/webhooks/PingWebhooksIntegrationTest.java[tags=ping-webhook-controller]
 ----
 
+To process webhook deliveries from Kafka, SNS, or another source, create a `WebhookDispatcher` from the webhook handler beans.
+Every generated `*Webhooks` interface extends `WebhookHandler`, so Spring can inject the handlers as a list.
+The same handler bean can also serve HTTP deliveries.
+Pass the GitHub event name, JSON payload, and a `WebhookHeaders` instance to `dispatch`.
+The event name is the value GitHub sends in `X-GitHub-Event`; retain it and any delivery headers when forwarding a webhook to a broker.
+The dispatcher deserializes the payload and invokes the matching handler without an HTTP request.
+An unknown event, a missing handler, or multiple beans for one webhook category raises an exception for the consumer to handle.
+
+[source,java]
+----
+@Bean
+WebhookDispatcher webhookDispatcher(ObjectMapper objectMapper, List<WebhookHandler> handlers) {
+    return new WebhookDispatcher(objectMapper, handlers);
+}
+----
+
+[source,java]
+----
+var headers = WebhookHeaders.builder().githubEvent(eventName).build();
+var response = dispatcher.dispatch(eventName, payloadJson, headers);
+----
+
+The handler interfaces currently return `ResponseEntity<T>` even when invoked from a broker.
+The consumer decides how to acknowledge or retry the broker message based on that result and any exception.
+
 === GraphQL Clients
 
 ==== WebClient Reactive
