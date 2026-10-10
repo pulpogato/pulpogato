@@ -18,7 +18,10 @@ REPO="pulpogato/pulpogato"
 GROUP_PATH="io/github/pulpogato"
 DEST_ROOT="build/repos/releases/${GROUP_PATH}"
 
-GH_VERSIONS=(fpt ghec ghes-3.17 ghes-3.18 ghes-3.19 ghes-3.20 ghes-3.21)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GRADLE_PROPS="${SCRIPT_DIR}/../gradle.properties"
+GH_VERSIONS_CSV="$(grep '^gh\.versions=' "${GRADLE_PROPS}" | cut -d'=' -f2 | tr -d '\r')"
+IFS=',' read -ra GH_VERSIONS <<< "${GH_VERSIONS_CSV}"
 
 ARTIFACTS=(pulpogato-common pulpogato-bom pulpogato-github-files)
 for gh_version in "${GH_VERSIONS[@]}"; do
