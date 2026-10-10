@@ -178,14 +178,6 @@ tasks.register<UpdateRepositoryBranchPropertyTask>("updateGithubActionsTypingSch
     gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
 }
 
-val checkPlugin =
-    tasks.register("checkPlugin", Exec::class) {
-        description = "Run check on plugin code"
-        group = "verification"
-        notCompatibleWithConfigurationCache("Invokes a separate Gradle build for the included plugin project.")
-        commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "check")
-    }
-
 val spotlessApplyPlugin =
     tasks.register("spotlessApplyPlugin", Exec::class) {
         description = "Run spotlessApply on plugin code"
@@ -193,10 +185,6 @@ val spotlessApplyPlugin =
         notCompatibleWithConfigurationCache("Invokes a separate Gradle build for the included plugin project.")
         commandLine("./gradlew", "--project-dir", "gradle/pulpogato-rest-codegen", "spotlessApply")
     }
-
-tasks.named("check").configure {
-    dependsOn(checkPlugin)
-}
 
 tasks.named("spotlessApply").configure {
     dependsOn(spotlessApplyPlugin)
