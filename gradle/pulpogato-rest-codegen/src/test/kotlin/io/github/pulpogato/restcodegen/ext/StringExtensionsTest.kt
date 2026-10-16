@@ -48,6 +48,7 @@ class StringExtensionsTest {
         assertThat("/docs".unkeywordize()).isEqualTo("slash-docs")
         assertThat("@timestamp".unkeywordize()).isEqualTo("timestamp")
         assertThat("default".unkeywordize()).isEqualTo("is-default")
+        assertThat("enum".unkeywordize()).isEqualTo("enum-values")
         assertThat("package".unkeywordize()).isEqualTo("the-package")
         assertThat("private".unkeywordize()).isEqualTo("is-private")
         assertThat("protected".unkeywordize()).isEqualTo("is-protected")
