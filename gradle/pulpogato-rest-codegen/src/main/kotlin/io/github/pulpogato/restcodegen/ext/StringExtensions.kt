@@ -65,6 +65,7 @@ fun String.unkeywordize() =
         "/docs" -> "slash-docs"
         "@timestamp" -> "timestamp"
         "default" -> "is-default"
+        "enum" -> "enum-values"
         "package" -> "the-package"
         "private" -> "is-private"
         "protected" -> "is-protected"
