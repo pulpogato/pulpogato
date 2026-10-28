@@ -3,6 +3,6 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 . "${SCRIPT_DIR}/.ntw.sh"
 
-selectNode v24.22.2
+selectNode v26.13.0
 
 exec npm "$@"
