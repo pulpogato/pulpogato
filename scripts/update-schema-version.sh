@@ -98,6 +98,18 @@ else
     annotate "No PR needed for gh.api.commit (REST API schema) — already up to date"
 fi
 
+GH_GRAPHQL_REPO=$(grep "gh.graphql.repo=" gradle.properties | cut -d'=' -f2)
+update_and_pr \
+    "updateGraphqlSchemaVersion" \
+    "gh.graphql.commit" \
+    "update-graphql-schema-version" \
+    "${GH_GRAPHQL_REPO}"
+if [ "$PR_CREATED" = "true" ]; then
+    annotate "PR created/updated for gh.graphql.commit (GraphQL schema)"
+else
+    annotate "No PR needed for gh.graphql.commit (GraphQL schema) — already up to date"
+fi
+
 SCHEMASTORE_REPO=$(grep "schemastore.repo=" gradle.properties | cut -d'=' -f2)
 update_and_pr \
     "updateSchemastoreVersion" \

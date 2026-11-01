@@ -30,13 +30,14 @@ dependencies {
 }
 
 fun getUrl(projectVariant: String): String {
-    val prefix = "https://docs.github.com/public"
+    val repository = providers.gradleProperty("gh.graphql.repo").get()
+    val commit = providers.gradleProperty("gh.graphql.commit").get()
     val filename =
         when {
             projectVariant.startsWith("ghes-") -> "schema.docs-enterprise.graphql"
             else -> "schema.docs.graphql"
         }
-    return "$prefix/$projectVariant/$filename"
+    return "https://raw.githubusercontent.com/$repository/$commit/src/graphql/data/$projectVariant/$filename"
 }
 
 val projectVariant = project.name.replace("${rootProject.name}-graphql-", "")

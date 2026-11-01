@@ -168,6 +168,16 @@ tasks.register<UpdateRepositoryBranchPropertyTask>("updateSchemastoreVersion") {
     gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
 }
 
+tasks.register<UpdateRepositoryBranchPropertyTask>("updateGraphqlSchemaVersion") {
+    description = "Update the pinned GitHub GraphQL schema revision from GitHub Docs"
+    group = "maintenance"
+    repository.set(providers.gradleProperty("gh.graphql.repo"))
+    branch.set("main")
+    propertyName.set("gh.graphql.commit")
+    propertiesFile.set(layout.projectDirectory.file("gradle.properties"))
+    gitHubToken.set(providers.environmentVariable("GITHUB_TOKEN").orElse(""))
+}
+
 tasks.register<UpdateRepositoryBranchPropertyTask>("updateGithubActionsTypingSchemaVersion") {
     description = "Update GitHub Actions typing schema version from typesafegithub/github-actions-typing"
     group = "maintenance"
