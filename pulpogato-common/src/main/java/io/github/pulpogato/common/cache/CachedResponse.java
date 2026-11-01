@@ -48,17 +48,24 @@ public final class CachedResponse {
     private final long cachedAtMillis;
 
     /**
-     * Checks if this cached response has expired based on the max-age directive.
+     * Checks freshness using Cache-Control and, when max-age is absent, Expires.
      *
      * @param currentTimeMillis the current time in milliseconds to compare against
-     * @return true if the cached response has exceeded its max-age, false if still fresh or no max-age was specified
+     * @return true if the response requires revalidation or its explicit freshness lifetime has elapsed
      */
     public boolean isExpired(long currentTimeMillis) {
+        var cacheControl = HttpCacheEngine.cacheControl(headers);
+        if (HttpCacheEngine.hasDirective(cacheControl, "no-cache")
+                || HttpCacheEngine.hasDirective(cacheControl, "no-store")) {
+            return true;
+        }
         if (maxAgeSeconds < 0) {
-            return false;
+            // Even malformed max-age takes precedence over Expires, so it must not extend freshness.
+            return HttpCacheEngine.hasDirective(cacheControl, "max-age")
+                    || currentTimeMillis >= HttpCacheEngine.expiresAtMillis(headers);
         }
         var ageMillis = currentTimeMillis - cachedAtMillis;
-        return ageMillis > (maxAgeSeconds * 1000);
+        return ageMillis / 1000 >= maxAgeSeconds;
     }
 
     /**

@@ -204,7 +204,13 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         var headers = response.headers().asHttpHeaders();
         var etag = headers.getETag();
         var lastModified = headers.getFirst("Last-Modified");
-        var cacheControl = headers.getFirst("Cache-Control");
+        var cacheControl = HttpCacheEngine.cacheControl(toMap(headers));
+
+        if (HttpCacheEngine.hasDirective(cacheControl, "no-store")) {
+            getEngine().evict(cacheKey, request.url().toString(), parent);
+            getEngine().recordSkip(cacheKey, request.url().toString(), HttpCacheEngine.SKIP_NO_STORE, parent);
+            return Mono.just(response);
+        }
 
         var maxAge = HttpCacheEngine.parseMaxAge(cacheControl);
         var uri = request.url().toString();

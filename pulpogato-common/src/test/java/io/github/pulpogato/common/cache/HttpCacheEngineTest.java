@@ -16,6 +16,9 @@ import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cache.Cache;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 
@@ -68,6 +71,21 @@ class HttpCacheEngineTest {
     @Nested
     @DisplayName("refreshFromNotModified")
     class RefreshFromNotModifiedTests {
+
+        @ParameterizedTest
+        @ValueSource(booleans = {false, true})
+        void evictsWhenNotModifiedForbidsStorage(boolean multipleHeaderValues) {
+            var stored = Map.of("Cache-Control", List.of("max-age=60"));
+            var cached = new CachedResponse(new byte[] {1}, stored, "\"etag\"", null, 60, CURRENT_TIME);
+            var values = multipleHeaderValues ? List.of("max-age=120", "no-store") : List.of("no-store");
+
+            var refreshed =
+                    engine(false).refreshFromNotModified(CACHE_KEY, URI, cached, Map.of("cache-control", values), null);
+
+            verify(cache).evict(CACHE_KEY);
+            assertThat(refreshed.getBody()).containsExactly((byte) 1);
+            assertThat(refreshed.isExpired(CURRENT_TIME)).isTrue();
+        }
 
         @Test
         @DisplayName("merges 304 headers over stored headers case-insensitively")
@@ -204,6 +222,22 @@ class HttpCacheEngineTest {
     @DisplayName("parseMaxAge")
     class ParseMaxAgeTests {
 
+        @ParameterizedTest
+        @CsvSource({
+            "'MAX-AGE = 120', 120",
+            "'s-maxage=120', -1",
+            "'max-age=99999999999999999999999', -1",
+            "'max-age=120junk', -1",
+            "'max-age=\"120\"', 120",
+            "'max-age=\"120', -1",
+            "'max-age=120\"', -1",
+            "'extension=\"x,max-age=120,y\"', -1",
+            "'extension=\"x,max-age=120,y\", max-age=60', 60"
+        })
+        void parsesOnlyValidFreshness(String value, long expected) {
+            assertThat(HttpCacheEngine.parseMaxAge(value)).isEqualTo(expected);
+        }
+
         @Test
         void parsesMaxAgeDirective() {
             assertThat(HttpCacheEngine.parseMaxAge("max-age=120, must-revalidate"))
@@ -215,5 +249,20 @@ class HttpCacheEngineTest {
             assertThat(HttpCacheEngine.parseMaxAge("no-cache")).isEqualTo(-1);
             assertThat(HttpCacheEngine.parseMaxAge(null)).isEqualTo(-1);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "max-age=60, extension=\"x,no-store,y\"",
+                "extension=\"x,no-cache,y\", max-age=60",
+                "extension=\"x,\\\"no-store,y\", max-age=60"
+            })
+    void ignoresDirectiveNamesInsideQuotedExtensions(String control) {
+        assertThat(HttpCacheEngine.hasDirective(control, "no-store")).isFalse();
+        assertThat(HttpCacheEngine.hasDirective(control, "no-cache")).isFalse();
+        assertThat(HttpCacheEngine.parseMaxAge(control)).isEqualTo(60);
+        assertThat(HttpCacheEngine.hasDirective(control + ", no-store", "no-store"))
+                .isTrue();
     }
 }
