@@ -3,12 +3,14 @@ package io.github.pulpogato.restcodegen
 import io.swagger.parser.OpenAPIParser
 import io.swagger.v3.parser.core.models.ParseOptions
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -83,13 +85,13 @@ open class GenerateJavaTask : DefaultTask() {
     /**
      * The root project directory for finding common resources.
      */
-    @Input
+    @Internal
     val rootProjectDir: Property<File> = project.objects.property(File::class.java)
 
     /**
      * The project directory for finding module resources.
      */
-    @Input
+    @Internal
     val projectDir: Property<File> = project.objects.property(File::class.java)
 
     /**
@@ -106,18 +108,24 @@ open class GenerateJavaTask : DefaultTask() {
     /**
      * The common resources directory for schema additions.
      */
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
-    @Optional
+    @Internal
     val commonResourcesDir: Property<File> = project.objects.property(File::class.java)
 
     /**
      * The module resources directory for schema additions.
      */
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
-    @Optional
+    @Internal
     val moduleResourcesDir: Property<File> = project.objects.property(File::class.java)
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    val commonSchemaFiles: ConfigurableFileCollection =
+        project.objects.fileCollection().from(commonResourcesDir.map { schemaFiles(it) }.orElse(emptyList()))
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    val moduleSchemaFiles: ConfigurableFileCollection =
+        project.objects.fileCollection().from(moduleResourcesDir.map { schemaFiles(it) }.orElse(emptyList()))
 
     init {
         projectName.set(project.name)
@@ -149,11 +157,8 @@ open class GenerateJavaTask : DefaultTask() {
         val schemaNode = mapper.readTree(schemaFile) as ObjectNode
 
         // Check for *.schema.json in pulpogato-common and the module's resources directory
-        val commonResourcesDirVal = commonResourcesDir.orNull
-        val moduleResourcesDirVal = moduleResourcesDir.orNull
         val schemaAdditionsFiles =
-            (if (commonResourcesDirVal != null) findSchemaFiles(commonResourcesDirVal) else emptyList()) +
-                (if (moduleResourcesDirVal != null) findSchemaFiles(moduleResourcesDirVal) else emptyList())
+            commonSchemaFiles.files.sortedBy { it.name } + moduleSchemaFiles.files.sortedBy { it.name }
 
         val addedProperties = mutableMapOf<String, MutableMap<String, String>>()
         val schemas = mutableMapOf<String, JsonNode>("schema.json" to schemaNode)
@@ -301,22 +306,6 @@ open class GenerateJavaTask : DefaultTask() {
     }
 
     /**
-     * Finds all schema addition files (*.schema.json) in the specified directory.
-     *
-     * @param dir The directory to search for schema files
-     * @return A list of schema files sorted by name, or empty list if directory doesn't exist
-     */
-    private fun findSchemaFiles(dir: File): List<File> =
-        if (dir.exists()) {
-            dir
-                .listFiles { _, name -> name.endsWith(".schema.json") }
-                ?.sortedBy { it.name }
-                ?.toList() ?: emptyList()
-        } else {
-            emptyList()
-        }
-
-    /**
      * Merges schema additions from an addition node into the main schema node.
      *
      * Supports adding/removing schemas under `components.schemas` and paths under `paths`.
@@ -459,3 +448,5 @@ open class GenerateJavaTask : DefaultTask() {
         }
     }
 }
+
+private fun schemaFiles(dir: File): List<File> = dir.listFiles { _, name -> name.endsWith(".schema.json") }?.toList() ?: emptyList()
