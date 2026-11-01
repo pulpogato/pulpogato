@@ -91,18 +91,20 @@ sourceSets {
 
 val downloadSchema = tasks.named("downloadSchema")
 val generateJava = tasks.named("generateJava")
+val generateHeaders = tasks.named("generateHeaders")
 
 tasks.compileJava {
     dependsOn(generateJava)
 }
 tasks.named("sourcesJar") {
-    dependsOn(generateJava)
+    dependsOn(generateJava, generateHeaders)
 }
 tasks.named("javadocJar") {
     dependsOn(generateJava)
 }
 tasks.processResources {
     dependsOn(downloadSchema)
+    dependsOn(generateHeaders)
 }
 tasks.processTestResources {
     dependsOn(generateJava)

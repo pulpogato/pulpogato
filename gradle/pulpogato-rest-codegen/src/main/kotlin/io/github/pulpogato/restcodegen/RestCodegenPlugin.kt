@@ -18,6 +18,12 @@ class RestCodegenPlugin : Plugin<Project> {
             schemaFile.set(target.layout.buildDirectory.file("generated-src/main/resources/github.schema.json"))
         }
 
+        target.tasks.register("generateHeaders", GenerateHeadersTask::class.java) {
+            projectVersion.set(extension.projectVersion)
+            apiVersion.set(extension.apiVersion)
+            headersFile.set(target.layout.buildDirectory.file("generated-src/main/resources/pulpogato-headers.properties"))
+        }
+
         val generateJava = target.tasks.register("generateJava", GenerateJavaTask::class.java)
         generateJava.configure {
             dependsOn(downloadSchema)
