@@ -95,6 +95,19 @@ class CachingExchangeFilterFunctionTest {
         return ClientResponse.create(HttpStatus.NOT_MODIFIED).build();
     }
 
+    private ClientResponse consumeResponse(Mono<ClientResponse> exchange) {
+        var result = exchange.block();
+        var status = result.headers().asHttpHeaders().getFirst(HttpCacheEngine.CACHE_HEADER_NAME);
+        if (!"MISS".equals(status) && !"INVALIDATED".equals(status)) {
+            return result;
+        }
+        var bytes = result.bodyToMono(byte[].class).defaultIfEmpty(new byte[0]).block();
+        return ClientResponse.create(result.statusCode())
+                .headers(headers -> headers.putAll(result.headers().asHttpHeaders()))
+                .body(Flux.just(bufferFactory.wrap(bytes)))
+                .build();
+    }
+
     @Nested
     @DisplayName("Non-GET requests")
     class NonGetRequests {
@@ -106,7 +119,7 @@ class CachingExchangeFilterFunctionTest {
             var response = createResponse(null, null, null);
             when(exchangeFunction.exchange(request)).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isEqualTo(response);
             verify(cache, never()).get(any(), eq(CachedResponse.class));
@@ -128,7 +141,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
@@ -149,7 +162,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
@@ -167,7 +180,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
@@ -185,7 +198,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
@@ -209,7 +222,7 @@ class CachingExchangeFilterFunctionTest {
                     new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(cachedResponse);
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
@@ -228,7 +241,7 @@ class CachingExchangeFilterFunctionTest {
             var cachedResponse = new CachedResponse(RESPONSE_BODY, headers, "\"abc123\"", null, 60, CURRENT_TIME);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(cachedResponse);
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().contentType()).hasValue(MediaType.APPLICATION_JSON);
@@ -251,7 +264,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            filter.filter(request, exchangeFunction).block();
+            consumeResponse(filter.filter(request, exchangeFunction));
 
             var captor = ArgumentCaptor.forClass(ClientRequest.class);
             verify(exchangeFunction).exchange(captor.capture());
@@ -269,7 +282,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            filter.filter(request, exchangeFunction).block();
+            consumeResponse(filter.filter(request, exchangeFunction));
 
             var captor = ArgumentCaptor.forClass(ClientRequest.class);
             verify(exchangeFunction).exchange(captor.capture());
@@ -288,7 +301,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
@@ -307,7 +320,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().contentType()).hasValue(MediaType.APPLICATION_JSON);
@@ -325,7 +338,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(newResponse));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
@@ -347,7 +360,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            filter.filter(request, exchangeFunction).block();
+            consumeResponse(filter.filter(request, exchangeFunction));
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
@@ -379,7 +392,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(notModified));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
@@ -415,7 +428,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(staleCache);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(notModified));
 
-            filter.filter(request, exchangeFunction).block();
+            consumeResponse(filter.filter(request, exchangeFunction));
 
             var captor = ArgumentCaptor.forClass(CachedResponse.class);
             verify(cache).put(eq(CACHE_KEY), captor.capture());
@@ -439,7 +452,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             verify(cache, never()).put(any(), any());
@@ -457,7 +470,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.statusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -476,7 +489,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.statusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -507,7 +520,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(cachedResponse);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            var result = revalidatingFilter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(revalidatingFilter.filter(request, exchangeFunction));
 
             // Should have made a server request with conditional header
             var captor = ArgumentCaptor.forClass(ClientRequest.class);
@@ -531,7 +544,7 @@ class CachingExchangeFilterFunctionTest {
                     new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME);
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(cachedResponse);
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             // Should NOT have made a server request
             verify(exchangeFunction, never()).exchange(any());
@@ -568,7 +581,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = filter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(filter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
@@ -581,7 +594,7 @@ class CachingExchangeFilterFunctionTest {
         }
 
         @Test
-        @DisplayName("Response body exceeding max cacheable size returns SKIP and is not cached")
+        @DisplayName("Response body exceeding max cacheable size is streamed without caching")
         void bodyExceedingLimitReturnsSkip() {
             // Use a small limit for testing
             var smallLimitFilter = CachingExchangeFilterFunction.builder()
@@ -604,11 +617,11 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = smallLimitFilter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(smallLimitFilter.filter(request, exchangeFunction));
 
             assertThat(result).isNotNull();
             assertThat(result.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
-                    .containsExactly("SKIP");
+                    .containsExactly("MISS");
             assertThat(result.statusCode()).isEqualTo(HttpStatus.OK);
 
             // Verify body is still returned correctly
@@ -641,7 +654,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            var result = smallLimitFilter.filter(request, exchangeFunction).block();
+            var result = consumeResponse(smallLimitFilter.filter(request, exchangeFunction));
 
             // Response is returned as-is (not wrapped), so no X-Pulpogato-Cache header
             assertThat(result).isNotNull();
@@ -673,7 +686,7 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response1));
 
-            var result1 = customFilter.filter(request1, exchangeFunction).block();
+            var result1 = consumeResponse(customFilter.filter(request1, exchangeFunction));
             assertThat(result1).isNotNull();
             assertThat(result1.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
                     .containsExactly("MISS");
@@ -691,10 +704,10 @@ class CachingExchangeFilterFunctionTest {
             when(cache.get(CACHE_KEY, CachedResponse.class)).thenReturn(null);
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response2));
 
-            var result2 = customFilter.filter(request2, exchangeFunction).block();
+            var result2 = consumeResponse(customFilter.filter(request2, exchangeFunction));
             assertThat(result2).isNotNull();
             assertThat(result2.headers().header(HttpCacheEngine.CACHE_HEADER_NAME))
-                    .containsExactly("SKIP");
+                    .containsExactly("MISS");
             verify(cache, never()).put(any(), any());
         }
     }
@@ -732,9 +745,8 @@ class CachingExchangeFilterFunctionTest {
             when(exchangeFunction.exchange(any(ClientRequest.class)))
                     .thenReturn(Mono.just(createResponse("\"abc123\"", null, null)));
 
-            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
-                    .filter(createGetRequest(), exchangeFunction)
-                    .block();
+            consumeResponse(observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
@@ -762,9 +774,8 @@ class CachingExchangeFilterFunctionTest {
                     .thenReturn(
                             new CachedResponse(RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME));
 
-            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
-                    .filter(createGetRequest(), exchangeFunction)
-                    .block();
+            consumeResponse(observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
@@ -785,9 +796,8 @@ class CachingExchangeFilterFunctionTest {
                             RESPONSE_BODY, DEFAULT_HEADERS, "\"abc123\"", null, 60, CURRENT_TIME - 100_000));
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(create304Response()));
 
-            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
-                    .filter(createGetRequest(), exchangeFunction)
-                    .block();
+            consumeResponse(observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
@@ -813,9 +823,8 @@ class CachingExchangeFilterFunctionTest {
             when(exchangeFunction.exchange(any(ClientRequest.class)))
                     .thenReturn(Mono.just(createResponse("\"new-etag\"", null, null)));
 
-            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
-                    .filter(createGetRequest(), exchangeFunction)
-                    .block();
+            consumeResponse(observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_GET)
@@ -841,7 +850,7 @@ class CachingExchangeFilterFunctionTest {
                     .build();
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            observedFilter(1000).filter(createGetRequest(), exchangeFunction).block();
+            consumeResponse(observedFilter(1000).filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_PUT)
@@ -862,7 +871,7 @@ class CachingExchangeFilterFunctionTest {
                     .build();
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(Mono.just(response));
 
-            observedFilter(1000).filter(createGetRequest(), exchangeFunction).block();
+            consumeResponse(observedFilter(1000).filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_PUT)
@@ -879,9 +888,8 @@ class CachingExchangeFilterFunctionTest {
             when(exchangeFunction.exchange(any(ClientRequest.class)))
                     .thenReturn(Mono.just(createResponse(null, null, null)));
 
-            observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
-                    .filter(createGetRequest(), exchangeFunction)
-                    .block();
+            consumeResponse(observedFilter(CachingExchangeFilterFunction.DEFAULT_MAX_CACHEABLE_SIZE)
+                    .filter(createGetRequest(), exchangeFunction));
 
             TestObservationRegistryAssert.assertThat(observationRegistry)
                     .hasObservationWithNameEqualTo(CACHE_PUT)
