@@ -1,6 +1,7 @@
 package io.github.pulpogato.common.client;
 
 import java.net.URI;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -23,11 +24,19 @@ public class RedirectExchangeFunction implements ExchangeFilterFunction {
 
     private static Mono<ClientResponse> exchange(ClientRequest request, ExchangeFunction next, int remainingRedirects) {
         return next.exchange(request).flatMap(response -> {
+            var status = response.statusCode().value();
             URI location = response.headers().asHttpHeaders().getLocation();
-            if (remainingRedirects > 0 && response.statusCode().is3xxRedirection() && location != null) {
-                ClientRequest redirected =
-                        ClientRequest.from(request).url(location).build();
-                return exchange(redirected, next, remainingRedirects - 1);
+            if (remainingRedirects > 0 && RedirectPolicy.follows(status) && location != null) {
+                var method = RedirectPolicy.method(status, request.method());
+                var builder = ClientRequest.from(request)
+                        .url(RedirectPolicy.resolve(request.url(), location))
+                        .method(method);
+                if (method != request.method()) {
+                    builder.body(BodyInserters.empty()).headers(RedirectPolicy::removeBodyHeaders);
+                }
+                var redirected = builder.build();
+                return response.releaseBody()
+                        .then(Mono.defer(() -> exchange(redirected, next, remainingRedirects - 1)));
             }
             return Mono.just(response);
         });

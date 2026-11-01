@@ -2,6 +2,8 @@ package io.github.pulpogato.common.client;
 
 import java.io.IOException;
 import java.net.URI;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -29,17 +31,35 @@ public class RedirectClientHttpRequestInterceptor implements ClientHttpRequestIn
     private static ClientHttpResponse execute(
             HttpRequest request, byte[] body, ClientHttpRequestExecution execution, int remainingRedirects)
             throws IOException {
-        ClientHttpResponse response = execution.execute(request, body);
+        var response = execution.execute(request, body);
+        var status = response.getStatusCode().value();
         URI location = response.getHeaders().getLocation();
-        if (remainingRedirects > 0 && response.getStatusCode().is3xxRedirection() && location != null) {
+        if (remainingRedirects > 0 && RedirectPolicy.follows(status) && location != null) {
+            var method = RedirectPolicy.method(status, request.getMethod());
+            var headers = new HttpHeaders();
+            headers.putAll(request.getHeaders());
+            var redirectedBody = method == request.getMethod() ? body : new byte[0];
+            if (method != request.getMethod()) {
+                RedirectPolicy.removeBodyHeaders(headers);
+            }
             response.close();
-            HttpRequest redirected = new HttpRequestWrapper(request) {
+            var redirected = new HttpRequestWrapper(request) {
                 @Override
                 public URI getURI() {
-                    return request.getURI().resolve(location);
+                    return RedirectPolicy.resolve(request.getURI(), location);
+                }
+
+                @Override
+                public HttpMethod getMethod() {
+                    return method;
+                }
+
+                @Override
+                public HttpHeaders getHeaders() {
+                    return headers;
                 }
             };
-            return execute(redirected, body, execution, remainingRedirects - 1);
+            return execute(redirected, redirectedBody, execution, remainingRedirects - 1);
         }
         return response;
     }
