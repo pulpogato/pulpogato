@@ -6,6 +6,7 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.net.URI
@@ -55,11 +56,9 @@ abstract class DownloadSchemaTask : DefaultTask() {
     abstract val apiRepository: Property<String>
 
     /**
-     * The project version for the headers properties file.
-     *
-     * This property specifies the version to write to the headers file.
+     * Retained for DSL compatibility; release metadata is written by [GenerateHeadersTask].
      */
-    @get:Input
+    @get:Internal
     abstract val projectVersion: Property<String>
 
     /**
@@ -86,7 +85,6 @@ abstract class DownloadSchemaTask : DefaultTask() {
         val commit = apiCommit.get()
         val apiVersionValue = apiVersion.get()
         val outputFile = schemaFile.get().asFile
-        val version = projectVersion.get()
 
         val url = buildSchemaUrl(variant, commit, apiVersionValue)
         logger.info("Downloading schema from: $url")
@@ -95,15 +93,6 @@ abstract class DownloadSchemaTask : DefaultTask() {
 
         val schemaBytes = URI(url).toURL().readBytes()
         outputFile.writeBytes(schemaBytes)
-
-        // Write the headers properties file alongside the schema
-        val propertiesFile = outputFile.parentFile.resolve("pulpogato-headers.properties")
-        propertiesFile.writeText(
-            """# Pulpogato Headers Properties
-pulpogato.version=$version
-github.api.version=$apiVersionValue
-""",
-        )
 
         val sha256 = calculateSha256(schemaBytes)
         logger.info("Downloaded schema with SHA256: $sha256")
