@@ -35,7 +35,7 @@ jobs:
       pages: write
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -43,21 +43,21 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: git fetch --tags
 
-      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - uses: gradle/actions/wrapper-validation@v6.4.1
 
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+      - uses: actions/setup-java@v6.1.0
         with:
           java-version: 21
           distribution: zulu
 
-      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - uses: gradle/actions/setup-gradle@v6.4.1
 
       - name: Check REST codegen plugin
         run: ./gradlew --project-dir gradle/pulpogato-rest-codegen check
 
       - name: Cache Downloaded Schemas
         id: schema-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        uses: actions/cache@v6.1.0
         with:
           path: |
             */build/generated-src/main/resources/github.schema.json
@@ -66,7 +66,7 @@ jobs:
           key: schema-cache-v2-${{ hashFiles('gradle.properties') }}
 
       - name: Cache SonarQube packages
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -99,7 +99,7 @@ jobs:
         run: ./gradlew --max-workers=$MAX_WORKERS -Pcoverage=true sonar
 
       - name: Deploy docs to ghpages
-        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
+        uses: peaceiris/actions-gh-pages@v4.1.0
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -118,7 +118,7 @@ jobs:
         env: *env
         run: ./gradlew --max-workers=$MAX_WORKERS -Prelease.useLastTag=true -Pcodegen.format=true build final
 
-      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+      - uses: actions/attest-build-provenance@v4.2.2
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         with:
           subject-path: "build/repos/**/*.jar,build/repos/**/*.pom,build/repos/**/*.module"

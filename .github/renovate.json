@@ -13,6 +13,14 @@
   "customManagers": [
     {
       "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/verify-lockfile\\.yml$/"],
+      "matchStrings": [
+        "gh extension install (?<depName>github/gh-actions-lock) --pin (?<currentValue>v[^\\s]+)"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
       "matchStrings": [
         "selectNode +v(?<currentValue>.+?)\n"
       ],
