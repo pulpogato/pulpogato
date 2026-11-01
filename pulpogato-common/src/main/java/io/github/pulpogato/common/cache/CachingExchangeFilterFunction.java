@@ -13,6 +13,7 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.NoOpCache;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
@@ -46,7 +47,10 @@ import reactor.core.publisher.Mono;
  * returns a fresh 200 for a stale entry, the stored value is invalidated and replaced.
  *
  * <p>Responses larger than {@link #maxCacheableSize} are not cached but are still returned
- * successfully. This prevents memory issues with very large responses.
+ * successfully. Cache copies are bounded by this limit while the original body is streamed to the caller.
+ * Entries are stored only when the caller consumes the complete body; cancellation and errors never store partial data.
+ * For unknown-length responses, the MISS/INVALIDATED header describes the network lookup; an oversized
+ * body is reported as a cache.put SKIP observation when the limit is crossed.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -215,43 +219,61 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         // Copy headers to a plain Map for serialization.
         var headerMap = toMap(headers);
 
-        // Buffer the response body and check size
-        return response.body(BodyExtractors.toDataBuffers())
-                .reduce(new ByteArrayOutputStream(), (stream, buffer) -> {
-                    var bytes = new byte[buffer.readableByteCount()];
-                    buffer.read(bytes);
-                    DataBufferUtils.release(buffer);
-                    stream.writeBytes(bytes);
-                    return stream;
-                })
-                .map(ByteArrayOutputStream::toByteArray)
-                .defaultIfEmpty(new byte[0])
-                .map(body -> {
-                    // If the response is too large, skip caching but still return the data
-                    if (getEngine().exceedsMaxCacheableSize(body.length)) {
-                        getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_BODY_SIZE, parent);
-                        return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
-                                .headers(h -> h.putAll(headerMap))
-                                .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_SKIP)
-                                .body(Flux.just(bufferFactory.wrap(body)))
-                                .build();
-                    }
+        var putStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_STORED;
+        var headerStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_MISS;
+        var body = Flux.defer(() -> {
+            var collector = new CacheBody();
+            return response.body(BodyExtractors.toDataBuffers())
+                    .doOnNext(buffer -> {
+                        if (collector.append(buffer, maxCacheableSize)) {
+                            getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_BODY_SIZE, parent);
+                        }
+                    })
+                    .doOnComplete(() -> {
+                        var retained = collector.content;
+                        if (retained != null) {
+                            var cachedResponse = new CachedResponse(
+                                    retained.toByteArray(), headerMap, etag, lastModified, maxAge, clock.millis());
+                            getEngine()
+                                    .recordPut(
+                                            cacheKey,
+                                            uri,
+                                            putStatus,
+                                            () -> cache.put(cacheKey, cachedResponse),
+                                            parent);
+                        }
+                    })
+                    .doOnDiscard(DataBuffer.class, DataBufferUtils::release);
+        });
+        return Mono.just(ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
+                .headers(h -> h.putAll(headerMap))
+                .header(HttpCacheEngine.CACHE_HEADER_NAME, headerStatus)
+                .body(body)
+                .build());
+    }
 
-                    // Cache and return. A prior cached entry that reached here (rather than the 304 branch)
-                    // means the live API returned a fresh 200 for a stale lookup, i.e. it invalidated the
-                    // stored value.
-                    var cachedResponse =
-                            new CachedResponse(body, headerMap, etag, lastModified, maxAge, clock.millis());
-                    var putStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_STORED;
-                    var headerStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_MISS;
-                    getEngine().recordPut(cacheKey, uri, putStatus, () -> cache.put(cacheKey, cachedResponse), parent);
+    private static final class CacheBody {
+        private @Nullable ByteArrayOutputStream content = new ByteArrayOutputStream();
 
-                    return ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
-                            .headers(h -> h.putAll(headerMap))
-                            .header(HttpCacheEngine.CACHE_HEADER_NAME, headerStatus)
-                            .body(Flux.just(bufferFactory.wrap(body)))
-                            .build();
-                });
+        boolean append(DataBuffer buffer, int limit) {
+            var retained = content;
+            if (retained == null) {
+                return false;
+            }
+            if (buffer.readableByteCount() > limit - retained.size()) {
+                content = null;
+                return true;
+            }
+            try (var buffers = buffer.readableByteBuffers()) {
+                while (buffers.hasNext()) {
+                    var readable = buffers.next();
+                    var bytes = new byte[readable.remaining()];
+                    readable.get(bytes);
+                    retained.writeBytes(bytes);
+                }
+            }
+            return false;
+        }
     }
 
     private static Map<String, List<String>> toMap(HttpHeaders headers) {
