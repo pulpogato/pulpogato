@@ -4,6 +4,9 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import java.net.URI;
 import java.time.Clock;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +43,10 @@ class HttpCacheEngine {
     static final String SKIP_CONTENT_LENGTH = "CONTENT_LENGTH";
     static final String SKIP_BODY_SIZE = "BODY_SIZE";
     static final String SKIP_NONE = "NONE";
+    static final String SKIP_NO_STORE = "NO_STORE";
 
-    private static final Pattern MAX_AGE_PATTERN = Pattern.compile("max-age=(\\d+)");
+    private static final Pattern MAX_AGE_PATTERN =
+            Pattern.compile("max-age\\s*=\\s*(?:\"(\\d+)\"|(\\d+))", Pattern.CASE_INSENSITIVE);
     private static final String OBSERVATION_CACHE_GET = "pulpogato.cache.get";
     private static final String OBSERVATION_CACHE_PUT = "pulpogato.cache.put";
     private static final String URI_TAG = "uri";
@@ -111,17 +116,81 @@ class HttpCacheEngine {
         // merged headers retain the stored value; if even that is absent, fall back to the entry's
         // existing metadata so revalidation never discards known freshness information. A header is
         // absent exactly when getFirst returns null, so a present-but-updated value still wins.
-        var mergedCacheControl = getFirst(merged, CACHE_CONTROL);
+        var mergedCacheControl = cacheControl(merged);
         var mergedEtag = getFirst(merged, ETAG);
         var mergedLastModified = getFirst(merged, LAST_MODIFIED);
         var etag = mergedEtag != null ? mergedEtag : cached.getEtag();
         var lastModified = mergedLastModified != null ? mergedLastModified : cached.getLastModified();
         var parsedMaxAge = mergedCacheControl != null ? parseMaxAge(mergedCacheControl) : -1;
-        var maxAge = parsedMaxAge >= 0 ? parsedMaxAge : cached.getMaxAgeSeconds();
+        var maxAge = mergedCacheControl != null ? parsedMaxAge : cached.getMaxAgeSeconds();
 
         var refreshed = new CachedResponse(cached.getBody(), merged, etag, lastModified, maxAge, clock.millis());
-        recordPut(cacheKey, uri, CACHE_REVALIDATED, () -> cache.put(cacheKey, refreshed), parent);
+        if (hasDirective(mergedCacheControl, "no-store")) {
+            evict(cacheKey, uri, parent);
+        } else {
+            recordPut(cacheKey, uri, CACHE_REVALIDATED, () -> cache.put(cacheKey, refreshed), parent);
+        }
         return refreshed;
+    }
+
+    void evict(String cacheKey, String uri, @Nullable Observation parent) {
+        recordPut(cacheKey, uri, CACHE_INVALIDATED, () -> cache.evict(cacheKey), parent);
+    }
+
+    static @Nullable String cacheControl(Map<String, List<String>> headers) {
+        return headers.entrySet().stream()
+                .filter(entry -> CACHE_CONTROL.equalsIgnoreCase(entry.getKey()))
+                .flatMap(entry -> entry.getValue().stream())
+                .reduce((first, next) -> first + "," + next)
+                .orElse(null);
+    }
+
+    static boolean hasDirective(@Nullable String cacheControl, String directive) {
+        if (cacheControl == null) {
+            return false;
+        }
+        for (var part : cacheDirectives(cacheControl)) {
+            if (part.split("=", 2)[0].trim().equalsIgnoreCase(directive)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<String> cacheDirectives(String cacheControl) {
+        var directives = new ArrayList<String>();
+        var quoted = false;
+        var escaped = false;
+        var start = 0;
+        for (var i = 0; i < cacheControl.length(); i++) {
+            var character = cacheControl.charAt(i);
+            if (escaped) {
+                escaped = false;
+            } else if (quoted && character == '\\') {
+                escaped = true;
+            } else if (character == '"') {
+                quoted = !quoted;
+            } else if (!quoted && character == ',') {
+                directives.add(cacheControl.substring(start, i).trim());
+                start = i + 1;
+            }
+        }
+        directives.add(cacheControl.substring(start).trim());
+        return directives;
+    }
+
+    static long expiresAtMillis(Map<String, List<String>> headers) {
+        var expires = getFirst(headers, "Expires");
+        if (expires != null) {
+            try {
+                return ZonedDateTime.parse(expires, DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .toInstant()
+                        .toEpochMilli();
+            } catch (DateTimeParseException | ArithmeticException ignored) {
+                // An invalid expiry date requires revalidation rather than preventing a response.
+            }
+        }
+        return -1;
     }
 
     /**
@@ -195,15 +264,27 @@ class HttpCacheEngine {
     }
 
     private static @Nullable String getFirst(Map<String, List<String>> headers, String name) {
-        var values = headers.get(name);
+        var values = headers.entrySet().stream()
+                .filter(entry -> name.equalsIgnoreCase(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
         return values != null && !values.isEmpty() ? values.getFirst() : null;
     }
 
     static long parseMaxAge(@Nullable String cacheControl) {
         if (cacheControl != null) {
-            var matcher = MAX_AGE_PATTERN.matcher(cacheControl);
-            if (matcher.find()) {
-                return Long.parseLong(matcher.group(1));
+            for (var directive : cacheDirectives(cacheControl)) {
+                var matcher = MAX_AGE_PATTERN.matcher(directive);
+                if (!matcher.matches()) {
+                    continue;
+                }
+                try {
+                    return Long.parseLong(matcher.group(1) != null ? matcher.group(1) : matcher.group(2));
+                } catch (NumberFormatException ignored) {
+                    // Invalid freshness metadata must not break an otherwise usable API response.
+                    return -1;
+                }
             }
         }
         return -1;

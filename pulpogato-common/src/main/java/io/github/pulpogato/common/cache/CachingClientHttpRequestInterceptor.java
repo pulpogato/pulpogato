@@ -178,7 +178,13 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         var headers = response.getHeaders();
         var etag = headers.getETag();
         var lastModified = headers.getFirst("Last-Modified");
-        var cacheControl = headers.getFirst("Cache-Control");
+        var cacheControl = HttpCacheEngine.cacheControl(toMap(headers));
+
+        if (HttpCacheEngine.hasDirective(cacheControl, "no-store")) {
+            getEngine().evict(cacheKey, uri, parent);
+            getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_NO_STORE, parent);
+            return response;
+        }
 
         var maxAge = HttpCacheEngine.parseMaxAge(cacheControl);
 
