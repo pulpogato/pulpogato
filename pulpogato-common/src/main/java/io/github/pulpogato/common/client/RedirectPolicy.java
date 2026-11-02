@@ -27,6 +27,22 @@ final class RedirectPolicy {
         return request.resolve(location);
     }
 
+    static boolean allows(URI request, URI target) {
+        var scheme = target.getScheme();
+        // Downstream filters may inject credentials again, so stripping headers alone cannot
+        // make a cross-origin redirect safe for an arbitrary client filter chain.
+        return ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))
+                && target.getHost() != null
+                && target.getRawUserInfo() == null
+                && scheme.equalsIgnoreCase(request.getScheme())
+                && target.getHost().equalsIgnoreCase(request.getHost())
+                && effectivePort(request) == effectivePort(target);
+    }
+
+    private static int effectivePort(URI uri) {
+        return uri.getPort() != -1 ? uri.getPort() : ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80);
+    }
+
     static void removeBodyHeaders(HttpHeaders headers) {
         headers.remove(HttpHeaders.CONTENT_LENGTH);
         headers.remove(HttpHeaders.CONTENT_TYPE);

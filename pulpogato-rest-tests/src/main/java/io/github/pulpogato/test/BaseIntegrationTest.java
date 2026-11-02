@@ -56,13 +56,16 @@ public abstract class BaseIntegrationTest {
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
                 .build();
 
+        // Absolute Location headers need a concrete origin even with a MockMvc connector.
         webClient = WebClient.builder()
+                .baseUrl("https://api.github.com")
                 .exchangeStrategies(strategies)
                 .clientConnector(new MockMvcHttpConnector(mockMvc))
                 .defaultHeader("TapeName", tapeName)
                 .build();
 
         restClient = RestClient.builder()
+                .baseUrl("https://api.github.com")
                 .requestFactory(new MockMvcClientHttpRequestFactory(mockMvc))
                 .defaultHeader("TapeName", tapeName)
                 .build();

@@ -12,6 +12,10 @@ import reactor.core.publisher.Mono;
  * An {@link ExchangeFilterFunction} that transparently follows 3xx redirects, such as the ones
  * GitHub returns when a repository has been renamed. Without this, callers would see the raw
  * redirect response instead of the resource at its new location.
+ *
+ * <p>Only redirects within the same origin (scheme, host, and effective port) are followed.
+ * Cross-origin redirects, non-HTTP destinations, and destinations containing user information
+ * are returned without following them so authentication filters cannot forward credentials to another origin.
  */
 public class RedirectExchangeFunction implements ExchangeFilterFunction {
 
@@ -27,10 +31,12 @@ public class RedirectExchangeFunction implements ExchangeFilterFunction {
             var status = response.statusCode().value();
             URI location = response.headers().asHttpHeaders().getLocation();
             if (remainingRedirects > 0 && RedirectPolicy.follows(status) && location != null) {
+                var target = RedirectPolicy.resolve(request.url(), location);
+                if (!RedirectPolicy.allows(request.url(), target)) {
+                    return Mono.just(response);
+                }
                 var method = RedirectPolicy.method(status, request.method());
-                var builder = ClientRequest.from(request)
-                        .url(RedirectPolicy.resolve(request.url(), location))
-                        .method(method);
+                var builder = ClientRequest.from(request).url(target).method(method);
                 if (method != request.method()) {
                     builder.body(BodyInserters.empty()).headers(RedirectPolicy::removeBodyHeaders);
                 }
