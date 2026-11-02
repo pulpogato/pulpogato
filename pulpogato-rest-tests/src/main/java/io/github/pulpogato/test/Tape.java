@@ -1,14 +1,15 @@
 package io.github.pulpogato.test;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,30 +31,74 @@ public class Tape implements Closeable {
             .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
             .enable(YAMLWriteFeature.MINIMIZE_QUOTES)
             .build());
-    private final String fileName;
+    private final Path file;
+    private final Path tapesDirectory;
 
     @Getter
     private final List<Exchange> exchanges;
 
+    private final Mode mode;
+    private final String originalContents;
+
+    enum Mode {
+        REPLAY,
+        RECORD;
+
+        static Mode configured() {
+            var value = System.getProperty("pulpogato.tape.mode", "replay");
+            return parse(value);
+        }
+
+        static Mode parse(String value) {
+            return switch (value.toLowerCase(Locale.ROOT)) {
+                case "replay" -> REPLAY;
+                case "record" -> RECORD;
+                default ->
+                    throw new IllegalArgumentException(
+                            "Invalid pulpogato.tape.mode: " + value + ". Expected replay or record.");
+            };
+        }
+    }
+
     public static Tape getTape(String tapeName) {
-        var resourceName = "tapes/" + tapeName + ".yml";
-        var fileName = "src/test/resources/" + resourceName;
-        // tapeName reaches here via the ProxyController's TapeName header, so it must stay
-        // confined to the tapes directory rather than escaping it via "../" segments.
-        var tapesDir = Path.of("src/test/resources/tapes").normalize();
-        if (!Path.of(fileName).normalize().startsWith(tapesDir)) {
+        return getTape(tapeName, Mode.configured());
+    }
+
+    static Tape getTape(String tapeName, Mode mode) {
+        return getTape(tapeName, Path.of("src/test/resources/tapes"), mode);
+    }
+
+    static Tape getTape(String tapeName, Path tapesDirectory, Mode mode) {
+        if (tapeName == null || tapeName.isBlank()) {
+            throw new IllegalArgumentException("TapeName must identify a tape.");
+        }
+        if (tapeName.indexOf('\\') >= 0) {
             throw new IllegalArgumentException("Invalid tape name: " + tapeName);
         }
-        createDirectory(fileName);
+
+        // tapeName reaches here via the ProxyController's TapeName header, so it must stay
+        // confined to the tapes directory rather than escaping it via "../" segments.
+        var tapesDir = tapesDirectory.toAbsolutePath().normalize();
+        var file = tapesDir.resolve(tapeName + ".yml").normalize();
+        if (!file.startsWith(tapesDir)) {
+            throw new IllegalArgumentException("Invalid tape name: " + tapeName);
+        }
+        rejectSymbolicLinks(tapesDir, file);
+        var resourceRoot = Path.of("/tapes");
+        var resource = resourceRoot.resolve(tapesDir.relativize(file)).normalize();
+        if (!resource.startsWith(resourceRoot)) {
+            throw new IllegalArgumentException("Invalid tape resource: " + tapeName);
+        }
+        var resourceName = resource.toString().replace('\\', '/');
 
         List<Exchange> exchanges;
 
         // Read from the source file directly rather than the classpath: within a single test,
         // a tape can be written and re-read multiple times (e.g. when following a redirect),
         // but the classpath copy is only refreshed by processTestResources between runs.
-        var file = new File(fileName);
-        try (var stream =
-                file.isFile() ? new FileInputStream(file) : Tape.class.getResourceAsStream("/" + resourceName)) {
+        try (var stream = Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
+                ? Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)
+                : Tape.class.getResourceAsStream(resourceName)) {
             if (stream != null) {
                 exchanges = new ObjectMapper(new YAMLFactory()).readValue(stream, new TypeReference<>() {});
                 log.info("Loaded {} exchanges from tape: {}", exchanges.size(), resourceName);
@@ -66,29 +111,48 @@ public class Tape implements Closeable {
             throw new TapeLoadingException(e);
         }
 
-        return new Tape(fileName, new ArrayList<>(exchanges));
+        return new Tape(
+                file,
+                tapesDir,
+                new ArrayList<>(exchanges),
+                mode,
+                mode == Mode.RECORD ? serializeExchanges(exchanges) : "");
     }
 
-    private static void createDirectory(String fileName) {
-        List<String> list = new ArrayList<>(Arrays.stream(fileName.split("/")).toList());
-        list.removeLast();
-        String dirName = String.join("/", list);
-        if (new File(dirName).mkdirs()) {
-            log.info("Directory created: {}", dirName);
+    private static void rejectSymbolicLinks(Path tapesDirectory, Path file) {
+        // Lexical containment alone would still allow a request header to select a symlink's external target.
+        for (var current = file; current != null && current.startsWith(tapesDirectory); current = current.getParent()) {
+            if (Files.isSymbolicLink(current)) {
+                throw new IllegalArgumentException("Tape path must not contain symbolic links: " + file);
+            }
         }
+    }
+
+    boolean isRecording() {
+        return mode == Mode.RECORD;
     }
 
     @Override
     public void close() throws IOException {
-        if (exchanges.isEmpty()) {
-            log.info("No exchanges to save: {}", fileName);
+        if (!isRecording()) {
             return;
         }
-        log.info("Saving {} exchanges to tape: {}", exchanges.size(), fileName);
-        var string = serializeExchanges(exchanges);
-        try (FileWriter writer = new FileWriter(fileName)) {
-            writer.write(string);
+        var contents = serializeExchanges(exchanges);
+        if (contents.equals(originalContents)) {
+            return;
         }
+        rejectSymbolicLinks(tapesDirectory, file);
+        Files.createDirectories(file.getParent());
+        rejectSymbolicLinks(tapesDirectory, file);
+        log.info("Saving {} exchanges to tape: {}", exchanges.size(), file);
+        Files.writeString(
+                file,
+                contents,
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE,
+                LinkOption.NOFOLLOW_LINKS);
     }
 
     /**
@@ -124,7 +188,7 @@ public class Tape implements Closeable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("fileName", fileName)
+                .append("fileName", file)
                 .append("exchanges", exchanges.size())
                 .toString();
     }

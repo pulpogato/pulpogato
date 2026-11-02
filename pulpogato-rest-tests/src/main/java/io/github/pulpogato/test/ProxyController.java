@@ -34,10 +34,18 @@ import tools.jackson.databind.ObjectMapper;
 public class ProxyController {
     private static final String DEFAULT_SERVER = "api.github.com";
     private static final int DEFAULT_PORT = 443;
+    private static final String TAPE_NAME_HEADER = "TapeName";
 
     private final RestTemplate restTemplate;
+    private final Tape.Mode tapeMode;
 
     public ProxyController() {
+        this(Tape.Mode.configured());
+    }
+
+    ProxyController(Tape.Mode tapeMode) {
+        this.tapeMode = tapeMode;
+
         // Configure RestTemplate with Apache HttpClient to support the PATCH method.
         // Redirects must not be followed transparently here, since GitHub uses 3xx
         // responses (e.g. renamed repos) that callers need to observe directly.
@@ -59,7 +67,7 @@ public class ProxyController {
     public ResponseEntity<byte[]> mirrorRest(
             @RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request)
             throws URISyntaxException, IOException {
-        try (Tape tape = Tape.getTape(request.getHeader("TapeName"))) {
+        try (Tape tape = Tape.getTape(request.getHeader(TAPE_NAME_HEADER), tapeMode)) {
             Exchange.Request exchangeRequest = toExchangeRequest(body, request);
 
             var matchingExchanges = tape.getExchanges().stream()
@@ -68,7 +76,14 @@ public class ProxyController {
             if (matchingExchanges.isPresent()) {
                 return getCachedResponse(tape, matchingExchanges.get());
             } else {
+                if (!tape.isRecording()) {
+                    throw new IllegalStateException(
+                            "No matching exchange in tape '" + request.getHeader(TAPE_NAME_HEADER)
+                                    + "' for " + exchangeRequest.getMethod() + " " + exchangeRequest.getUri()
+                                    + ". Re-run with -PtapeMode=record and GITHUB_TOKEN to record this request.");
+                }
                 log.info("Request: {}", Tape.OBJECT_MAPPER.writeValueAsString(exchangeRequest));
+
                 return getLiveResponse(body, method, request, tape, exchangeRequest);
             }
         }
@@ -208,7 +223,12 @@ public class ProxyController {
 
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
             Set<String> excludedHeaders = Set.of(
-                    "user-agent", "host", "TapeName", "Content-Length", "X-GitHub-Api-Version", "X-Pulpogato-Version");
+                    "user-agent",
+                    "host",
+                    TAPE_NAME_HEADER,
+                    "Content-Length",
+                    "X-GitHub-Api-Version",
+                    "X-Pulpogato-Version");
             if (excludedHeaders.stream().noneMatch(it -> it.equalsIgnoreCase(headerName))) {
                 requestHeadersMap.put(headerName, request.getHeader(headerName));
             }

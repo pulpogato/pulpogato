@@ -1,0 +1,9 @@
+- request:
+    method: GET
+    uri: /classpath
+    protocol: HTTP/1.1
+    headers: {}
+  response:
+    statusCode: 200
+    headers: {}
+    body: "{}"
