@@ -336,3 +336,13 @@ To run asciidoctor locally, run this command.
 ----
 
 This task uses the Gradle Asciidoctor plugin and writes output to `pulpogato-docs/build/index.html`.
+
+== Schema maintenance
+
+// tag::schema-maintenance[]
+REST schemas are pinned by `gh.api.commit` and GraphQL schemas by `gh.graphql.commit` in `gradle.properties`.
+The `Update Schema Version` workflow checks for upgrades every Friday and can also be run manually from GitHub Actions.
+It creates or updates a separate GraphQL schema PR using `updateGraphqlSchemaVersion`, alongside the existing REST and tooling schema PRs.
+For a local update, run `./gradlew updateGraphqlSchemaVersion`, review the property change, and run `./gradlew check --max-workers=3` before committing it.
+Normal builds download GraphQL schemas from that immutable GitHub Docs revision.
+// end::schema-maintenance[]
