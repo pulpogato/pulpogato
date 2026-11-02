@@ -120,7 +120,16 @@ include::../../pulpogato-rest-fpt/src/test/java/io/github/pulpogato/rest/api/res
 <3> Get the UsersApi client. There are many more you can get.
 <4> Call the `getAuthenticated` method.
 
+==== Redirect handling
+
+The default REST clients follow redirects only within the same origin: the scheme, host, and effective port must match.
+Relative redirects for renamed repositories continue to work, and an omitted port matches the scheme's default port.
+Cross-origin redirects, HTTPS-to-HTTP redirects, and destinations containing user information are returned as 3xx responses with their `Location` header intact.
+Inspect the destination and make a separate request with credentials appropriate for that origin when following one is necessary.
+This prevents authentication filters from forwarding credentials to a different origin.
+
 === Webhook Example
+
 
 Most webhook events (like `pull_request`, `check_run`) have multiple action variants.
 The generated interface provides a sealed supertype — e.g. `WebhookPullRequest` — so you implement

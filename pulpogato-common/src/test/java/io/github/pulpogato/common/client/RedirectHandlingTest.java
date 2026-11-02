@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -224,5 +227,148 @@ class RedirectHandlingTest {
                 .block();
         assertThat(result.statusCode()).isEqualTo(HttpStatus.MOVED_PERMANENTLY);
         assertThat(calls).hasValue(6);
+    }
+
+    private static final List<String> SENSITIVE_HEADERS = List.of(
+            HttpHeaders.AUTHORIZATION,
+            HttpHeaders.PROXY_AUTHORIZATION,
+            HttpHeaders.COOKIE,
+            "Cookie2",
+            HttpHeaders.HOST);
+
+    static Stream<Arguments> origins() {
+        return Stream.of(false, true)
+                .flatMap(reactive -> Stream.of(
+                        Arguments.of(reactive, "https://api.github.com/repos/old", "/repos/new", true),
+                        Arguments.of(reactive, "/repos/old", "https://api.github.com/repos/new", false),
+                        Arguments.of(reactive, "/repos/old", "/repos/new", false),
+                        Arguments.of(
+                                reactive, "https://api.github.com/repos/old", "https://API.GITHUB.COM/repos/new", true),
+                        Arguments.of(
+                                reactive,
+                                "https://api.github.com/repos/old",
+                                "https://api.github.com:443/repos/new",
+                                true),
+                        Arguments.of(reactive, "http://localhost/repos/old", "http://localhost:80/repos/new", true),
+                        Arguments.of(
+                                reactive,
+                                "https://api.github.com/repos/old",
+                                "https://downloads.example.com/new",
+                                false),
+                        Arguments.of(
+                                reactive, "https://api.github.com/repos/old", "//downloads.example.com/new", false),
+                        Arguments.of(
+                                reactive, "https://api.github.com/repos/old", "https://api.github.com:8443/new", false),
+                        Arguments.of(reactive, "http://localhost/repos/old", "https://localhost/new", false),
+                        Arguments.of(reactive, "https://api.github.com/repos/old", "http://api.github.com/new", false),
+                        Arguments.of(reactive, "https://api.github.com/repos/old", "ftp://example.com/new", false),
+                        Arguments.of(
+                                reactive,
+                                "https://api.github.com/repos/old",
+                                "https://user:password@example.com/new",
+                                false)));
+    }
+
+    @ParameterizedTest(name = "reactive={0}, origin={1}, target={2}")
+    @MethodSource("origins")
+    void protectsCredentialsAcrossRedirectOrigins(boolean reactive, String original, String target, boolean follow)
+            throws Exception {
+        var headers = new HttpHeaders();
+        SENSITIVE_HEADERS.forEach(name -> headers.set(name, "sensitive"));
+        headers.set("X-Request-Id", "request-1");
+        var requests = redirectedRequests(reactive, URI.create(original), List.of(target), headers);
+
+        assertThat(requests).hasSize(follow ? 2 : 1);
+        if (follow) {
+            var redirected = requests.get(1);
+            assertThat(redirected.uri()).isEqualTo(URI.create(original).resolve(target));
+            assertThat(redirected.headers().getFirst("X-Request-Id")).isEqualTo("request-1");
+            for (var name : SENSITIVE_HEADERS) {
+                assertThat(redirected.headers().getFirst(name)).isEqualTo("sensitive");
+            }
+        }
+        SENSITIVE_HEADERS.forEach(name -> assertThat(headers.getFirst(name)).isEqualTo("sensitive"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void stopsAtCrossOriginRedirectAfterFollowingSameOriginRedirect(boolean reactive) throws Exception {
+        var headers = new HttpHeaders();
+        SENSITIVE_HEADERS.forEach(name -> headers.set(name, "sensitive"));
+        var requests = redirectedRequests(
+                reactive, ORIGINAL, List.of(TARGET.toString(), "https://downloads.example.com/new"), headers);
+
+        assertThat(requests).hasSize(2);
+        assertThat(requests)
+                .allSatisfy(request -> assertThat(request.uri().getHost()).isEqualTo(ORIGINAL.getHost()));
+    }
+
+    @Test
+    void downstreamAuthenticationFilterCannotForwardCredentialsToAnotherOrigin() {
+        var calls = new AtomicInteger();
+        var filter =
+                new RedirectExchangeFunction().andThen(ExchangeFilterFunctions.basicAuthentication("user", "password"));
+        var result = filter.filter(
+                        ClientRequest.create(HttpMethod.GET, ORIGINAL).build(), request -> {
+                            calls.incrementAndGet();
+                            assertThat(request.url()).isEqualTo(ORIGINAL);
+                            assertThat(request.headers().getFirst(HttpHeaders.AUTHORIZATION))
+                                    .startsWith("Basic ");
+                            return Mono.just(ClientResponse.create(HttpStatus.FOUND)
+                                    .header(HttpHeaders.LOCATION, "https://downloads.example.com/new")
+                                    .build());
+                        })
+                .block();
+
+        assertThat(result.statusCode()).isEqualTo(HttpStatus.FOUND);
+        assertThat(result.headers().asHttpHeaders().getLocation())
+                .isEqualTo(URI.create("https://downloads.example.com/new"));
+        assertThat(calls).hasValue(1);
+    }
+
+    private record RedirectedRequest(URI uri, HttpHeaders headers) {}
+
+    private static List<RedirectedRequest> redirectedRequests(
+            boolean reactive, URI original, List<String> locations, HttpHeaders headers) throws Exception {
+        var requests = new ArrayList<RedirectedRequest>();
+        if (reactive) {
+            var request = ClientRequest.create(HttpMethod.GET, original)
+                    .headers(values -> values.addAll(headers))
+                    .build();
+            var result = new RedirectExchangeFunction()
+                    .filter(request, next -> {
+                        requests.add(new RedirectedRequest(next.url(), next.headers()));
+                        var index = requests.size() - 1;
+                        return Mono.just(
+                                index < locations.size()
+                                        ? ClientResponse.create(HttpStatus.FOUND)
+                                                .header(HttpHeaders.LOCATION, locations.get(index))
+                                                .build()
+                                        : ClientResponse.create(HttpStatus.OK).build());
+                    })
+                    .block();
+            assertThat(result.statusCode())
+                    .isEqualTo(requests.size() > locations.size() ? HttpStatus.OK : HttpStatus.FOUND);
+        } else {
+            var request = mock(HttpRequest.class);
+            when(request.getURI()).thenReturn(original);
+            when(request.getMethod()).thenReturn(HttpMethod.GET);
+            when(request.getHeaders()).thenReturn(headers);
+            var result = new RedirectClientHttpRequestInterceptor().intercept(request, new byte[0], (next, body) -> {
+                requests.add(new RedirectedRequest(next.getURI(), next.getHeaders()));
+                var index = requests.size() - 1;
+                var response = mock(ClientHttpResponse.class);
+                when(response.getStatusCode()).thenReturn(index < locations.size() ? HttpStatus.FOUND : HttpStatus.OK);
+                var responseHeaders = new HttpHeaders();
+                if (index < locations.size()) {
+                    responseHeaders.setLocation(URI.create(locations.get(index)));
+                }
+                when(response.getHeaders()).thenReturn(responseHeaders);
+                return response;
+            });
+            assertThat(result.getStatusCode())
+                    .isEqualTo(requests.size() > locations.size() ? HttpStatus.OK : HttpStatus.FOUND);
+        }
+        return requests;
     }
 }
