@@ -1191,6 +1191,16 @@ It uses the same generated API interfaces as the blocking <code>WebClient</code>
 </table>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_redirect_handling">Redirect handling</h4>
+<div class="paragraph">
+<p>The default REST clients follow redirects only within the same origin: the scheme, host, and effective port must match.
+Relative redirects for renamed repositories continue to work, and an omitted port matches the scheme&#8217;s default port.
+Cross-origin redirects, HTTPS-to-HTTP redirects, and destinations containing user information are returned as 3xx responses with their <code>Location</code> header intact.
+Inspect the destination and make a separate request with credentials appropriate for that origin when following one is necessary.
+This prevents authentication filters from forwarding credentials to a different origin.</p>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_webhook_example">Webhook Example</h3>
