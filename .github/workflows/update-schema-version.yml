@@ -13,11 +13,11 @@ jobs:
   gh-api-update:
     runs-on: ubuntu-26.04-arm
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+      - uses: actions/create-github-app-token@v3.3.0
         id: app-token
         with:
           client-id: 1784694
@@ -28,15 +28,15 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - uses: gradle/actions/wrapper-validation@v6.4.1
 
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+      - uses: actions/setup-java@v6.1.0
         with:
           java-version: 21
           distribution: zulu
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - uses: gradle/actions/setup-gradle@v6.4.1
 
       - name: Update REST, GraphQL, and tooling schema versions
         env:
