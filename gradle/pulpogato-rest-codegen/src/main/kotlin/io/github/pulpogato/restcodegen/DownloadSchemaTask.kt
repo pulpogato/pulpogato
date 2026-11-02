@@ -91,7 +91,7 @@ abstract class DownloadSchemaTask : DefaultTask() {
 
         outputFile.parentFile.mkdirs()
 
-        val schemaBytes = URI(url).toURL().readBytes()
+        val schemaBytes = SchemaDownloader().download(URI(url).toURL())
         outputFile.writeBytes(schemaBytes)
 
         val sha256 = calculateSha256(schemaBytes)
