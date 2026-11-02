@@ -11,7 +11,7 @@ import org.springframework.http.client.ClientHttpResponse;
 
 /**
  * A {@link ClientHttpRequestInterceptor} that adds default headers to every outgoing HTTP
- * request, specifically for use with GitHub APIs or similar integrations.
+ * request when absent, specifically for use with GitHub APIs or similar integrations.
  *
  * <p>The following headers are added to each request:
  *
@@ -40,7 +40,11 @@ public class DefaultHeadersClientHttpRequestInterceptor implements ClientHttpReq
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
-        headers.forEach((name, value) -> request.getHeaders().set(name, value));
+        headers.forEach((name, value) -> {
+            if (!request.getHeaders().containsHeader(name)) {
+                request.getHeaders().set(name, value);
+            }
+        });
         return execution.execute(request, body);
     }
 }

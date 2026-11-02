@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
  * <p>
  * An implementation of the {@link ExchangeFilterFunction} interface that adds default headers
  * to every outgoing HTTP request, specifically for use with GitHub APIs or similar integrations.
- * This class ensures consistency in client requests by setting predefined headers.
+ * This class supplies predefined headers when the request does not already specify them.
  * </p>
  * <p>
  * The following headers are added to each request:
@@ -44,7 +44,11 @@ public class DefaultHeadersExchangeFunction implements ExchangeFilterFunction {
     @Override
     public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         ClientRequest.Builder builder = ClientRequest.from(request);
-        headers.forEach(builder::header);
+        builder.headers(requestHeaders -> headers.forEach((name, value) -> {
+            if (!requestHeaders.containsHeader(name)) {
+                requestHeaders.set(name, value);
+            }
+        }));
         return next.exchange(builder.build());
     }
 }
