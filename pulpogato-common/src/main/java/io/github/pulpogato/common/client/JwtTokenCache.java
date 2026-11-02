@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -26,11 +27,7 @@ class JwtTokenCache {
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    @Nullable
-    private volatile String cachedToken;
-
-    @Nullable
-    private volatile Instant tokenExpiresAt;
+    private final AtomicReference<@Nullable CachedToken> cachedToken = new AtomicReference<>();
 
     JwtTokenCache(JwtFactory jwtFactory, Clock clock) {
         this.jwtFactory = jwtFactory;
@@ -38,35 +35,34 @@ class JwtTokenCache {
     }
 
     String getOrGenerateJwt() {
-        var checkTime = clock.instant();
-        if (isCachedTokenValid(checkTime)) {
-            return Objects.requireNonNull(cachedToken);
+        var current = cachedToken.get();
+        if (current != null && current.isValidAt(clock.instant())) {
+            return current.value();
         }
 
         lock.lock();
         try {
-            // Double-check after acquiring lock
             var generateTime = clock.instant();
-            if (isCachedTokenValid(generateTime)) {
-                return Objects.requireNonNull(cachedToken);
+            current = cachedToken.get();
+            if (current != null && current.isValidAt(generateTime)) {
+                return current.value();
             }
 
-            tokenExpiresAt = generateTime.plus(TOKEN_VALIDITY);
-            cachedToken = jwtFactory.create(generateTime.minus(CLOCK_DRIFT), Objects.requireNonNull(tokenExpiresAt));
-            String validToken = Objects.requireNonNull(cachedToken);
-            String maskedToken = validToken.substring(Math.max(0, validToken.length() - 8));
-            log.debug("Generated new JWT token that expires at {}: '...{}'", tokenExpiresAt, maskedToken);
+            var expiresAt = generateTime.plus(TOKEN_VALIDITY);
+            var validToken = Objects.requireNonNull(jwtFactory.create(generateTime.minus(CLOCK_DRIFT), expiresAt));
+            // Readers must never pair the previous token with a replacement token's expiry.
+            cachedToken.set(new CachedToken(validToken, expiresAt));
+            var maskedToken = validToken.substring(Math.max(0, validToken.length() - 8));
+            log.debug("Generated new JWT token that expires at {}: '...{}'", expiresAt, maskedToken);
             return validToken;
         } finally {
             lock.unlock();
         }
     }
 
-    private boolean isCachedTokenValid(Instant checkTime) {
-        if (cachedToken == null || tokenExpiresAt == null) {
-            return false;
+    private record CachedToken(String value, Instant expiresAt) {
+        boolean isValidAt(Instant checkTime) {
+            return checkTime.isBefore(expiresAt.minus(REFRESH_BUFFER));
         }
-        var expiry = Objects.requireNonNull(tokenExpiresAt);
-        return checkTime.isBefore(expiry.minus(REFRESH_BUFFER));
     }
 }
