@@ -1,6 +1,8 @@
 package io.github.pulpogato.common.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.github.pulpogato.common.jackson.NullableFunction;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -10,6 +12,8 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class RateLimitMetricsRecorderTest {
 
@@ -63,6 +67,39 @@ class RateLimitMetricsRecorderTest {
 
         assertThat(registry.get("github.api.rateLimit.secondsToReset").gauge().value())
                 .isEqualTo(300);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0,300", "30,270", "300,0", "301,0"})
+    void countdownAdvancesWithoutNewResponses(long elapsedSeconds, double expected) {
+        var movingClock = mock(Clock.class);
+        when(movingClock.instant()).thenReturn(FIXED_INSTANT);
+        var recorder = new RateLimitMetricsRecorder(registry, movingClock, "github.api.rateLimit", List.of());
+        recorder.recordMetrics(
+                lookup(Map.of("x-ratelimit-reset", String.valueOf(FIXED_INSTANT.getEpochSecond() + 300))));
+        var gauge = registry.get("github.api.rateLimit.secondsToReset").gauge();
+        assertThat(gauge.value()).isEqualTo(300);
+
+        when(movingClock.instant()).thenReturn(FIXED_INSTANT.plusSeconds(elapsedSeconds));
+
+        assertThat(gauge.value()).isEqualTo(expected);
+    }
+
+    @Test
+    void refreshesResetTimestampWithoutReplacingGauge() {
+        var movingClock = mock(Clock.class);
+        when(movingClock.instant()).thenReturn(FIXED_INSTANT);
+        var recorder = new RateLimitMetricsRecorder(registry, movingClock, "github.api.rateLimit", List.of());
+        recorder.recordMetrics(
+                lookup(Map.of("x-ratelimit-reset", String.valueOf(FIXED_INSTANT.getEpochSecond() + 300))));
+        var gauge = registry.get("github.api.rateLimit.secondsToReset").gauge();
+
+        recorder.recordMetrics(
+                lookup(Map.of("x-ratelimit-reset", String.valueOf(FIXED_INSTANT.getEpochSecond() + 600))));
+        when(movingClock.instant()).thenReturn(FIXED_INSTANT.plusSeconds(500));
+
+        assertThat(registry.get("github.api.rateLimit.secondsToReset").gauge()).isSameAs(gauge);
+        assertThat(gauge.value()).isEqualTo(100);
     }
 
     @Test
