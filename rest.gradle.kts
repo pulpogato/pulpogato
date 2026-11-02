@@ -110,9 +110,9 @@ tasks.processTestResources {
     dependsOn(generateJava)
 }
 
-// Exclude schema.json from the main jar
+// The OpenAPI schema is a build input; library users only need the generated classes.
 tasks.named<Jar>("jar") {
-    exclude("schema.json")
+    exclude("github.schema.json")
 }
 
 tasks.withType<Javadoc>().configureEach {
