@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
+import java.util.function.ToDoubleFunction;
 
 /**
  * Framework-agnostic rate-limit metrics recording shared by {@link MetricsExchangeFunction} and
@@ -52,7 +53,8 @@ class RateLimitMetricsRecorder {
                 resetValue -> setGauge(
                         prefix + ".secondsToReset",
                         tags,
-                        Math.max(0, resetValue - clock.instant().getEpochSecond())));
+                        resetValue,
+                        reset -> Math.max(0, reset.get() - clock.instant().getEpochSecond())));
     }
 
     private void withNumericHeader(
@@ -68,10 +70,14 @@ class RateLimitMetricsRecorder {
     }
 
     private void setGauge(String name, List<Tag> tags, long value) {
+        setGauge(name, tags, value, AtomicLong::get);
+    }
+
+    private void setGauge(String name, List<Tag> tags, long value, ToDoubleFunction<AtomicLong> reader) {
         var key = name + "/" + tags;
         var ref = gauges.computeIfAbsent(key, k -> {
             var atomicLong = new AtomicLong(value);
-            registry.gauge(name, tags, atomicLong, AtomicLong::get);
+            registry.gauge(name, tags, atomicLong, reader);
             return atomicLong;
         });
         ref.set(value);
