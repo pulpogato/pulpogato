@@ -5,6 +5,7 @@ import io.micrometer.observation.ObservationRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +45,7 @@ import org.springframework.http.client.ClientHttpResponse;
  * returns a fresh 200 for a stale entry, the stored value is invalidated and replaced.
  *
  * <p>Responses larger than {@link #maxCacheableSize} are not cached but are still returned
- * successfully. This prevents memory issues with very large responses.
+ * successfully. Only a cache-sized prefix is buffered; oversized bodies are streamed to the caller.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -201,19 +202,30 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
 
         var statusCode = response.getStatusCode();
         byte[] responseBody;
-        try (response;
-                InputStream is = response.getBody()) {
-            responseBody = is.readAllBytes();
+        try {
+            var input = response.getBody();
+            responseBody = input.readNBytes(Math.max(0, maxCacheableSize));
+            var overflow = input.read();
+            if (overflow != -1) {
+                getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_BODY_SIZE, parent);
+                var remainder = new SequenceInputStream(new ByteArrayInputStream(new byte[] {(byte) overflow}), input);
+                var stream = new SequenceInputStream(new ByteArrayInputStream(responseBody), remainder);
+                return new StreamingClientHttpResponse(
+                        response,
+                        headersWith(headerMap, HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_SKIP),
+                        stream);
+            }
+        } catch (Throwable failure) {
+            try {
+                response.close();
+            } catch (Throwable cleanupFailure) {
+                if (cleanupFailure != failure) {
+                    failure.addSuppressed(cleanupFailure);
+                }
+            }
+            throw failure;
         }
-
-        // If the response is too large, skip caching but still return the data
-        if (getEngine().exceedsMaxCacheableSize(responseBody.length)) {
-            getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_BODY_SIZE, parent);
-            return new BufferedClientHttpResponse(
-                    statusCode,
-                    headersWith(headerMap, HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_SKIP),
-                    responseBody);
-        }
+        response.close();
 
         // Cache and return. A prior cached entry that reached here (rather than the 304 branch) means
         // the live API returned a fresh 200 for a stale lookup, i.e. it invalidated the stored value.
@@ -237,6 +249,29 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         source.forEach(headers::addAll);
         headers.set(extraName, extraValue);
         return headers;
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    private static final class StreamingClientHttpResponse implements ClientHttpResponse {
+        private final ClientHttpResponse delegate;
+        private final HttpHeaders headers;
+        private final InputStream body;
+
+        @Override
+        public HttpStatusCode getStatusCode() throws IOException {
+            return delegate.getStatusCode();
+        }
+
+        @Override
+        public String getStatusText() throws IOException {
+            return delegate.getStatusText();
+        }
+
+        @Override
+        public void close() {
+            delegate.close();
+        }
     }
 
     @RequiredArgsConstructor
