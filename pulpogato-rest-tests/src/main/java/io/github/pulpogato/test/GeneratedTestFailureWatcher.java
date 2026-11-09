@@ -1,9 +1,6 @@
 package io.github.pulpogato.test;
 
 import io.github.pulpogato.common.annotations.Generated;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestWatcher;
-import tools.jackson.databind.ObjectMapper;
 
 public class GeneratedTestFailureWatcher implements TestWatcher {
 
@@ -80,19 +76,9 @@ public class GeneratedTestFailureWatcher implements TestWatcher {
     }
 
     private static void generateReport() {
-        String reportPath = "build/reports/generated-test-failures.jsonl";
-
-        try (PrintWriter writer = new PrintWriter(new FileWriter(reportPath))) {
-            for (GeneratedTestFailure failure : failures) {
-                var data = getFailureObject(failure);
-                writer.println(new ObjectMapper().writeValueAsString(data));
-            }
-
-        } catch (IOException e) {
-            System.err.println("Failed to write generated test failure report: " + e.getMessage());
-        }
-
-        System.out.println("Generated test failure report written to: " + reportPath);
+        GeneratedTestFailureReports.report(failures.stream()
+                .map(GeneratedTestFailureWatcher::getFailureObject)
+                .toList());
     }
 
     private static Map<String, String> getFailureObject(GeneratedTestFailure failure) {

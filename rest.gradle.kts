@@ -90,6 +90,16 @@ sourceSets {
 }
 
 val downloadSchema = tasks.named("downloadSchema")
+val cleanGeneratedTestFailureReports =
+    tasks.register<Delete>("cleanGeneratedTestFailureReports") {
+        group = "verification"
+        description = "Removes generated test failure reports from previous runs."
+        delete(layout.buildDirectory.dir("reports/generated-test-failures"))
+        delete(layout.buildDirectory.file("reports/generated-test-failures.jsonl"))
+    }
+tasks.withType<Test>().configureEach {
+    dependsOn(cleanGeneratedTestFailureReports)
+}
 val generateJava = tasks.named("generateJava")
 val generateHeaders = tasks.named("generateHeaders")
 
