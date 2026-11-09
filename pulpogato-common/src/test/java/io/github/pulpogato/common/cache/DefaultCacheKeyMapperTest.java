@@ -171,8 +171,8 @@ class DefaultCacheKeyMapperTest {
         }
 
         @Test
-        @DisplayName("is the same key for the same JWT subject even if the token itself differs")
-        void sameSubjectSameKey() {
+        @DisplayName("isolates different tokens with the same JWT subject")
+        void sameSubjectDifferentKey() {
             var requestA = ClientRequest.create(HttpMethod.GET, URI.create("https://api.example.com/data"))
                     .header(
                             "Authorization",
@@ -192,7 +192,7 @@ class DefaultCacheKeyMapperTest {
                                             .sign(Algorithm.HMAC256("secret-two")))
                     .build();
 
-            assertThat(mapper.apply(requestA)).isEqualTo(mapper.apply(requestB));
+            assertThat(mapper.apply(requestA)).isNotEqualTo(mapper.apply(requestB));
         }
 
         @Test

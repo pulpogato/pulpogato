@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.pulpogato.common.cache.CachingClientHttpRequestInterceptor;
 import io.github.pulpogato.common.cache.CachingExchangeFilterFunction;
+import io.github.pulpogato.common.cache.DefaultCacheKeyMapper;
+import io.github.pulpogato.common.cache.DefaultHttpRequestCacheKeyMapper;
 import io.github.pulpogato.common.client.JwtClientHttpRequestInterceptor;
 import io.github.pulpogato.common.client.JwtFactory;
 import io.github.pulpogato.common.client.JwtFilter;
@@ -100,9 +102,10 @@ class DocumentationIntegrationTest {
                 .build();
 
         // tag::advanced-cache[]
+        var keyMapper = new DefaultCacheKeyMapper();
         var cachingFilter = CachingExchangeFilterFunction.builder()
                 .cache(cache)
-                .cacheKeyMapper(request -> request.url().toASCIIString()) // <1>
+                .cacheKeyMapper(request -> "my-client:" + keyMapper.apply(request)) // <1>
                 .maxCacheableSize(4 * 1024 * 1024) // <2>
                 .alwaysRevalidate(true) // <3>
                 .build();
@@ -119,9 +122,10 @@ class DocumentationIntegrationTest {
         Cache cache = new ConcurrentMapCache("github-http-cache");
 
         // tag::advanced-cache-restclient[]
+        var keyMapper = new DefaultHttpRequestCacheKeyMapper();
         var cachingInterceptor = CachingClientHttpRequestInterceptor.builder()
                 .cache(cache)
-                .cacheKeyMapper(request -> request.getURI().toASCIIString()) // <1>
+                .cacheKeyMapper(request -> "my-client:" + keyMapper.apply(request)) // <1>
                 .maxCacheableSize(4 * 1024 * 1024) // <2>
                 .alwaysRevalidate(true) // <3>
                 .build();

@@ -424,6 +424,14 @@ Both observations have low-cardinality `cache.name`, `cache.client`, and `server
 They also have high-cardinality `uri` and `cache.key` values for tracing; the default cache key is a SHA-256 hash.
 Stores have a low-cardinality `cache.skip.reason` of `NONE`, `NO_CACHE_HEADERS`, `CONTENT_LENGTH`, `BODY_SIZE`, or `NO_STORE`.
 
+Register authentication filters and interceptors before the corresponding cache filter or interceptor so the cache lookup sees the final Authorization header.
+Authentication added later by an HTTP connector or request factory is invisible to the cache; move it into an upstream filter/interceptor or isolate caches by credential.
+Default cache keys include an HMAC-SHA-256 fingerprint of the Authorization header, keeping anonymous requests and different tokens isolated even when JWT subjects match.
+The default fingerprint secret is process-local; for reuse across processes, construct both default key mappers with the same cryptographically random, securely managed secret of at least 32 bytes.
+Token rotation produces a new cache key.
+Configure a size limit or expiry policy on the cache provider because HTTP freshness checks do not evict entries left behind by token rotation or process restarts.
+Custom cache key mappers must account for user identity and resource access, and may share entries only when the credentials are guaranteed to receive the same representation.
+
 === Cache Metrics Setup
 
 [source,java,indent=0]
@@ -442,7 +450,7 @@ Cache size, entry, and eviction metrics depend on the configured Spring `Cache` 
 ----
 include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=advanced-cache]
 ----
-<1> Custom function to generate cache keys from requests
+<1> Prefix the credential-aware default key with an application-specific cache namespace.
 <2> Maximum response size to cache (default: 2MB)
 <3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your use case.
 
@@ -463,7 +471,7 @@ include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/Documen
 ----
 include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/DocumentationIntegrationTest.java[tags=advanced-cache-restclient]
 ----
-<1> Custom function to generate cache keys from requests
+<1> Prefix the credential-aware default key with an application-specific cache namespace.
 <2> Maximum response size to cache (default: 2MB)
 <3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your use case.
 
