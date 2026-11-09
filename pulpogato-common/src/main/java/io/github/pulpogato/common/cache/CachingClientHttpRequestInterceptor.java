@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.support.HttpRequestWrapper;
 
 /**
  * HTTP caching interceptor that implements conditional request handling.
@@ -117,9 +119,60 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         return switch (request.getMethod().name()) {
-            case "GET", "QUERY" -> getResponseWithCache(request, body, execution);
+            case "GET", "QUERY" ->
+                request.getHeaders().containsHeader(HttpHeaders.RANGE)
+                        ? getRangeResponse(request, body, execution)
+                        : getResponseWithCache(request, body, execution);
             default -> execution.execute(request, body);
         };
+    }
+
+    private ClientHttpResponse getRangeResponse(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+            throws IOException {
+        var headers = new HttpHeaders();
+        request.getHeaders().forEach((name, values) -> headers.put(name, new ArrayList<>(values)));
+        headers.remove(HttpHeaders.RANGE);
+        headers.remove(HttpHeaders.IF_RANGE);
+        var fullRequest = new HttpRequestWrapper(request) {
+            @Override
+            public HttpHeaders getHeaders() {
+                return headers;
+            }
+        };
+        var key = cacheKeyMapper.apply(fullRequest);
+        var uri = request.getURI().toString();
+        var parent = observationRegistry.getCurrentObservation();
+        var response = execution.execute(request, body);
+        return invalidateUncacheableResponse(
+                key, uri, response, status -> status.is2xxSuccessful() && status.value() != 206, parent);
+    }
+
+    private ClientHttpResponse invalidateUncacheableResponse(
+            String key,
+            String uri,
+            ClientHttpResponse response,
+            Predicate<HttpStatusCode> replacementStatus,
+            @Nullable Observation parent)
+            throws IOException {
+        try {
+            var status = response.getStatusCode();
+            getEngine()
+                    .invalidateUncacheable(
+                            key,
+                            uri,
+                            toMap(response.getHeaders()),
+                            replacementStatus.test(status),
+                            status.is2xxSuccessful(),
+                            parent);
+            return response;
+        } catch (Throwable failure) {
+            try {
+                response.close();
+            } catch (Throwable cleanupFailure) {
+                if (cleanupFailure != failure) failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
+        }
     }
 
     private ClientHttpResponse getResponseWithCache(
@@ -165,11 +218,11 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         }
 
         // Cache the response if it has caching headers
-        if (response.getStatusCode().is2xxSuccessful()) {
+        if (response.getStatusCode().value() == 200) {
             return cacheResponse(cacheKey, uri, response, cached != null, parent);
         }
 
-        return response;
+        return invalidateUncacheableResponse(cacheKey, uri, response, HttpStatusCode::is2xxSuccessful, parent);
     }
 
     private ClientHttpResponse cacheResponse(
@@ -181,9 +234,7 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         var cacheControl = HttpCacheEngine.cacheControl(toMap(headers));
 
         if (HttpCacheEngine.hasDirective(cacheControl, "no-store")) {
-            getEngine().evict(cacheKey, uri, parent);
-            getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_NO_STORE, parent);
-            return response;
+            return invalidateUncacheableResponse(cacheKey, uri, response, status -> false, parent);
         }
 
         var maxAge = HttpCacheEngine.parseMaxAge(cacheControl);

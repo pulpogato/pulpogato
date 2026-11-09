@@ -137,6 +137,40 @@ class HttpCacheEngine {
         recordPut(cacheKey, uri, CACHE_INVALIDATED, () -> cache.evict(cacheKey), parent);
     }
 
+    void invalidateUncacheable(
+            String cacheKey,
+            String uri,
+            Map<String, List<String>> headers,
+            boolean replacesRepresentation,
+            boolean successfulResponse,
+            @Nullable Observation parent) {
+        var control = cacheControl(headers);
+        var noStore = hasDirective(control, "no-store");
+        if (replacesRepresentation || noStore) {
+            recordPut(
+                    cacheKey,
+                    uri,
+                    CACHE_INVALIDATED,
+                    () -> {
+                        // Invalidate visible entries now and any earlier puts deferred until transaction commit.
+                        cache.evictIfPresent(cacheKey);
+                        cache.evict(cacheKey);
+                    },
+                    parent);
+        }
+        if (noStore) {
+            recordSkip(cacheKey, uri, SKIP_NO_STORE, parent);
+        } else if (successfulResponse) {
+            var length = getFirst(headers, CONTENT_LENGTH);
+            var reason = skipReason(
+                    getFirst(headers, ETAG),
+                    getFirst(headers, LAST_MODIFIED),
+                    parseMaxAge(control),
+                    length == null ? -1 : Long.parseLong(length));
+            if (reason != null) recordSkip(cacheKey, uri, reason, parent);
+        }
+    }
+
     static @Nullable String cacheControl(Map<String, List<String>> headers) {
         return headers.entrySet().stream()
                 .filter(entry -> CACHE_CONTROL.equalsIgnoreCase(entry.getKey()))
@@ -196,8 +230,9 @@ class HttpCacheEngine {
     /**
      * Records a {@code pulpogato.cache.put} span for the store phase, tagging it with the outcome
      * ({@link #CACHE_STORED} for a cold miss, {@link #CACHE_REVALIDATED} when a stale entry's 304
-     * confirmed it was still valid, {@link #CACHE_INVALIDATED} when a stale entry's revalidation
-     * request instead got back a fresh 200, or {@link #CACHE_SKIP}). When {@code store} is non-null
+     * confirmed it was still valid, {@link #CACHE_INVALIDATED} for replacement by a fresh 200 or
+     * a defensive eviction attempt, or {@link #CACHE_SKIP}). Eviction attempts include cache misses
+     * and do not imply that a replacement response was stored. When {@code store} is non-null
      * it runs inside the span so the span captures the write latency of the cache backend; a null
      * {@code store} records a zero-work span documenting that the response was not cached. Every put
      * has a {@code cache.skip.reason}; writes use {@link #SKIP_NONE}, while skipped writes identify why.

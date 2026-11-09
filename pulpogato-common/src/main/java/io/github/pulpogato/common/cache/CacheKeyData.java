@@ -14,6 +14,8 @@ import org.jspecify.annotations.Nullable;
 @Getter
 @Builder
 public class CacheKeyData {
+    // Legacy entries did not retain response status and may contain partial representations.
+    private final int representationVersion = 2;
     private final String method;
     private final String host;
     private final @Nullable Integer port;

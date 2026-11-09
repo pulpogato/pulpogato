@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import lombok.Builder;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -18,6 +19,7 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -127,11 +129,58 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
     @Override
     public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
-        // Only cache GET requests
         return switch (request.method().name()) {
-            case "GET", "QUERY" -> getResponseWithCache(request, next);
+            case "GET", "QUERY" ->
+                request.headers().containsHeader(HttpHeaders.RANGE)
+                        ? getRangeResponse(request, next)
+                        : getResponseWithCache(request, next);
             default -> next.exchange(request);
         };
+    }
+
+    private Mono<ClientResponse> getRangeResponse(ClientRequest request, ExchangeFunction next) {
+        return Mono.deferContextual(ctx -> {
+            var fullRequest = ClientRequest.from(request)
+                    .headers(headers -> {
+                        headers.remove(HttpHeaders.RANGE);
+                        headers.remove(HttpHeaders.IF_RANGE);
+                    })
+                    .build();
+            var key = cacheKeyMapper.apply(fullRequest);
+            return next.exchange(request)
+                    .flatMap(response -> invalidateUncacheableResponse(
+                            key,
+                            request.url().toString(),
+                            response,
+                            status -> status.is2xxSuccessful() && status.value() != 206,
+                            ctx.getOrDefault(OBSERVATION_CONTEXT_KEY, null)));
+        });
+    }
+
+    private Mono<ClientResponse> invalidateUncacheableResponse(
+            String key,
+            String uri,
+            ClientResponse response,
+            Predicate<HttpStatusCode> replacementStatus,
+            @Nullable Observation parent) {
+        return Mono.fromCallable(() -> {
+                    var status = response.statusCode();
+                    getEngine()
+                            .invalidateUncacheable(
+                                    key,
+                                    uri,
+                                    toMap(response.headers().asHttpHeaders()),
+                                    replacementStatus.test(status),
+                                    status.is2xxSuccessful(),
+                                    parent);
+                    return response;
+                })
+                .onErrorResume(failure -> Mono.defer(response::releaseBody)
+                        .onErrorResume(cleanupFailure -> {
+                            if (cleanupFailure != failure) failure.addSuppressed(cleanupFailure);
+                            return Mono.empty();
+                        })
+                        .then(Mono.error(failure)));
     }
 
     private Mono<ClientResponse> getResponseWithCache(ClientRequest request, ExchangeFunction next) {
@@ -187,11 +236,12 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
             }
 
             // Cache the response if it has caching headers
-            if (response.statusCode().is2xxSuccessful()) {
+            if (response.statusCode().value() == 200) {
                 return cacheResponse(cacheKey, request, response, cached != null, parent);
             }
 
-            return Mono.just(response);
+            return invalidateUncacheableResponse(
+                    cacheKey, request.url().toString(), response, HttpStatusCode::is2xxSuccessful, parent);
         });
     }
 
@@ -207,9 +257,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
         var cacheControl = HttpCacheEngine.cacheControl(toMap(headers));
 
         if (HttpCacheEngine.hasDirective(cacheControl, "no-store")) {
-            getEngine().evict(cacheKey, request.url().toString(), parent);
-            getEngine().recordSkip(cacheKey, request.url().toString(), HttpCacheEngine.SKIP_NO_STORE, parent);
-            return Mono.just(response);
+            return invalidateUncacheableResponse(cacheKey, request.url().toString(), response, status -> false, parent);
         }
 
         var maxAge = HttpCacheEngine.parseMaxAge(cacheControl);
