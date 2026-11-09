@@ -47,76 +47,27 @@ object TestBuilder {
             // If the string constant would be too large, write it to a JSON file
             val typeReferenceJackson3 = ClassName.get("tools.jackson.core.type", "TypeReference")
             val typeReferenceJackson2 = ClassName.get("com.fasterxml.jackson.core.type", "TypeReference")
-            val methodSpec =
-                if (formatted.length > MAX_STRING_LENGTH) {
-                    // Create the test resources directory if it doesn't exist
-                    testResourcesDir.mkdirs()
-
-                    // Generate a filename based on the MD5
-                    val digest = MessageDigest.getInstance("SHA-256")
-                    digest.update(formatted.toByteArray(StandardCharsets.UTF_8))
-                    val hash = DatatypeConverter.printHexBinary(digest.digest()).take(7).lowercase()
-
-                    val fileName = "example-$hash.json"
-                    val jsonFile = File(testResourcesDir, fileName)
-
-                    // Write the formatted JSON to the file
-                    FileWriter(jsonFile).use { writer ->
-                        writer.write(formatted)
-                    }
-
-                    // Generate test that reads from the JSON file
-                    val standardCharsetsClass = ClassName.get("java.nio.charset", "StandardCharsets")
-                    val assertionsClass = ClassName.get(PACKAGE_ASSERTJ, "Assertions")
-                    MethodSpec
-                        .methodBuilder("test${key.pascalCase()}")
-                        .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
-                        .addAnnotation(Annotations.generated(0, context))
-                        .addException(ClassName.get("java.io", "IOException"))
-                        .addStatement($$"var stream = getClass().getClassLoader().getResourceAsStream($S)", fileName)
-                        .addStatement($$"$T.assertThat(stream).as(\"Could not read stream for file $L\").isNotNull()", assertionsClass, fileName)
-                        .addStatement(
-                            $$"@$T(\"json\") var input = new $T(stream.readAllBytes(), $T.UTF_8)",
-                            Language::class.java,
-                            String::class.java,
-                            standardCharsetsClass,
-                        ).addStatement($$"var softly = new $T()", ClassName.get(PACKAGE_ASSERTJ, "SoftAssertions"))
-                        .addStatement(
-                            $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
-                            testUtilsClass,
-                            typeReferenceJackson3,
-                            className.withoutAnnotations(),
-                        ).addStatement(
-                            $$"$T.parseAndCompare(new $T<$T>() {}, input, softly)",
-                            testUtilsClass,
-                            typeReferenceJackson2,
-                            className.withoutAnnotations(),
-                        ).addStatement("softly.assertThat(processed).isNotNull()")
-                        .addStatement("softly.assertAll()")
-                        .build()
-                } else {
-                    // Use inline JSON as before
-                    MethodSpec
-                        .methodBuilder("test${key.pascalCase()}")
-                        .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
-                        .addAnnotation(Annotations.generated(0, context))
-                        .addStatement($$"@$T(\"json\") $T input = $L", Language::class.java, String::class.java, formatted.blockQuote())
-                        .addStatement($$"var softly = new $T()", ClassName.get(PACKAGE_ASSERTJ, "SoftAssertions"))
-                        .addStatement(
-                            $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
-                            testUtilsClass,
-                            typeReferenceJackson3,
-                            className.withoutAnnotations(),
-                        ).addStatement(
-                            $$"$T.parseAndCompare(new $T<$T>() {}, input, softly)",
-                            testUtilsClass,
-                            typeReferenceJackson2,
-                            className.withoutAnnotations(),
-                        ).addStatement("softly.assertThat(processed).isNotNull()")
-                        .addStatement("softly.assertAll()")
-                        .build()
-                }
-            return methodSpec
+            val method =
+                MethodSpec
+                    .methodBuilder("test${key.pascalCase()}")
+                    .addAnnotation(ClassName.get("org.junit.jupiter.api", "Test"))
+                    .addAnnotation(Annotations.generated(0, context))
+            addFixtureInput(method, formatted, testResourcesDir)
+            return method
+                .addStatement($$"var softly = new $T()", ClassName.get(PACKAGE_ASSERTJ, "SoftAssertions"))
+                .addStatement(
+                    $$"var processed = $T.parseAndCompare(new $T<$T>() {}, input, softly)",
+                    testUtilsClass,
+                    typeReferenceJackson3,
+                    className.withoutAnnotations(),
+                ).addStatement(
+                    $$"$T.parseAndCompare(new $T<$T>() {}, input, softly)",
+                    testUtilsClass,
+                    typeReferenceJackson2,
+                    className.withoutAnnotations(),
+                ).addStatement("softly.assertThat(processed).isNotNull()")
+                .addStatement("softly.assertAll()")
+                .build()
         } catch (e: Exception) {
             throw RuntimeException(
                 """
@@ -128,6 +79,40 @@ object TestBuilder {
                 e,
             )
         }
+    }
+
+    private fun addFixtureInput(
+        method: MethodSpec.Builder,
+        formatted: String,
+        testResourcesDir: File,
+    ) {
+        if (formatted.length <= MAX_STRING_LENGTH) {
+            method.addStatement($$"@$T(\"json\") $T input = $L", Language::class.java, String::class.java, formatted.blockQuote())
+            return
+        }
+
+        testResourcesDir.mkdirs()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hash =
+            DatatypeConverter
+                .printHexBinary(digest.digest(formatted.toByteArray(StandardCharsets.UTF_8)))
+                .take(7)
+                .lowercase()
+        val fileName = "example-$hash.json"
+        FileWriter(File(testResourcesDir, fileName)).use { it.write(formatted) }
+        method
+            .addException(ClassName.get("java.io", "IOException"))
+            .addStatement($$"var stream = getClass().getClassLoader().getResourceAsStream($S)", fileName)
+            .addStatement(
+                $$"$T.assertThat(stream).as(\"Could not read stream for file $L\").isNotNull()",
+                ClassName.get(PACKAGE_ASSERTJ, "Assertions"),
+                fileName,
+            ).addStatement(
+                $$"@$T(\"json\") var input = new $T(stream.readAllBytes(), $T.UTF_8)",
+                Language::class.java,
+                String::class.java,
+                ClassName.get("java.nio.charset", "StandardCharsets"),
+            )
     }
 
     private fun format(
