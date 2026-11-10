@@ -27,13 +27,14 @@ abstract class CreateIssuesTask : DefaultTask() {
         val issues =
             project.rootProject.allprojects
                 .mapNotNull { subproject ->
-                    val file =
-                        subproject.layout.buildDirectory
-                            .file("reports/generated-test-failures.jsonl")
-                            .get()
-                            .asFile
-                    if (file.exists()) {
-                        file.readLines().map(::parse).also {
+                    val existingReports =
+                        failureReportFiles(
+                            subproject.layout.buildDirectory
+                                .get()
+                                .asFile,
+                        )
+                    if (existingReports.isNotEmpty()) {
+                        existingReports.flatMap { it.readLines() }.map(::parse).also {
                             println("Reading issues for project: ${subproject.name}. Found ${it.size} issues")
                         }
                     } else {
