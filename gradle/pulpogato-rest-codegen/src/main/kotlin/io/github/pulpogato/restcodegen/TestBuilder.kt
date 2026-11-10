@@ -1,5 +1,6 @@
 package io.github.pulpogato.restcodegen
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.MethodSpec
@@ -10,13 +11,13 @@ import java.io.File
 import java.io.FileWriter
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.TreeMap
 import javax.xml.bind.DatatypeConverter
 import kotlin.collections.get
 
 object TestBuilder {
     private const val MAX_STRING_LENGTH = 60_000
     private const val PACKAGE_ASSERTJ = "org.assertj.core.api"
+    private val mapper = ObjectMapper()
 
     fun buildTest(
         context: Context,
@@ -25,21 +26,13 @@ object TestBuilder {
         className: TypeName,
         testResourcesDir: File,
     ): MethodSpec? {
-        val om = ObjectMapper()
-
-        val exampleJson = om.writeValueAsString(example)
-        val formatted: String =
-            try {
-                val parsed = om.readValue(exampleJson, TreeMap::class.java)
-                format(context, om, parsed)
-            } catch (_: Exception) {
-                try {
-                    val parsed = om.readValue(exampleJson, List::class.java)
-                    format(context, om, parsed)
-                } catch (_: Exception) {
-                    exampleJson
-                }
+        val value = mapper.convertValue(example, Any::class.java)
+        val orderedExample =
+            when (value) {
+                is Map<*, *> -> value.entries.associate { it.key.toString() to it.value }.toSortedMap()
+                else -> value
             }
+        val formatted = format(context, mapper, orderedExample)
 
         val testUtilsClass = ClassName.get("io.github.pulpogato.test", "TestUtils")
 
@@ -133,7 +126,7 @@ object TestBuilder {
     private fun format(
         context: Context,
         om: ObjectMapper,
-        parsed: Any,
+        parsed: Any?,
     ): String = om.writerWithDefaultPrettyPrinter().writeValueAsString(normalize(context, parsed))
 
     private fun normalize(
@@ -141,6 +134,7 @@ object TestBuilder {
         input: Any?,
     ): Any? =
         when (input) {
+            is JsonNode -> normalize(context, unwrapTreeValue(input))
             is List<*> -> input.map { normalize(context, it) }
             is Map<*, *> -> normalizeMap(context, input)
             else -> input
@@ -149,22 +143,26 @@ object TestBuilder {
     private fun normalizeMap(
         context: Context,
         input: Map<*, *>,
-    ): Any {
+    ): Any? {
         if (input.size == 1 && input.containsKey($$"$ref")) {
-            val ref = input[$$"$ref"].toString()
+            val ref = unwrapTreeValue(input[$$"$ref"]).toString()
             if (ref.startsWith("#/components/examples/")) {
                 val exampleName = ref.removePrefix("#/components/examples/")
                 val resolved =
-                    context.openAPI.components.examples[exampleName]
+                    context.openAPI.components
+                        ?.examples
+                        ?.get(exampleName)
                         ?.value
                 if (resolved != null) {
-                    return normalize(context, resolved)!!
+                    return normalize(context, resolved)
                 }
             }
             // If we can't resolve the ref, fall through to normal map handling
         }
         return input.entries.associate { (k, v) -> k to normalize(context, v) }
     }
+
+    private fun unwrapTreeValue(input: Any?): Any? = if (input is JsonNode) mapper.convertValue(input, Any::class.java) else input
 
     private fun String.quote() = "\"$this\""
 
