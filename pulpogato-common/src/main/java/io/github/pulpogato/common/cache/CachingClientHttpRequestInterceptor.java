@@ -143,6 +143,8 @@ public class CachingClientHttpRequestInterceptor implements ClientHttpRequestInt
         var key = cacheKeyMapper.apply(fullRequest);
         var uri = request.getURI().toString();
         var parent = observationRegistry.getCurrentObservation();
+        // The caller owns successful responses; invalidateUncacheableResponse closes them on failure.
+        @SuppressWarnings("resource")
         var response = execution.execute(request, body);
         return invalidateUncacheableResponse(
                 key, uri, response, status -> status.is2xxSuccessful() && status.value() != 206, parent);

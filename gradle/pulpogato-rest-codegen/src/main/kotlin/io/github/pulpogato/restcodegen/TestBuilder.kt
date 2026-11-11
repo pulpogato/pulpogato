@@ -26,9 +26,8 @@ object TestBuilder {
         className: TypeName,
         testResourcesDir: File,
     ): MethodSpec? {
-        val value = mapper.convertValue(example, Any::class.java)
         val orderedExample =
-            when (value) {
+            when (val value = mapper.convertValue(example, Any::class.java)) {
                 is Map<*, *> -> value.entries.associate { it.key.toString() to it.value }.toSortedMap()
                 else -> value
             }
