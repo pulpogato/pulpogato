@@ -390,6 +390,10 @@ include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/Documen
 Pulpogato provides `CachingExchangeFilterFunction` to cache HTTP responses based on standard HTTP caching headers (ETag, Last-Modified, Cache-Control).
 This can significantly reduce API calls and improve performance.
 
+Only complete `200 OK` responses are stored; requests with `Range` bypass cache lookup and storage.
+The default key mappers use a versioned representation namespace so entries from versions that cached non-200 responses are ignored after upgrading.
+When using custom key mappers, clear existing cache entries or change the mapper's namespace when upgrading from such a version.
+
 === Basic Caching Setup
 
 [source,java,indent=0]
@@ -413,10 +417,12 @@ The response includes an `X-Pulpogato-Cache` header indicating the cache status:
 * `INVALIDATED` - Cache entry was stale; server returned a fresh 200, invalidating the stored value, which is replaced with the new response
 * `SKIP` - Response too large to cache (still returned to caller)
 
-When an `ObservationRegistry` is configured, each lookup and store decision is also recorded as a Micrometer observation (`pulpogato.cache.get` / `pulpogato.cache.put`) tagged with a matching `cache.status` (`HIT`/`STALE`/`MISS`/`UNKNOWN` on the get, `STORED`/`REVALIDATED`/`INVALIDATED`/`SKIP` on the put), so the same HIT/MISS/REVALIDATED/INVALIDATED outcomes shown in the header are also visible in metrics and tracing.
+When an `ObservationRegistry` is configured, each lookup and store decision is also recorded as a Micrometer observation (`pulpogato.cache.get` / `pulpogato.cache.put`) tagged with `cache.status` (`HIT`/`STALE`/`MISS`/`UNKNOWN` on the get, `STORED`/`REVALIDATED`/`INVALIDATED`/`SKIP` on the put).
+An `INVALIDATED` observation records either replacement of a stale entry with a fresh 200 or a defensive eviction attempt after `no-store`, a successful non-200 response, or a full-success Range fallback.
+Eviction attempts are recorded even on cache misses, so this metric does not imply that an entry existed or a new response was cached.
 Both observations have low-cardinality `cache.name`, `cache.client`, and `server.address` tags.
 They also have high-cardinality `uri` and `cache.key` values for tracing; the default cache key is a SHA-256 hash.
-Stores have a low-cardinality `cache.skip.reason` of `NONE`, `NO_CACHE_HEADERS`, `CONTENT_LENGTH`, or `BODY_SIZE`.
+Stores have a low-cardinality `cache.skip.reason` of `NONE`, `NO_CACHE_HEADERS`, `CONTENT_LENGTH`, `BODY_SIZE`, or `NO_STORE`.
 
 === Cache Metrics Setup
 
