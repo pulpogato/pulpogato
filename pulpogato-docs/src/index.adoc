@@ -454,6 +454,13 @@ include::../../pulpogato-common/src/test/java/io/github/pulpogato/common/Documen
 <2> Maximum response size to cache (default: 2MB)
 <3> Always send conditional requests even if cache is fresh. This is helpful when GitHub's cache directive is too long for your use case.
 
+When configuring custom WebClient codecs, pass matching `ExchangeStrategies` to the WebClient and the caching filter's `exchangeStrategies(...)` builder option.
+The filter uses these strategies consistently for cacheable network responses, cache hits, and revalidated entries, while retaining network response cookies and request metadata.
+Without an explicit `exchangeStrategies(...)` setting, these responses retain the existing 16 MB decoding limit.
+When supplying custom strategies, configure `defaultCodecs().maxInMemorySize(...)` as needed; Spring's default is 256 KB.
+This decoding limit is independent of `maxCacheableSize`, which only controls whether a response is stored in the cache.
+Responses that bypass caching, such as `no-store` responses or those with a declared `Content-Length` above `maxCacheableSize`, keep the WebClient's codecs and decoding limit.
+
 === Basic Caching Setup (RestClient)
 
 `CachingClientHttpRequestInterceptor` is the `RestClient` equivalent of `CachingExchangeFilterFunction`, offering the same caching behavior for blocking clients.

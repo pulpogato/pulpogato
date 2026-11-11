@@ -114,6 +114,13 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
     private final boolean alwaysRevalidate = false;
 
     /**
+     * Strategies used to decode cacheable network responses, cache hits, and revalidated entries.
+     * Configure these to match the WebClient's codecs. The default retains the existing 16MB decode limit.
+     */
+    @Builder.Default
+    private final ExchangeStrategies exchangeStrategies = LARGE_BUFFER_STRATEGIES;
+
+    /**
      * Observation registry for recording cache interaction spans.
      * Defaults to {@link ObservationRegistry#NOOP} which adds no overhead.
      */
@@ -196,7 +203,7 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
         // If we have a fresh cached response and not forcing revalidation, return it
         if (cached != null && !cached.isExpired(clock.millis()) && !alwaysRevalidate) {
-            return Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
+            return Mono.just(ClientResponse.create(HttpStatus.OK, exchangeStrategies)
                     .headers(h -> h.putAll(cached.getHeaders()))
                     .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_HIT)
                     .body(Flux.just(bufferFactory.wrap(cached.getBody())))
@@ -228,7 +235,9 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                                 toMap(response.headers().asHttpHeaders()),
                                 parent);
                 return response.releaseBody()
-                        .then(Mono.just(ClientResponse.create(HttpStatus.OK, LARGE_BUFFER_STRATEGIES)
+                        .then(Mono.just(ClientResponse.create(HttpStatus.OK, exchangeStrategies)
+                                .cookies(cookies -> cookies.addAll(response.cookies()))
+                                .request(response.request())
                                 .headers(h -> h.putAll(refreshed.getHeaders()))
                                 .header(HttpCacheEngine.CACHE_HEADER_NAME, HttpCacheEngine.CACHE_REVALIDATED)
                                 .body(Flux.just(bufferFactory.wrap(refreshed.getBody())))
@@ -299,8 +308,10 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
                     })
                     .doOnDiscard(DataBuffer.class, DataBufferUtils::release);
         });
-        return Mono.just(ClientResponse.create(response.statusCode(), LARGE_BUFFER_STRATEGIES)
+        return Mono.just(ClientResponse.create(response.statusCode(), exchangeStrategies)
                 .headers(h -> h.putAll(headerMap))
+                .cookies(cookies -> cookies.addAll(response.cookies()))
+                .request(response.request())
                 .header(HttpCacheEngine.CACHE_HEADER_NAME, headerStatus)
                 .body(body)
                 .build());
