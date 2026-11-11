@@ -24,4 +24,5 @@ public class CacheKeyData {
     private final @Nullable String accept;
     private final @Nullable String contentType;
     private final @Nullable String jwtSubject;
+    private final @Nullable String credentialFingerprint;
 }
