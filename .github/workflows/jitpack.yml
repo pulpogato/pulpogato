@@ -24,4 +24,4 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           GROUP_PATH="${GROUP_ID//.//}"
           URL="https://jitpack.io/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.pom"
-          curl --connect-timeout 5 --max-time 5 "${URL}" || echo "Jitpack build triggered for ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
+          curl "${URL}" || echo "Jitpack build triggered for ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
