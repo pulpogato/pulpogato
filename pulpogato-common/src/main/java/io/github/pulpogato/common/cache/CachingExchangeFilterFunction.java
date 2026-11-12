@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import lombok.Builder;
 import lombok.Getter;
@@ -284,10 +285,16 @@ public class CachingExchangeFilterFunction implements ExchangeFilterFunction {
 
         var putStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_STORED;
         var headerStatus = wasCached ? HttpCacheEngine.CACHE_INVALIDATED : HttpCacheEngine.CACHE_MISS;
+        var bodySubscribed = new AtomicBoolean();
         var body = Flux.defer(() -> {
+            var source = response.body(BodyExtractors.toDataBuffers());
+            // WebClient subscribes again during response cleanup; only the first subscription
+            // can contain the complete representation, even if it was cancelled or failed.
+            if (!bodySubscribed.compareAndSet(false, true)) {
+                return source;
+            }
             var collector = new CacheBody();
-            return response.body(BodyExtractors.toDataBuffers())
-                    .doOnNext(buffer -> {
+            return source.doOnNext(buffer -> {
                         if (collector.append(buffer, maxCacheableSize)) {
                             getEngine().recordSkip(cacheKey, uri, HttpCacheEngine.SKIP_BODY_SIZE, parent);
                         }
