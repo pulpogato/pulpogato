@@ -702,7 +702,7 @@ pre.rouge {
 <div id="header">
 <h1>Pulpogato</h1>
 <div class="details">
-<span id="revnumber">version 3.12.0-SNAPSHOT</span>
+<span id="revnumber">version 3.13.0-SNAPSHOT</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -1824,6 +1824,11 @@ This is useful when you need to authenticate as the app itself rather than as an
 <p>Pulpogato provides <code>CachingExchangeFilterFunction</code> to cache HTTP responses based on standard HTTP caching headers (ETag, Last-Modified, Cache-Control).
 This can significantly reduce API calls and improve performance.</p>
 </div>
+<div class="paragraph">
+<p>Only complete <code>200 OK</code> responses are stored; requests with <code>Range</code> bypass cache lookup and storage.
+The default key mappers use a versioned representation namespace so entries from versions that cached non-200 responses are ignored after upgrading.
+When using custom key mappers, clear existing cache entries or change the mapper&#8217;s namespace when upgrading from such a version.</p>
+</div>
 <div class="sect2">
 <h3 id="_basic_caching_setup">Basic Caching Setup</h3>
 <div class="listingblock">
@@ -1889,10 +1894,21 @@ This can significantly reduce API calls and improve performance.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>When an <code>ObservationRegistry</code> is configured, each lookup and store decision is also recorded as a Micrometer observation (<code>pulpogato.cache.get</code> / <code>pulpogato.cache.put</code>) tagged with a matching <code>cache.status</code> (<code>HIT</code>/<code>STALE</code>/<code>MISS</code>/<code>UNKNOWN</code> on the get, <code>STORED</code>/<code>REVALIDATED</code>/<code>INVALIDATED</code>/<code>SKIP</code> on the put), so the same HIT/MISS/REVALIDATED/INVALIDATED outcomes shown in the header are also visible in metrics and tracing.
+<p>When an <code>ObservationRegistry</code> is configured, each lookup and store decision is also recorded as a Micrometer observation (<code>pulpogato.cache.get</code> / <code>pulpogato.cache.put</code>) tagged with <code>cache.status</code> (<code>HIT</code>/<code>STALE</code>/<code>MISS</code>/<code>UNKNOWN</code> on the get, <code>STORED</code>/<code>REVALIDATED</code>/<code>INVALIDATED</code>/<code>SKIP</code> on the put).
+An <code>INVALIDATED</code> observation records either replacement of a stale entry with a fresh 200 or a defensive eviction attempt after <code>no-store</code>, a successful non-200 response, or a full-success Range fallback.
+Eviction attempts are recorded even on cache misses, so this metric does not imply that an entry existed or a new response was cached.
 Both observations have low-cardinality <code>cache.name</code>, <code>cache.client</code>, and <code>server.address</code> tags.
 They also have high-cardinality <code>uri</code> and <code>cache.key</code> values for tracing; the default cache key is a SHA-256 hash.
-Stores have a low-cardinality <code>cache.skip.reason</code> of <code>NONE</code>, <code>NO_CACHE_HEADERS</code>, <code>CONTENT_LENGTH</code>, or <code>BODY_SIZE</code>.</p>
+Stores have a low-cardinality <code>cache.skip.reason</code> of <code>NONE</code>, <code>NO_CACHE_HEADERS</code>, <code>CONTENT_LENGTH</code>, <code>BODY_SIZE</code>, or <code>NO_STORE</code>.</p>
+</div>
+<div class="paragraph">
+<p>Register authentication filters and interceptors before the corresponding cache filter or interceptor so the cache lookup sees the final Authorization header.
+Authentication added later by an HTTP connector or request factory is invisible to the cache; move it into an upstream filter/interceptor or isolate caches by credential.
+Default cache keys include an HMAC-SHA-256 fingerprint of the Authorization header, keeping anonymous requests and different tokens isolated even when JWT subjects match.
+The default fingerprint secret is process-local; for reuse across processes, construct both default key mappers with the same cryptographically random, securely managed secret of at least 32 bytes.
+Token rotation produces a new cache key.
+Configure a size limit or expiry policy on the cache provider because HTTP freshness checks do not evict entries left behind by token rotation or process restarts.
+Custom cache key mappers must account for user identity and resource access, and may share entries only when the credentials are guaranteed to receive the same representation.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1920,9 +1936,10 @@ Cache size, entry, and eviction metrics depend on the configured Spring <code>Ca
 <h3 id="_advanced_caching_options">Advanced Caching Options</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">cachingFilter</span> <span class="o">=</span> <span class="nc">CachingExchangeFilterFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">keyMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DefaultCacheKeyMapper</span><span class="o">();</span>
+<span class="kt">var</span> <span class="n">cachingFilter</span> <span class="o">=</span> <span class="nc">CachingExchangeFilterFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
         <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">cacheKeyMapper</span><span class="o">(</span><span class="n">request</span> <span class="o">-&gt;</span> <span class="n">request</span><span class="o">.</span><span class="na">url</span><span class="o">().</span><span class="na">toASCIIString</span><span class="o">())</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">cacheKeyMapper</span><span class="o">(</span><span class="n">request</span> <span class="o">-&gt;</span> <span class="s">"my-client:"</span> <span class="o">+</span> <span class="n">keyMapper</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">request</span><span class="o">))</span> <i class="conum" data-value="1"></i><b>(1)</b>
         <span class="o">.</span><span class="na">maxCacheableSize</span><span class="o">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">)</span> <i class="conum" data-value="2"></i><b>(2)</b>
         <span class="o">.</span><span class="na">alwaysRevalidate</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span> <i class="conum" data-value="3"></i><b>(3)</b>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
@@ -1934,7 +1951,7 @@ Cache size, entry, and eviction metrics depend on the configured Spring <code>Ca
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Custom function to generate cache keys from requests</td>
+<td>Prefix the credential-aware default key with an application-specific cache namespace.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
@@ -1945,6 +1962,14 @@ Cache size, entry, and eviction metrics depend on the configured Spring <code>Ca
 <td>Always send conditional requests even if cache is fresh. This is helpful when GitHub&#8217;s cache directive is too long for your use case.</td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>When configuring custom WebClient codecs, pass matching <code>ExchangeStrategies</code> to the WebClient and the caching filter&#8217;s <code>exchangeStrategies(&#8230;&#8203;)</code> builder option.
+The filter uses these strategies consistently for cacheable network responses, cache hits, and revalidated entries, while retaining network response cookies and request metadata.
+Without an explicit <code>exchangeStrategies(&#8230;&#8203;)</code> setting, these responses retain the existing 16 MB decoding limit.
+When supplying custom strategies, configure <code>defaultCodecs().maxInMemorySize(&#8230;&#8203;)</code> as needed; Spring&#8217;s default is 256 KB.
+This decoding limit is independent of <code>maxCacheableSize</code>, which only controls whether a response is stored in the cache.
+Responses that bypass caching, such as <code>no-store</code> responses or those with a declared <code>Content-Length</code> above <code>maxCacheableSize</code>, keep the WebClient&#8217;s codecs and decoding limit.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1982,9 +2007,10 @@ Cache size, entry, and eviction metrics depend on the configured Spring <code>Ca
 <h3 id="_advanced_caching_options_restclient">Advanced Caching Options (RestClient)</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">cachingInterceptor</span> <span class="o">=</span> <span class="nc">CachingClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">keyMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DefaultHttpRequestCacheKeyMapper</span><span class="o">();</span>
+<span class="kt">var</span> <span class="n">cachingInterceptor</span> <span class="o">=</span> <span class="nc">CachingClientHttpRequestInterceptor</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
         <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">cacheKeyMapper</span><span class="o">(</span><span class="n">request</span> <span class="o">-&gt;</span> <span class="n">request</span><span class="o">.</span><span class="na">getURI</span><span class="o">().</span><span class="na">toASCIIString</span><span class="o">())</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">.</span><span class="na">cacheKeyMapper</span><span class="o">(</span><span class="n">request</span> <span class="o">-&gt;</span> <span class="s">"my-client:"</span> <span class="o">+</span> <span class="n">keyMapper</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">request</span><span class="o">))</span> <i class="conum" data-value="1"></i><b>(1)</b>
         <span class="o">.</span><span class="na">maxCacheableSize</span><span class="o">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">)</span> <i class="conum" data-value="2"></i><b>(2)</b>
         <span class="o">.</span><span class="na">alwaysRevalidate</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span> <i class="conum" data-value="3"></i><b>(3)</b>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
@@ -2000,7 +2026,7 @@ Cache size, entry, and eviction metrics depend on the configured Spring <code>Ca
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Custom function to generate cache keys from requests</td>
+<td>Prefix the credential-aware default key with an application-specific cache namespace.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
