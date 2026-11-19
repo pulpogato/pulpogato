@@ -12,6 +12,29 @@ class GeneratorFunctionalTest {
     lateinit var tempDir: File
 
     @Test
+    fun `should replace a nested owner enum without losing sibling properties`() {
+        val directory = fixture("nested-owner")
+        val schema = File(directory, "schema.json")
+        schema.writeText(
+            schema.readText().replace(
+                "\"name\":{\"type\":\"string\"}",
+                """"owner":{"type":"object","properties":{"login":{"type":"string"},"type":{"type":"string","enum":["Organization","Bot","User"]}}}""",
+            ),
+        )
+        File(directory, "common/owner.del.schema.json").writeText(
+            """{"components":{"schemas":{"thing":{"properties":{"owner":{"properties":{"type":{"enum":null}}}}}}}}""",
+        )
+        File(directory, "common/owner.schema.json").writeText(
+            """{"components":{"schemas":{"thing":{"properties":{"owner":{"properties":{"type":{"enum":["Organization","Bot","User","enterprise"]}}}}}}}}""",
+        )
+
+        assertThat(run(directory).task(":generateFixture")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        val generated = File(directory, "build/main/com/example/rest/schemas/Thing.java").readText()
+        assertThat(generated).contains("ENTERPRISE(\"enterprise\")", "ORGANIZATION(\"Organization\")", "BOT(\"Bot\")", "USER(\"User\")")
+        assertThat(generated).contains("String login")
+    }
+
+    @Test
     fun `generation reuses configuration and removes stale outputs after schema changes`() {
         val directory = fixture("project")
         assertThat(run(directory).task(":generateFixture")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)

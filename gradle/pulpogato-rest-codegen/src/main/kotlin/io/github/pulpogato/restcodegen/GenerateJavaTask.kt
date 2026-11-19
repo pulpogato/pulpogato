@@ -391,6 +391,13 @@ open class GenerateJavaTask : DefaultTask() {
                 targetProperties.set(propertyName, propertySpec.deepCopy())
                 propertyNames[propertyName] = sourceFileName
                 logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
+            } else if (targetProperties[propertyName] is ObjectNode && propertySpec is ObjectNode) {
+                mergeObjectNodes(
+                    targetProperties[propertyName] as ObjectNode,
+                    propertySpec,
+                    sourceFileName,
+                    "/components/schemas/$schemaName/properties/$propertyName",
+                )
             }
         }
         if (propertyNames.isEmpty()) {

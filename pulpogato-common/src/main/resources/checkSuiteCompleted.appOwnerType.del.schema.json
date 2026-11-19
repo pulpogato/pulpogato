@@ -1,0 +1,32 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Removes the incomplete app-owner type enum on completed check-suite webhooks so checkSuiteCompleted.appOwnerType.schema.json can supply the enterprise owner value."
+  },
+  "components": {
+    "schemas": {
+      "webhook-check-suite-completed": {
+        "properties": {
+          "check_suite": {
+            "properties": {
+              "app": {
+                "properties": {
+                  "owner": {
+                    "properties": {
+                      "type": {
+                        "enum": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": { }
+}
