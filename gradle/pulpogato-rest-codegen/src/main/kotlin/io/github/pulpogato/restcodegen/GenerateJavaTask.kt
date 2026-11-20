@@ -354,8 +354,10 @@ open class GenerateJavaTask : DefaultTask() {
             }
 
             targetSchema == null -> {
-                targetSchemas.set(schemaName, schemaAddition.deepCopy())
-                logger.info("Added new schema '$schemaName' from '$sourceFileName'")
+                copySchemaAddition(schemaAddition)?.let {
+                    targetSchemas.set(schemaName, it)
+                    logger.info("Added new schema '$schemaName' from '$sourceFileName'")
+                }
             }
 
             targetSchema is ObjectNode && schemaAddition is ObjectNode -> {
@@ -388,9 +390,18 @@ open class GenerateJavaTask : DefaultTask() {
                     logger.info("Removed property '$propertyName' from schema '$schemaName' from '$sourceFileName'")
                 }
             } else if (!targetProperties.has(propertyName)) {
-                targetProperties.set(propertyName, propertySpec.deepCopy())
-                propertyNames[propertyName] = sourceFileName
-                logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
+                copySchemaAddition(propertySpec)?.let {
+                    targetProperties.set(propertyName, it)
+                    propertyNames[propertyName] = sourceFileName
+                    logger.info("Added property '$propertyName' to schema '$schemaName' from '$sourceFileName'")
+                }
+            } else if (targetProperties[propertyName] is ObjectNode && propertySpec is ObjectNode) {
+                mergeObjectNodes(
+                    targetProperties[propertyName] as ObjectNode,
+                    propertySpec,
+                    sourceFileName,
+                    "/components/schemas/$schemaName/properties/$propertyName",
+                )
             }
         }
         if (propertyNames.isEmpty()) {
@@ -437,8 +448,10 @@ open class GenerateJavaTask : DefaultTask() {
                 }
 
                 targetValue == null -> {
-                    target.set(fieldName, sourceValue.deepCopy())
-                    logger.info("Added schema node '$currentPath' from '$sourceFileName'")
+                    copySchemaAddition(sourceValue)?.let {
+                        target.set(fieldName, it)
+                        logger.info("Added schema node '$currentPath' from '$sourceFileName'")
+                    }
                 }
 
                 targetValue is ObjectNode && sourceValue is ObjectNode -> {
@@ -446,6 +459,17 @@ open class GenerateJavaTask : DefaultTask() {
                 }
             }
         }
+    }
+
+    private fun copySchemaAddition(source: JsonNode): JsonNode? {
+        if (source.isNull) return null
+        if (source !is ObjectNode) return source.deepCopy()
+        val result = source.deepCopy()
+        source.properties().forEach { (name, value) ->
+            val addition = copySchemaAddition(value)
+            if (addition == null) result.remove(name) else result.set(name, addition)
+        }
+        return result.takeUnless { it.isEmpty && !source.isEmpty }
     }
 }
 

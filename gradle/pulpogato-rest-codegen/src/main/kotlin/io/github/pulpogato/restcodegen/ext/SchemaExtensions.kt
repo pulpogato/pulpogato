@@ -1737,7 +1737,7 @@ private fun getSourceFile(
     context: Context,
     property: Map.Entry<String, Schema<*>>,
 ): String =
-    if (schemaName != null) {
+    if (schemaName != null && context.schemaStack.size == 4) {
         context.getAddedPropertySource(schemaName, property.key) ?: "schema.json"
     } else {
         "schema.json"

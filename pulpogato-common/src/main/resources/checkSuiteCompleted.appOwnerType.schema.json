@@ -1,0 +1,32 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Additions Schema",
+    "version": "1.0.0",
+    "description": "Enterprise-owned GitHub Apps send check_suite.app.owner.type=\"enterprise\". The webhook schema must accept this value alongside Bot, User, and Organization. See https://github.com/github/rest-api-description/issues/7522"
+  },
+  "components": {
+    "schemas": {
+      "webhook-check-suite-completed": {
+        "properties": {
+          "check_suite": {
+            "properties": {
+              "app": {
+                "properties": {
+                  "owner": {
+                    "properties": {
+                      "type": {
+                        "enum": [ "Bot", "User", "Organization", "enterprise" ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": { }
+}
