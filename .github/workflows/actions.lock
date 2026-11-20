@@ -22,7 +22,7 @@ workflows:
     '.github/workflows/qodana_code_quality.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-java@v6.3.0'
-        - 'jetbrains/qodana-action@v2026.2.4'
+        - 'jetbrains/qodana-action@v2026.3.1'
     '.github/workflows/republish-to-central.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-java@v6.3.0'
@@ -83,9 +83,9 @@ dependencies:
         commit: 'sha1-8da46b539cd8fe6ab27ca75128919a18d757604c'
         owner_id: 124156
         repo_id: 743626948
-    'jetbrains/qodana-action@v2026.2.4':
-        ref: 'v2026.2.4'
-        commit: 'sha1-13e3acbbaeb2cbfc37893b98e74594985edf42eb'
+    'jetbrains/qodana-action@v2026.3.1':
+        ref: 'v2026.3.1'
+        commit: 'sha1-aa698739cd4b8204ad53291bea7e16cd75da3c9f'
         owner_id: 878437
         repo_id: 318547564
     'peaceiris/actions-gh-pages@v4.1.0':
