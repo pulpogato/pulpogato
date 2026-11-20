@@ -94,9 +94,20 @@ jobs:
         # always() so this still runs (and uploads whatever coverage/sources it can) even if the
         # previous --continue build had unrelated failures, matching the old single-invocation behavior.
         if: always() && !startsWith(github.ref, 'refs/tags/v')
+        id: sonar
+        continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew --max-workers=$MAX_WORKERS -Pcoverage=true sonar
+        run: |
+          if [[ -z "$SONAR_TOKEN" ]]; then
+            echo "::warning::Sonar analysis skipped: SONAR_TOKEN is unavailable."
+            exit 0
+          fi
+          ./gradlew --max-workers="$MAX_WORKERS" -Pcoverage=true sonar --info --stacktrace
+
+      - name: Report Sonar failure
+        if: always() && steps.sonar.outcome == 'failure'
+        run: echo "::warning::Sonar analysis failed. See the Run Sonar Analysis step log for details."
 
       - name: Deploy docs to ghpages
         uses: peaceiris/actions-gh-pages@v4.1.0
