@@ -5,11 +5,70 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 
 class GeneratorFunctionalTest {
     @TempDir
     lateinit var tempDir: File
+
+    @ParameterizedTest
+    @ValueSource(strings = ["type", "owner", "schema"])
+    fun `should ignore nested deletions in missing objects before adding an enum`(missing: String) {
+        val directory = fixture("missing-$missing")
+        val schemaName = if (missing == "schema") "account" else "thing"
+        if (missing == "type") {
+            val schema = File(directory, "schema.json")
+            schema.writeText(
+                schema.readText().replace(
+                    "\"name\":{\"type\":\"string\"}",
+                    """"owner":{"type":"object","properties":{"login":{"type":"string"}}}""",
+                ),
+            )
+        }
+        File(directory, "common/owner.del.schema.json").writeText(
+            """{"components":{"schemas":{"$schemaName":{"properties":{"owner":{"properties":{"type":{"enum":null}}}}}}}}""",
+        )
+
+        assertThat(run(directory).task(":generateFixture")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        val generated = File(directory, "build/main/com/example/rest/schemas/${schemaName.replaceFirstChar { it.uppercase() }}.java")
+        if (missing == "schema") {
+            assertThat(generated).doesNotExist()
+        } else {
+            assertThat(generated.readText()).doesNotContain("getType()")
+            if (missing == "owner") assertThat(generated.readText()).doesNotContain("class Owner")
+        }
+
+        File(directory, "common/owner.schema.json").writeText(
+            """{"components":{"schemas":{"$schemaName":{"type":"object","properties":{"owner":{"type":"object","properties":{"type":{"type":"string","enum":["User","enterprise",null]}}}}}}}}""",
+        )
+
+        assertThat(run(directory).task(":generateFixture")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(generated.readText()).contains("ENTERPRISE(\"enterprise\")", "USER(\"User\")", "NULL(\"null\")")
+    }
+
+    @Test
+    fun `should validate nested property sources independently of top level names`() {
+        val directory = fixture("owner-id")
+        val schema = File(directory, "schema.json")
+        schema.writeText(
+            schema.readText().replace(
+                "\"name\":{\"type\":\"string\"}",
+                """"owner":{"type":"object","properties":{"login":{"type":"string"}}}""",
+            ),
+        )
+        File(directory, "common/a-id.schema.json").writeText(
+            """{"components":{"schemas":{"thing":{"properties":{"id":{"type":"integer"}}}}}}""",
+        )
+        File(directory, "common/b-owner-id.schema.json").writeText(
+            """{"components":{"schemas":{"thing":{"properties":{"owner":{"properties":{"id":{"type":"integer"}}}}}}}}""",
+        )
+
+        assertThat(run(directory).task(":generateFixture")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(File(directory, "build/main/com/example/rest/schemas/Thing.java").readText())
+            .contains("sourceFile = \"a-id.schema.json\"", "schemaRef = \"#/components/schemas/thing/properties/owner/properties/id\"")
+    }
 
     @Test
     fun `should replace a nested owner enum without losing sibling properties`() {

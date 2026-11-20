@@ -3,7 +3,7 @@
   "info": {
     "title": "Additions Schema",
     "version": "1.0.0",
-    "description": "Removes the incomplete app-owner type enum on completed check-suite webhooks so checkSuiteCompleted.appOwnerType.schema.json can supply the enterprise owner value."
+    "description": "Removes the incomplete app-owner type enum on completed check-suite webhooks so checkSuiteCompleted.appOwnerType.schema.json can supply the enterprise owner value. See https://github.com/github/rest-api-description/issues/7522"
   },
   "components": {
     "schemas": {
