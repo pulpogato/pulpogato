@@ -66,8 +66,8 @@ class TestBuilderFormattingTest {
                 Arguments.of("text", "text"),
                 Arguments.of(42, 42),
                 Arguments.of(true, true),
-                Arguments.of(mapOf("\$ref" to "#/components/examples/sample"), mapOf("message" to "resolved")),
-                Arguments.of(mapOf("nested" to mapOf("\$ref" to "#/components/examples/sample")), mapOf("nested" to mapOf("message" to "resolved"))),
+                Arguments.of(mapOf($$"$ref" to "#/components/examples/sample"), mapOf("message" to "resolved")),
+                Arguments.of(mapOf("nested" to mapOf($$"$ref" to "#/components/examples/sample")), mapOf("nested" to mapOf("message" to "resolved"))),
             )
     }
 }

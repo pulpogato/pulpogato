@@ -32,8 +32,8 @@ class TestBuilderNormalizationTest {
             OpenAPI().components(
                 Components()
                     .addExamples("sample", Example().value(mapOf("message" to "resolved")))
-                    .addExamples("tree", Example().value(mapper.readTree("""{"nested":{"${'$'}ref":"#/components/examples/sample"}}""")))
-                    .addExamples("mixed", Example().value(mapOf("nested" to mapOf("\$ref" to mapper.nodeFactory.textNode("#/components/examples/sample")))))
+                    .addExamples("tree", Example().value(mapper.readTree($$"""{"nested":{"$ref":"#/components/examples/sample"}}""")))
+                    .addExamples("mixed", Example().value(mapOf("nested" to mapOf($$"$ref" to mapper.nodeFactory.textNode("#/components/examples/sample")))))
                     .addExamples("null", Example().value(mapper.readTree("null"))),
             )
         val actual = generatedJson(api, example)
@@ -47,7 +47,7 @@ class TestBuilderNormalizationTest {
     fun `unresolved references survive absent components or examples`(hasComponents: Boolean) {
         val api = OpenAPI()
         if (hasComponents) api.components(Components())
-        val example = mapOf("\$ref" to "#/components/examples/missing")
+        val example = mapOf($$"$ref" to "#/components/examples/missing")
         assertThat(generatedJson(api, example)).isEqualTo(mapper.valueToTree<JsonNode>(example))
     }
 
@@ -74,16 +74,16 @@ class TestBuilderNormalizationTest {
         fun nodeExamples(): Stream<Arguments> {
             val mapper = ObjectMapper()
             return Stream.of(
-                Arguments.of(mapper.readTree("""{"z":1,"a":{"${'$'}ref":"#/components/examples/sample"}}"""), """{"a":{"message":"resolved"},"z":1}"""),
-                Arguments.of(mapper.readTree("""[{"${'$'}ref":"#/components/examples/sample"}]"""), """[{"message":"resolved"}]"""),
-                Arguments.of(mapOf("nested" to mapper.readTree("""{"${'$'}ref":"#/components/examples/sample"}""")), """{"nested":{"message":"resolved"}}"""),
+                Arguments.of(mapper.readTree($$"""{"z":1,"a":{"$ref":"#/components/examples/sample"}}"""), """{"a":{"message":"resolved"},"z":1}"""),
+                Arguments.of(mapper.readTree($$"""[{"$ref":"#/components/examples/sample"}]"""), """[{"message":"resolved"}]"""),
+                Arguments.of(mapOf("nested" to mapper.readTree($$"""{"$ref":"#/components/examples/sample"}""")), """{"nested":{"message":"resolved"}}"""),
                 Arguments.of(mapper.readTree("null"), "null"),
-                Arguments.of(arrayOf(mapOf("\$ref" to "#/components/examples/sample")), """[{"message":"resolved"}]"""),
-                Arguments.of(mapOf("nested" to arrayOf(mapOf("\$ref" to "#/components/examples/sample"))), """{"nested":[{"message":"resolved"}]}"""),
-                Arguments.of(mapOf("\$ref" to mapper.nodeFactory.textNode("#/components/examples/sample")), """{"message":"resolved"}"""),
-                Arguments.of(mapOf("\$ref" to "#/components/examples/null"), "null"),
-                Arguments.of(mapOf("\$ref" to "#/components/examples/tree"), """{"nested":{"message":"resolved"}}"""),
-                Arguments.of(mapOf("\$ref" to "#/components/examples/mixed"), """{"nested":{"message":"resolved"}}"""),
+                Arguments.of(arrayOf(mapOf($$"$ref" to "#/components/examples/sample")), """[{"message":"resolved"}]"""),
+                Arguments.of(mapOf("nested" to arrayOf(mapOf($$"$ref" to "#/components/examples/sample"))), """{"nested":[{"message":"resolved"}]}"""),
+                Arguments.of(mapOf($$"$ref" to mapper.nodeFactory.textNode("#/components/examples/sample")), """{"message":"resolved"}"""),
+                Arguments.of(mapOf($$"$ref" to "#/components/examples/null"), "null"),
+                Arguments.of(mapOf($$"$ref" to "#/components/examples/tree"), """{"nested":{"message":"resolved"}}"""),
+                Arguments.of(mapOf($$"$ref" to "#/components/examples/mixed"), """{"nested":{"message":"resolved"}}"""),
             )
         }
     }
