@@ -39,7 +39,7 @@ public class Jackson3FancySerializer<T> extends StdSerializer<T> {
      * @param mode   The mode of serialization
      * @param fields The fields that can be read from the class
      */
-    public Jackson3FancySerializer(Class<T> vc, Mode mode, List<GettableField<T, ?>> fields) {
+    public Jackson3FancySerializer(Class<T> vc, Mode mode, List<? extends GettableField<T, ?>> fields) {
         super(vc);
         this.mode = mode;
         this.fields = fields;
@@ -53,7 +53,7 @@ public class Jackson3FancySerializer<T> extends StdSerializer<T> {
     /**
      * The fields that can be read from the class
      */
-    private final List<GettableField<T, ?>> fields;
+    private final List<? extends GettableField<T, ?>> fields;
 
     /**
      * Serializes the value when used as a polymorphic subtype (e.g. a sealed webhook supertype).

@@ -40,7 +40,7 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
             Class<T> type,
             Supplier<T> initializer,
             Mode mode,
-            List<SettableField<T, ?>> fields,
+            List<? extends SettableField<T, ?>> fields,
             JsonWriter writer,
             JsonReader reader,
             JsonReader lenientReader,
@@ -73,7 +73,7 @@ public class LenientFancyDeserializerSupport<T> extends FancyDeserializerSupport
         }
     }
 
-    private List<SettableField<T, ?>> orderOneOfCandidatesByRecognizedKeys(Map<?, ?> inputMap) {
+    private List<? extends SettableField<T, ?>> orderOneOfCandidatesByRecognizedKeys(Map<?, ?> inputMap) {
         var inputKeys = stringKeys(inputMap);
         if (inputKeys.isEmpty()) {
             return getFields();

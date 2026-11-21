@@ -117,7 +117,7 @@ public class FancyDeserializerSupport<T> {
      * The fields that can be set.
      */
     @Getter
-    private final List<SettableField<T, ?>> fields;
+    private final List<? extends SettableField<T, ?>> fields;
 
     /**
      * Jackson-version-specific JSON writer.
@@ -441,7 +441,7 @@ public class FancyDeserializerSupport<T> {
     }
 
     @Nullable
-    private static <T> Class<?> detectEnumAlternativeType(List<SettableField<T, ?>> fields) {
+    private static <T> Class<?> detectEnumAlternativeType(List<? extends SettableField<T, ?>> fields) {
         Class<?> candidate = null;
         for (var field : fields) {
             var type = field.type();
