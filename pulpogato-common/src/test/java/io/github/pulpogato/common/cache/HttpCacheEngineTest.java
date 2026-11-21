@@ -185,7 +185,9 @@ class HttpCacheEngineTest {
             var observationRegistry = ObservationRegistry.create();
             observationRegistry
                     .observationConfig()
-                    .observationHandler(new DefaultMeterObservationHandler(meterRegistry));
+                    .observationHandler(DefaultMeterObservationHandler.builder(meterRegistry)
+                            .includeActiveObservationLongTaskTimer(true)
+                            .build());
             var namedCache = new ConcurrentMapCache("github-http-cache");
             var engine = new HttpCacheEngine(namedCache, clock, observationRegistry, 1024, false, "WebClient");
 
