@@ -834,11 +834,6 @@ private fun buildFieldSpec(
         .build()
 }
 
-private fun gettableFieldType(jacksonVersion: Int): ClassName =
-    ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancySerializer", "GettableField")
-
-private val settableFieldType: ClassName = ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "FancyDeserializerSupport", "SettableField")
-
 private fun getGettableFields(
     fields: ArrayList<Pair<TypeName, String>>,
     className: String,
@@ -847,7 +842,7 @@ private fun getGettableFields(
     fields.map { (type, name) ->
         CodeBlock.of(
             $$"new $T<>($T.class, $T::get$$name)",
-            gettableFieldType(jacksonVersion),
+            ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "Jackson${jacksonVersion}FancySerializer", "GettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
@@ -860,7 +855,7 @@ private fun getSettableFields(
     fields.map { (type, name) ->
         CodeBlock.of(
             $$"new $T<>($T.class, $T::set$$name)",
-            settableFieldType,
+            ClassName.get("$PACKAGE_PULPOGATO_COMMON.jackson", "FancyDeserializerSupport", "SettableField"),
             type.withoutAnnotations(),
             ClassName.get("", className),
         )
@@ -885,18 +880,13 @@ private fun buildSerializer(
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
-                    $$"""super($T.class, $T.$${fancyObjectType.trainCase()}, $T.<$T>of(
+                    $$"""super($T.class, $T.$${fancyObjectType.trainCase()}, $T.of(
                         |    $L
                         |))
                     """.trimMargin(),
                     ClassName.get("", className),
                     ClassName.get(PACKAGE_PULPOGATO_COMMON, "Mode"),
                     Types.LIST,
-                    ParameterizedTypeName.get(
-                        gettableFieldType(jacksonVersion),
-                        ClassName.get("", className),
-                        WildcardTypeName.subtypeOf(Types.OBJECT),
-                    ),
                     CodeBlock.join(gettableFields, ",\n    "),
                 ).build(),
         ).build()
@@ -920,7 +910,7 @@ private fun buildDeserializer(
                 .constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement(
-                    $$"""super($T.class, $T::new, $T.$${fancyObjectType.trainCase()}, $T.<$T>of(
+                    $$"""super($T.class, $T::new, $T.$${fancyObjectType.trainCase()}, $T.of(
                         |    $L
                         |))
                     """.trimMargin(),
@@ -928,11 +918,6 @@ private fun buildDeserializer(
                     ClassName.get("", className),
                     ClassName.get(PACKAGE_PULPOGATO_COMMON, "Mode"),
                     Types.LIST,
-                    ParameterizedTypeName.get(
-                        settableFieldType,
-                        ClassName.get("", className),
-                        WildcardTypeName.subtypeOf(Types.OBJECT),
-                    ),
                     CodeBlock.join(settableFields, ",\n    "),
                 ).build(),
         ).build()

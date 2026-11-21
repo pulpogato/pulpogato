@@ -1,6 +1,7 @@
 package io.github.pulpogato.common.jackson;
 
 import io.github.pulpogato.common.Mode;
+import io.github.pulpogato.common.jackson.FancyDeserializerSupport.SettableField;
 import java.util.List;
 import java.util.function.Supplier;
 import tools.jackson.core.JacksonException;
@@ -32,19 +33,32 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
      * @param fields      The fields that can be set on the class
      */
     public Jackson3FancyDeserializer(
-            Class<T> vc,
-            Supplier<T> initializer,
-            Mode mode,
-            List<? extends FancyDeserializerSupport.SettableField<T, ?>> fields) {
+            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
         super(vc);
+        @SuppressWarnings("UnnecessaryLocalVariable") // Keep list inference at the public constructor boundary.
+        List<? extends SettableField<T, ?>> descriptors = fields;
         this.support = new FancyDeserializerSupport<>(
                 vc,
                 initializer,
                 mode,
-                fields,
+                descriptors,
                 om::writeValueAsString,
                 om::readValue,
                 JacksonException.class::isInstance);
+    }
+
+    /**
+     * Constructs a deserializer for two field alternatives.
+     *
+     * @param vc          The class being deserialized
+     * @param initializer The supplier that creates a new instance of the class
+     * @param mode        The mode of deserialization
+     * @param first       The first field descriptor
+     * @param second      The second field descriptor
+     */
+    protected Jackson3FancyDeserializer(
+            Class<T> vc, Supplier<T> initializer, Mode mode, SettableField<T, ?> first, SettableField<T, ?> second) {
+        this(vc, initializer, mode, List.of(first, second));
     }
 
     @Override

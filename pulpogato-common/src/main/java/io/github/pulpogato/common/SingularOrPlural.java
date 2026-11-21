@@ -78,9 +78,8 @@ public class SingularOrPlural<T> implements PulpogatoType {
                     SingularOrPlural.class,
                     SingularOrPlural::new,
                     Mode.ONE_OF,
-                    List.of(
-                            new SettableField<>(List.class, SingularOrPlural::setPlural),
-                            new SettableField<>(Object.class, SingularOrPlural::setSingular)));
+                    new SettableField<>(List.class, SingularOrPlural::setPlural),
+                    new SettableField<>(Object.class, SingularOrPlural::setSingular));
         }
     }
 
@@ -103,9 +102,8 @@ public class SingularOrPlural<T> implements PulpogatoType {
                     SingularOrPlural.class,
                     SingularOrPlural::new,
                     Mode.ONE_OF,
-                    List.of(
-                            new SettableField<>(List.class, SingularOrPlural::setPlural),
-                            new SettableField<>(Object.class, SingularOrPlural::setSingular)));
+                    new SettableField<>(List.class, SingularOrPlural::setPlural),
+                    new SettableField<>(Object.class, SingularOrPlural::setSingular));
         }
     }
 

@@ -36,13 +36,15 @@ public class Jackson3LenientFancyDeserializer<T> extends StdDeserializer<T> {
      * @param fields      The fields that can be set on the class
      */
     public Jackson3LenientFancyDeserializer(
-            Class<T> vc, Supplier<T> initializer, Mode mode, List<? extends SettableField<T, ?>> fields) {
+            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
         super(vc);
+        @SuppressWarnings("UnnecessaryLocalVariable") // Keep list inference at the public constructor boundary.
+        List<? extends SettableField<T, ?>> descriptors = fields;
         this.support = new LenientFancyDeserializerSupport<>(
                 vc,
                 initializer,
                 mode,
-                fields,
+                descriptors,
                 om::writeValueAsString,
                 om::readValue,
                 lenientOm::readValue,
