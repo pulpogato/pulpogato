@@ -123,6 +123,10 @@ dependencies {
 |{central-prefix}pulpogato-graphql-ghec{central-middle}pulpogato-graphql-ghec{central-suffix} {snapshot-prefix}pulpogato-graphql-ghec{snapshot-middle}pulpogato-graphql-ghec{snapshot-suffix}
 |{central-prefix}pulpogato-rest-ghec{central-middle}pulpogato-rest-ghec{central-suffix} {snapshot-prefix}pulpogato-rest-ghec{snapshot-middle}pulpogato-rest-ghec{snapshot-suffix}
 
+|https://docs.github.com/en/enterprise-server@3.23[GHES-3.23]
+|{central-prefix}pulpogato-graphql-ghes-3.23{central-middle}pulpogato-graphql-ghes-3.23{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.23{snapshot-middle}pulpogato-graphql-ghes-3.23{snapshot-suffix}
+|{central-prefix}pulpogato-rest-ghes-3.23{central-middle}pulpogato-rest-ghes-3.23{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.23{snapshot-middle}pulpogato-rest-ghes-3.23{snapshot-suffix}
+
 |https://docs.github.com/en/enterprise-server@3.22[GHES-3.22]
 |{central-prefix}pulpogato-graphql-ghes-3.22{central-middle}pulpogato-graphql-ghes-3.22{central-suffix} {snapshot-prefix}pulpogato-graphql-ghes-3.22{snapshot-middle}pulpogato-graphql-ghes-3.22{snapshot-suffix}
 |{central-prefix}pulpogato-rest-ghes-3.22{central-middle}pulpogato-rest-ghes-3.22{central-suffix} {snapshot-prefix}pulpogato-rest-ghes-3.22{snapshot-middle}pulpogato-rest-ghes-3.22{snapshot-suffix}
