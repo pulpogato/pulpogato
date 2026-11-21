@@ -43,7 +43,6 @@ dependencies {
     testImplementation(libs.assertj)
     testImplementation(libs.junit)
     testImplementation(libs.micrometerCore)
-    testImplementation(libs.micrometerObservation)
     testImplementation(libs.micrometerObservationTest)
     testImplementation(libs.mockito)
     testImplementation(libs.mockitoJunitJupiter)
