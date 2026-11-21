@@ -49,7 +49,7 @@ class PartialResponseCacheTest {
     private long contentLength = -1;
 
     PartialResponseCacheTest() {
-        observations.observationConfig().observationHandler(new DefaultMeterObservationHandler(meters));
+        observations.observationConfig().observationHandler(DefaultMeterObservationHandler.create(meters));
     }
 
     static Stream<Arguments> successfulStatuses() {

@@ -79,7 +79,7 @@ class DocumentationIntegrationTest {
         // tag::setup-cache-metrics[]
         var meterRegistry = new SimpleMeterRegistry();
         var observationRegistry = ObservationRegistry.create();
-        observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
+        observationRegistry.observationConfig().observationHandler(DefaultMeterObservationHandler.create(meterRegistry));
 
         var cachingFilter = CachingExchangeFilterFunction.builder()
                 .cache(cache)
