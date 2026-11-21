@@ -19,7 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @SpringBootTest(
         classes = {ProxyController.class},
         properties = {
-            "logging.level.org.springframework.web.client.RestTemplate=DEBUG",
+            "logging.level.org.springframework.web.client.DefaultRestClient=DEBUG",
             "logging.level.org.springframework.boot.test.mock.web=WARN",
             "logging.level.org.springframework.test.web.servlet=WARN",
             "logging.level.org.apache.http.wire=DEBUG",
