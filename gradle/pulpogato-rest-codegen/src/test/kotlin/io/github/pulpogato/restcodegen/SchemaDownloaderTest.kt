@@ -95,10 +95,8 @@ class SchemaDownloaderTest {
     private fun serve(handler: (HttpExchange, Int) -> Unit) {
         server.executor = executor
         server.createContext("/schema") { exchange ->
-            try {
-                handler(exchange, requests.incrementAndGet())
-            } finally {
-                exchange.close()
+            exchange.use {
+                handler(it, requests.incrementAndGet())
             }
         }
         server.start()
