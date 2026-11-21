@@ -25,8 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import tools.jackson.databind.ObjectMapper;
 
 @RestController
@@ -35,15 +34,19 @@ public class ProxyController {
     private static final String DEFAULT_SERVER = "api.github.com";
     private static final int DEFAULT_PORT = 443;
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
 
     public ProxyController() {
-        // Configure RestTemplate with Apache HttpClient to support the PATCH method.
+        // Configure Apache HttpClient to support the PATCH method.
         // Redirects must not be followed transparently here, since GitHub uses 3xx
         // responses (e.g. renamed repos) that callers need to observe directly.
         var httpClient = HttpClients.custom().disableRedirectHandling().build();
         var requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        this.restTemplate = new RestTemplate(requestFactory);
+        this.restClient = RestClient.builder().requestFactory(requestFactory).build();
+    }
+
+    ProxyController(RestClient restClient) {
+        this.restClient = restClient;
     }
 
     @RequestMapping(
@@ -176,16 +179,14 @@ public class ProxyController {
         return new URI("https", null, githubHost, githubPort, prefix + requestUri, request.getQueryString(), null);
     }
 
-    private ResponseEntity<byte[]> getLiveResponseBytes(
-            HttpMethod method, URI uri, HttpEntity<@NonNull String> entity) {
-        try {
-            return restTemplate.exchange(uri, method, entity, byte[].class);
-        } catch (HttpClientErrorException e) {
-            byte[] errorBody = e.getResponseBodyAsByteArray();
-            return ResponseEntity.status(e.getStatusCode())
-                    .headers(e.getResponseHeaders())
-                    .body(errorBody);
+    ResponseEntity<byte[]> getLiveResponseBytes(HttpMethod method, URI uri, HttpEntity<@NonNull String> entity) {
+        var request = restClient.method(method).uri(uri).headers(headers -> headers.addAll(entity.getHeaders()));
+        if (entity.getBody() != null) {
+            request.body(entity.getBody());
         }
+        return request.retrieve()
+                .onStatus(status -> status.is4xxClientError(), (ignoredRequest, ignoredResponse) -> {})
+                .toEntity(byte[].class);
     }
 
     private static HttpHeaders buildRequestHeaders(HttpServletRequest request) {
