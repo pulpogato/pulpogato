@@ -42,11 +42,11 @@ class SchemasBuilder {
         // interfaces and must implement all of them. Discriminated and non-discriminated REST API oneOf
         // groups are included alongside the webhook supertypes.
         val schemaKeyToSupertypes =
-            (
-                supertypeGroups.flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } } +
-                    discriminatedGroups.flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } } +
-                    nonDiscriminatedGroups.flatMap { g -> g.memberSchemaKeys.map { it to g.supertype } }
-            ).groupBy({ it.first }, { it.second })
+            buildList {
+                supertypeGroups.flatMapTo(this) { g -> g.memberSchemaKeys.map { it to g.supertype } }
+                discriminatedGroups.flatMapTo(this) { g -> g.memberSchemaKeys.map { it to g.supertype } }
+                nonDiscriminatedGroups.flatMapTo(this) { g -> g.memberSchemaKeys.map { it to g.supertype } }
+            }.groupBy({ it.first }, { it.second })
 
         // Captured per member schema so we can later derive the getters common to every member.
         val memberFieldsByKey = mutableMapOf<String, Map<String, TypeName>>()
