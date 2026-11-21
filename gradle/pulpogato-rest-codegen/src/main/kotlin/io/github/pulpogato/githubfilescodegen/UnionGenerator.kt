@@ -7,6 +7,7 @@ import com.palantir.javapoet.MethodSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
+import com.palantir.javapoet.WildcardTypeName
 import io.github.pulpogato.restcodegen.Annotations
 import io.github.pulpogato.restcodegen.MarkdownHelper
 import io.github.pulpogato.restcodegen.Types
@@ -111,18 +112,20 @@ object UnionGenerator {
 
         val formatParts = mutableListOf<String>()
         val args = mutableListOf<Any>()
+        val fieldClass = if (deserializer) settableField() else gettableField(jacksonVersion)
 
         if (deserializer) {
-            formatParts.add($$"super($T.class, $T::new, $T.$L, $T.of(")
+            formatParts.add($$"super($T.class, $T::new, $T.$L, $T.<$T>of(")
             args.add(thisClass)
             args.add(thisClass)
         } else {
-            formatParts.add($$"super($T.class, $T.$L, $T.of(")
+            formatParts.add($$"super($T.class, $T.$L, $T.<$T>of(")
             args.add(thisClass)
         }
         args.add(MODE)
         args.add(mode)
         args.add(ClassName.get("java.util", "List"))
+        args.add(ParameterizedTypeName.get(fieldClass, thisClass, WildcardTypeName.subtypeOf(Types.OBJECT)))
 
         variants.forEachIndexed { index, v ->
             if (index > 0) {
@@ -130,7 +133,7 @@ object UnionGenerator {
             }
             val accessor = (if (deserializer) "set" else "get") + v.fieldName.replaceFirstChar { it.uppercaseChar() }
             formatParts.add($$"new $T<>($T.class, $T::$$accessor)")
-            args.add(if (deserializer) settableField() else gettableField(jacksonVersion))
+            args.add(fieldClass)
             args.add(rawType(v.typeName))
             args.add(thisClass)
         }

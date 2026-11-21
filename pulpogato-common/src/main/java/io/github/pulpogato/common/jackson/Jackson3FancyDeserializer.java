@@ -35,7 +35,7 @@ public class Jackson3FancyDeserializer<T> extends StdDeserializer<T> {
             Class<T> vc,
             Supplier<T> initializer,
             Mode mode,
-            List<FancyDeserializerSupport.SettableField<T, ?>> fields) {
+            List<? extends FancyDeserializerSupport.SettableField<T, ?>> fields) {
         super(vc);
         this.support = new FancyDeserializerSupport<>(
                 vc,

@@ -36,7 +36,7 @@ public class Jackson3LenientFancyDeserializer<T> extends StdDeserializer<T> {
      * @param fields      The fields that can be set on the class
      */
     public Jackson3LenientFancyDeserializer(
-            Class<T> vc, Supplier<T> initializer, Mode mode, List<SettableField<T, ?>> fields) {
+            Class<T> vc, Supplier<T> initializer, Mode mode, List<? extends SettableField<T, ?>> fields) {
         super(vc);
         this.support = new LenientFancyDeserializerSupport<>(
                 vc,
