@@ -148,7 +148,7 @@ class CacheResponseInvalidationTest {
             }
         };
         var observations = ObservationRegistry.create();
-        observations.observationConfig().observationHandler(new ObservationHandler<Observation.Context>() {
+        observations.observationConfig().observationHandler(new ObservationHandler<>() {
             @Override
             public boolean supportsContext(Observation.Context context) {
                 return true;
