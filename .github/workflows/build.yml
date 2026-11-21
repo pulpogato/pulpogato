@@ -23,7 +23,9 @@ jobs:
     name: "Build with Gradle"
     runs-on: ubuntu-26.04-arm
     env:
-      MAX_WORKERS: ${{ inputs.max_workers || (github.run_attempt > 1 && '2' || '3') }}
+      # Generated REST clients can compile concurrently and exhaust runner memory.
+      # Successful reruns already use two workers; use that limit on the first attempt too.
+      MAX_WORKERS: ${{ inputs.max_workers || '2' }}
 
     permissions:
       security-events: write
