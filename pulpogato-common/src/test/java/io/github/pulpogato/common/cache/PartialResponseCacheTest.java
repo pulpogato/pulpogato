@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.Getter;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -35,7 +36,7 @@ import reactor.core.publisher.Mono;
 class PartialResponseCacheTest {
     private final ConcurrentMapCache cache = new ConcurrentMapCache("partial") {
         @Override
-        public void evict(Object key) {
+        public void evict(@NonNull Object key) {
             // Transaction-aware providers may defer this operation until commit.
         }
     };
@@ -258,6 +259,7 @@ class PartialResponseCacheTest {
         private final Map<String, Object> attributes = Map.of();
 
         @Override
+        @NonNull
         public URI getURI() {
             return URI.create("https://api.github.com/resource");
         }
