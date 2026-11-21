@@ -61,16 +61,16 @@ class CodegenCacheFunctionalTest {
             """.trimIndent(),
         )
         File(directory, "schema.json").writeText(
-            """
+            $$"""
             {
               "openapi":"3.1.0", "info":{"title":"Fixture","version":"1"},
               "tags":[{"name":"things","description":"Things"}],
               "paths":{"/things":{"get":{"operationId":"things/get","tags":["things"],
                 "responses":{"200":{"description":"OK","content":{"application/json":{
-                  "schema":{"${'$'}ref":"#/components/schemas/thing"}}}}}}}},
+                  "schema":{"$ref":"#/components/schemas/thing"}}}}}}}},
               "webhooks":{"thing":{"post":{"operationId":"webhooks/thing", "parameters":[],
                 "x-github":{"subcategory":"thing"},
-                "requestBody":{"content":{"application/json":{"schema":{"${'$'}ref":"#/components/schemas/thing"}}}},
+                "requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/thing"}}}},
                 "responses":{"200":{"description":"OK"}}}}},
               "components":{"schemas":{"thing":{"type":"object","properties":{"name":{"type":"string"}}}}}
             }
