@@ -7,7 +7,6 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
-@Suppress("unused")
 class BuildSupportPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         target.plugins.apply("jacoco")
