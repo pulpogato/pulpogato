@@ -18,34 +18,49 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-jobs:
-  build:
-    name: "Build with Gradle"
-    runs-on: ubuntu-26.04-arm
-    env:
-      # Generated REST clients can compile concurrently and exhaust runner memory.
-      # Successful reruns already use two workers; use that limit on the first attempt too.
-      MAX_WORKERS: ${{ inputs.max_workers || '2' }}
+permissions:
+  contents: read
 
-    permissions:
-      security-events: write
-      packages: write
-      actions: read
-      contents: write
-      id-token: write
-      attestations: write
-      pages: write
+env:
+  MAX_WORKERS: ${{ inputs.max_workers || '2' }}
+
+jobs:
+  prepare:
+    name: Plan Gradle builds
+    runs-on: ubuntu-26.04-arm
+    outputs:
+      versions: ${{ steps.plan.outputs.versions }}
+      release_task: ${{ steps.plan.outputs.release_task }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: gradle/actions/wrapper-validation@v6.4.1
+      - name: Read build matrix and release mode
+        id: plan
+        run: |
+          versions=$(sed -n 's/^gh\.versions=//p' gradle.properties)
+          echo "versions=$(jq -cn --arg versions "${versions:?Missing gh.versions}" '$versions | split(",") + ["shared"]')" >> "$GITHUB_OUTPUT"
+          case "$GITHUB_REF" in
+            refs/heads/main) echo "release_task=snapshot" >> "$GITHUB_OUTPUT" ;;
+            refs/tags/v*-rc.*) echo "release_task=candidate" >> "$GITHUB_OUTPUT" ;;
+            refs/tags/v*) echo "release_task=final" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+  build-version:
+    name: Build ${{ matrix.version }}
+    needs: prepare
+    runs-on: ubuntu-26.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJSON(needs.prepare.outputs.versions) }}
+    env:
+      GH_VERSION: ${{ matrix.version }}
+      RELEASE_TASK: ${{ needs.prepare.outputs.release_task }}
 
     steps:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-
-      - name: Fetch tags
-        if: github.ref == 'refs/heads/main'
-        run: git fetch --tags
-
-      - uses: gradle/actions/wrapper-validation@v6.4.1
 
       - uses: actions/setup-java@v6.3.0
         with:
@@ -55,47 +70,96 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6.4.1
 
       - name: Check REST codegen plugin
-        run: ./gradlew --project-dir gradle/pulpogato-rest-codegen check
+        if: matrix.version == 'shared'
+        run: ./gradlew --max-workers="$MAX_WORKERS" --project-dir gradle/pulpogato-rest-codegen check
 
-      - name: Cache Downloaded Schemas
-        id: schema-cache
+      - name: Cache downloaded schemas
         uses: actions/cache@v6.1.0
         with:
           path: |
             */build/generated-src/main/resources/github.schema.json
-            */build/generated-src/main/resources/pulpogato-headers.properties
             */build/generated-src/main/resources/schema.graphqls
-          key: schema-cache-v2-${{ hashFiles('gradle.properties') }}
+            pulpogato-github-files/build/generated-src/main/resources/*.json
+          key: schema-cache-v3-${{ matrix.version }}-${{ hashFiles('gradle.properties', 'pulpogato-github-files/build.gradle.kts') }}
+
+      - name: Build and stage outputs
+        id: stage
+        env:
+          GITHUB_TOKEN: ${{ needs.prepare.outputs.release_task != '' && secrets.GITHUB_TOKEN || '' }}
+        run: |
+          if [[ -z "$RELEASE_TASK" ]]; then
+            unset GITHUB_TOKEN
+          fi
+          ./scripts/build-ci-shard.sh "$GH_VERSION" "$RELEASE_TASK"
+
+      - name: Run Pitest (Renovate PRs Only)
+        if: matrix.version == 'shared' && github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
+        run: ./gradlew --max-workers="$MAX_WORKERS" pitest
+
+      - name: Upload build outputs
+        if: "!cancelled() && steps.stage.outcome != 'skipped'"
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: pulpogato-build-${{ matrix.version }}
+          path: build/ci-${{ matrix.version }}.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+
+  build:
+    name: "Build with Gradle"
+    needs: [prepare, build-version]
+    if: "!cancelled()"
+    runs-on: ubuntu-26.04-arm
+    env:
+      RELEASE_TASK: ${{ needs.prepare.outputs.release_task }}
+
+    permissions:
+      packages: write
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Check build plan
+        if: needs.prepare.result != 'success'
+        run: exit 1
+
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v6.3.0
+        with:
+          java-version: 21
+          distribution: zulu
+
+      - uses: gradle/actions/setup-gradle@v6.4.1
+
+      - name: Download build outputs
+        uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: pulpogato-build-*
+          path: build/ci
+          merge-multiple: true
+
+      - name: Restore build outputs
+        run: |
+          shopt -s nullglob
+          for archive in build/ci/ci-*.tar.gz; do
+            tar -xzf "$archive"
+          done
 
       - name: Cache SonarQube packages
+        if: "!startsWith(github.ref, 'refs/tags/v')"
         uses: actions/cache@v6.1.0
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Build Main Project
-        if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
-        run: ./gradlew --max-workers=$MAX_WORKERS -Pcoverage=true build :pulpogato-docs:asciidoctor jacocoTestReport --continue
-
-      - name: Run Pitest (Renovate PRs Only)
-        if: github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
-        run: ./gradlew --max-workers=$MAX_WORKERS pitest
-
-      - name: Build Snapshot
-        if: github.ref == 'refs/heads/main'
-        env: &env
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEUSERNAME }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
-          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew --max-workers=$MAX_WORKERS -Pcoverage=true -Pcodegen.format=true build :pulpogato-docs:asciidoctor jacocoTestReport snapshot
-
       - name: Run Sonar Analysis
-        # always() so this still runs (and uploads whatever coverage/sources it can) even if the
-        # previous --continue build had unrelated failures, matching the old single-invocation behavior.
-        if: always() && !startsWith(github.ref, 'refs/tags/v')
+        if: "!cancelled() && needs.prepare.result == 'success' && !startsWith(github.ref, 'refs/tags/v')"
         id: sonar
         continue-on-error: true
         env:
@@ -111,6 +175,46 @@ jobs:
         if: always() && steps.sonar.outcome == 'failure'
         run: echo "::warning::Sonar analysis failed. See the Run Sonar Analysis step log for details."
 
+      - name: Require all builds to pass
+        if: needs.build-version.result != 'success'
+        run: exit 1
+
+      - name: Assemble Maven repository
+        if: env.RELEASE_TASK == ''
+        run: &publish |
+          tasks=("${RELEASE_TASK:-publishNebulaPublicationToLocalRepository}")
+          if [[ -z "$RELEASE_TASK" ]]; then
+            # Use the staged version even if the checkout changed after the matrix build.
+            version=$(jq -er '.component.version | strings | select(length > 0)' pulpogato-bom/build/publications/nebula/module.json)
+            tasks+=("-Prelease.version=$version")
+          elif [[ "$RELEASE_TASK" == candidate || "$RELEASE_TASK" == final ]]; then
+            tasks+=(-Prelease.useLastTag=true)
+          fi
+          # The matrix already built, checked, and staged these publication inputs.
+          ./gradlew --max-workers="$MAX_WORKERS" "${tasks[@]}" \
+            -x build -x jar -x sourcesJar -x javadocJar \
+            -x generatePomFileForNebulaPublication -x generateMetadataFileForNebulaPublication
+
+      - name: Sign and publish Maven artifacts
+        if: env.RELEASE_TASK != ''
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEUSERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: *publish
+
+      - name: Upload combined Maven repository
+        if: env.RELEASE_TASK == ''
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: pulpogato-maven-repository
+          path: build/repos/
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+
       - name: Deploy docs to ghpages
         uses: peaceiris/actions-gh-pages@v4.1.0
         if: github.ref == 'refs/heads/main'
@@ -120,16 +224,6 @@ jobs:
           publish_dir: ./pulpogato-docs/build/
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
-
-      - name: Build Candidate
-        if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-rc')
-        env: *env
-        run: ./gradlew --max-workers=$MAX_WORKERS -Prelease.useLastTag=true -Pcodegen.format=true build candidate
-
-      - name: Build Final
-        if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-rc')
-        env: *env
-        run: ./gradlew --max-workers=$MAX_WORKERS -Prelease.useLastTag=true -Pcodegen.format=true build final
 
       - uses: actions/attest-build-provenance@v4.2.2
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
