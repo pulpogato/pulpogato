@@ -2,6 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "automerge": true,
+  "dependencyDashboard": {"enabled": true},
   "minimumReleaseAge": "3 days",
   "minimumReleaseAgeBehaviour": "timestamp-optional",
   "internalChecksFilter": "strict",
@@ -11,6 +12,42 @@
         "github-actions"
       ],
       "pinDigests": true
+    },
+    {
+      "description": "Give consumer-facing framework releases time to settle without blocking patches behind baseline upgrades",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": [
+        "org.springframework*:*",
+        "io.projectreactor*:*",
+        "io.micrometer*:*",
+        "com.fasterxml.jackson*:*",
+        "tools.jackson*:*",
+        "org.slf4j:*",
+        "jakarta.*:*",
+        "com.netflix.graphql.dgs:graphql-dgs-client",
+        "com.graphql-java:graphql-java"
+      ],
+      "minimumReleaseAge": "14 days",
+      "minimumReleaseAgeBehaviour": "timestamp-required",
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Require explicit approval and review before changing consumer framework baselines",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": [
+        "org.springframework*:*",
+        "io.projectreactor*:*",
+        "io.micrometer*:*",
+        "com.fasterxml.jackson*:*",
+        "tools.jackson*:*",
+        "org.slf4j:*",
+        "jakarta.*:*",
+        "com.netflix.graphql.dgs:graphql-dgs-client",
+        "com.graphql-java:graphql-java"
+      ],
+      "matchUpdateTypes": ["minor", "major"],
+      "dependencyDashboardApproval": true,
+      "automerge": false
     }
   ],
   "customManagers": [
