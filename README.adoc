@@ -230,6 +230,33 @@ Run its checks before building the main project:
 
 If you have low memory or CPU, you can customize parallelism with `--max-workers`.
 
+=== Common dependency compatibility
+
+`pulpogato-common` compiles production code and tests against the `common*Baseline` versions in `gradle/libs.versions.toml`.
+`check` runs the same compiled tests on the baseline and current Spring Boot dependency platforms, the full shared catalog runtime, and four runtimes that each change one library family.
+The per-library tasks use the baseline Spring Boot version and test the catalog version of Micrometer, Jackson 2, Jackson 3, or Reactor Core and Test.
+Jackson 2 and 3 share Jackson Annotations, so the two versions can affect which annotations JAR is selected.
+GitHub Actions runs each dependency family's compatibility tests in a separate matrix job.
+
+[source,shell]
+----
+./gradlew :pulpogato-common:check
+./gradlew :pulpogato-common:testWithSpringBoot4.1.2
+./gradlew :pulpogato-common:testWithMicrometer-1.18.0
+./gradlew :pulpogato-common:testWithJackson2-2.23.0
+./gradlew :pulpogato-common:testWithJackson3-3.3.0
+./gradlew :pulpogato-common:testWithReactor-3.9.0
+----
+
+Use `commonSpringBootVersions`, `commonMicrometerVersions`, `commonJackson2Versions`, `commonJackson3Versions`, or `commonReactorVersions` to add comma-separated versions with `-P`.
+Each additional version gets its own task and runs as part of `check`.
+For example, `-PcommonJackson3Versions=3.2.4` adds `testWithJackson3-3.2.4`.
+The versioned tasks support Gradle's `--tests` filter.
+Update the regular catalog versions for newer runtime coverage.
+Renovate can automerge patches after the release waiting period and required checks.
+Minor and major updates require Dependency Dashboard approval and a manual merge.
+The published dependency versions for Jackson and Micrometer Observation follow the baseline so consumers can resolve that stack.
+
 === Build performance
 
 Laptop and PR builds are tuned for speed, so two pieces of optional work are off by default.

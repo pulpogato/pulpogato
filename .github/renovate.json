@@ -14,7 +14,7 @@
       "pinDigests": true
     },
     {
-      "description": "Give consumer-facing framework releases time to settle without blocking patches behind baseline upgrades",
+      "description": "Automerge eligible framework patches after the release waiting period",
       "matchDatasources": ["maven"],
       "matchPackageNames": [
         "org.springframework*:*",
@@ -29,6 +29,7 @@
       ],
       "minimumReleaseAge": "14 days",
       "minimumReleaseAgeBehaviour": "timestamp-required",
+      "automerge": true,
       "separateMinorPatch": true
     },
     {
