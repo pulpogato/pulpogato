@@ -833,9 +833,8 @@ Also, prefix the version with <code>v</code>, for example <code>v3.2.0</code> in
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="c1">// These properties can also be set in gradle.properties</span>
 <span class="nf">ext</span> <span class="p">{</span>
-    <span class="k">set</span><span class="p">(</span><span class="s">"netflixDgsVersion"</span><span class="p">,</span> <span class="s">"9.1.2"</span><span class="p">)</span>
     <span class="k">set</span><span class="p">(</span><span class="s">"ghVersion"</span><span class="p">,</span> <span class="s">"fpt"</span><span class="p">)</span>
-    <span class="k">set</span><span class="p">(</span><span class="s">"pulpogatoVersion"</span><span class="p">,</span> <span class="s">"2.8.0"</span><span class="p">)</span>
+    <span class="k">set</span><span class="p">(</span><span class="s">"pulpogatoVersion"</span><span class="p">,</span> <span class="s">"3.13.0"</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="nf">repositories</span> <span class="p">{</span>
@@ -844,7 +843,6 @@ Also, prefix the version with <code>v</code>, for example <code>v3.2.0</code> in
 
 <span class="kd">val</span> <span class="py">ghVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
 <span class="kd">val</span> <span class="py">pulpogatoVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
-<span class="kd">val</span> <span class="py">netflixDgsVersion</span><span class="p">:</span> <span class="nc">String</span> <span class="k">by</span> <span class="n">project</span><span class="p">.</span><span class="n">ext</span>
 
 <span class="nf">dependencies</span> <span class="p">{</span>
     <span class="nf">implementation</span><span class="p">(</span><span class="nf">platform</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-bom:${pulpogatoVersion}"</span><span class="p">))</span>
@@ -853,9 +851,8 @@ Also, prefix the version with <code>v</code>, for example <code>v3.2.0</code> in
     <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-rest-${ghVersion}"</span><span class="p">)</span>
     <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-graphql-${ghVersion}"</span><span class="p">)</span>
     <span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-github-files"</span><span class="p">)</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"org.springframework.boot:spring-boot-starter-webflux:4.0.2"</span><span class="p">)</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-client:11.1.0"</span><span class="p">)</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="nf">platform</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"</span><span class="p">))</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"org.springframework.boot:spring-boot-starter-webflux:4.2.0"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"com.netflix.graphql.dgs:graphql-dgs-client:12.1.1"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -1572,7 +1569,7 @@ Unlike the <code>WebClient</code> variant, <code>DgsRestClientGraphQLClient</cod
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-github-files:&lt;version&gt;"</span><span class="p">)</span></code></pre>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">implementation</span><span class="p">(</span><span class="s">"io.github.pulpogato:pulpogato-github-files:3.13.0"</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
