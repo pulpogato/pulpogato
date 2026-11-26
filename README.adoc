@@ -230,6 +230,34 @@ Run its checks before building the main project:
 
 If you have low memory or CPU, you can customize parallelism with `--max-workers`.
 
+=== Common dependency compatibility
+
+`pulpogato-common` compiles production code and tests against the `common*Baseline` versions in `gradle/libs.versions.toml`.
+`check` runs the same compiled tests on the Spring Boot 4.0 floor, the Spring Boot 4.1 compatibility target, the latest Spring Boot platform, and the latest test-only versions together and one family at a time.
+The per-library tasks use the baseline Spring Boot version and test the `common*Latest` version of Micrometer, Jackson 2, Jackson 3, or Spring WebFlux.
+The WebFlux tasks align Spring Framework modules at the selected version and let that runtime resolve Reactor Core.
+Jackson 2 and 3 share Jackson Annotations, so the two versions can affect which annotations JAR is selected.
+GitHub Actions runs each dependency family's compatibility tests in a separate matrix job.
+
+[source,shell]
+----
+./gradlew :pulpogato-common:check
+./gradlew :pulpogato-common:testWithSpringBoot4.1.2
+./gradlew :pulpogato-common:testWithMicrometer-1.18.0
+./gradlew :pulpogato-common:testWithJackson2-2.23.0
+./gradlew :pulpogato-common:testWithJackson3-3.3.0
+./gradlew :pulpogato-common:testWithWebFlux-7.1.0
+----
+
+Use `commonSpringBootVersions`, `commonMicrometerVersions`, `commonJackson2Versions`, `commonJackson3Versions`, or `commonWebFluxVersions` to add comma-separated versions with `-P`.
+Each additional version gets its own task and runs as part of `check`.
+For example, `-PcommonJackson3Versions=3.2.4` adds `testWithJackson3-3.2.4`.
+The versioned tasks support Gradle's `--tests` filter.
+Renovate opens PRs for new stable `common*Latest` versions so CI tests them against the existing compile floor.
+Patches can automerge after required checks pass. Minor and major updates require a manual merge.
+Change `common*Baseline` versions deliberately when changing the supported compile floor.
+The published dependency versions for Jackson and Micrometer Observation follow the baseline so consumers can resolve that stack.
+
 === Build performance
 
 Laptop and PR builds are tuned for speed, so two pieces of optional work are off by default.

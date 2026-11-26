@@ -23,13 +23,13 @@ class Jackson3OneOfDeserializerTest {
     // which would otherwise cause infinite recursion.
     @SuppressWarnings("DefaultAnnotationParam")
     @JsonDeserialize(using = ValueDeserializer.None.class)
-    record Circle(@JsonProperty("radius") double radius) implements Shape {}
+    record Circle(@JsonProperty("radius") Double radius) implements Shape {}
 
     // The None.class reset prevents this class from inheriting the interface's deserializer,
     // which would otherwise cause infinite recursion.
     @SuppressWarnings("DefaultAnnotationParam")
     @JsonDeserialize(using = ValueDeserializer.None.class)
-    record Square(@JsonProperty("side") double side) implements Shape {}
+    record Square(@JsonProperty("side") Double side) implements Shape {}
 
     static class ShapeDeserializer extends Jackson3OneOfDeserializer<Shape> {
         public ShapeDeserializer() {
@@ -53,16 +53,16 @@ class Jackson3OneOfDeserializerTest {
         var om = new ObjectMapper();
         var result = om.readValue(json, Wrapper.class);
         assertThat(result.shape).isInstanceOf(expectedType);
-        if (result.shape instanceof Circle(double radius1)) {
+        if (result.shape instanceof Circle(var radius1)) {
             assertThat(radius1).isEqualTo(radius);
-        } else if (result.shape instanceof Square(double side1)) {
+        } else if (result.shape instanceof Square(var side1)) {
             assertThat(side1).isEqualTo(side);
         }
     }
 
     @Test
     void firstCandidateWinsWhenBothCouldMatch() {
-        // An empty object matches both Circle and Square (neither has required fields).
+        // An empty object matches both Circle and Square because their fields are nullable.
         // GitHub's schemas have this overlap; we return the first candidate rather than throwing.
         var om = new ObjectMapper();
         var result = om.readValue("{\"shape\":{}}", Wrapper.class);

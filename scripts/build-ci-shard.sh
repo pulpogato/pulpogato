@@ -26,6 +26,8 @@ if [[ "$release_task" != candidate && "$release_task" != final ]]; then
 fi
 
 if [[ "$version" == shared ]]; then
+    # The common compatibility matrix runs these tests in separate jobs.
+    gradle+=(-x :pulpogato-common:checkDependencyCompatibility)
     publications=(pulpogato-common pulpogato-github-files pulpogato-bom)
     tasks+=(:build :pulpogato-rest-tests:build :pulpogato-docs:build)
     analysis_modules=(pulpogato-common pulpogato-github-files pulpogato-rest-tests)

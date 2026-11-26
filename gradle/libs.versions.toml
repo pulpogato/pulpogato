@@ -44,6 +44,23 @@ testLogger = "4.0.0"
 waena = "0.29.0"
 asciidoctor = "4.0.5"
 
+# Pulpogato Common's compile floor follows the Spring Boot 4.0 dependency platform.
+commonSpringBootBaseline = "4.0.0"
+commonSpringBaseline = "7.0.1"
+commonMicrometerBaseline = "1.16.0"
+commonReactorBaseline = "3.8.0"
+commonJackson2Baseline = "2.20.1"
+commonJackson3Baseline = "3.0.2"
+# Keep coverage for the Spring Boot line that prompted the compatibility matrix.
+commonSpringBootCompatibility = "4.1.2"
+
+# Renovate updates these test-only versions independently of the compile floor.
+commonSpringBootLatest = "4.2.0"
+commonSpringLatest = "7.1.0"
+commonMicrometerLatest = "1.18.0"
+commonJackson2Latest = "2.23.0"
+commonJackson3Latest = "3.3.0"
+
 [libraries]
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 bouncycastle = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
@@ -92,6 +109,27 @@ springBootWebTest = { group = "org.springframework.boot", name = "spring-boot-st
 springBootWebflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "springBoot" }
 springWeb = { group = "org.springframework", name = "spring-web", version.ref = "spring" }
 swaggerParser = { group = "io.swagger.parser.v3", name = "swagger-parser", version.ref = "swaggerParser" }
+
+commonJackson2CoreBaseline = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "commonJackson2Baseline" }
+commonJackson2TimeBaseline = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "commonJackson2Baseline" }
+commonJackson3CoreBaseline = { module = "tools.jackson.core:jackson-databind", version.ref = "commonJackson3Baseline" }
+commonMicrometerCoreBaseline = { module = "io.micrometer:micrometer-core", version.ref = "commonMicrometerBaseline" }
+commonMicrometerObservationBaseline = { module = "io.micrometer:micrometer-observation", version.ref = "commonMicrometerBaseline" }
+commonMicrometerObservationTestBaseline = { module = "io.micrometer:micrometer-observation-test", version.ref = "commonMicrometerBaseline" }
+commonReactorTestBaseline = { module = "io.projectreactor:reactor-test", version.ref = "commonReactorBaseline" }
+commonSpringBootWebfluxBaseline = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "commonSpringBootBaseline" }
+commonSpringWebBaseline = { module = "org.springframework:spring-web", version.ref = "commonSpringBaseline" }
+commonSpringWebfluxBaseline = { module = "org.springframework:spring-webflux", version.ref = "commonSpringBaseline" }
+
+commonJackson2CoreLatest = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "commonJackson2Latest" }
+commonJackson2TimeLatest = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "commonJackson2Latest" }
+commonJackson3CoreLatest = { module = "tools.jackson.core:jackson-databind", version.ref = "commonJackson3Latest" }
+commonMicrometerCoreLatest = { module = "io.micrometer:micrometer-core", version.ref = "commonMicrometerLatest" }
+commonMicrometerObservationLatest = { module = "io.micrometer:micrometer-observation", version.ref = "commonMicrometerLatest" }
+commonMicrometerObservationTestLatest = { module = "io.micrometer:micrometer-observation-test", version.ref = "commonMicrometerLatest" }
+commonSpringBootWebfluxLatest = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "commonSpringBootLatest" }
+commonSpringWebLatest = { module = "org.springframework:spring-web", version.ref = "commonSpringLatest" }
+commonSpringWebfluxLatest = { module = "org.springframework:spring-webflux", version.ref = "commonSpringLatest" }
 
 [bundles]
 commonmark = ["commonmark", "commonmarkTables"]

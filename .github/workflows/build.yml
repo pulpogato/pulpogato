@@ -106,9 +106,34 @@ jobs:
           compression-level: 0
           overwrite: true
 
+  common-compatibility:
+    name: Check common ${{ matrix.family }} compatibility
+    needs: prepare
+    runs-on: ubuntu-26.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [SpringBoot, Micrometer, Jackson2, Jackson3, WebFlux]
+    env:
+      DEPENDENCY_FAMILY: ${{ matrix.family }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v6.3.0
+        with:
+          java-version: 21
+          distribution: zulu
+
+      - uses: gradle/actions/setup-gradle@v6.4.1
+
+      - name: Run dependency compatibility tests
+        run: ./gradlew --continue --max-workers="$MAX_WORKERS" ":pulpogato-common:check${DEPENDENCY_FAMILY}Compatibility"
+
   build:
     name: "Build with Gradle"
-    needs: [prepare, build-version]
+    needs: [prepare, build-version, common-compatibility]
     if: "!cancelled()"
     runs-on: ubuntu-26.04-arm
     env:
@@ -175,8 +200,8 @@ jobs:
         if: always() && steps.sonar.outcome == 'failure'
         run: echo "::warning::Sonar analysis failed. See the Run Sonar Analysis step log for details."
 
-      - name: Require all builds to pass
-        if: needs.build-version.result != 'success'
+      - name: Require builds and compatibility tests to pass
+        if: needs.build-version.result != 'success' || needs.common-compatibility.result != 'success'
         run: exit 1
 
       - name: Assemble Maven repository
