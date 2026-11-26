@@ -12,6 +12,7 @@
 :nofooter:
 :source-highlighter: rouge
 :toc: left
+:toc-title:
 :icons: font
 
 Pulpogato is a java client for GitHub.
