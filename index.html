@@ -1917,11 +1917,7 @@ Custom cache key mappers must account for user identity and resource access, and
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kt">var</span> <span class="n">meterRegistry</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SimpleMeterRegistry</span><span class="o">();</span>
 <span class="kt">var</span> <span class="n">observationRegistry</span> <span class="o">=</span> <span class="nc">ObservationRegistry</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
-<span class="n">observationRegistry</span>
-        <span class="o">.</span><span class="na">observationConfig</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">observationHandler</span><span class="o">(</span><span class="nc">DefaultMeterObservationHandler</span><span class="o">.</span><span class="na">builder</span><span class="o">(</span><span class="n">meterRegistry</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">includeActiveObservationLongTaskTimer</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">build</span><span class="o">());</span>
+<span class="n">observationRegistry</span><span class="o">.</span><span class="na">observationConfig</span><span class="o">().</span><span class="na">observationHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">DefaultMeterObservationHandler</span><span class="o">(</span><span class="n">meterRegistry</span><span class="o">));</span>
 
 <span class="kt">var</span> <span class="n">cachingFilter</span> <span class="o">=</span> <span class="nc">CachingExchangeFilterFunction</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
         <span class="o">.</span><span class="na">cache</span><span class="o">(</span><span class="n">cache</span><span class="o">)</span>
