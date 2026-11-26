@@ -49,6 +49,23 @@
       "matchUpdateTypes": ["minor", "major"],
       "dependencyDashboardApproval": true,
       "automerge": false
+    },
+    {
+      "description": "Keep the common compile floor under manual control",
+      "matchManagers": ["gradle"],
+      "matchFileNames": ["gradle/libs.versions.toml"],
+      "matchJsonata": ["$exists(sharedVariableName) and $contains(sharedVariableName, /common.*Baseline$/)"],
+      "enabled": false
+    },
+    {
+      "description": "Open PRs promptly for new stable common test runtimes",
+      "matchManagers": ["gradle"],
+      "matchFileNames": ["gradle/libs.versions.toml"],
+      "matchJsonata": ["$exists(sharedVariableName) and $contains(sharedVariableName, /common.*Latest$/)"],
+      "additionalBranchPrefix": "common-runtime-",
+      "minimumReleaseAge": "0 days",
+      "dependencyDashboardApproval": false,
+      "prCreation": "immediate"
     }
   ],
   "customManagers": [

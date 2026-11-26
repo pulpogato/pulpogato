@@ -62,15 +62,15 @@ dependencies {
     testImplementation(libs.commonSpringWebBaseline)
 
     // The standard test task uses the catalog runtime with the baseline-compiled classes.
-    testRuntimeOnly(libs.jackson2Core)
-    testRuntimeOnly(libs.jackson2Time)
-    testRuntimeOnly(libs.jackson3Core)
-    testRuntimeOnly(libs.micrometerCore)
-    testRuntimeOnly(libs.micrometerObservation)
-    testRuntimeOnly(libs.micrometerObservationTest)
-    testRuntimeOnly(libs.reactorTest)
-    testRuntimeOnly(libs.springBootWebflux)
-    testRuntimeOnly(libs.springWeb)
+    testRuntimeOnly(libs.commonJackson2CoreLatest)
+    testRuntimeOnly(libs.commonJackson2TimeLatest)
+    testRuntimeOnly(libs.commonJackson3CoreLatest)
+    testRuntimeOnly(libs.commonMicrometerCoreLatest)
+    testRuntimeOnly(libs.commonMicrometerObservationLatest)
+    testRuntimeOnly(libs.commonMicrometerObservationTestLatest)
+    testRuntimeOnly(libs.commonReactorTestLatest)
+    testRuntimeOnly(libs.commonSpringBootWebfluxLatest)
+    testRuntimeOnly(libs.commonSpringWebLatest)
 
     mockitoAgent(libs.mockito) { isTransitive = false }
 }
@@ -201,7 +201,14 @@ fun registerCompatibilityFamily(
     }
 }
 
-registerCompatibilityFamily("SpringBoot", compatibilityVersions("SpringBoot", springBootBaseline, libs.versions.springBoot.get())) { version ->
+val springBootTestVersions =
+    compatibilityVersions(
+        "SpringBoot",
+        springBootBaseline,
+        libs.versions.commonSpringBootCompatibility.get(),
+        libs.versions.commonSpringBootLatest.get(),
+    )
+registerCompatibilityFamily("SpringBoot", springBootTestVersions) { version ->
     registerCompatibilityTest("SpringBoot", version, version)
 }
 
@@ -214,10 +221,20 @@ data class CompatibilityLibrary(
 
 val compatibilityLibraries =
     listOf(
-        CompatibilityLibrary("Micrometer", libs.versions.commonMicrometerBaseline.get(), libs.versions.micrometer.get(), "io.micrometer:micrometer-bom"),
-        CompatibilityLibrary("Jackson2", libs.versions.commonJackson2Baseline.get(), libs.versions.jackson2.get(), "com.fasterxml.jackson:jackson-bom"),
-        CompatibilityLibrary("Jackson3", libs.versions.commonJackson3Baseline.get(), libs.versions.jackson3.get(), "tools.jackson:jackson-bom"),
-        CompatibilityLibrary("Reactor", libs.versions.commonReactorBaseline.get(), libs.versions.reactor.get()),
+        CompatibilityLibrary(
+            "Micrometer",
+            libs.versions.commonMicrometerBaseline.get(),
+            libs.versions.commonMicrometerLatest.get(),
+            "io.micrometer:micrometer-bom",
+        ),
+        CompatibilityLibrary(
+            "Jackson2",
+            libs.versions.commonJackson2Baseline.get(),
+            libs.versions.commonJackson2Latest.get(),
+            "com.fasterxml.jackson:jackson-bom",
+        ),
+        CompatibilityLibrary("Jackson3", libs.versions.commonJackson3Baseline.get(), libs.versions.commonJackson3Latest.get(), "tools.jackson:jackson-bom"),
+        CompatibilityLibrary("Reactor", libs.versions.commonReactorBaseline.get(), libs.versions.commonReactorLatest.get()),
     )
 
 compatibilityLibraries.forEach { library ->
