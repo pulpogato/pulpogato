@@ -78,13 +78,21 @@ https://central.sonatype.com/repository/maven-snapshots/
 .Example in a Gradle kotlin build script
 [%collapsible]
 ====
-[source,kotlin]
+ifndef::pulpogato-version[]
+:pulpogato-version: PULPOGATO_VERSION
+endif::[]
+ifndef::spring-boot-version[]
+:spring-boot-version: SPRING_BOOT_VERSION
+endif::[]
+ifndef::dgs-client-version[]
+:dgs-client-version: DGS_CLIENT_VERSION
+endif::[]
+[source,kotlin,subs="attributes,verbatim"]
 ----
 // These properties can also be set in gradle.properties
 ext {
-    set("netflixDgsVersion", "9.1.2")
     set("ghVersion", "fpt")
-    set("pulpogatoVersion", "2.8.0")
+    set("pulpogatoVersion", "{pulpogato-version}")
 }
 
 repositories {
@@ -93,7 +101,6 @@ repositories {
 
 val ghVersion: String by project.ext
 val pulpogatoVersion: String by project.ext
-val netflixDgsVersion: String by project.ext
 
 dependencies {
     implementation(platform("io.github.pulpogato:pulpogato-bom:${pulpogatoVersion}"))
@@ -102,9 +109,8 @@ dependencies {
     implementation("io.github.pulpogato:pulpogato-rest-${ghVersion}")
     implementation("io.github.pulpogato:pulpogato-graphql-${ghVersion}")
     implementation("io.github.pulpogato:pulpogato-github-files")
-    implementation("org.springframework.boot:spring-boot-starter-webflux:4.0.2")
-    implementation("com.netflix.graphql.dgs:graphql-dgs-client:11.1.0")
-    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${netflixDgsVersion}"))
+    implementation("org.springframework.boot:spring-boot-starter-webflux:{spring-boot-version}")
+    implementation("com.netflix.graphql.dgs:graphql-dgs-client:{dgs-client-version}")
 }
 ----
 ====
