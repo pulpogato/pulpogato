@@ -8,7 +8,7 @@ body.article {
     --docs-active: #deebff;
     --docs-code: #f6f8fb;
     --docs-font: system-ui, sans-serif;
-    --docs-gutter: clamp(1.25rem, 4vw, 3.25rem);
+    --docs-gutter: clamp(1.25rem, 3vw, 2.75rem);
     background: #fff;
     color: var(--docs-ink);
     font-family: var(--docs-font);
@@ -18,12 +18,12 @@ body.article {
 #header,
 #content,
 .docs-masthead {
-    max-width: 52rem;
+    margin-inline: 0 auto;
+    max-width: 76rem;
     padding-inline: var(--docs-gutter);
 }
 
 .docs-masthead {
-    margin-inline: auto;
     padding-block-start: clamp(1.5rem, 4vw, 3rem);
 }
 
@@ -95,6 +95,7 @@ body.article {
     font-size: 1rem;
     letter-spacing: normal;
     line-height: 1.65;
+    max-inline-size: 80ch;
 }
 
 #content a {
