@@ -13,9 +13,6 @@
 :source-highlighter: rouge
 :toc: left
 :icons: font
-ifdef::dependency-versions-file[]
-include::{dependency-versions-file}[]
-endif::[]
 
 Pulpogato is a java client for GitHub.
 

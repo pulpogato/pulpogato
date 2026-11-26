@@ -369,7 +369,7 @@ To run asciidoctor locally, run this command.
 ./gradlew :pulpogato-docs:asciidoctor
 ----
 
-This task uses the Gradle Asciidoctor plugin and writes output to `pulpogato-docs/build/index.html`.
+This task uses the Gradle Asciidoctor plugin and writes output to `pulpogato-docs/build/docs/asciidoc/html/index.html`.
 
 == Schema maintenance
 
