@@ -16,30 +16,55 @@ body.article {
 }
 
 #header,
-#content {
+#content,
+.docs-masthead {
     max-width: 52rem;
     padding-inline: var(--docs-gutter);
 }
 
-#header > h1:first-child {
+.docs-masthead {
+    margin-inline: auto;
+    padding-block-start: clamp(1.5rem, 4vw, 3rem);
+}
+
+.docs-masthead::after {
+    border-top: 1px solid var(--docs-border);
+    content: "";
+    display: block;
+    margin-block-start: 0.75rem;
+}
+
+.docs-heading {
+    --docs-logo-width: clamp(4.5rem, 8vw, 6.25rem);
+    padding-inline-start: calc(var(--docs-logo-width) + 0.75rem);
+    position: relative;
+}
+
+.docs-heading h1 {
     color: var(--docs-ink);
     font-family: var(--docs-font);
     font-size: clamp(2.25rem, 5vw, 3.5rem);
     font-weight: 660;
     letter-spacing: -0.05em;
     line-height: 1.08;
-    margin-block-start: clamp(1.5rem, 4vw, 3rem);
+    margin: 0;
 }
 
-body.toc2 #header > h1:first-child,
-#header > h1:first-child + #toc {
-    border-color: var(--docs-border);
+.docs-heading img {
+    height: 100%;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    object-fit: contain;
+    position: absolute;
+    width: var(--docs-logo-width);
 }
 
-#header h1 .docs-logo img {
-    height: auto;
-    vertical-align: middle;
-    width: 1em;
+.docs-heading p {
+    color: var(--docs-muted);
+    font-size: 1rem;
+    letter-spacing: normal;
+    line-height: 1.5;
+    margin: 0.25rem 0 0;
 }
 
 #content :is(h2, h3, h4, h5, h6) {
@@ -70,10 +95,6 @@ body.toc2 #header > h1:first-child,
     font-size: 1rem;
     letter-spacing: normal;
     line-height: 1.65;
-}
-
-#preamble p {
-    color: var(--docs-muted);
 }
 
 #content a {

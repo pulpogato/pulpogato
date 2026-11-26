@@ -29,6 +29,7 @@ asciidoc {
             docInfo {
                 setDocInfoDir(layout.projectDirectory.dir("src/docinfo"))
                 setHeadIsPrivate(false)
+                setHeaderIsPrivate(false)
                 setFooterIsPrivate(false)
             }
         }

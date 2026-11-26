@@ -1,4 +1,5 @@
-= image:images/Pulpogato-no-lines-no-bg.png[alt="",width=56,height=56,role=docs-logo] Pulpogato
+= Pulpogato
+:notitle:
 :package: io.github.pulpogato
 :package-path: io/github/pulpogato
 :package-path-encoded: io%2Fgithub%2Fpulpogato
@@ -14,8 +15,6 @@
 :toc: left
 :toc-title:
 :icons: font
-
-Pulpogato is a java client for GitHub.
 
 == Installation
 
