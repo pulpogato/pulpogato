@@ -46,15 +46,14 @@ class ReposApiIntegrationTest extends BaseApiIntegrationTest {
 
     @Test
     void testListBranchesPaginated() {
+        // tag::paginate-branches[]
         var api = new RestClients(restClient).getReposApi();
         var perPage = 5L;
 
         var branches = new Paginate()
-                .from(
-                        25,
-                        page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page)
-                                .getBody())
+                .fromLinkHeader(25, page -> api.listBranches("jenkinsci", "gradle-jpi-plugin", null, perPage, page))
                 .toList();
+        // end::paginate-branches[]
 
         var allBranches = api.listBranches("jenkinsci", "gradle-jpi-plugin", null, 100L, 1L)
                 .getBody();
