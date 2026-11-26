@@ -1,4 +1,4 @@
-= Pulpogato
+= image:images/Pulpogato-no-lines-no-bg.png[alt="",width=56,height=56,role=docs-logo] Pulpogato
 :package: io.github.pulpogato
 :package-path: io/github/pulpogato
 :package-path-encoded: io%2Fgithub%2Fpulpogato
