@@ -58,7 +58,6 @@ commonSpringBootCompatibility = "4.1.2"
 commonSpringBootLatest = "4.2.0"
 commonSpringLatest = "7.1.0"
 commonMicrometerLatest = "1.18.0"
-commonReactorLatest = "3.9.0"
 commonJackson2Latest = "2.23.0"
 commonJackson3Latest = "3.3.0"
 
@@ -120,6 +119,7 @@ commonMicrometerObservationTestBaseline = { module = "io.micrometer:micrometer-o
 commonReactorTestBaseline = { module = "io.projectreactor:reactor-test", version.ref = "commonReactorBaseline" }
 commonSpringBootWebfluxBaseline = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "commonSpringBootBaseline" }
 commonSpringWebBaseline = { module = "org.springframework:spring-web", version.ref = "commonSpringBaseline" }
+commonSpringWebfluxBaseline = { module = "org.springframework:spring-webflux", version.ref = "commonSpringBaseline" }
 
 commonJackson2CoreLatest = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "commonJackson2Latest" }
 commonJackson2TimeLatest = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "commonJackson2Latest" }
@@ -127,9 +127,9 @@ commonJackson3CoreLatest = { module = "tools.jackson.core:jackson-databind", ver
 commonMicrometerCoreLatest = { module = "io.micrometer:micrometer-core", version.ref = "commonMicrometerLatest" }
 commonMicrometerObservationLatest = { module = "io.micrometer:micrometer-observation", version.ref = "commonMicrometerLatest" }
 commonMicrometerObservationTestLatest = { module = "io.micrometer:micrometer-observation-test", version.ref = "commonMicrometerLatest" }
-commonReactorTestLatest = { module = "io.projectreactor:reactor-test", version.ref = "commonReactorLatest" }
 commonSpringBootWebfluxLatest = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "commonSpringBootLatest" }
 commonSpringWebLatest = { module = "org.springframework:spring-web", version.ref = "commonSpringLatest" }
+commonSpringWebfluxLatest = { module = "org.springframework:spring-webflux", version.ref = "commonSpringLatest" }
 
 [bundles]
 commonmark = ["commonmark", "commonmarkTables"]

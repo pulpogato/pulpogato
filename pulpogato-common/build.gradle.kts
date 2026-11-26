@@ -24,7 +24,29 @@ configurations.testImplementation {
     extendsFrom(testSupport.get())
 }
 
+val reactorBaseline = libs.versions.commonReactorBaseline.get()
+listOf(configurations.compileClasspath, configurations.testCompileClasspath).forEach { classpath ->
+    classpath.configure {
+        resolutionStrategy.force("io.projectreactor:reactor-core:$reactorBaseline", "io.projectreactor:reactor-test:$reactorBaseline")
+    }
+}
+
+val springFrameworkBom = "org.springframework:spring-framework-bom"
+val springFrameworkBaseline = libs.versions.commonSpringBaseline.get()
+
 dependencies {
+    components {
+        withModule("io.projectreactor:reactor-core") {
+            val reactorCoreVersion = id.version
+            allVariants {
+                withDependencyConstraints {
+                    // Keep StepVerifier on the Reactor version selected by the WebFlux runtime.
+                    add("io.projectreactor:reactor-test:$reactorCoreVersion")
+                }
+            }
+        }
+    }
+
     errorprone(libs.errorprone)
     errorprone(libs.nullaway)
 
@@ -34,6 +56,8 @@ dependencies {
     api(libs.commonMicrometerObservationBaseline)
     compileOnly(libs.commonSpringBootWebfluxBaseline)
     compileOnly(libs.commonSpringWebBaseline)
+    compileOnly(libs.commonSpringWebfluxBaseline)
+    compileOnly(enforcedPlatform("$springFrameworkBom:$springFrameworkBaseline"))
 
     annotationProcessor(libs.lombok)
 
@@ -46,6 +70,7 @@ dependencies {
     api(libs.commonJackson3CoreBaseline)
 
     testCompileOnly(libs.lombok)
+    testCompileOnly(enforcedPlatform("$springFrameworkBom:$springFrameworkBaseline"))
 
     testAnnotationProcessor(libs.lombok)
 
@@ -60,6 +85,7 @@ dependencies {
     testImplementation(libs.commonReactorTestBaseline)
     testImplementation(libs.commonSpringBootWebfluxBaseline)
     testImplementation(libs.commonSpringWebBaseline)
+    testImplementation(libs.commonSpringWebfluxBaseline)
 
     // The standard test task uses the catalog runtime with the baseline-compiled classes.
     testRuntimeOnly(libs.commonJackson2CoreLatest)
@@ -68,9 +94,9 @@ dependencies {
     testRuntimeOnly(libs.commonMicrometerCoreLatest)
     testRuntimeOnly(libs.commonMicrometerObservationLatest)
     testRuntimeOnly(libs.commonMicrometerObservationTestLatest)
-    testRuntimeOnly(libs.commonReactorTestLatest)
     testRuntimeOnly(libs.commonSpringBootWebfluxLatest)
     testRuntimeOnly(libs.commonSpringWebLatest)
+    testRuntimeOnly(libs.commonSpringWebfluxLatest)
 
     mockitoAgent(libs.mockito) { isTransitive = false }
 }
@@ -137,7 +163,6 @@ fun registerCompatibilityTest(
     version: String,
     springBootVersion: String,
     libraryPlatforms: List<String> = emptyList(),
-    reactorVersion: String? = null,
 ): TaskProvider<Test> {
     val taskName = if (family == "SpringBoot") "testWithSpringBoot$version" else "testWith$family-$version"
     val stackDependencies = configurations.dependencyScope("${taskName}Dependencies")
@@ -152,10 +177,6 @@ fun registerCompatibilityTest(
             attributes {
                 attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
                 attributeProvider(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, java.toolchain.languageVersion.map { it.asInt() })
-            }
-            if (reactorVersion != null) {
-                // Reactor's BOM uses release-train versions. Keep Core and Test on the requested component version.
-                resolutionStrategy.force("io.projectreactor:reactor-core:$reactorVersion", "io.projectreactor:reactor-test:$reactorVersion")
             }
         }
 
@@ -216,7 +237,7 @@ data class CompatibilityLibrary(
     val name: String,
     val baseline: String,
     val current: String,
-    val platform: String? = null,
+    val platform: String,
 )
 
 val compatibilityLibraries =
@@ -234,17 +255,16 @@ val compatibilityLibraries =
             "com.fasterxml.jackson:jackson-bom",
         ),
         CompatibilityLibrary("Jackson3", libs.versions.commonJackson3Baseline.get(), libs.versions.commonJackson3Latest.get(), "tools.jackson:jackson-bom"),
-        CompatibilityLibrary("Reactor", libs.versions.commonReactorBaseline.get(), libs.versions.commonReactorLatest.get()),
+        CompatibilityLibrary("WebFlux", springFrameworkBaseline, libs.versions.commonSpringLatest.get(), springFrameworkBom),
     )
 
 compatibilityLibraries.forEach { library ->
     registerCompatibilityFamily(library.name, compatibilityVersions(library.name, library.current)) { version ->
         val platforms =
-            compatibilityLibraries.mapNotNull { other ->
-                other.platform?.let { "$it:${if (other == library) version else other.baseline}" }
+            compatibilityLibraries.map { other ->
+                "${other.platform}:${if (other == library) version else other.baseline}"
             }
-        val reactorVersion = if (library.name == "Reactor") version else libs.versions.commonReactorBaseline.get()
-        registerCompatibilityTest(library.name, version, springBootBaseline, platforms, reactorVersion)
+        registerCompatibilityTest(library.name, version, springBootBaseline, platforms)
     }
 }
 

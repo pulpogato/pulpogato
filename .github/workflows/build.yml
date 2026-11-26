@@ -113,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        family: [SpringBoot, Micrometer, Jackson2, Jackson3, Reactor]
+        family: [SpringBoot, Micrometer, Jackson2, Jackson3, WebFlux]
     env:
       DEPENDENCY_FAMILY: ${{ matrix.family }}
     steps:

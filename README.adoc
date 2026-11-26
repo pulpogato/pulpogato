@@ -234,7 +234,8 @@ If you have low memory or CPU, you can customize parallelism with `--max-workers
 
 `pulpogato-common` compiles production code and tests against the `common*Baseline` versions in `gradle/libs.versions.toml`.
 `check` runs the same compiled tests on the Spring Boot 4.0 floor, the Spring Boot 4.1 compatibility target, the latest Spring Boot platform, and the latest test-only versions together and one family at a time.
-The per-library tasks use the baseline Spring Boot version and test the `common*Latest` version of Micrometer, Jackson 2, Jackson 3, or Reactor Core and Test.
+The per-library tasks use the baseline Spring Boot version and test the `common*Latest` version of Micrometer, Jackson 2, Jackson 3, or Spring WebFlux.
+The WebFlux tasks align Spring Framework modules at the selected version and let that runtime resolve Reactor Core.
 Jackson 2 and 3 share Jackson Annotations, so the two versions can affect which annotations JAR is selected.
 GitHub Actions runs each dependency family's compatibility tests in a separate matrix job.
 
@@ -245,10 +246,10 @@ GitHub Actions runs each dependency family's compatibility tests in a separate m
 ./gradlew :pulpogato-common:testWithMicrometer-1.18.0
 ./gradlew :pulpogato-common:testWithJackson2-2.23.0
 ./gradlew :pulpogato-common:testWithJackson3-3.3.0
-./gradlew :pulpogato-common:testWithReactor-3.9.0
+./gradlew :pulpogato-common:testWithWebFlux-7.1.0
 ----
 
-Use `commonSpringBootVersions`, `commonMicrometerVersions`, `commonJackson2Versions`, `commonJackson3Versions`, or `commonReactorVersions` to add comma-separated versions with `-P`.
+Use `commonSpringBootVersions`, `commonMicrometerVersions`, `commonJackson2Versions`, `commonJackson3Versions`, or `commonWebFluxVersions` to add comma-separated versions with `-P`.
 Each additional version gets its own task and runs as part of `check`.
 For example, `-PcommonJackson3Versions=3.2.4` adds `testWithJackson3-3.2.4`.
 The versioned tasks support Gradle's `--tests` filter.
