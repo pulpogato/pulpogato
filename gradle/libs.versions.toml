@@ -42,7 +42,7 @@ springBoot = "4.2.0"
 swaggerParser = "2.1.49"
 testLogger = "4.0.0"
 waena = "0.29.0"
-asciidoctor = "4.0.5"
+asciidoctor = "5.2.0"
 
 # Pulpogato Common's compile floor follows the Spring Boot 4.0 dependency platform.
 commonSpringBootBaseline = "4.0.0"
@@ -136,7 +136,7 @@ commonmark = ["commonmark", "commonmarkTables"]
 springBoot = ["springBootTest", "springBootWeb", "springBootWebflux", "springBootWebTest"]
 
 [plugins]
-asciidoctor = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }
+asciidoctor = { id = "org.asciidoctor.jvm", version.ref = "asciidoctor" }
 dgs = { id = "com.netflix.dgs.codegen", version.ref = "dgs" }
 download = { id = "de.undercouch.download", version.ref = "download" }
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorpronePlugin" }

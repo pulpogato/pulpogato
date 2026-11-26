@@ -34,7 +34,7 @@ if [[ "$version" == shared ]]; then
     coverage_modules=("${analysis_modules[@]}")
     if [[ "$release_task" != candidate && "$release_task" != final ]]; then
         tasks+=(:pulpogato-docs:asciidoctor)
-        extra_outputs+=(pulpogato-docs/build pulpogato-rest-tests/build/libs)
+        extra_outputs+=(pulpogato-docs/build/docs/asciidoc/html pulpogato-rest-tests/build/libs)
     fi
 else
     publications=("pulpogato-rest-$version" "pulpogato-graphql-$version")
