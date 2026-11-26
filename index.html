@@ -2213,7 +2213,15 @@ This helps monitor your API usage and avoid hitting rate limits.</p>
         button.type = "button";
         setButtonIcon(button, "copy");
         button.addEventListener("click", function () {
-            navigator.clipboard.writeText(code.textContent).then(
+            const copy = code.cloneNode(true);
+            // Asciidoctor renders each callout with a marker and a plain-text fallback.
+            copy.querySelectorAll(".conum + b").forEach(function (fallback) {
+                fallback.remove();
+            });
+            copy.querySelectorAll(".conum[data-value]").forEach(function (callout) {
+                callout.replaceWith(`// <${callout.dataset.value}>`);
+            });
+            navigator.clipboard.writeText(copy.textContent).then(
                 function () {
                     setButtonIcon(button, "copied");
                 },
