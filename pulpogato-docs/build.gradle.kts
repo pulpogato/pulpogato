@@ -19,6 +19,7 @@ asciidoc {
             setSourceDir(layout.projectDirectory.dir("src"))
             sources("index.adoc")
             attributes {
+                add("revnumber!", "")
                 add("pulpogato-version", pulpogatoVersion)
                 add("spring-boot-version", libs.versions.springBoot)
                 add("dgs-client-version", libs.versions.dgsClient)
