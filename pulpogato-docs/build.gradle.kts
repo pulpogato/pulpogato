@@ -1,3 +1,5 @@
+import org.asciidoctor.gradle.model5.core.tasks.AsciidoctorTask
+
 plugins {
     alias(libs.plugins.asciidoctor)
 }
@@ -27,6 +29,7 @@ asciidoc {
             docInfo {
                 setDocInfoDir(layout.projectDirectory.dir("src/docinfo"))
                 setHeadIsPrivate(false)
+                setHeaderIsPrivate(false)
                 setFooterIsPrivate(false)
             }
         }
@@ -34,9 +37,16 @@ asciidoc {
     }
 }
 
+val docsLogo = rootProject.layout.projectDirectory.file("images/Pulpogato-no-lines-no-bg.png")
 val asciidoctorHtml =
-    tasks.named("asciidoctorHtml") {
+    tasks.named<AsciidoctorTask>("asciidoctorHtml") {
+        val logo = docsLogo.asFile
+        val publishedLogo = outputDir.map { it.file("images/${logo.name}") }
         inputs.file(rootProject.layout.projectDirectory.file("README.adoc")).withPathSensitivity(PathSensitivity.RELATIVE)
+        inputs.file(logo).withPathSensitivity(PathSensitivity.NAME_ONLY)
+        doLast {
+            logo.copyTo(publishedLogo.get().asFile, overwrite = true)
+        }
     }
 
 tasks.register("asciidoctor") {

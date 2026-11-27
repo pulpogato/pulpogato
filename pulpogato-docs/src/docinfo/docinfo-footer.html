@@ -55,8 +55,69 @@
         content.appendChild(button);
     }
 
+    function highlightCurrentSection() {
+        const toc = document.getElementById("toc");
+        if (!toc) {
+            return;
+        }
+
+        toc.setAttribute("role", "navigation");
+        toc.setAttribute("aria-label", "On this page");
+        const sections = Array.from(toc.querySelectorAll('a[href^="#"]'), function (link) {
+            return { link, heading: document.getElementById(link.hash.slice(1)) };
+        }).filter(function (section) {
+            return section.heading;
+        });
+        if (!sections.length) {
+            return;
+        }
+
+        let currentLink;
+        let pending = false;
+        function update() {
+            pending = false;
+            const position = 48;
+            let active = sections[0];
+            for (const section of sections) {
+                if (section.heading.getBoundingClientRect().top > position) {
+                    break;
+                }
+                active = section;
+            }
+
+            // Near the bottom, a linked heading may stay below the top of the viewport.
+            const page = document.scrollingElement;
+            if (page.scrollTop + page.clientHeight >= page.scrollHeight - 1) {
+                active = sections.find(function (section) {
+                    return section.link.hash === window.location.hash
+                        && section.heading.getBoundingClientRect().top >= 0;
+                }) || sections[sections.length - 1];
+            }
+
+            if (active.link !== currentLink) {
+                currentLink?.removeAttribute("aria-current");
+                active.link.setAttribute("aria-current", "location");
+                currentLink = active.link;
+            }
+        }
+
+        function scheduleUpdate() {
+            if (!pending) {
+                pending = true;
+                window.requestAnimationFrame(update);
+            }
+        }
+
+        window.addEventListener("scroll", scheduleUpdate, { passive: true });
+        window.addEventListener("resize", scheduleUpdate);
+        window.addEventListener("hashchange", scheduleUpdate);
+        window.addEventListener("load", scheduleUpdate);
+        update();
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".listingblock").forEach(addCopyButton);
+        highlightCurrentSection();
     });
 })();
 </script>
